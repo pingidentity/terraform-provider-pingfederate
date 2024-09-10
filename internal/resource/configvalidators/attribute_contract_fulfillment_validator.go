@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.Map = &attributeContractFulfillmentValidator{}
@@ -59,14 +60,16 @@ func (v attributeContractFulfillmentValidator) ValidateMap(ctx context.Context, 
 		if sourceTypeAsString.ValueString() == "NO_MAPPING" && len(valueAsString.ValueString()) > 0 {
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
-				"When attribute_contract_fulfillment source type is set to 'NO_MAPPING', the value must not be defined",
-				fmt.Sprintf("attribute_contract_fulfillment key '%s' has a value defined while using a source type of 'NO_MAPPING'", key),
+				providererror.InvalidAttributeConfiguration,
+				"When attribute_contract_fulfillment source type is set to 'NO_MAPPING', the value must not be defined. "+
+					fmt.Sprintf("attribute_contract_fulfillment key '%s' has a value defined while using a source type of 'NO_MAPPING'", key),
 			)
 		} else if sourceTypeAsString.ValueString() != "NO_MAPPING" && len(valueAsString.ValueString()) == 0 {
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
-				"When attribute_contract_fulfillment source type is set anything other than 'NO_MAPPING', the value must be defined",
-				fmt.Sprintf("attribute_contract_fulfillment key '%s' has no value defined while using a source type of '%s'", key, sourceTypeAsString.ValueString()),
+				providererror.InvalidAttributeConfiguration,
+				"When attribute_contract_fulfillment source type is set anything other than 'NO_MAPPING', the value must be defined. "+
+					fmt.Sprintf("attribute_contract_fulfillment key '%s' has no value defined while using a source type of '%s'", key, sourceTypeAsString.ValueString()),
 			)
 		}
 	}

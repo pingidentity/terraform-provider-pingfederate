@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &hostnameOrIpValidator{}
@@ -31,7 +32,7 @@ func (v hostnameOrIpValidator) ValidateString(ctx context.Context, req validator
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid hostname or IP",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("This %s value must be a valid hostname or IP address", req.ConfigValue),
 		)
 	}

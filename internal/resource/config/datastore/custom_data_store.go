@@ -24,6 +24,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -132,7 +133,7 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 	var diags, allDiags diag.Diagnostics
 
 	if clientValue.CustomDataStore == nil {
-		diags.AddError("Failed to read custom data store from API", "The custom data store was nil")
+		diags.AddError(providererror.InternalProviderError, "Failed to read custom data store from API. The custom data store was nil")
 		return types.ObjectNull(customDataStoreAttrType), diags
 	}
 
@@ -216,21 +217,21 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	name := customPlan["name"].(types.String).ValueString()
 	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object))
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create plugin descriptor reference object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create plugin descriptor reference object for DataStore: "+err.Error())
 		return
 	}
 
 	configuration := &client.PluginConfiguration{}
 	err = json.Unmarshal([]byte(internaljson.FromValue(customPlan["configuration"].(types.Object), true)), configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create configuration object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
 		return
 	}
 
 	createCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(createCustomDataStore, con, client.CustomDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
@@ -254,14 +255,14 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	customPlan := plan.CustomDataStore.Attributes()
 	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object))
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create plugin descriptor reference object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create plugin descriptor reference object for DataStore: "+err.Error())
 		return
 	}
 
 	configuration := &client.PluginConfiguration{}
 	err = json.Unmarshal([]byte(internaljson.FromValue(customPlan["configuration"].(types.Object), true)), configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create configuration object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
 		return
 	}
 
@@ -269,7 +270,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	updateCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(updateCustomDataStore, con, client.CustomDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 

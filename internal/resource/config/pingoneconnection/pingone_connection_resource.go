@@ -14,6 +14,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -198,7 +199,7 @@ func (r *pingoneConnectionResource) Create(ctx context.Context, req resource.Cre
 	createPingOneConnection := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createPingOneConnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the PingOne Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the PingOne Connection: "+err.Error())
 		return
 	}
 
@@ -261,7 +262,7 @@ func (r *pingoneConnectionResource) Update(ctx context.Context, req resource.Upd
 	createUpdateRequest := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the PingOne Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the PingOne Connection: "+err.Error())
 		return
 	}
 

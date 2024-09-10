@@ -14,6 +14,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -173,7 +174,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Create(ctx context.Context
 	createSessionAuthenticationPoliciesGlobal := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationPoliciesGlobalFields(ctx, createSessionAuthenticationPoliciesGlobal, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the global authentication session policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the global authentication session policy: "+err.Error())
 		return
 	}
 
@@ -239,7 +240,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Update(ctx context.Context
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationPoliciesGlobalFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the global authentication session policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the global authentication session policy: "+err.Error())
 		return
 	}
 

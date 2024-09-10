@@ -37,6 +37,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -2016,11 +2017,17 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 			}
 		}
 		if !found {
-			resp.Diagnostics.AddError("The value provided for 'default_virtual_entity_id' must be included in the 'virtual_entity_ids' list.",
-				fmt.Sprintf("The value '%s' is not included in the 'virtual_entity_ids' list.", defaultId))
+			resp.Diagnostics.AddAttributeError(
+				path.Root("default_virtual_entity_id"),
+				providererror.InvalidAttributeConfiguration,
+				"The value provided for 'default_virtual_entity_id' must be included in the 'virtual_entity_ids' list. "+
+					fmt.Sprintf("The value '%s' is not included in the 'virtual_entity_ids' list.", defaultId))
 		}
 	} else if len(virtualIds) > 0 && config.DefaultVirtualEntityId.IsNull() {
-		resp.Diagnostics.AddError("The 'default_virtual_entity_id' attribute must be set when 'virtual_entity_ids' is non-empty.", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("default_virtual_entity_id"),
+			providererror.InvalidAttributeConfiguration,
+			"The 'default_virtual_entity_id' attribute must be set when 'virtual_entity_ids' is non-empty.")
 	}
 
 	if internaltypes.IsDefined(config.SpBrowserSso) {
@@ -2029,7 +2036,10 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 			encryptAssertion := encryptionPolicy.Attributes()["encrypt_assertion"].(types.Bool)
 			encryptionAttributes := encryptionPolicy.Attributes()["encrypted_attributes"].(types.Set)
 			if encryptAssertion.ValueBool() && len(encryptionAttributes.Elements()) > 0 {
-				resp.Diagnostics.AddError("The 'encrypted_attributes' attribute cannot be configured when 'encrypt_assertion' is set to true.", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("sp_browser_sso").AtMapKey("encryption_policy").AtMapKey("encrypted_attributes"),
+					providererror.InvalidAttributeConfiguration,
+					"The 'encrypted_attributes' attribute cannot be configured when 'encrypt_assertion' is set to true.")
 			}
 		}
 
@@ -2039,7 +2049,10 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 			signAssertions := config.SpBrowserSso.Attributes()["sign_assertions"].(types.Bool)
 			// Exactly one of the two booleans must be true for SAML20 connections
 			if !signResponseAsRequired.IsUnknown() && !signAssertions.IsUnknown() && signResponseAsRequired.ValueBool() == signAssertions.ValueBool() {
-				resp.Diagnostics.AddError("Exactly one of 'sign_response_as_required' and 'sign_assertions' must be true for SAML 2.0 connections.", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("sp_browser_sso"),
+					providererror.InvalidAttributeConfiguration,
+					"Exactly one of 'sign_response_as_required' and 'sign_assertions' must be true for SAML 2.0 connections.")
 			}
 		}
 	}
@@ -3781,7 +3794,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP SP Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdP SP Connection: "+err.Error())
 		return
 	}
 
@@ -3846,7 +3859,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the IdP SP Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the IdP SP Connection: "+err.Error())
 		return
 	}
 
