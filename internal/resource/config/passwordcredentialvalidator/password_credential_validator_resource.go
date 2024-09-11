@@ -156,10 +156,24 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 					for tableRowIndex, row := range tableRow {
 						rowAttrs := row.(types.Object).Attributes()
 						fields := rowAttrs["fields"].(types.Set).Elements()
+						sensitiveFields := rowAttrs["sensitive_fields"].(types.Set).Elements()
 						usernameFound := false
 						passwordFound := false
 						confirmPasswordFound := false
 						for _, field := range fields {
+							fieldRow := field.(types.Object).Attributes()
+							nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
+							if nestedTableFieldName == "Username" {
+								usernameFound = true
+							}
+							if nestedTableFieldName == "Password" {
+								passwordFound = true
+							}
+							if nestedTableFieldName == "Confirm Password" {
+								confirmPasswordFound = true
+							}
+						}
+						for _, field := range sensitiveFields {
 							fieldRow := field.(types.Object).Attributes()
 							nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
 							if nestedTableFieldName == "Username" {
@@ -211,7 +225,13 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	fieldNameMap := map[string]bool{}
 	if configuration["fields"] != nil {
 		fields := configuration["fields"].(types.Set).Elements()
+		sensitiveFields := configuration["sensitive_fields"].(types.Set).Elements()
 		for _, field := range fields {
+			field := field.(types.Object).Attributes()
+			fieldName := field["name"].(types.String).ValueString()
+			fieldNameMap[fieldName] = true
+		}
+		for _, field := range sensitiveFields {
 			field := field.(types.Object).Attributes()
 			fieldName := field["name"].(types.String).ValueString()
 			fieldNameMap[fieldName] = true

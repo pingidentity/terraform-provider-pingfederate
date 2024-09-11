@@ -136,10 +136,9 @@ func ToSchema() schema.SingleNestedAttribute {
 				NestedObject: fieldsNestedObject,
 			},
 			"sensitive_fields": schema.SetNestedAttribute{
-				Description: "List of sensitive configuration fields.",
-				Computed:    true,
-				Optional:    true,
-				//TODO default, sensitive etc
+				Description:  "List of sensitive configuration fields.",
+				Computed:     true,
+				Optional:     true,
 				Default:      setdefault.StaticValue(sensitiveFieldsSetDefault),
 				NestedObject: sensitiveFieldsNestedObject,
 			},

@@ -195,7 +195,7 @@ func readRowsResponse(rows []client.ConfigRow, planRows *types.List, diags *diag
 			attrValuesSensitiveSplit["fields"] = rowFields.allCleartextFields
 			attrValuesSensitiveSplit["sensitive_fields"] = rowFields.allSensitiveFields
 
-			rowMergedFields, respDiags := types.ObjectValue(rowsSensitiveFieldsSplitAttrTypes, attrValues)
+			rowMergedFields, respDiags := types.ObjectValue(rowsMergedFieldsAttrTypes, attrValues)
 			diags.Append(respDiags...)
 			rowsMergedFields = append(rowsMergedFields, rowMergedFields)
 			rowSensitiveFieldsSplit, respDiags := types.ObjectValue(rowsSensitiveFieldsSplitAttrTypes, attrValuesSensitiveSplit)
