@@ -1,0 +1,1 @@
+terraform import pingfederate_captcha_provider_settings.captchaProvidersSettings id

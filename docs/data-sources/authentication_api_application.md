@@ -27,7 +27,7 @@ data "pingfederate_authentication_api_application" "myAuthenticationApiApplicati
 
 ### Read-Only
 
-- `additional_allowed_origins` (List of String) The domain in the redirect URL is always whitelisted. This field contains a list of additional allowed origin URL's for cross-origin datasource sharing.
+- `additional_allowed_origins` (Set of String) The domain in the redirect URL is always whitelisted. This field contains a list of additional allowed origin URL's for cross-origin datasource sharing.
 - `client_for_redirectless_mode_ref` (Attributes) The client this application must use if it invokes the authentication API in redirectless mode. No client may be specified if restrictAccessToRedirectlessMode is false under /authenticationApi/settings. (see [below for nested schema](#nestedatt--client_for_redirectless_mode_ref))
 - `description` (String) The Authentication API Application description.
 - `id` (String) ID of this resource.

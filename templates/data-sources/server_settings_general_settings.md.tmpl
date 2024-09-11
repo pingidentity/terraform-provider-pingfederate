@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+!> The `pingfederate_server_settings_general_settings` data source has been renamed and will be removed in a future release. Use the `pingfederate_server_settings_general` data source instead.
+
+## Example Usage
+
+{{ tffile (printf "%s%s%s" "examples/data-sources/" .Name "/data-source.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
