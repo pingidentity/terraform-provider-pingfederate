@@ -52,7 +52,8 @@ type serverSettingsSystemKeysResource struct {
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages the system encryption keys.",
+		Description:        "Manages the system encryption keys.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release.",
 		Attributes: map[string]schema.Attribute{
 			"current": schema.SingleNestedAttribute{
 				Description: "Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
