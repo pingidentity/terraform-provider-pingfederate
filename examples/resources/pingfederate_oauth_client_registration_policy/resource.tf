@@ -1,5 +1,11 @@
 resource "pingfederate_oauth_client_registration_policy" "registrationPolicy" {
   policy_id = "myRegistrationPolicy"
+  name      = "My client registration policy"
+
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
+  }
+
   configuration = {
     fields = [
       {
@@ -31,9 +37,5 @@ resource "pingfederate_oauth_client_registration_policy" "registrationPolicy" {
         value = "true"
       }
     ]
-  }
-  name = "My registration policy"
-  plugin_descriptor_ref = {
-    id = "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
   }
 }
