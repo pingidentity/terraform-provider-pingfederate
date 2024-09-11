@@ -12,19 +12,49 @@ Resource to manage the client settings.
 ## Example Usage
 
 ```terraform
+resource "pingfederate_oauth_client_registration_policy" "registrationPolicy" {
+  policy_id = "myRegistrationPolicy"
+  name      = "My client registration policy"
+
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
+  }
+
+  configuration = {
+    fields = [
+      {
+        name  = "code"
+        value = "true"
+      },
+      {
+        name  = "code id_token"
+        value = "true"
+      },
+      {
+        name  = "code id_token token"
+        value = "true"
+      },
+      {
+        name  = "code token"
+        value = "true"
+      },
+      {
+        name  = "id_token"
+        value = "true"
+      },
+      {
+        name  = "id_token token"
+        value = "true"
+      },
+      {
+        name  = "token"
+        value = "true"
+      }
+    ]
+  }
+}
+
 resource "pingfederate_oauth_client_settings" "oauthClientSettings" {
-  client_metadata = [
-    {
-      parameter   = "authNexp"
-      description = "Authentication Experience"
-      multiValued = false
-    },
-    {
-      parameter   = "useAuthApi"
-      description = "Use the AuthN API"
-      multiValued = false
-    }
-  ]
   dynamic_client_registration = {
     initial_access_token_scope = "urn:pingidentity:register-client"
     restrict_common_scopes     = false
@@ -33,16 +63,19 @@ resource "pingfederate_oauth_client_settings" "oauthClientSettings" {
       "urn:pingidentity:directory",
       "urn:pingidentity:scim"
     ]
-    allowed_authorization_detail_types              = []
-    enforce_replay_prevention                       = false
-    require_signed_requests                         = false
-    restrict_to_default_access_token_manager        = false
-    persistent_grant_expiration_type                = "SERVER_DEFAULT"
-    persistent_grant_idle_timeout_type              = "SERVER_DEFAULT"
-    client_cert_issuer_type                         = "NONE"
-    refresh_rolling                                 = "SERVER_DEFAULT"
-    refresh_token_rolling_interval_type             = "SERVER_DEFAULT"
-    policy_refs                                     = []
+    enforce_replay_prevention                = false
+    require_signed_requests                  = false
+    restrict_to_default_access_token_manager = false
+    persistent_grant_expiration_type         = "SERVER_DEFAULT"
+    persistent_grant_idle_timeout_type       = "SERVER_DEFAULT"
+    client_cert_issuer_type                  = "NONE"
+    refresh_rolling                          = "SERVER_DEFAULT"
+    refresh_token_rolling_interval_type      = "SERVER_DEFAULT"
+    policy_refs = [
+      {
+        id = pingfederate_oauth_client_registration_policy.registrationPolicy.id
+      }
+    ]
     device_flow_setting_type                        = "SERVER_DEFAULT"
     require_proof_key_for_code_exchange             = false
     ciba_require_signed_requests                    = false
