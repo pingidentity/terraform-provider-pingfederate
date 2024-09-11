@@ -9,6 +9,8 @@ on:
       - "go.sum"
       - "Makefile"
       - ".golangci.yml"
+      - "docs/**"
+      - "templates/**"
   push:
     branches:
       - "main"
