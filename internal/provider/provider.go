@@ -70,6 +70,7 @@ import (
 	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
 	oauthcibaserverpolicysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/cibaserverpolicy/settings"
 	oauthclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/client"
+	oauthclientregistrationpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/clientregistrationpolicies"
 	oauthidpadaptermappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/idpadaptermappings"
 	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
@@ -776,6 +777,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeResource,
 		oauthcibaserverpolicysettings.OauthCibaServerPolicySettingsResource,
 		oauthclient.OauthClientResource,
+		oauthclientregistrationpolicies.OauthClientRegistrationPolicyResource,
 		oauthidpadaptermappings.OauthIdpAdapterMappingResource,
 		oauthissuer.OauthIssuerResource,
 		oauthopenidconnectpolicy.OpenidConnectPolicyResource,
