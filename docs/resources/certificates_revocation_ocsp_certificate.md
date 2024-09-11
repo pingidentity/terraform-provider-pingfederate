@@ -13,9 +13,7 @@ Resource to create and manage OCSP responder signature verification certificates
 
 ```terraform
 resource "pingfederate_certificates_revocation_ocsp_certificate" "certificate" {
-  certificate_id = "certid"
-  # Include base64-encoded cert data here
-  file_data = ""
+  file_data = filebase64("path/to/my/certificate.pem")
 }
 ```
 
