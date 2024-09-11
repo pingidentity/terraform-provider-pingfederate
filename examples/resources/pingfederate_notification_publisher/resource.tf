@@ -1,11 +1,67 @@
+- do we just warn, or do we error:
+            - if a field in non-sensitive-fields comes back from PF as encrypted
+              - warn
+            - if a field in sensitive-fields comes back from PF as non-encrypted
+              - warn
+            - if a field name we expect to be sensitive is placed by the user in non-sensitive-fields
+              - leave out for now
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+terraform {
+  required_version = ">=1.1"
+  required_providers {
+    pingfederate = {
+      version = "~> 1.0.0"
+      source  = "pingidentity/pingfederate"
+    }
+  }
+}
+
+provider "pingfederate" {
+  username   = "administrator"
+  password   = "2FederateM0re"
+  https_host = "https://localhost:9999"
+  # Warning: The insecure_trust_all_tls attribute configures the provider to trust any certificate presented by the server.
+  insecure_trust_all_tls = true
+  x_bypass_external_validation_header = true
+  product_version = "12.1"
+}
+
+
 resource "pingfederate_notification_publisher" "notificationPublisher" {
   publisher_id = "EmailSMTPPublisherSettings"
   name         = "Email SMTP Publisher Settings"
   configuration = {
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = "asdFs"
+      },
+    ]
     fields = [
       {
         name  = "Email Server"
-        value = "localhost"
+        value = "localhosts"
+      },
+      {
+        name  = "Username"
+        value = "asdf"
       },
       {
         name  = "From Address"
@@ -26,14 +82,6 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
       {
         name  = "SMTPS Port"
         value = "465"
-      },
-      {
-        name  = "Username"
-        value = var.email_smtp_server_username
-      },
-      {
-        name  = "Password"
-        value = var.email_smtp_server_password
       },
       {
         name  = "Verify Hostname"

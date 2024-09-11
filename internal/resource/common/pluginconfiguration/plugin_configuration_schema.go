@@ -12,6 +12,7 @@ import (
 
 func ToSchema() schema.SingleNestedAttribute {
 	fieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
+	sensitiveFieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
 	tablesSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: tableAttrTypes}, nil)
 	fieldsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
@@ -20,8 +21,21 @@ func ToSchema() schema.SingleNestedAttribute {
 				Required:    true,
 			},
 			"value": schema.StringAttribute{
-				Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+				Description: "The value for the configuration field.",
 				Required:    true,
+			},
+		},
+	}
+	sensitiveFieldsNestedObject := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{
+				Description: "The name of the configuration field.",
+				Required:    true,
+			},
+			"value": schema.StringAttribute{
+				Description: "The sensitive value for the configuration field.",
+				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -37,20 +51,44 @@ func ToSchema() schema.SingleNestedAttribute {
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"fields": schema.SetNestedAttribute{
-							Description: "The configuration fields in the row.",
+							Description:  "The configuration fields in the row.",
+							Optional:     true,
+							NestedObject: fieldsNestedObject,
+						},
+						"sensitive_fields": schema.SetNestedAttribute{
+							Description:  "The sensitive configuration fields in the row.",
+							Optional:     true,
+							NestedObject: sensitiveFieldsNestedObject,
+						},
+						"default_row": schema.BoolAttribute{
+							Description: "Whether this row is the default.",
+							Computed:    true,
 							Optional:    true,
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"name": schema.StringAttribute{
-										Description: "The name of the configuration field.",
-										Required:    true,
-									},
-									"value": schema.StringAttribute{
-										Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-										Required:    true,
-									},
-								},
+							Default:     booldefault.StaticBool(false),
+							PlanModifiers: []planmodifier.Bool{
+								boolplanmodifier.UseStateForUnknown(),
 							},
+						},
+					},
+				},
+			},
+		},
+	}
+	tablesAllNestedObject := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{
+				Description: "The name of the table.",
+				Required:    true,
+			},
+			"rows": schema.ListNestedAttribute{
+				Description: "List of table rows.",
+				Optional:    true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"fields": schema.SetNestedAttribute{
+							Description:  "The configuration fields in the row.",
+							Optional:     true,
+							NestedObject: fieldsNestedObject,
 						},
 						"default_row": schema.BoolAttribute{
 							Description: "Whether this row is the default.",
@@ -81,7 +119,7 @@ func ToSchema() schema.SingleNestedAttribute {
 				Description:  "List of configuration tables. This attribute will include any values set by default by PingFederate.",
 				Computed:     true,
 				Optional:     false,
-				NestedObject: tablesNestedObject,
+				NestedObject: tablesAllNestedObject,
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},
@@ -92,6 +130,14 @@ func ToSchema() schema.SingleNestedAttribute {
 				Optional:     true,
 				Default:      setdefault.StaticValue(fieldsSetDefault),
 				NestedObject: fieldsNestedObject,
+			},
+			"sensitive_fields": schema.SetNestedAttribute{
+				Description: "List of sensitive configuration fields.",
+				Computed:    true,
+				Optional:    true,
+				//TODO default, sensitive etc
+				Default:      setdefault.StaticValue(sensitiveFieldsSetDefault),
+				NestedObject: sensitiveFieldsNestedObject,
 			},
 			"fields_all": schema.SetNestedAttribute{
 				Description:  "List of configuration fields. This attribute will include any values set by default by PingFederate.",
