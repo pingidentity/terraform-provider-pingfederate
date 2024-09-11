@@ -490,15 +490,14 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfigurationWithDefaults()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 
 	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.ManagerId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
+	err = addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Manager: "+err.Error())
 		return
@@ -577,17 +576,16 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfiguration()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(state.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
+	configuration, err := pluginconfiguration.ClientStruct(state.Configuration)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 
 	// Get the current state to see how any attributes are changing
 	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString())
 	createUpdateRequest := client.NewAccessTokenManager(state.ManagerId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
+	err = addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth access token manager: "+err.Error())
 		return

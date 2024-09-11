@@ -337,8 +337,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfigurationWithDefaults()
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
@@ -416,8 +415,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfiguration()
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return

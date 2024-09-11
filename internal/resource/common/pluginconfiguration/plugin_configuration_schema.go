@@ -13,7 +13,7 @@ import (
 func ToSchema() schema.SingleNestedAttribute {
 	fieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
 	sensitiveFieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
-	tablesSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: tableAttrTypes}, nil)
+	tablesSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}, nil)
 	fieldsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -53,12 +53,16 @@ func ToSchema() schema.SingleNestedAttribute {
 						"fields": schema.SetNestedAttribute{
 							Description:  "The configuration fields in the row.",
 							Optional:     true,
+							Computed:     true,
+							Default:      setdefault.StaticValue(fieldsSetDefault),
 							NestedObject: fieldsNestedObject,
 						},
 						"sensitive_fields": schema.SetNestedAttribute{
 							Description:  "The sensitive configuration fields in the row.",
 							Optional:     true,
+							Computed:     true,
 							NestedObject: sensitiveFieldsNestedObject,
+							Default:      setdefault.StaticValue(sensitiveFieldsSetDefault),
 						},
 						"default_row": schema.BoolAttribute{
 							Description: "Whether this row is the default.",

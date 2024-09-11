@@ -14,31 +14,31 @@ var (
 		"value": types.StringType,
 	}
 
-	rowAttrTypes = map[string]attr.Type{
+	rowsSensitiveFieldsSplitAttrTypes = map[string]attr.Type{
 		"fields":           types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"sensitive_fields": types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"default_row":      types.BoolType,
 	}
-	rowsAllAttrTypes = map[string]attr.Type{
+	rowsMergedFieldsAttrTypes = map[string]attr.Type{
 		"fields":      types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"default_row": types.BoolType,
 	}
 
-	tableAttrTypes = map[string]attr.Type{
+	tablesSensitiveFieldsSplitAttrTypes = map[string]attr.Type{
 		"name": types.StringType,
-		"rows": types.ListType{ElemType: types.ObjectType{AttrTypes: rowAttrTypes}},
+		"rows": types.ListType{ElemType: types.ObjectType{AttrTypes: rowsSensitiveFieldsSplitAttrTypes}},
 	}
-	tablesAllAttrTypes = map[string]attr.Type{
+	tablesMergedFieldsAttrTypes = map[string]attr.Type{
 		"name": types.StringType,
-		"rows": types.ListType{ElemType: types.ObjectType{AttrTypes: rowsAllAttrTypes}},
+		"rows": types.ListType{ElemType: types.ObjectType{AttrTypes: rowsMergedFieldsAttrTypes}},
 	}
 
 	configurationAttrTypes = map[string]attr.Type{
 		"fields":           types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"sensitive_fields": types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"fields_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"tables":           types.SetType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
-		"tables_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: tablesAllAttrTypes}},
+		"tables":           types.SetType{ElemType: types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}},
+		"tables_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes}},
 	}
 )
 
@@ -46,20 +46,38 @@ func AttrTypes() map[string]attr.Type {
 	return configurationAttrTypes
 }
 
-// Creates state values for fields. Returns one value that only includes values specified in the plan, and a second value that includes all fields values
-func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFields *types.Set, isImportRead bool, diags *diag.Diagnostics) (types.Set, types.Set, types.Set) {
-	plannedObjValues := []attr.Value{}
-	plannedSensitiveObjValues := []attr.Value{}
-	allNonSensitiveObjValues := []attr.Value{}
-	allSensitiveObjValues := []attr.Value{}
-	allObjValues := []attr.Value{}
-	planFieldsValues := map[string]*string{}
-	planSensitiveFieldsValues := map[string]*string{}
+type pfConfigurationFieldsResult struct {
+	plannedCleartextFields types.Set
+	plannedSensitiveFields types.Set
+	allCleartextFields     types.Set
+	allSensitiveFields     types.Set
+	allFields              types.Set
+}
+
+type pfConfigurationRowsResult struct {
+	allRowsSensitiveFieldsSplit types.List
+	allRowsMergedFields         types.List
+}
+
+type pfConfigurationTablesResult struct {
+	plannedTables                 types.Set
+	allTablesSensitiveFieldsSplit types.Set
+	allTablesMergedFields         types.Set
+}
+
+func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFields *types.Set, diags *diag.Diagnostics) pfConfigurationFieldsResult {
+	plannedCleartextFields := []attr.Value{}
+	plannedSensitiveFields := []attr.Value{}
+	allCleartextFields := []attr.Value{}
+	allSensitiveFields := []attr.Value{}
+	allFields := []attr.Value{}
+	plannedFieldsValues := map[string]*string{}
+	plannedSensitiveFieldsValues := map[string]*string{}
 	// Build up a map of all the values from the plan
 	if planFields != nil {
 		for _, planField := range planFields.Elements() {
 			planFieldObj := planField.(types.Object)
-			planFieldsValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
+			plannedFieldsValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
 				planFieldObj.Attributes()["value"].(types.String).ValueStringPointer()
 		}
 	}
@@ -67,7 +85,7 @@ func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFiel
 	if planSensitiveFields != nil {
 		for _, planField := range planSensitiveFields.Elements() {
 			planFieldObj := planField.(types.Object)
-			planSensitiveFieldsValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
+			plannedSensitiveFieldsValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
 				planFieldObj.Attributes()["value"].(types.String).ValueStringPointer()
 		}
 	}
@@ -81,7 +99,7 @@ func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFiel
 		//TODO validation that you don't put the same field in both sets
 		fieldAdded := false
 		if planFields != nil {
-			planValue, ok := planFieldsValues[field.Name]
+			planValue, ok := plannedFieldsValues[field.Name]
 			if ok {
 				planAttrValues := map[string]attr.Value{}
 				planAttrValues["name"] = types.StringValue(field.Name)
@@ -91,14 +109,14 @@ func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFiel
 				} else {
 					planAttrValues["value"] = types.StringPointerValue(field.Value)
 				}
-				objVal, newDiags := types.ObjectValue(fieldAttrTypes, planAttrValues)
-				diags.Append(newDiags...)
-				plannedObjValues = append(plannedObjValues, objVal)
+				objVal, respDiags := types.ObjectValue(fieldAttrTypes, planAttrValues)
+				diags.Append(respDiags...)
+				plannedCleartextFields = append(plannedCleartextFields, objVal)
 				fieldAdded = true
 			}
 		}
 		if planSensitiveFields != nil && !fieldAdded {
-			planValue, ok := planSensitiveFieldsValues[field.Name]
+			planValue, ok := plannedSensitiveFieldsValues[field.Name]
 			if ok {
 				planAttrValues := map[string]attr.Value{}
 				planAttrValues["name"] = types.StringValue(field.Name)
@@ -108,74 +126,81 @@ func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFiel
 					//TODO warning
 					planAttrValues["value"] = types.StringPointerValue(field.Value)
 				}
-				objVal, newDiags := types.ObjectValue(fieldAttrTypes, planAttrValues)
-				diags.Append(newDiags...)
-				plannedSensitiveObjValues = append(plannedSensitiveObjValues, objVal)
+				objVal, respDiags := types.ObjectValue(fieldAttrTypes, planAttrValues)
+				diags.Append(respDiags...)
+				plannedSensitiveFields = append(plannedSensitiveFields, objVal)
 			}
 		}
 
-		objVal, newDiags := types.ObjectValue(fieldAttrTypes, attrValues)
-		diags.Append(newDiags...)
-		allObjValues = append(allObjValues, objVal)
+		objVal, respDiags := types.ObjectValue(fieldAttrTypes, attrValues)
+		diags.Append(respDiags...)
+		allFields = append(allFields, objVal)
 		if field.EncryptedValue != nil && *field.EncryptedValue != "" {
-			allSensitiveObjValues = append(allSensitiveObjValues, objVal)
+			allSensitiveFields = append(allSensitiveFields, objVal)
 		} else {
-			allNonSensitiveObjValues = append(allNonSensitiveObjValues, objVal)
+			allCleartextFields = append(allCleartextFields, objVal)
 		}
 	}
 
-	allSetVal, newDiags := types.SetValue(types.ObjectType{
+	plannedCleartextFieldsSet, respDiags := types.SetValue(types.ObjectType{
 		AttrTypes: fieldAttrTypes,
-	}, allObjValues)
-	diags.Append(newDiags...)
-	var plannedSetVal, plannedSensitiveSetVal types.Set
-	if isImportRead {
-		// On imports, just read everything directly into the "fields" and "sensitive_fields" attributes,
-		// even though there is no plan
-		plannedSetVal, newDiags = types.SetValue(types.ObjectType{
-			AttrTypes: fieldAttrTypes,
-		}, allNonSensitiveObjValues)
-		diags.Append(newDiags...)
-		plannedSensitiveSetVal, newDiags = types.SetValue(types.ObjectType{
-			AttrTypes: fieldAttrTypes,
-		}, allSensitiveObjValues)
-		diags.Append(newDiags...)
-	} else {
-		plannedSetVal, newDiags = types.SetValue(types.ObjectType{
-			AttrTypes: fieldAttrTypes,
-		}, plannedObjValues)
-		diags.Append(newDiags...)
-		plannedSensitiveSetVal, newDiags = types.SetValue(types.ObjectType{
-			AttrTypes: fieldAttrTypes,
-		}, plannedSensitiveObjValues)
-		diags.Append(newDiags...)
+	}, plannedCleartextFields)
+	diags.Append(respDiags...)
+	plannedSensitiveFieldsSet, respDiags := types.SetValue(types.ObjectType{
+		AttrTypes: fieldAttrTypes,
+	}, plannedSensitiveFields)
+	diags.Append(respDiags...)
+
+	allCleartextFieldsSet, respDiags := types.SetValue(types.ObjectType{
+		AttrTypes: fieldAttrTypes,
+	}, allCleartextFields)
+	diags.Append(respDiags...)
+	allSensitiveFieldsSet, respDiags := types.SetValue(types.ObjectType{
+		AttrTypes: fieldAttrTypes,
+	}, allSensitiveFields)
+	diags.Append(respDiags...)
+
+	allFieldsSet, respDiags := types.SetValue(types.ObjectType{
+		AttrTypes: fieldAttrTypes,
+	}, allFields)
+	diags.Append(respDiags...)
+
+	return pfConfigurationFieldsResult{
+		plannedCleartextFields: plannedCleartextFieldsSet,
+		plannedSensitiveFields: plannedSensitiveFieldsSet,
+		allCleartextFields:     allCleartextFieldsSet,
+		allSensitiveFields:     allSensitiveFieldsSet,
+		allFields:              allFieldsSet,
 	}
-	return plannedSetVal, plannedSensitiveSetVal, allSetVal
 }
 
-func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead, splitSensitiveFields bool, diags *diag.Diagnostics) types.List {
-	objValues := []attr.Value{}
-	objValuesWithSensitive := []attr.Value{}
+func readRowsResponse(rows []client.ConfigRow, planRows *types.List, diags *diag.Diagnostics) pfConfigurationRowsResult {
+	var rowsMergedFields, rowsSensitiveFieldsSplit []attr.Value
 	if planRows == nil || planRows.IsNull() {
 		if len(rows) == 0 {
-			// If the API returned no rows, treat it as null
-			return types.ListNull(types.ObjectType{
-				AttrTypes: rowAttrTypes,
-			})
+			// If the API returned no rows, treat as null
+			return pfConfigurationRowsResult{
+				allRowsSensitiveFieldsSplit: types.ListNull(types.ObjectType{AttrTypes: rowsSensitiveFieldsSplitAttrTypes}),
+				allRowsMergedFields:         types.ListNull(types.ObjectType{AttrTypes: rowsMergedFieldsAttrTypes}),
+			}
 		}
 		for _, row := range rows {
 			attrValues := map[string]attr.Value{}
-			attrValuesWithSensitive := map[string]attr.Value{}
+			attrValuesSensitiveSplit := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(row.DefaultRow)
-			attrValuesWithSensitive["default_row"] = types.BoolPointerValue(row.DefaultRow)
-			attrValuesWithSensitive["fields"], attrValuesWithSensitive["sensitive_fields"], attrValues["fields"] =
-				toFieldsSetValue(row.Fields, nil, nil, isImportRead, diags)
-			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
-			diags.Append(newDiags...)
-			objValues = append(objValues, rowObjVal)
-			rowObjValWithSensitive, newDiags := types.ObjectValue(rowAttrTypes, attrValuesWithSensitive)
-			diags.Append(newDiags...)
-			objValuesWithSensitive = append(objValuesWithSensitive, rowObjValWithSensitive)
+			attrValuesSensitiveSplit["default_row"] = types.BoolPointerValue(row.DefaultRow)
+
+			rowFields := readFieldsResponse(row.Fields, nil, nil, diags)
+			attrValues["fields"] = rowFields.allFields
+			attrValuesSensitiveSplit["fields"] = rowFields.allCleartextFields
+			attrValuesSensitiveSplit["sensitive_fields"] = rowFields.allSensitiveFields
+
+			rowMergedFields, respDiags := types.ObjectValue(rowsSensitiveFieldsSplitAttrTypes, attrValues)
+			diags.Append(respDiags...)
+			rowsMergedFields = append(rowsMergedFields, rowMergedFields)
+			rowSensitiveFieldsSplit, respDiags := types.ObjectValue(rowsSensitiveFieldsSplitAttrTypes, attrValuesSensitiveSplit)
+			diags.Append(respDiags...)
+			rowsSensitiveFieldsSplit = append(rowsSensitiveFieldsSplit, rowSensitiveFieldsSplit)
 		}
 	} else {
 		// This is assuming there are never any rows added by the PF API. If there
@@ -184,7 +209,9 @@ func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead
 		planRowsElements := planRows.Elements()
 		for i := 0; i < len(rows); i++ {
 			attrValues := map[string]attr.Value{}
+			attrValuesSensitiveSplit := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
+			attrValuesSensitiveSplit["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
 			planRow := planRowsElements[i].(types.Object)
 			var planRowFields, planRowSensitiveFields *types.Set
 			planRowFieldsVal, ok := planRow.Attributes()["fields"]
@@ -197,95 +224,102 @@ func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead
 				setVal := planRowSensitiveFieldsVal.(types.Set)
 				planRowSensitiveFields = &setVal
 			}
-			attrValues["fields"], attrValues["sensitive_fields"], _ = toFieldsSetValue(rows[i].Fields, planRowFields, planRowSensitiveFields, isImportRead, diags)
-			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
-			diags.Append(newDiags...)
-			objValues = append(objValues, rowObjVal)
-			objValuesWithSensitive = append(objValuesWithSensitive, rowObjVal)
+
+			rowFields := readFieldsResponse(rows[i].Fields, planRowFields, planRowSensitiveFields, diags)
+			attrValues["fields"] = rowFields.allFields
+			attrValuesSensitiveSplit["fields"] = rowFields.plannedCleartextFields
+			attrValuesSensitiveSplit["sensitive_fields"] = rowFields.plannedSensitiveFields
+
+			rowMergedFields, respDiags := types.ObjectValue(rowsMergedFieldsAttrTypes, attrValues)
+			diags.Append(respDiags...)
+			rowsMergedFields = append(rowsMergedFields, rowMergedFields)
+			rowSensitiveFieldsSplit, respDiags := types.ObjectValue(rowsSensitiveFieldsSplitAttrTypes, attrValuesSensitiveSplit)
+			diags.Append(respDiags...)
+			rowsSensitiveFieldsSplit = append(rowsSensitiveFieldsSplit, rowSensitiveFieldsSplit)
 		}
 	}
-	//TODO this is all kinds of wrong I think... Need to think through the possible states coming into this method for rows
-	var listVal types.List
-	var newDiags diag.Diagnostics
-	if splitSensitiveFields {
-		listVal, newDiags = types.ListValue(types.ObjectType{
-			AttrTypes: rowAttrTypes,
-		}, objValuesWithSensitive)
-		diags.Append(newDiags...)
-	} else {
-		listVal, newDiags = types.ListValue(types.ObjectType{
-			AttrTypes: rowAttrTypes,
-		}, objValues)
-		diags.Append(newDiags...)
+
+	rowsMergedFieldsList, respDiags := types.ListValue(types.ObjectType{
+		AttrTypes: rowsMergedFieldsAttrTypes,
+	}, rowsMergedFields)
+	diags.Append(respDiags...)
+	rowsSensitiveFieldsSplitList, respDiags := types.ListValue(types.ObjectType{
+		AttrTypes: rowsSensitiveFieldsSplitAttrTypes,
+	}, rowsSensitiveFieldsSplit)
+	diags.Append(respDiags...)
+	return pfConfigurationRowsResult{
+		allRowsSensitiveFieldsSplit: rowsSensitiveFieldsSplitList,
+		allRowsMergedFields:         rowsMergedFieldsList,
 	}
-	return listVal
 }
 
-// Creates state values for tables. Returns one value that only includes values specified in the plan, and a second value that includes all tables values
-func toTablesSetValue(tables []client.ConfigTable, planTables *types.Set, isImportRead bool, diags *diag.Diagnostics) (types.Set, types.Set) {
+func toTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags *diag.Diagnostics) pfConfigurationTablesResult {
 	// List of *all* tables values to return
-	finalTablesAllObjValues := []attr.Value{}
+	allTablesMergedFields := []attr.Value{}
+	// List of *all* tables values to return split into sensitive and non-sensitive fields
+	allTablesSensitiveFieldsSplit := []attr.Value{}
 	// List of tables values to return that were expected based on the plan
-	finalTablesObjValues := []attr.Value{}
+	plannedTables := []attr.Value{}
 	// types.Object values for tables included in the plan
 	planTableObjs := map[string]types.Object{}
-	if planTables == nil {
-		for _, table := range tables {
-			attrValues := map[string]attr.Value{}
-			attrValues["name"] = types.StringValue(table.Name)
-			attrValues["rows"] = toRowsListValue(table.Rows, nil, isImportRead, diags)
-			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
-			diags.Append(newDiags...)
-			finalTablesAllObjValues = append(finalTablesAllObjValues, tableObjValue)
-		}
-	} else {
+	if planTables != nil {
 		// Build up a map of all the tables included in the plan
 		for _, planTable := range planTables.Elements() {
 			planTableObj := planTable.(types.Object)
 			planTableObjs[planTableObj.Attributes()["name"].(types.String).ValueString()] = planTableObj
 		}
+	}
 
-		for i := 0; i < len(tables); i++ {
-			attrValues := map[string]attr.Value{}
-			attrValues["name"] = types.StringValue(tables[i].Name)
-			// If this table was in the plan, pass in the planned rows when getting the 'rows' values in case there are some encrypted values
-			// that aren't returned by the PF API
-			var planTableRows *types.List
-			planTable, inPlan := planTableObjs[tables[i].Name]
-			if inPlan {
-				planTableRowsVal, ok := planTable.Attributes()["rows"]
-				if ok {
-					listValue := planTableRowsVal.(types.List)
-					planTableRows = &listValue
-				}
-			}
-			attrValues["rows"] = toRowsListValue(tables[i].Rows, planTableRows, isImportRead, diags)
-			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
-			diags.Append(newDiags...)
-			finalTablesAllObjValues = append(finalTablesAllObjValues, tableObjValue)
-			if inPlan {
-				finalTablesObjValues = append(finalTablesObjValues, tableObjValue)
+	for i := 0; i < len(tables); i++ {
+		attrValues := map[string]attr.Value{}
+		attrValuesSensitiveSplit := map[string]attr.Value{}
+		attrValues["name"] = types.StringValue(tables[i].Name)
+		attrValuesSensitiveSplit["name"] = types.StringValue(tables[i].Name)
+		// If this table was in the plan, pass in the planned rows when getting the 'rows' values in case there are some encrypted values
+		// that aren't returned by the PF API
+		var planTableRows *types.List
+		planTable, inPlan := planTableObjs[tables[i].Name]
+		if inPlan {
+			planTableRowsVal, ok := planTable.Attributes()["rows"]
+			if ok {
+				listValue := planTableRowsVal.(types.List)
+				planTableRows = &listValue
 			}
 		}
+
+		tableRows := readRowsResponse(tables[i].Rows, planTableRows, diags)
+		attrValues["rows"] = tableRows.allRowsMergedFields
+		attrValuesSensitiveSplit["rows"] = tableRows.allRowsSensitiveFieldsSplit
+
+		tableMergedFields, respDiags := types.ObjectValue(tablesMergedFieldsAttrTypes, attrValues)
+		diags.Append(respDiags...)
+		allTablesMergedFields = append(allTablesMergedFields, tableMergedFields)
+		tableSensitiveFieldsSplit, respDiags := types.ObjectValue(tablesSensitiveFieldsSplitAttrTypes, attrValuesSensitiveSplit)
+		diags.Append(respDiags...)
+		allTablesSensitiveFieldsSplit = append(allTablesSensitiveFieldsSplit, tableSensitiveFieldsSplit)
+		if inPlan {
+			plannedTables = append(plannedTables, tableSensitiveFieldsSplit)
+		}
 	}
-	allTables, newDiags := types.SetValue(types.ObjectType{
-		AttrTypes: tablesAllAttrTypes,
-	}, finalTablesAllObjValues)
-	diags.Append(newDiags...)
-	var plannedTables types.Set
-	if isImportRead {
-		// On imports, just read everything directly into the "tables" attribute
-		plannedTables, newDiags = types.SetValue(types.ObjectType{
-			AttrTypes: tableAttrTypes,
-		}, finalTablesAllObjValues)
-		diags.Append(newDiags...)
-	} else {
-		plannedTables, newDiags = types.SetValue(types.ObjectType{
-			AttrTypes: tableAttrTypes,
-		}, finalTablesObjValues)
-		diags.Append(newDiags...)
+
+	allTablesMergedFieldsSet, respDiags := types.SetValue(types.ObjectType{
+		AttrTypes: tablesMergedFieldsAttrTypes,
+	}, allTablesMergedFields)
+	diags.Append(respDiags...)
+	allTablesSensitiveFieldsSplitSet, respDiags := types.SetValue(types.ObjectType{
+		AttrTypes: tablesSensitiveFieldsSplitAttrTypes,
+	}, allTablesSensitiveFieldsSplit)
+	diags.Append(respDiags...)
+	plannedTablesSet, respDiags := types.SetValue(types.ObjectType{
+		AttrTypes: tablesSensitiveFieldsSplitAttrTypes,
+	}, plannedTables)
+	diags.Append(respDiags...)
+
+	return pfConfigurationTablesResult{
+		plannedTables:                 plannedTablesSet,
+		allTablesSensitiveFieldsSplit: allTablesSensitiveFieldsSplitSet,
+		allTablesMergedFields:         allTablesMergedFieldsSet,
 	}
-	return plannedTables, allTables
 }
 
 func ToState(configFromPlan types.Object, configuration *client.PluginConfiguration, isImportRead bool) (types.Object, diag.Diagnostics) {
@@ -308,15 +342,24 @@ func ToState(configFromPlan types.Object, configuration *client.PluginConfigurat
 		planTables = &setVal
 	}
 
-	fieldsAttrValue, sensitiveFieldsAttrValue, fieldsAllAttrValue := toFieldsSetValue(configuration.Fields, planFields, planSensitiveFields, isImportRead, &diags)
-	tablesAttrValue, tablesAllAttrValue := toTablesSetValue(configuration.Tables, planTables, isImportRead, &diags)
+	fields := readFieldsResponse(configuration.Fields, planFields, planSensitiveFields, &diags)
+	tables := toTablesSetValue(configuration.Tables, planTables, &diags)
+
+	fieldsAttrValue := fields.plannedCleartextFields
+	sensitiveFieldsAttrValue := fields.plannedSensitiveFields
+	tablesAttrValue := tables.plannedTables
+	if isImportRead {
+		fieldsAttrValue = fields.allCleartextFields
+		sensitiveFieldsAttrValue = fields.allSensitiveFields
+		tablesAttrValue = tables.allTablesSensitiveFieldsSplit
+	}
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields":           fieldsAttrValue,
 		"sensitive_fields": sensitiveFieldsAttrValue,
-		"fields_all":       fieldsAllAttrValue,
+		"fields_all":       fields.allFields,
 		"tables":           tablesAttrValue,
-		"tables_all":       tablesAllAttrValue,
+		"tables_all":       tables.allTablesMergedFields,
 	}
 	configObj, valueFromDiags := types.ObjectValue(configurationAttrTypes, configurationAttrValue)
 	diags.Append(valueFromDiags...)
@@ -338,7 +381,7 @@ func MarkComputedAttrsUnknownOnChange(planConfiguration, stateConfiguration type
 	planTables := planConfiguration.Attributes()["tables"]
 	stateTables := stateConfiguration.Attributes()["tables"]
 	if !planTables.Equal(stateTables) {
-		planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+		planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes})
 	}
 
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
@@ -351,6 +394,6 @@ func MarkComputedAttrsUnknown(planConfiguration types.Object) (types.Object, dia
 	}
 	planConfigurationAttrs := planConfiguration.Attributes()
 	planConfigurationAttrs["fields_all"] = types.SetUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
-	planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+	planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes})
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
 }

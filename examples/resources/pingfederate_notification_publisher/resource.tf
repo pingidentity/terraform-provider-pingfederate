@@ -1,27 +1,3 @@
-- do we just warn, or do we error:
-            - if a field in non-sensitive-fields comes back from PF as encrypted
-              - warn
-            - if a field in sensitive-fields comes back from PF as non-encrypted
-              - warn
-            - if a field name we expect to be sensitive is placed by the user in non-sensitive-fields
-              - leave out for now
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 terraform {
   required_version = ">=1.1"
@@ -51,13 +27,13 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
     sensitive_fields = [
       {
         name  = "Password"
-        value = "asdFs"
+        value = "asdFss"
       },
     ]
     fields = [
       {
         name  = "Email Server"
-        value = "localhosts"
+        value = "localhost"
       },
       {
         name  = "Username"
