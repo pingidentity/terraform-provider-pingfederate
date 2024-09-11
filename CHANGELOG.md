@@ -26,6 +26,7 @@
 * The `id` attribute that was formerly deprecated in non-singleton-resources is no longer deprecated. ([#367]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/367)))
 * The `pingfederate_key_pair_ssl_server_import` resource and data source have been renamed. Use `pingfederate_keypairs_ssl_server_key` instead. `pingfederate_key_pair_ssl_server_import` will be removed in a future release. ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
 * The `pingfederate_key_pair_signing_import` resource and data source have been renamed. Use `pingfederate_keypairs_signing_key` instead. `pingfederate_key_pair_signing_import` will be removed in a future release. ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
+* The `pingfederate_server_settings_system_keys` resource is deprecated. Use `pingfederate_server_settings_system_keys_rotate` instead. `pingfederate_server_settings_system_keys` will be removed in a future release. ([#382]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/382)))
 
 # v0.15.0 August 29, 2024
 ### Resources
