@@ -20,6 +20,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -27,6 +28,8 @@ var (
 	_ resource.Resource                = &oauthClientRegistrationPolicyResource{}
 	_ resource.ResourceWithConfigure   = &oauthClientRegistrationPolicyResource{}
 	_ resource.ResourceWithImportState = &oauthClientRegistrationPolicyResource{}
+
+	customId = "policy_id"
 )
 
 func OauthClientRegistrationPolicyResource() resource.Resource {
@@ -142,7 +145,7 @@ func (model *oauthClientRegistrationPolicyResourceModel) buildClientStruct() (*c
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
 	} else {
 		result.Configuration = *configurationValue
 	}
@@ -226,7 +229,7 @@ func (r *oauthClientRegistrationPolicyResource) Create(ctx context.Context, req 
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.OauthClientRegistrationPoliciesAPI.CreateDynamicClientRegistrationPolicyExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the oauthClientRegistrationPolicy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the oauthClientRegistrationPolicy", err, httpResp, &customId)
 		return
 	}
 
@@ -257,7 +260,7 @@ func (r *oauthClientRegistrationPolicyResource) Read(ctx context.Context, req re
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "oauthClientRegistrationPolicy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthClientRegistrationPolicy", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the oauthClientRegistrationPolicy", err, httpResp, &customId)
 		}
 		return
 	}
@@ -286,7 +289,7 @@ func (r *oauthClientRegistrationPolicyResource) Update(ctx context.Context, req 
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.OauthClientRegistrationPoliciesAPI.UpdateDynamicClientRegistrationPolicyExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the oauthClientRegistrationPolicy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the oauthClientRegistrationPolicy", err, httpResp, &customId)
 		return
 	}
 
@@ -310,7 +313,7 @@ func (r *oauthClientRegistrationPolicyResource) Delete(ctx context.Context, req 
 	// Delete API call logic
 	httpResp, err := r.apiClient.OauthClientRegistrationPoliciesAPI.DeleteDynamicClientRegistrationPolicy(config.AuthContext(ctx, r.providerConfig), data.PolicyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthClientRegistrationPolicy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthClientRegistrationPolicy", err, httpResp, &customId)
 	}
 }
 
