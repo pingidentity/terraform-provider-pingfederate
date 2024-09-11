@@ -16,9 +16,9 @@ resource "pingfederate_redirect_validation" "redirectValidationExample" {
         require_https            = true
       },
       {
-        target_resource_sso = false,
-        target_resource_slo = true,
-        # in_error_resource        = true,
+        target_resource_sso      = false,
+        target_resource_slo      = true,
+        in_error_resource        = true,
         idp_discovery            = true,
         valid_domain             = "bxretail.org",
         valid_path               = "/redirect",
