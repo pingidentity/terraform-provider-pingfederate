@@ -26,6 +26,8 @@ var (
 	_ resource.Resource                = &certificatesRevocationOcspCertificateResource{}
 	_ resource.ResourceWithConfigure   = &certificatesRevocationOcspCertificateResource{}
 	_ resource.ResourceWithImportState = &certificatesRevocationOcspCertificateResource{}
+
+	customId = "certificate_id"
 )
 
 func CertificatesRevocationOcspCertificateResource() resource.Resource {
@@ -235,7 +237,7 @@ func (r *certificatesRevocationOcspCertificateResource) Create(ctx context.Conte
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.CertificatesRevocationAPI.ImportOcspCertificateExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the certificatesRevocationOcspCertificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the certificatesRevocationOcspCertificate", err, httpResp, &customId)
 		return
 	}
 
@@ -263,7 +265,7 @@ func (r *certificatesRevocationOcspCertificateResource) Read(ctx context.Context
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OCSP Certificate", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesRevocationOcspCertificate", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesRevocationOcspCertificate", err, httpResp, &customId)
 		}
 		return
 	}
@@ -292,7 +294,7 @@ func (r *certificatesRevocationOcspCertificateResource) Delete(ctx context.Conte
 	// Delete API call logic
 	httpResp, err := r.apiClient.CertificatesRevocationAPI.DeleteOcspCertificateById(config.AuthContext(ctx, r.providerConfig), data.CertificateId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the certificatesRevocationOcspCertificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the certificatesRevocationOcspCertificate", err, httpResp, &customId)
 	}
 }
 
