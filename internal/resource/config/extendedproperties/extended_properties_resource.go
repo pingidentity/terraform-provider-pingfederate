@@ -17,6 +17,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -147,7 +148,7 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 	createExtendedProperties := client.NewExtendedProperties()
 	err := addExtendedPropertiesFields(ctx, createExtendedProperties, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for extended properties", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
 		return
 	}
 
@@ -216,7 +217,7 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 	createUpdateRequest := client.NewExtendedProperties()
 	err := addExtendedPropertiesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for extended properties", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
 		return
 	}
 

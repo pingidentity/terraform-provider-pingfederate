@@ -27,6 +27,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -35,6 +36,8 @@ var (
 	_ resource.Resource                = &idpAdapterResource{}
 	_ resource.ResourceWithConfigure   = &idpAdapterResource{}
 	_ resource.ResourceWithImportState = &idpAdapterResource{}
+
+	customId = "adapter_id"
 )
 
 // IdpAdapterResource is a helper function to simplify the provider implementation.
@@ -307,21 +310,21 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
 		return
 	}
 
 	var configuration client.PluginConfiguration
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
 	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
 	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return
 	}
 
@@ -329,7 +332,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	apiCreateIdpAdapter = apiCreateIdpAdapter.Body(*createIdpAdapter)
 	idpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.CreateIdpAdapterExecute(apiCreateIdpAdapter)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp, &customId)
 		return
 	}
 
@@ -360,7 +363,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Adapter", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp, &customId)
 		}
 		return
 	}
@@ -390,14 +393,14 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
 		return
 	}
 
 	var configuration client.PluginConfiguration
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
@@ -405,14 +408,14 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	err = addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return
 	}
 
 	updateIdpAdapter = updateIdpAdapter.Body(*createUpdateRequest)
 	updateIdpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapterExecute(updateIdpAdapter)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp, &customId)
 		return
 	}
 
@@ -438,7 +441,7 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp, &customId)
 	}
 }
 

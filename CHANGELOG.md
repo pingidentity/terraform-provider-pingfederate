@@ -4,6 +4,8 @@
 
 ### Resources
 * **New Resource:** `pingfederate_certificates_revocation_ocsp_certificate` ([#279]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/279)))
+* **New Resource:** `pingfederate_configuration_encryption_keys_rotate` ([#289](https://github.com/pingidentity/terraform-provider-pingfederate/pull/289))
+* **New Resource:** `pingfederate_oauth_client_registration_policy` ([#330](https://github.com/pingidentity/terraform-provider-pingfederate/pull/330))
 * **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 * **New Resource:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
 * **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
@@ -15,6 +17,7 @@
 ### Enhancements
 * Updated resources using read-only `_all` attributes to read to the non-`_all` attribute on import. This includes common attributes such as `configuration.fields` and `configuration.tables`. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
 * Various documentations and schema improvements for resources released in previous versions.
+* Improved consistency and readability of error and warning messages.
 
 ### Bug fixes
 * Fixed terraform plan error after generating import HCL for `pingfederate_oauth_client` due to `persistent_grant_expiration_time` and `persistent_grant_expiration_time_unit` attributes. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))

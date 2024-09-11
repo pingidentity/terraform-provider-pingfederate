@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &startsWithValidator{}
@@ -33,7 +34,7 @@ func (v startsWithValidator) ValidateString(ctx context.Context, req validator.S
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid Prefix Value",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("%s must be prefixed with a %s", req.ConfigValue, v.firstChar),
 		)
 	}
