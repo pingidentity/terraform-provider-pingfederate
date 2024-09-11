@@ -15,6 +15,7 @@
 ### Enhancements
 * Updated resources using read-only `_all` attributes to read to the non-`_all` attribute on import. This includes common attributes such as `configuration.fields` and `configuration.tables`. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
 * Various documentations and schema improvements for resources released in previous versions.
+* Improved consistency and readability of error and warning messages.
 
 ### Bug fixes
 * Fixed terraform plan error after generating import HCL for `pingfederate_oauth_client` due to `persistent_grant_expiration_time` and `persistent_grant_expiration_time_unit` attributes. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))

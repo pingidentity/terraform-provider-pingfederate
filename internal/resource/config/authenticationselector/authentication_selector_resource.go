@@ -21,6 +21,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -36,6 +37,8 @@ var (
 				"name": types.StringType,
 			}}},
 	}
+
+	customId = "selector_id"
 )
 
 // AuthenticationSelectorsResource is a helper function to simplify the provider implementation.
@@ -211,7 +214,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create an Authentication Selector due to dependent object", err.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create an Authentication Selector due to dependent object: "+err.Error())
 		}
 	}
 
@@ -222,7 +225,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
 	err = addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Selector", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
 		return
 	}
 
@@ -230,7 +233,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	apiCreateAuthenticationSelectors = apiCreateAuthenticationSelectors.Body(*createAuthenticationSelectors)
 	authenticationSelectorResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelectorExecute(apiCreateAuthenticationSelectors)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Authentication Selector", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the Authentication Selector", err, httpResp, &customId)
 		return
 	}
 
@@ -261,7 +264,7 @@ func (r *authenticationSelectorResource) Read(ctx context.Context, req resource.
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Selector", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Selector", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Selector", err, httpResp, &customId)
 		}
 		return
 	}
@@ -299,7 +302,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create an Authentication Selector due to dependent object", err.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create an Authentication Selector due to dependent object: "+err.Error())
 		}
 	}
 
@@ -311,14 +314,14 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
 	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Selector", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
 		return
 	}
 
 	updateAuthenticationSelectors = updateAuthenticationSelectors.Body(*createUpdateRequest)
 	updateAuthenticationSelectorsResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelectorExecute(updateAuthenticationSelectors)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Selector", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Selector", err, httpResp, &customId)
 		return
 	}
 
@@ -342,7 +345,7 @@ func (r *authenticationSelectorResource) Delete(ctx context.Context, req resourc
 	}
 	httpResp, err := r.apiClient.AuthenticationSelectorsAPI.DeleteAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), state.SelectorId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Selector", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Selector", err, httpResp, &customId)
 	}
 }
 

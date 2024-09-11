@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -28,6 +29,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -36,6 +38,8 @@ var (
 	_ resource.Resource                = &localIdentityProfileResource{}
 	_ resource.ResourceWithConfigure   = &localIdentityProfileResource{}
 	_ resource.ResourceWithImportState = &localIdentityProfileResource{}
+
+	customId = "profile_id"
 )
 
 var (
@@ -303,6 +307,20 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 									Optional:    true,
 									// Default set in ModifyPlan
 									ElementType: types.BoolType,
+								},
+								"options": schema.SetAttribute{
+									Description: "The list of options for this selection field.",
+									Computed:    true,
+									Optional:    true,
+									ElementType: types.StringType,
+									Validators: []validator.Set{
+										setvalidator.SizeAtLeast(1),
+									},
+								},
+								"default_value": schema.StringAttribute{
+									Description: "The default value for this field.",
+									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -576,7 +594,7 @@ func addOptionalLocalIdentityProfileFields(ctx context.Context, addRequest *clie
 
 	if internaltypes.IsDefined(plan.FieldConfig) {
 		addRequest.FieldConfig = client.NewFieldConfig()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.FieldConfig, false)), addRequest.FieldConfig)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.FieldConfig, true)), addRequest.FieldConfig)
 		if err != nil {
 			return err
 		}
@@ -831,54 +849,102 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 		switch emailVerificationType {
 		case "OTP":
 			if internaltypes.IsDefined(emailVerificationConfig["otl_time_to_live"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otl_time_to_live attribute is not allowed when email_verification_type is OTP."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otl_time_to_live"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otl_time_to_live attribute is not allowed when email_verification_type is OTP."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["require_verified_email_template_name"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("require_verified_email_template_name is not allowed when email verification or require_verified_email is disabled or when email_verification_type is OTP."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("require_verified_email_template_name"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("require_verified_email_template_name is not allowed when email verification or require_verified_email is disabled or when email_verification_type is OTP."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["email_verification_sent_template_name"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_sent_template_name is not allowed when email verification or require_verified_email is disabled or when email_verification_type is OTP."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("email_verification_sent_template_name"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("email_verification_sent_template_name is not allowed when email verification or require_verified_email is disabled or when email_verification_type is OTP."))
 			}
 		case "OTL":
 			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otp_length"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["otp_retry_attempts"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_retry_attempts attribute is not allowed when email_verification_type is OTL."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otp_retry_attempts"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otp_retry_attempts attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["allowed_otp_character_set"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email_verification_type is OTL."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("allowed_otp_character_set"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otp_length"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["email_verification_otp_template_name"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when email_verification_type is OTL."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("email_verification_otp_template_name"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when email_verification_type is OTL."))
 			}
 		default:
 			if internaltypes.IsDefined(emailVerificationConfig["otl_time_to_live"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otl_time_to_live attribute is not allowed when email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otl_time_to_live"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otl_time_to_live attribute is not allowed when email verification is disabled."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["require_verified_email_template_name"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("require_verified_email_template_name is not allowed when email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("require_verified_email_template_name"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("require_verified_email_template_name is not allowed when email verification is disabled."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["email_verification_sent_template_name"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_sent_template_name is not allowed when email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("email_verification_sent_template_name"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("email_verification_sent_template_name is not allowed when email verification is disabled."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otp_length"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otp_length attribute is not allowed when email verification is disabled."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["otp_retry_attempts"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_retry_attempts attribute is not allowed when email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otp_retry_attempts"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otp_retry_attempts attribute is not allowed when email verification is disabled."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["allowed_otp_character_set"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("allowed_otp_character_set"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email verification is disabled."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("otp_length"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("otp_length attribute is not allowed when email verification is disabled."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["email_verification_otp_template_name"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when  email verification is disabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_verification_config").AtMapKey("email_verification_otp_template_name"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when  email verification is disabled."))
 			}
 		}
 		// If email verification is enabled, some fields become required
@@ -886,35 +952,47 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 		if verificationEnabled.ValueBool() {
 			fieldForEmailToVerify := emailVerificationConfig["field_for_email_to_verify"].(types.String)
 			if fieldForEmailToVerify.IsNull() || (internaltypes.IsDefined(fieldForEmailToVerify) && fieldForEmailToVerify.ValueString() == "") {
-				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("field_for_email_to_verify is required when email_verification_enabled is set to true"))
+				resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("field_for_email_to_verify is required when email_verification_enabled is set to true"))
 			}
 			fieldStoringVerificationStatus := emailVerificationConfig["field_storing_verification_status"].(types.String)
 			if fieldStoringVerificationStatus.IsNull() || (internaltypes.IsDefined(fieldStoringVerificationStatus) && fieldStoringVerificationStatus.ValueString() == "") {
-				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("field_storing_verification_status is required when email_verification_enabled is set to true"))
+				resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("field_storing_verification_status is required when email_verification_enabled is set to true"))
 			}
 			if emailVerificationConfig["notification_publisher_ref"].IsNull() {
-				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("notification_publisher_ref is required when email_verification_enabled is set to true"))
+				resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("notification_publisher_ref is required when email_verification_enabled is set to true"))
 			}
 		}
 	}
 	if !model.ProfileEnabled.ValueBool() && !model.RegistrationEnabled.ValueBool() {
 		if internaltypes.IsDefined(model.EmailVerificationConfig) || internaltypes.IsDefined(model.DataStoreConfig) || internaltypes.IsDefined(model.FieldConfig) || internaltypes.IsDefined(model.RegistrationConfig) || internaltypes.IsDefined(model.ProfileConfig) {
-			resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email, data_store_config, field Config, registration_config and profile_config are not allowed when registration and profile are disabled."))
+			resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("email, data_store_config, field Config, registration_config and profile_config are not allowed when registration and profile are disabled."))
 		}
 		if internaltypes.IsDefined(model.AuthSourceUpdatePolicy) {
-			resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("auth_source_update_policy is not allowed when registration and profile are disabled."))
+			resp.Diagnostics.AddAttributeError(
+				path.Root("auth_source_update_policy"),
+				providererror.InvalidAttributeConfiguration,
+				fmt.Sprintln("auth_source_update_policy is not allowed when registration and profile are disabled."))
 		}
 	} else {
 		if model.ProfileEnabled.ValueBool() || model.RegistrationEnabled.ValueBool() {
 			if model.FieldConfig.IsNull() {
-				resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("field_config is required when profile or registration is enabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("field_config"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("field_config is required when profile or registration is enabled."))
 			}
 		}
 		if model.ProfileEnabled.ValueBool() && model.ProfileConfig.IsNull() {
-			resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_config is required when profile is enabled."))
+			resp.Diagnostics.AddAttributeError(
+				path.Root("profile_config"),
+				providererror.InvalidAttributeConfiguration,
+				fmt.Sprintln("profile_config is required when profile is enabled."))
 		}
 		if model.RegistrationEnabled.ValueBool() && model.RegistrationConfig.IsNull() {
-			resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_config is required when registration is enabled."))
+			resp.Diagnostics.AddAttributeError(
+				path.Root("registration_config"),
+				providererror.InvalidAttributeConfiguration,
+				fmt.Sprintln("registration_config is required when registration is enabled."))
 		}
 		if !model.RegistrationEnabled.ValueBool() {
 			if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
@@ -924,16 +1002,25 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 					fieldElemAttrs := fieldElem.(types.Object)
 					registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
 					if registrationPageField.ValueBool() {
-						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_page_field option for the fields attribute should not be set to 'true' when registration is disabled."))
+						resp.Diagnostics.AddAttributeError(
+							path.Root("field_config").AtMapKey("fields"),
+							providererror.InvalidAttributeConfiguration,
+							fmt.Sprintln("registration_page_field option for the fields attribute should not be set to 'true' when registration is disabled."))
 					}
 					profilePageField := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
 					if internaltypes.IsDefined(profilePageField) && !profilePageField.ValueBool() {
-						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_page_field option is required to be set to 'true' for the fields attribute when profile management is the only option enabled."))
+						resp.Diagnostics.AddAttributeError(
+							path.Root("field_config").AtMapKey("fields"),
+							providererror.InvalidAttributeConfiguration,
+							fmt.Sprintln("profile_page_field option is required to be set to 'true' for the fields attribute when profile management is the only option enabled."))
 					}
 				}
 			}
 			if internaltypes.IsDefined(model.RegistrationConfig) {
-				resp.Diagnostics.AddError("Invalid Attribute!", fmt.Sprintln("registration_config is not allowed when registration is not enabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("registration_config"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("registration_config is not allowed when registration is not enabled."))
 			}
 		}
 		if !model.ProfileEnabled.ValueBool() {
@@ -944,16 +1031,25 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 					fieldElemAttrs := fieldElem.(types.Object)
 					profilePagefield := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
 					if profilePagefield.ValueBool() {
-						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_page_field option for the fields attribute should not be set to 'true' when profile is disabled."))
+						resp.Diagnostics.AddAttributeError(
+							path.Root("field_config").AtMapKey("fields"),
+							providererror.InvalidAttributeConfiguration,
+							fmt.Sprintln("profile_page_field option for the fields attribute should not be set to 'true' when profile is disabled."))
 					}
 					registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
 					if (internaltypes.IsDefined(registrationPageField)) && (!registrationPageField.ValueBool()) {
-						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_page_field option is required to be set to 'true' for the fields attribute when registration is the only option enabled."))
+						resp.Diagnostics.AddAttributeError(
+							path.Root("field_config").AtMapKey("fields"),
+							providererror.InvalidAttributeConfiguration,
+							fmt.Sprintln("registration_page_field option is required to be set to 'true' for the fields attribute when registration is the only option enabled."))
 					}
 				}
 			}
 			if internaltypes.IsDefined(model.ProfileConfig) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("profile_config is not allowed when profile is not enabled."))
+				resp.Diagnostics.AddAttributeError(
+					path.Root("profile_config"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintln("profile_config is not allowed when profile is not enabled."))
 			}
 		}
 	}
@@ -961,8 +1057,75 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 		captchaEnabled := model.RegistrationConfig.Attributes()["captcha_enabled"].(types.Bool)
 		captchaProviderRef := model.RegistrationConfig.Attributes()["captcha_provider_ref"].(types.Object)
 		if (captchaEnabled.ValueBool() && captchaProviderRef.IsNull()) || (internaltypes.IsDefined(captchaEnabled) && !captchaEnabled.ValueBool() && internaltypes.IsDefined(captchaProviderRef)) {
-			resp.Diagnostics.AddError("Invalid registration captcha settings",
+			resp.Diagnostics.AddAttributeError(
+				path.Root("registration_config"),
+				providererror.InvalidAttributeConfiguration,
 				"If registration_config.captcha_enabled is set to true, then registration_config.captcha_provider_ref must be configured. If registration_config.captcha_enabled is false, then registration_config.captcha_provider_ref must not be configured.")
+		}
+	}
+
+	if internaltypes.IsDefined(model.FieldConfig) && internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
+		fieldConfigFields := model.FieldConfig.Attributes()["fields"].(types.Set).Elements()
+		for _, field := range fieldConfigFields {
+			fieldAttrs := field.(types.Object).Attributes()
+			fieldType := fieldAttrs["type"].(types.String).ValueString()
+			hasDefault := internaltypes.IsDefined(fieldAttrs["default_value"])
+			hasOptions := internaltypes.IsDefined(fieldAttrs["options"])
+			fieldTypePath := path.Root("field_config").AtMapKey("fields")
+
+			switch fieldType {
+			case "CHECKBOX":
+				// check to make sure options isn't set
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"options\" is not applicable for the \"CHECKBOX\" field type.")
+				}
+			case "CHECKBOX_GROUP":
+				// check to make sure default_value isn't set
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"default_value\" is not applicable for the \"CHECKBOX_GROUP\" field type.")
+				}
+			case "DATE":
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"options\" is not applicable for the \"DATE\" field type.")
+				}
+			// DROP_DOWN has all options, leaving this here in case of future use
+			// case "DROP_DOWN":
+			case "EMAIL":
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"default_value\" is not applicable for the \"EMAIL\" field type.")
+				}
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"options\" is not applicable for the \"EMAIL\" field type.")
+				}
+			case "HIDDEN":
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"default_value\" is not applicable for the \"HIDDEN\" field type.")
+				}
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"options\" is not applicable for the \"HIDDEN\" field type.")
+				}
+			case "PHONE":
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"default_value\" is not applicable for the \"PHONE\" field type.")
+				}
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"options\" is not applicable for the \"PHONE\" field type.")
+				}
+			case "TEXT":
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
+						"\"options\" is not applicable for the \"TEXT\" field type.")
+				}
+			}
 		}
 	}
 }
@@ -1030,20 +1193,20 @@ func (r *localIdentityProfileResource) Create(ctx context.Context, req resource.
 	}
 	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add apc id to add request for a local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add apc id to add request for a local identity profile: "+err.Error())
 		return
 	}
 	createLocalIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err = addOptionalLocalIdentityProfileFields(ctx, createLocalIdentityProfiles, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a local identity profile: "+err.Error())
 		return
 	}
 	apiCreateLocalIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfile(config.AuthContext(ctx, r.providerConfig))
 	apiCreateLocalIdentityProfiles = apiCreateLocalIdentityProfiles.Body(*createLocalIdentityProfiles)
 	localIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfileExecute(apiCreateLocalIdentityProfiles)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp, &customId)
 		return
 	}
 
@@ -1070,7 +1233,7 @@ func (r *localIdentityProfileResource) Read(ctx context.Context, req resource.Re
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Local Identity Profile", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp, &customId)
 		}
 		return
 	}
@@ -1096,19 +1259,19 @@ func (r *localIdentityProfileResource) Update(ctx context.Context, req resource.
 	updateLocalIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.AuthContext(ctx, r.providerConfig), plan.ProfileId.ValueString())
 	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add apc id to add request for the local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add apc id to add request for the local identity profile: "+err.Error())
 		return
 	}
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err = addOptionalLocalIdentityProfileFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a local identity profile: "+err.Error())
 		return
 	}
 	updateLocalIdentityProfiles = updateLocalIdentityProfiles.Body(*createUpdateRequest)
 	updateLocalIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfileExecute(updateLocalIdentityProfiles)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a local identity profile", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating a local identity profile", err, httpResp, &customId)
 		return
 	}
 
@@ -1131,7 +1294,7 @@ func (r *localIdentityProfileResource) Delete(ctx context.Context, req resource.
 	}
 	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(config.AuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the local identity profile", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the local identity profile", err, httpResp, &customId)
 	}
 
 }

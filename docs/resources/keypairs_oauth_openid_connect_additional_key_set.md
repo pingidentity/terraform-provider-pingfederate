@@ -79,6 +79,10 @@ resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "keypai
 - `description` (String) A description of the key set.
 - `set_id` (String) The unique ID for the key set. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--issuers"></a>
 ### Nested Schema for `issuers`
 

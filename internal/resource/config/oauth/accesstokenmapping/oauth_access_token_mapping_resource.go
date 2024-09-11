@@ -25,6 +25,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -198,7 +199,9 @@ func (r *oauthAccessTokenMappingResource) ValidateConfig(ctx context.Context, re
 		modelContextType := model.Context.Attributes()["type"].(types.String).ValueString()
 		modelContextContextRef := model.Context.Attributes()["context_ref"].(types.Object)
 		if (modelContextType == "DEFAULT" || modelContextType == "CLIENT_CREDENTIALS") && internaltypes.IsDefined(modelContextContextRef) {
-			resp.Diagnostics.AddError("Invalid attribute combination",
+			resp.Diagnostics.AddAttributeError(
+				path.Root("context").AtMapKey("context_ref"),
+				providererror.InvalidAttributeConfiguration,
 				"context_ref is not required for the Access Token Mapping Context type: "+modelContextType)
 		}
 	}
@@ -233,7 +236,7 @@ func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resour
 
 	for errorVal, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create item for request object: "+errorVal.Error())
 		}
 	}
 
@@ -245,7 +248,7 @@ func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resour
 
 	err = addOptionalOauthAccessTokenMappingsFields(createOauthAccessTokenMappings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Mapping: "+err.Error())
 		return
 	}
 	apiCreateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.CreateMapping(config.AuthContext(ctx, r.providerConfig))
@@ -323,7 +326,7 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 
 	for errorVal, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create item for request object: "+errorVal.Error())
 		}
 	}
 
@@ -334,7 +337,7 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 
 	err = addOptionalOauthAccessTokenMappingsFields(updateOauthAccessTokenMappings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Mapping: "+err.Error())
 		return
 	}
 

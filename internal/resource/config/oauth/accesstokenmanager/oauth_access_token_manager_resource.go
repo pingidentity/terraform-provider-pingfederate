@@ -27,6 +27,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -82,6 +83,8 @@ var (
 		"check_session_revocation_status": types.BoolValue(false),
 		"update_authn_session_activity":   types.BoolValue(false),
 	})
+
+	customId = "manager_id"
 )
 
 // OauthAccessTokenManagerResource is a helper function to simplify the provider implementation.
@@ -482,7 +485,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	pluginDescRefResLink.Id = pluginDescRefId
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+pluginDescRefErr.Error())
 		return
 	}
 
@@ -490,14 +493,14 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	configuration := client.NewPluginConfigurationWithDefaults()
 	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
 	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
 		return
 	}
 
 	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.ManagerId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Manager: "+err.Error())
 		return
 	}
 
@@ -505,7 +508,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
 	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp, &customId)
 		return
 	}
 
@@ -537,7 +540,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Access Token Manager", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp, &customId)
 		}
 		return
 	}
@@ -569,7 +572,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	pluginDescRefResLink.Id = pluginDescRefId
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(state.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+pluginDescRefErr.Error())
 		return
 	}
 
@@ -577,7 +580,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	configuration := client.NewPluginConfiguration()
 	configErr := json.Unmarshal([]byte(internaljson.FromValue(state.Configuration, true)), configuration)
 	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
 		return
 	}
 
@@ -586,14 +589,14 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	createUpdateRequest := client.NewAccessTokenManager(state.ManagerId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth access token manager", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth access token manager: "+err.Error())
 		return
 	}
 
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp, &customId)
 		return
 	}
 
@@ -618,7 +621,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	}
 	httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp, &customId)
 	}
 }
 
