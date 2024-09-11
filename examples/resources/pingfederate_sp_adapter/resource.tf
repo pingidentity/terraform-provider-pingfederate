@@ -1,22 +1,20 @@
-# WARNING! You will need to secure your state file properly when using this resource! #
-# Please refer to the link below on how to best store state files and data within. #
-# https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
-
 resource "pingfederate_sp_adapter" "spAdapter" {
-  adapter_id = "OTSPJava"
-  name       = "OTSPJava"
+  adapter_id = "myOpenTokenAdapter"
+  name       = "My OpenToken Adapter"
+
   plugin_descriptor_ref = {
     id = "com.pingidentity.adapters.opentoken.SpAuthnAdapter"
   }
+
   configuration = {
     fields = [
       {
         name  = "Password",
-        value = "2FederateM0re"
+        value = var.opentoken_sp_adapter_password
       },
       {
         name  = "Confirm Password",
-        value = "2FederateM0re"
+        value = var.opentoken_sp_adapter_password
       },
       {
         name  = "Transport Mode",
@@ -36,11 +34,11 @@ resource "pingfederate_sp_adapter" "spAdapter" {
       },
       {
         name  = "Account Link Service",
-        value = "https://localhost:9031/SpSample/?cmd=accountlink"
+        value = "https://auth.bxretail.org/SpSample/?cmd=accountlink"
       },
       {
         name  = "Logout Service",
-        value = "https://localhost:9031/SpSample/?cmd=slo"
+        value = "https://auth.bxretail.org/SpSample/?cmd=slo"
       },
       {
         name  = "Cookie Domain",
@@ -115,13 +113,13 @@ resource "pingfederate_sp_adapter" "spAdapter" {
   attribute_contract = {
     extended_attributes = [
       {
-        name = "spadapter_attr3"
+        name = "firstName"
       },
       {
-        name = "spadapter_attr2"
+        name = "lastName"
       },
       {
-        name = "spadapter_attr1"
+        name = "email"
       }
     ]
   }
