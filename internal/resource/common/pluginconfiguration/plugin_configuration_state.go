@@ -1,8 +1,6 @@
 package pluginconfiguration
 
 import (
-	"slices"
-
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -41,10 +39,6 @@ var (
 		"fields_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"tables":           types.SetType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
 		"tables_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: tablesAllAttrTypes}},
-	}
-
-	sensitiveFieldNames = []string{
-		"Password",
 	}
 )
 
@@ -123,7 +117,7 @@ func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFiel
 		objVal, newDiags := types.ObjectValue(fieldAttrTypes, attrValues)
 		diags.Append(newDiags...)
 		allObjValues = append(allObjValues, objVal)
-		if slices.Contains(sensitiveFieldNames, field.Name) || (field.EncryptedValue != nil && *field.EncryptedValue != "") {
+		if field.EncryptedValue != nil && *field.EncryptedValue != "" {
 			allSensitiveObjValues = append(allSensitiveObjValues, objVal)
 		} else {
 			allNonSensitiveObjValues = append(allNonSensitiveObjValues, objVal)
@@ -136,7 +130,8 @@ func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFiel
 	diags.Append(newDiags...)
 	var plannedSetVal, plannedSensitiveSetVal types.Set
 	if isImportRead {
-		// On imports, just read everything directly into the "fields" attribute
+		// On imports, just read everything directly into the "fields" and "sensitive_fields" attributes,
+		// even though there is no plan
 		plannedSetVal, newDiags = types.SetValue(types.ObjectType{
 			AttrTypes: fieldAttrTypes,
 		}, allNonSensitiveObjValues)
@@ -158,8 +153,9 @@ func toFieldsSetValue(fields []client.ConfigField, planFields, planSensitiveFiel
 	return plannedSetVal, plannedSensitiveSetVal, allSetVal
 }
 
-func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead bool, diags *diag.Diagnostics) types.List {
+func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead, splitSensitiveFields bool, diags *diag.Diagnostics) types.List {
 	objValues := []attr.Value{}
+	objValuesWithSensitive := []attr.Value{}
 	if planRows == nil || planRows.IsNull() {
 		if len(rows) == 0 {
 			// If the API returned no rows, treat it as null
@@ -169,12 +165,17 @@ func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead
 		}
 		for _, row := range rows {
 			attrValues := map[string]attr.Value{}
+			attrValuesWithSensitive := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(row.DefaultRow)
-			//TODO probably some extra logic is needed here to get import right when there are sensitive fields in the rows
-			_, _, attrValues["fields"] = toFieldsSetValue(row.Fields, nil, nil, isImportRead, diags)
+			attrValuesWithSensitive["default_row"] = types.BoolPointerValue(row.DefaultRow)
+			attrValuesWithSensitive["fields"], attrValuesWithSensitive["sensitive_fields"], attrValues["fields"] =
+				toFieldsSetValue(row.Fields, nil, nil, isImportRead, diags)
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
+			rowObjValWithSensitive, newDiags := types.ObjectValue(rowAttrTypes, attrValuesWithSensitive)
+			diags.Append(newDiags...)
+			objValuesWithSensitive = append(objValuesWithSensitive, rowObjValWithSensitive)
 		}
 	} else {
 		// This is assuming there are never any rows added by the PF API. If there
@@ -200,12 +201,23 @@ func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
+			objValuesWithSensitive = append(objValuesWithSensitive, rowObjVal)
 		}
 	}
-	listVal, newDiags := types.ListValue(types.ObjectType{
-		AttrTypes: rowAttrTypes,
-	}, objValues)
-	diags.Append(newDiags...)
+	//TODO this is all kinds of wrong I think... Need to think through the possible states coming into this method for rows
+	var listVal types.List
+	var newDiags diag.Diagnostics
+	if splitSensitiveFields {
+		listVal, newDiags = types.ListValue(types.ObjectType{
+			AttrTypes: rowAttrTypes,
+		}, objValuesWithSensitive)
+		diags.Append(newDiags...)
+	} else {
+		listVal, newDiags = types.ListValue(types.ObjectType{
+			AttrTypes: rowAttrTypes,
+		}, objValues)
+		diags.Append(newDiags...)
+	}
 	return listVal
 }
 
