@@ -14,7 +14,7 @@ resource "pingfederate_captcha_provider" "riskProviderExample" {
         "value" : format("%s|%s", pingfederate_ping_one_connection.example.id, var.pingone_environment_id)
       },
       {
-        "name" : "PingOne Risk Policy1",
+        "name" : "PingOne Risk Policy",
         "value" : var.pingone_risk_policy_id
       },
       {
