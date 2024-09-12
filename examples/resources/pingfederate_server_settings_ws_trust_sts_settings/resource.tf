@@ -18,7 +18,7 @@ resource "pingfederate_server_settings_ws_trust_sts_settings" "wsTrustStstSettin
     },
     {
       username = "basic_auth_user_2"
-      password = var.basic_auth_user_1_password
+      password = var.basic_auth_user_2_password
     },
   ]
   issuer_certs = [
