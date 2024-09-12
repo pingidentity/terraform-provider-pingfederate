@@ -96,10 +96,6 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "provider_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// Some configuration fields are sensitive, so they can't be verified here
-				ImportStateVerifyIgnore: []string{
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -118,6 +114,8 @@ resource "pingfederate_captcha_provider" "example" {
         name  = "Site Key"
         value = "testSiteKey"
       },
+    ]
+    sensitive_fields = [
       {
         name  = "Secret Key"
         value = "testSecretKey"
@@ -149,6 +147,46 @@ resource "pingfederate_captcha_provider" "example" {
       {
         name : "PingOne Risk Policy"
         value : "f277d6e2-e073-018c-1b78-8be4cd16d898"
+      },
+      {
+        "name" : "API Request Timeout",
+        "value" : "2000"
+      },
+      {
+        "name" : "Custom Proxy Host",
+        "value" : ""
+      },
+      {
+        "name" : "Custom Proxy Port",
+        "value" : ""
+      },
+      {
+        "name" : "Custom connection pool",
+        "value" : "50"
+      },
+      {
+        "name" : "Enable Risk Evaluation",
+        "value" : "true"
+      },
+      {
+        "name" : "Failure Mode",
+        "value" : "Continue with fallback policy decision"
+      },
+      {
+        "name" : "Fallback Policy Decision Value",
+        "value" : "MEDIUM"
+      },
+      {
+        "name" : "Follow Recommended Action",
+        "value" : "true"
+      },
+      {
+        "name" : "Password Encryption",
+        "value" : "SHA-256"
+      },
+      {
+        "name" : "Proxy Settings",
+        "value" : "System Defaults"
       }
     ]
   }

@@ -73,8 +73,8 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 				ImportStateId:     jsonWebTokenOauthAccessTokenManagerId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Some configuration fields and tables are sensitive or are not set in this test, so they can't be verified here.
-				ImportStateVerifyIgnore: []string{"configuration.fields", "configuration.tables.1", "configuration.tables_all.1"},
+				// Some configuration tables are sensitive or are not set in this test, so they can't be verified here.
+				ImportStateVerifyIgnore: []string{"configuration.tables.1"},
 			},
 			{
 				// Back to minimal model
@@ -121,13 +121,15 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
                 value = "%[4]s"
               },
               {
+                name  = "Encoding"
+                value = "b64u"
+              },
+              {
+                //TODO "Key" should be in sensitive_fields, but due to an apparent terraform bug,
+                // it ends up causing plans that completely remove 'tables' from the plan.
                 name  = "Key"
                 value = "%[5]s"
               },
-              {
-                name  = "Encoding"
-                value = "b64u"
-              }
             ]
           }
         ]
@@ -197,6 +199,8 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
                 value = "%[4]s"
               },
               {
+                //TODO "Key" should be in sensitive_fields, but due to an apparent terraform bug,
+                // it ends up causing plans that completely remove 'tables' from the plan.
                 name  = "Key"
                 value = "%[5]s"
               },
@@ -318,7 +322,35 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
       {
         name  = "Type Header Value"
         value = ""
-      }
+      },
+      {
+        name  = "Publish Thumbprint X.509 URL"
+        value = "false"
+      },
+      {
+        name  = "Publish Key ID X.509 URL"
+        value = "false"
+      },
+      {
+        name  = "Publish Keys to the PingFederate JWKS Endpoint"
+        value = "false"
+      },
+      {
+        name  = "Not Before Claim Offset"
+        value = ""
+      },
+      {
+        name  = "Include Issued At Claim",
+        value = "false"
+      },
+      {
+        name  = "Include JWE X.509 Thumbprint Header Parameter",
+        value = "false"
+      },
+      {
+        name  = "Include X.509 Thumbprint Header Parameter",
+        value = "false"
+      },
     ]
   }
   attribute_contract = {

@@ -1257,6 +1257,7 @@ Optional:
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--fields))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--sensitive_fields))
 - `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables))
 
 Read-Only:
@@ -1270,7 +1271,16 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--sensitive_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables"></a>
@@ -1291,6 +1301,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows--sensitive_fields))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows--fields"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.tables.rows.fields`
@@ -1298,7 +1309,16 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows--sensitive_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 
@@ -1309,7 +1329,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables_all"></a>
@@ -1337,7 +1357,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 

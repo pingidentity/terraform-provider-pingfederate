@@ -555,6 +555,7 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--configuration--sensitive_fields))
 - `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 Read-Only:
@@ -568,7 +569,16 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--sensitive_fields"></a>
+### Nested Schema for `configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables"></a>
@@ -589,6 +599,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--sensitive_fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`
@@ -596,7 +607,16 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 
@@ -607,7 +627,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables_all"></a>
@@ -635,7 +655,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 

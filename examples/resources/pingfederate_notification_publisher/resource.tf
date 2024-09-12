@@ -14,9 +14,9 @@ provider "pingfederate" {
   password   = "2FederateM0re"
   https_host = "https://localhost:9999"
   # Warning: The insecure_trust_all_tls attribute configures the provider to trust any certificate presented by the server.
-  insecure_trust_all_tls = true
+  insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
-  product_version = "12.1"
+  product_version                     = "12.1"
 }
 
 

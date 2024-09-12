@@ -148,12 +148,12 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
         value = "%[5]s"
       }
     ]
-	sensitive_fields = [
+    sensitive_fields = [
       {
         name  = "Client Secret"
         value = "%[4]s"
       },
-	]
+    ]
   }
   %[7]s
 }
