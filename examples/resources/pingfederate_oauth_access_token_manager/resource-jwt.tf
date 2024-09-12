@@ -1,9 +1,11 @@
 resource "pingfederate_oauth_access_token_manager" "jwt_example" {
-  manager_id = "jsonWebTokenOatm"
-  name       = "jsonWebTokenExample"
+  manager_id = "jsonWebTokenOATM"
+  name       = "JWT Access Token Manager"
+
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
   }
+
   configuration = {
     tables = [
       {
@@ -13,11 +15,11 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
             fields = [
               {
                 name  = "Key ID"
-                value = "keyidentifier"
+                value = "jwtSymmetricKey1"
               },
               {
                 name  = "Key"
-                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+                value = var.jwt_symmetric_key
               },
               {
                 name  = "Encoding"
@@ -48,7 +50,7 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
       },
       {
         name  = "Active Symmetric Key ID"
-        value = "keyidentifier"
+        value = "jwtSymmetricKey1"
       },
       {
         name  = "Active Signing Certificate Key ID"
@@ -64,7 +66,7 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
       },
       {
         name  = "Active Symmetric Encryption Key ID"
-        value = "keyidentifier"
+        value = "jwtSymmetricKey1"
       },
       {
         name  = "Asymmetric Encryption Key"
@@ -143,13 +145,22 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
   attribute_contract = {
     extended_attributes = [
       {
-        name         = "contract"
+        name         = "givenName"
         multi_valued = false
+      },
+      {
+        name         = "familyName"
+        multi_valued = false
+      },
+      {
+        name         = "email"
+        multi_valued = false
+      },
+      {
+        name         = "groups"
+        multi_valued = true
       }
     ]
-  }
-  selection_settings = {
-    resource_uris = []
   }
   access_control_settings = {
     restrict_clients = false

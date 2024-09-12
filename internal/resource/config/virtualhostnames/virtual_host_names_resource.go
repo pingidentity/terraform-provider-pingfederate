@@ -11,6 +11,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -97,7 +98,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 	createVirtualHostNames := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createVirtualHostNames, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Virtual Host Names settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Virtual Host Names settings: "+err.Error())
 		return
 	}
 
@@ -163,7 +164,7 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 	createUpdateRequest := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Virtual Host Names settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Virtual Host Names settings: "+err.Error())
 		return
 	}
 
