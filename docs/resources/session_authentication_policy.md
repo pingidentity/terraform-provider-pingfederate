@@ -103,6 +103,10 @@ resource "pingfederate_session_authentication_policy" "sessionAuthenticationPoli
 - `timeout_display_unit` (String) The display unit for session timeout periods in the PingFederate administrative console. When the display unit is `HOURS` or `DAYS`, the timeout values in minutes must correspond to a whole number value for the specified unit. Options are `MINUTES`, `HOURS`, `DAYS`. If empty, the value will default to `MINUTES`.
 - `user_device_type` (String) Determines the type of user device that the authentication session can be created on. Options are `PRIVATE`, `SHARED`, `ANY`. If empty, the value will default to `PRIVATE`.
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--authentication_source"></a>
 ### Nested Schema for `authentication_source`
 

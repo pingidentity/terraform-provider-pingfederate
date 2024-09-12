@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,6 +28,8 @@ var (
 	_ resource.Resource                = &metadataUrlResource{}
 	_ resource.ResourceWithConfigure   = &metadataUrlResource{}
 	_ resource.ResourceWithImportState = &metadataUrlResource{}
+
+	customId = "url_id"
 )
 
 func MetadataUrlResource() resource.Resource {
@@ -54,6 +57,7 @@ func (r *metadataUrlResource) Configure(_ context.Context, req resource.Configur
 
 type metadataUrlResourceModel struct {
 	CertView          types.Object `tfsdk:"cert_view"`
+	Id                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
 	Url               types.String `tfsdk:"url"`
 	UrlId             types.String `tfsdk:"url_id"`
@@ -212,6 +216,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *metadataUrlResourceModel) buildClientStruct() (*client.MetadataUrl, diag.Diagnostics) {
@@ -239,6 +244,8 @@ func (model *metadataUrlResourceModel) buildClientStruct() (*client.MetadataUrl,
 
 func (state *metadataUrlResourceModel) readClientResponse(response *client.MetadataUrl) diag.Diagnostics {
 	var respDiags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// cert_view
 	certViewAttrTypes := map[string]attr.Type{
 		"crypto_provider":           types.StringType,
@@ -314,7 +321,7 @@ func (r *metadataUrlResource) Create(ctx context.Context, req resource.CreateReq
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.MetadataUrlsAPI.AddMetadataUrlExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the metadataUrl", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the metadataUrl", err, httpResp, &customId)
 		return
 	}
 
@@ -342,7 +349,7 @@ func (r *metadataUrlResource) Read(ctx context.Context, req resource.ReadRequest
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Metadata URL", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the metadataUrl", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the metadataUrl", err, httpResp, &customId)
 		}
 		return
 	}
@@ -371,7 +378,7 @@ func (r *metadataUrlResource) Update(ctx context.Context, req resource.UpdateReq
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.MetadataUrlsAPI.UpdateMetadataUrlExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the metadataUrl", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the metadataUrl", err, httpResp, &customId)
 		return
 	}
 
@@ -395,7 +402,7 @@ func (r *metadataUrlResource) Delete(ctx context.Context, req resource.DeleteReq
 	// Delete API call logic
 	httpResp, err := r.apiClient.MetadataUrlsAPI.DeleteMetadataUrl(config.AuthContext(ctx, r.providerConfig), data.UrlId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the metadataUrl", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the metadataUrl", err, httpResp, &customId)
 	}
 }
 

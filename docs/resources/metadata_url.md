@@ -40,6 +40,7 @@ resource "pingfederate_metadata_url" "metadataUrl" {
 ### Read-Only
 
 - `cert_view` (Attributes) The Signature Verification Certificate details. This property is read-only. (see [below for nested schema](#nestedatt--cert_view))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--x509_file"></a>
 ### Nested Schema for `x509_file`
