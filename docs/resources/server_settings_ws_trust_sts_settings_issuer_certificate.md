@@ -13,9 +13,7 @@ Resource to create and manage certificates for WS-Trust STS settings.
 
 ```terraform
 resource "pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate" "issuerCert" {
-  certificate_id = "mycertid"
-  # Include base64-encoded cert data here
-  file_data = ""
+  file_data = filebase64("path/to/my/issuercert.pem")
 }
 ```
 
