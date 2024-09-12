@@ -24,6 +24,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -128,11 +129,11 @@ func toDataSourceSchemaCustomDataStore() datasourceschema.SingleNestedAttribute 
 	return customDataStoreSchema
 }
 
-func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan types.Object, isResource bool) (types.Object, diag.Diagnostics) {
+func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan types.Object, isResource, isImportRead bool) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
 	if clientValue.CustomDataStore == nil {
-		diags.AddError("Failed to read custom data store from API", "The custom data store was nil")
+		diags.AddError(providererror.InternalProviderError, "Failed to read custom data store from API. The custom data store was nil")
 		return types.ObjectNull(customDataStoreAttrType), diags
 	}
 
@@ -153,10 +154,10 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 	if isResource {
 		planConfiguration, ok := plan.Attributes()["configuration"]
 		if ok {
-			configurationObject, diags = pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration)
+			configurationObject, diags = pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration, isImportRead)
 			allDiags = append(allDiags, diags...)
 		} else {
-			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrTypes()), &customDataStore.Configuration)
+			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrTypes()), &customDataStore.Configuration, isImportRead)
 			allDiags = append(allDiags, diags...)
 		}
 		customDataStoreVal["configuration"] = configurationObject
@@ -172,7 +173,7 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 	return customDataStoreObj, allDiags
 }
 
-func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *types.Object, isResource bool) diag.Diagnostics {
+func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *types.Object, isResource, isImportRead bool) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.CustomDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.CustomDataStore.Id)
@@ -180,11 +181,11 @@ func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggrega
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
 	if isResource {
 		state.JdbcDataStore = jdbcDataStoreEmptyStateObj
-		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, true)
+		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, true, isImportRead)
 		state.LdapDataStore = ldapDataStoreEmptyStateObj
 	} else {
 		state.JdbcDataStore = jdbcDataStoreEmptyDataSourceStateObj
-		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, false)
+		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, false, isImportRead)
 		state.LdapDataStore = ldapDataStoreEmptyDataSourceStateObj
 	}
 	return diags
@@ -216,32 +217,32 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	name := customPlan["name"].(types.String).ValueString()
 	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object))
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create plugin descriptor reference object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create plugin descriptor reference object for DataStore: "+err.Error())
 		return
 	}
 
 	configuration := &client.PluginConfiguration{}
 	err = json.Unmarshal([]byte(internaljson.FromValue(customPlan["configuration"].(types.Object), true)), configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create configuration object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
 		return
 	}
 
 	createCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(createCustomDataStore, con, client.CustomDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
 	response, httpResponse, err := createDataStore(createCustomDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse, &customId)
 		return
 	}
 	// Read the response into the state
 	var state dataStoreModel
-	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true)
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
@@ -254,14 +255,14 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	customPlan := plan.CustomDataStore.Attributes()
 	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object))
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create plugin descriptor reference object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create plugin descriptor reference object for DataStore: "+err.Error())
 		return
 	}
 
 	configuration := &client.PluginConfiguration{}
 	err = json.Unmarshal([]byte(internaljson.FromValue(customPlan["configuration"].(types.Object), true)), configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create configuration object for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
 		return
 	}
 
@@ -269,18 +270,18 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	updateCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(updateCustomDataStore, con, client.CustomDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
 	response, httpResponse, err := updateDataStore(updateCustomDataStore, dsr, con, resp, plan.Id.ValueString())
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse, &customId)
 		return
 	}
 	// Read the response
 	var state dataStoreModel
-	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true)
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

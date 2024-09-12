@@ -17,6 +17,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -147,11 +148,11 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 	createExtendedProperties := client.NewExtendedProperties()
 	err := addExtendedPropertiesFields(ctx, createExtendedProperties, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for extended properties", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
 		return
 	}
 
-	apiCreateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	apiCreateExtendedProperties = apiCreateExtendedProperties.Body(*createExtendedProperties)
 	extendedPropertiesResponse, httpResp, err := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedPropertiesExecute(apiCreateExtendedProperties)
 	if err != nil {
@@ -176,7 +177,7 @@ func (r *extendedPropertiesResource) Read(ctx context.Context, req resource.Read
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadExtendedProperties, httpResp, err := r.apiClient.ExtendedPropertiesAPI.GetExtendedProperties(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadExtendedProperties, httpResp, err := r.apiClient.ExtendedPropertiesAPI.GetExtendedProperties(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -212,11 +213,11 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	updateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewExtendedProperties()
 	err := addExtendedPropertiesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for extended properties", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
 		return
 	}
 

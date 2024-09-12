@@ -18,9 +18,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -29,6 +31,8 @@ var (
 	_ resource.Resource                = &dataStoreResource{}
 	_ resource.ResourceWithConfigure   = &dataStoreResource{}
 	_ resource.ResourceWithImportState = &dataStoreResource{}
+
+	customId = "data_store_id"
 )
 
 func DataStoreResource() resource.Resource {
@@ -104,14 +108,14 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 	// Compare to version 11.3 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	// Compare to version 12.1 of PF
 	pfVersionAtLeast113 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
@@ -121,7 +125,10 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		if internaltypes.IsDefined(plan.JdbcDataStore) {
 			username := plan.JdbcDataStore.Attributes()["user_name"]
 			if !internaltypes.IsDefined(username) {
-				resp.Diagnostics.AddError("'user_name' is required for JDBC data stores prior to PingFederate 11.3", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("jdbc_data_store"),
+					providererror.InvalidAttributeConfiguration,
+					"'user_name' is required for JDBC data stores prior to PingFederate 11.3")
 			}
 		}
 		// The ldap data store client_tls_certificate_ref and retry_failed_operations attributes require PF 11.3
@@ -129,11 +136,17 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			ldapDataStoreAttrs := plan.LdapDataStore.Attributes()
 			clientTlsCertificateRef := ldapDataStoreAttrs["client_tls_certificate_ref"]
 			if internaltypes.IsDefined(clientTlsCertificateRef) {
-				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or later required")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ldap_data_store").AtMapKey("client_tls_certificate_ref"),
+					providererror.InvalidProductVersionAttribute,
+					"Attribute 'client_tls_certificate_ref' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 11.3 or later required")
 			}
 			retryFailedOperations := ldapDataStoreAttrs["retry_failed_operations"].(types.Bool)
 			if internaltypes.IsDefined(retryFailedOperations) {
-				resp.Diagnostics.AddError("Attribute 'retry_failed_operations' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or later required")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ldap_data_store").AtMapKey("retry_failed_operations"),
+					providererror.InvalidProductVersionAttribute,
+					"Attribute 'retry_failed_operations' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 11.3 or later required")
 			}
 		}
 	}
@@ -142,13 +155,19 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		if internaltypes.IsDefined(plan.LdapDataStore) {
 			useStartTls := plan.LdapDataStore.Attributes()["use_start_tls"]
 			if internaltypes.IsDefined(useStartTls) {
-				resp.Diagnostics.AddError("Attribute 'use_start_tls' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 12.1 or later required")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ldap_data_store").AtMapKey("use_start_tls"),
+					providererror.InvalidProductVersionAttribute,
+					"Attribute 'use_start_tls' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 12.1 or later required")
 			}
 		}
 		if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {
 			useStartTls := plan.PingOneLdapGatewayDataStore.Attributes()["use_start_tls"]
 			if internaltypes.IsDefined(useStartTls) {
-				resp.Diagnostics.AddError("Attribute 'use_start_tls' not supported for LDAP gateway data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 12.1 or later required")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ping_one_ldap_gateway_data_store").AtMapKey("use_start_tls"),
+					providererror.InvalidProductVersionAttribute,
+					"Attribute 'use_start_tls' not supported for LDAP gateway data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 12.1 or later required")
 			}
 		}
 	}
@@ -156,12 +175,15 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 	// Check for parent_ref, which had support removed in version 12.0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
 	if pfVersionAtLeast120 && internaltypes.IsDefined(plan.CustomDataStore) && internaltypes.IsDefined(plan.CustomDataStore.Attributes()["parent_ref"]) {
-		resp.Diagnostics.AddError("Attribute 'parent_ref' not supported for custom data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or earlier required")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("custom_data_store").AtMapKey("parent_ref"),
+			providererror.InvalidProductVersionAttribute,
+			"Attribute 'parent_ref' not supported for custom data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 11.3 or earlier required")
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -226,12 +248,8 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 					break
 				}
 			}
-			if len(defaultHostnames) == 0 {
-				resp.Diagnostics.AddError("No default hostnames found in hostnames_tags", "")
-			} else {
-				ldapDataStore["hostnames"], respDiags = types.ListValue(types.StringType, defaultHostnames)
-				resp.Diagnostics.Append(respDiags...)
-			}
+			ldapDataStore["hostnames"], respDiags = types.ListValue(types.StringType, defaultHostnames)
+			resp.Diagnostics.Append(respDiags...)
 		}
 
 		// If hostnames_tags is not set, build it based on hostnames
@@ -291,25 +309,40 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		if internaltypes.IsDefined(ldapDataStore["client_tls_certificate_ref"]) {
 			// If client_tls_certificate_ref is defined, ensure use_start_tls or use_ssl is set to true
 			if !ldapDataStore["use_start_tls"].(types.Bool).ValueBool() && !ldapDataStore["use_ssl"].(types.Bool).ValueBool() {
-				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' requires either 'use_start_tls' or 'use_ssl' to be set to true", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ldap_data_store").AtMapKey("client_tls_certificate_ref"),
+					providererror.InvalidAttributeConfiguration,
+					"Attribute 'client_tls_certificate_ref' requires either 'use_start_tls' or 'use_ssl' to be set to true")
 			}
 			// user_dn and bind_anonymously should not be set
 			if internaltypes.IsDefined(ldapDataStore["user_dn"]) {
-				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' requires 'user_dn' to be null", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ldap_data_store").AtMapKey("user_dn"),
+					providererror.InvalidAttributeConfiguration,
+					"Attribute 'client_tls_certificate_ref' requires 'user_dn' to be null")
 			}
 			if ldapDataStore["bind_anonymously"].(types.Bool).ValueBool() {
-				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' requires 'bind_anonymously' to be false", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ldap_data_store").AtMapKey("bind_anonymously"),
+					providererror.InvalidAttributeConfiguration,
+					"Attribute 'client_tls_certificate_ref' requires 'bind_anonymously' to be false")
 			}
 		}
 		if internaltypes.IsDefined(ldapDataStore["user_dn"]) {
 			if ldapDataStore["bind_anonymously"].(types.Bool).ValueBool() {
-				resp.Diagnostics.AddError("Attribute 'user_dn' requires 'bind_anonymously' to be false", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("ldap_data_store").AtMapKey("bind_anonymously"),
+					providererror.InvalidAttributeConfiguration,
+					"Attribute 'user_dn' requires 'bind_anonymously' to be false")
 			}
 		}
 		// If password is set, then user_dn must be set
 		if (internaltypes.IsDefined(ldapDataStore["password"]) && !internaltypes.IsDefined(ldapDataStore["user_dn"])) ||
 			(!internaltypes.IsDefined(ldapDataStore["password"]) && internaltypes.IsDefined(ldapDataStore["user_dn"])) {
-			resp.Diagnostics.AddError("'password' and 'user_dn' must be set together", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("ldap_data_store"),
+				providererror.InvalidAttributeConfiguration,
+				"'password' and 'user_dn' must be set together")
 		}
 	}
 
@@ -386,9 +419,12 @@ func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state dataStoreModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -399,13 +435,13 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Data Store", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp, &customId)
 		}
 		return
 	}
 
 	if dataStoreGetReq.CustomDataStore != nil {
-		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore, true)
+		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore, true, isImportRead)
 		resp.Diagnostics.Append(diags...)
 	}
 
@@ -474,11 +510,12 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp, &customId)
 	}
 }
 
 func (r *dataStoreResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

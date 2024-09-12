@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,12 +14,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
@@ -100,25 +104,25 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 				Default:     objectdefault.StaticValue(redirectValidationLocalSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"enable_target_resource_validation_for_sso": schema.BoolAttribute{
-						Description: "Enable target resource validation for SSO.",
+						Description: "Enable target resource validation for SSO. Defaults to `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"enable_target_resource_validation_for_slo": schema.BoolAttribute{
-						Description: "Enable target resource validation for SLO.",
+						Description: "Enable target resource validation for SLO. Defaults to `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"enable_target_resource_validation_for_idp_discovery": schema.BoolAttribute{
-						Description: "Enable target resource validation for IdP discovery.",
+						Description: "Enable target resource validation for IdP discovery. Defaults to `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"enable_in_error_resource_validation": schema.BoolAttribute{
-						Description: "Enable validation for error resource.",
+						Description: "Enable validation for error resource. Defaults to `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -131,25 +135,25 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
-									Description: "Enable this target resource for SSO redirect validation.",
+									Description: "Enable this target resource for SSO redirect validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"target_resource_slo": schema.BoolAttribute{
-									Description: "Enable this target resource for SLO redirect validation.",
+									Description: "Enable this target resource for SLO redirect validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"in_error_resource": schema.BoolAttribute{
-									Description: "Enable this target resource for in error resource validation.",
+									Description: "Enable this target resource for in error resource validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"idp_discovery": schema.BoolAttribute{
-									Description: "Enable this target resource for IdP discovery validation.",
+									Description: "Enable this target resource for IdP discovery validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
@@ -157,6 +161,9 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 								"valid_domain": schema.StringAttribute{
 									Description: "Domain of a valid resource.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"valid_path": schema.StringAttribute{
 									Description: "Path of a valid resource.",
@@ -165,13 +172,13 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 									Default:     stringdefault.StaticString(""),
 								},
 								"allow_query_and_fragment": schema.BoolAttribute{
-									Description: "Allow any query parameters and fragment in the resource.",
+									Description: "Allow any query parameters and fragment in the resource. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"require_https": schema.BoolAttribute{
-									Description: "Require HTTPS for accessing this resource.",
+									Description: "Require HTTPS for accessing this resource. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
@@ -186,31 +193,31 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
-									Description: "Enable this target resource for SSO redirect validation.",
+									Description: "Enable this target resource for SSO redirect validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"target_resource_slo": schema.BoolAttribute{
-									Description: "Enable this target resource for SLO redirect validation.",
+									Description: "Enable this target resource for SLO redirect validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"in_error_resource": schema.BoolAttribute{
-									Description: "Enable this target resource for in error resource validation.",
+									Description: "Enable this target resource for in error resource validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"idp_discovery": schema.BoolAttribute{
-									Description: "Enable this target resource for IdP discovery validation.",
+									Description: "Enable this target resource for IdP discovery validation. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"allow_query_and_fragment": schema.BoolAttribute{
-									Description: "Allow any query parameters and fragment in the resource.",
+									Description: "Allow any query parameters and fragment in the resource. Defaults to `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
@@ -218,6 +225,9 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 								"valid_uri": schema.StringAttribute{
 									Description: "URI of a valid resource.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -231,7 +241,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 				Default:     objectdefault.StaticValue(redirectValidationPartnerSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"enable_wreply_validation_slo": schema.BoolAttribute{
-						Description: "Enable wreply validation for SLO.",
+						Description: "Enable wreply validation for SLO. Defaults to `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -241,7 +251,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -249,7 +259,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	// Compare to version 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
@@ -323,6 +333,27 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 
 }
 
+func (m *redirectValidationModel) buildDefaultClientStruct(productVersion version.SupportedVersion) *client.RedirectValidationSettings {
+	result := &client.RedirectValidationSettings{
+		RedirectValidationLocalSettings: &client.RedirectValidationLocalSettings{
+			EnableTargetResourceValidationForSSO:          utils.Pointer(false),
+			EnableTargetResourceValidationForSLO:          utils.Pointer(false),
+			EnableTargetResourceValidationForIdpDiscovery: utils.Pointer(false),
+			EnableInErrorResourceValidation:               utils.Pointer(false),
+			WhiteList:                                     []client.RedirectValidationSettingsWhitelistEntry{},
+		},
+		RedirectValidationPartnerSettings: &client.RedirectValidationPartnerSettings{
+			EnableWreplyValidationSLO: utils.Pointer(false),
+		},
+	}
+	compare, err := version.Compare(productVersion, version.PingFederate1210)
+	pfVersionAtLeast121 := compare >= 0
+	if err == nil && pfVersionAtLeast121 {
+		result.RedirectValidationLocalSettings.UriAllowList = []client.RedirectValidationSettingsUriAllowlistEntry{}
+	}
+	return result
+}
+
 func (r *redirectValidationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan redirectValidationModel
 
@@ -335,7 +366,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	createRedirectValidation := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createRedirectValidation, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
 		return
 	}
 
@@ -402,7 +433,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
 		return
 	}
 
@@ -430,6 +461,16 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *redirectValidationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	var model redirectValidationModel
+	clientData := model.buildDefaultClientStruct(r.providerConfig.ProductVersion)
+	apiUpdateRequest := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
+	_, httpResp, err := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the redirect validation settings", err, httpResp)
+	}
 }
 
 func (r *redirectValidationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
