@@ -306,10 +306,6 @@ resource "pingfederate_data_store" "customDataStore" {
           value = var.rest_data_store_basic_auth_username
         },
         {
-          name  = "Password"
-          value = var.rest_data_store_basic_auth_password
-        },
-        {
           name  = "Password Reference"
           value = ""
         },
@@ -324,10 +320,6 @@ resource "pingfederate_data_store" "customDataStore" {
         {
           name  = "Client ID"
           value = var.rest_data_store_oauth2_client_id
-        },
-        {
-          name  = "Client Secret"
-          value = var.rest_data_store_oauth2_client_secret
         },
         {
           name  = "Client Secret Reference"
@@ -368,6 +360,16 @@ resource "pingfederate_data_store" "customDataStore" {
         {
           name  = "Test Connection Body"
           value = "{\"foo\":\"bar\"}"
+        }
+      ]
+      sensitive_fields = [
+        {
+          name  = "Password"
+          value = var.rest_data_store_basic_auth_password
+        },
+        {
+          name  = "Client Secret"
+          value = var.rest_data_store_oauth2_client_secret
         }
       ]
     }

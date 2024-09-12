@@ -12,27 +12,6 @@ Resource to create and manage notification publisher plugin instances.
 ## Example Usage
 
 ```terraform
-terraform {
-  required_version = ">=1.1"
-  required_providers {
-    pingfederate = {
-      version = "~> 1.0.0"
-      source  = "pingidentity/pingfederate"
-    }
-  }
-}
-
-provider "pingfederate" {
-  username   = "administrator"
-  password   = "2FederateM0re"
-  https_host = "https://localhost:9999"
-  # Warning: The insecure_trust_all_tls attribute configures the provider to trust any certificate presented by the server.
-  insecure_trust_all_tls              = true
-  x_bypass_external_validation_header = true
-  product_version                     = "12.1"
-}
-
-
 resource "pingfederate_notification_publisher" "notificationPublisher" {
   publisher_id = "EmailSMTPPublisherSettings"
   name         = "Email SMTP Publisher Settings"
@@ -40,7 +19,7 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
     sensitive_fields = [
       {
         name  = "Password"
-        value = "asdFss"
+        value = var.email_smtp_server_password
       },
     ]
     fields = [
@@ -50,7 +29,7 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
       },
       {
         name  = "Username"
-        value = "asdf"
+        value = var.email_smtp_server_username
       },
       {
         name  = "From Address"

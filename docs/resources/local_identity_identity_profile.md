@@ -54,10 +54,6 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
         value = var.email_smtp_server_username
       },
       {
-        name  = "Password"
-        value = var.email_smtp_server_password
-      },
-      {
         name  = "Verify Hostname"
         value = "true"
       },
@@ -80,6 +76,12 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
       {
         name  = "Enable SMTP Debugging Messages"
         value = "true"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
       }
     ]
   }

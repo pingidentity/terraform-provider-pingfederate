@@ -111,12 +111,14 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
                 name = "Client IP"
                 # IP of Client
                 value = var.pcv_client_ip
-              },
+              }
+            ],
+            sensitive_fields = [
               {
                 name  = "Client Shared Secret"
                 value = var.pcv_shared_secret
               }
-            ],
+            ]
             default_row = false
           }
         ]
@@ -256,11 +258,6 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
         value = "VPN"
       },
       {
-        # use_base64_key value from PingID Properties File
-        name  = "State Encryption Key"
-        value = var.pcv_state_encryption_key
-      },
-      {
         name  = "State Lifetime"
         value = "300"
       },
@@ -283,6 +280,13 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
       {
         name  = "Newline Character"
         value = "None"
+      }
+    ]
+    sensitive_fields = [
+      {
+        # use_base64_key value from PingID Properties File
+        name  = "State Encryption Key"
+        value = var.pcv_state_encryption_key
       }
     ]
   }
@@ -364,10 +368,6 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
         value = "ping_federate_client_id"
       },
       {
-        name  = "Client Secret"
-        value = var.pcv_client_secret
-      },
-      {
         name  = "PingOne URL"
         value = "https://directory-api.pingone.com/api"
       },
@@ -390,6 +390,12 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
       {
         name  = "Connection Pool Idle Timeout"
         value = "4000"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Client Secret"
+        value = var.pcv_client_secret
       }
     ]
   }
@@ -426,6 +432,8 @@ resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCre
                 name  = "Authentication Protocol"
                 value = "PAP"
               },
+            ]
+            sensitive_fields = [
               {
                 name  = "Shared Secret"
                 value = var.pcv_shared_secret
@@ -488,16 +496,18 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
                 value = "example"
               },
               {
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
+            ]
+            sensitive_fields = [
+              {
                 name  = "Password"
                 value = var.pcv_password_user1
               },
               {
                 name  = "Confirm Password"
                 value = var.pcv_password_user1
-              },
-              {
-                name  = "Relax Password Requirements"
-                value = "false"
               }
             ]
             default_row = false
@@ -509,16 +519,18 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
                 value = "example2"
               },
               {
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
+            ]
+            sensitive_fields = [
+              {
                 name  = "Password"
                 value = var.pcv_password_user2
               },
               {
                 name  = "Confirm Password"
                 value = var.pcv_password_user2
-              },
-              {
-                name  = "Relax Password Requirements"
-                value = "false"
               }
             ]
             default_row = false
