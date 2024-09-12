@@ -11,6 +11,8 @@ on:
       - ".golangci.yml"
       - "docs/**"
       - "templates/**"
+      - "schema-docs/**"
+      - "examples/**"
   push:
     branches:
       - "main"
