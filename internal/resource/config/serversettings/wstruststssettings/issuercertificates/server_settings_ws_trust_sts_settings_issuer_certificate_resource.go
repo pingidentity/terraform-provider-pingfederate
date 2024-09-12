@@ -26,6 +26,8 @@ var (
 	_ resource.Resource                = &serverSettingsWsTrustStsSettingsIssuerCertificateResource{}
 	_ resource.ResourceWithConfigure   = &serverSettingsWsTrustStsSettingsIssuerCertificateResource{}
 	_ resource.ResourceWithImportState = &serverSettingsWsTrustStsSettingsIssuerCertificateResource{}
+
+	customId = "certificate_id"
 )
 
 func ServerSettingsWsTrustStsSettingsIssuerCertificateResource() resource.Resource {
@@ -242,7 +244,7 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Create(ctx c
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.ServerSettingsAPI.ImportCertificateExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the WS Trust issuer certificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the WS Trust issuer certificate", err, httpResp, &customId)
 		return
 	}
 
@@ -270,7 +272,7 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Read(ctx con
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "WS Trust Issuer Certificate", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the WS Trust issuer certificate", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the WS Trust issuer certificate", err, httpResp, &customId)
 		}
 		return
 	}
@@ -299,7 +301,7 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Delete(ctx c
 	// Delete API call logic
 	httpResp, err := r.apiClient.ServerSettingsAPI.DeleteCertificate(config.AuthContext(ctx, r.providerConfig), data.CertificateId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the WS Trust issuer certificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the WS Trust issuer certificate", err, httpResp, &customId)
 	}
 }
 
