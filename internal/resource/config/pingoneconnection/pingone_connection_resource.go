@@ -14,6 +14,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -22,6 +23,8 @@ var (
 	_ resource.Resource                = &pingoneConnectionResource{}
 	_ resource.ResourceWithConfigure   = &pingoneConnectionResource{}
 	_ resource.ResourceWithImportState = &pingoneConnectionResource{}
+
+	customId = "connection_id"
 )
 
 // PingoneConnectionResource is a helper function to simplify the provider implementation.
@@ -196,7 +199,7 @@ func (r *pingoneConnectionResource) Create(ctx context.Context, req resource.Cre
 	createPingOneConnection := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createPingOneConnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the PingOne Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the PingOne Connection: "+err.Error())
 		return
 	}
 
@@ -204,7 +207,7 @@ func (r *pingoneConnectionResource) Create(ctx context.Context, req resource.Cre
 	apiCreatePingOneConnection = apiCreatePingOneConnection.Body(*createPingOneConnection)
 	pingOneConnectionResponse, httpResp, err := r.apiClient.PingOneConnectionsAPI.CreatePingOneConnectionExecute(apiCreatePingOneConnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the the PingOne Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the the PingOne Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -232,7 +235,7 @@ func (r *pingoneConnectionResource) Read(ctx context.Context, req resource.ReadR
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "PingOne Connection", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  the PingOne Connection", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the  the PingOne Connection", err, httpResp, &customId)
 		}
 		return
 	}
@@ -259,14 +262,14 @@ func (r *pingoneConnectionResource) Update(ctx context.Context, req resource.Upd
 	createUpdateRequest := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the PingOne Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the PingOne Connection: "+err.Error())
 		return
 	}
 
 	updatePingOneConnection = updatePingOneConnection.Body(*createUpdateRequest)
 	updatePingOneConnectionResponse, httpResp, err := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnectionExecute(updatePingOneConnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the PingOne Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the PingOne Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -289,7 +292,7 @@ func (r *pingoneConnectionResource) Delete(ctx context.Context, req resource.Del
 	}
 	httpResp, err := r.apiClient.PingOneConnectionsAPI.DeletePingOneConnection(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the PingOne Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the PingOne Connection", err, httpResp, &customId)
 	}
 }
 

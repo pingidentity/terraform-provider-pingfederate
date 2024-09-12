@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -34,6 +35,7 @@ type keypairsSigningKeyDataSource struct {
 type keypairsSigningKeyDataSourceModel struct {
 	CryptoProvider          types.String `tfsdk:"crypto_provider"`
 	Expires                 types.String `tfsdk:"expires"`
+	Id                      types.String `tfsdk:"id"`
 	IssuerDn                types.String `tfsdk:"issuer_dn"`
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
 	KeyId                   types.String `tfsdk:"key_id"`
@@ -152,10 +154,13 @@ func (r *keypairsSigningKeyDataSource) Schema(ctx context.Context, req datasourc
 			},
 		},
 	}
+	id.ToDataSourceSchema(&resp.Schema)
 }
 
 func (state *keypairsSigningKeyDataSourceModel) readClientResponse(response *client.KeyPairView) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires

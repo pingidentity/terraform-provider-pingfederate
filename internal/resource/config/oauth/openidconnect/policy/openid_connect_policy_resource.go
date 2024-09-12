@@ -25,6 +25,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -34,6 +35,8 @@ var (
 	_ resource.Resource                = &openidConnectPolicyResource{}
 	_ resource.ResourceWithConfigure   = &openidConnectPolicyResource{}
 	_ resource.ResourceWithImportState = &openidConnectPolicyResource{}
+
+	customId = "policy_id"
 )
 
 // OpenidConnectPolicyResource is a helper function to simplify the provider implementation.
@@ -205,7 +208,7 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 	// Compare to version 11.3 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
@@ -280,7 +283,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	var accessTokenManagerRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.AccessTokenManagerRef, false)), &accessTokenManagerRef)
 	if err != nil {
-		diags.AddError("Failed to read access_token_manager_ref from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read access_token_manager_ref from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
@@ -288,7 +291,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	var attributeContract client.OpenIdConnectAttributeContract
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), &attributeContract)
 	if err != nil {
-		diags.AddError("Failed to read attribute_contract from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_contract from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
@@ -299,14 +302,14 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
 	attributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
 	if err != nil {
-		diags.AddError("Failed to read attribute_mapping.attribute_contract_fulfillment from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.attribute_contract_fulfillment from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
 	issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
 	attributeMapping.IssuanceCriteria, err = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
 	if err != nil {
-		diags.AddError("Failed to read attribute_mapping.issuance_criteria from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.issuance_criteria from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
@@ -314,7 +317,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 	attributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
 	if err != nil {
-		diags.AddError("Failed to read attribute_mapping.attribute_sources from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.attribute_sources from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
@@ -339,7 +342,7 @@ func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.C
 	newOIDCPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(), *accessTokenManagerRef, *attributeContract, *attributeMapping)
 	err := addOptionalOauthOpenIdConnectPolicyFields(newOIDCPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OIDC Policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OIDC Policy: "+err.Error())
 		return
 	}
 
@@ -347,7 +350,7 @@ func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.C
 	apiCreateOIDCPolicy = apiCreateOIDCPolicy.Body(*newOIDCPolicy)
 	oidcPolicyResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OIDC Policy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OIDC Policy", err, httpResp, &customId)
 		return
 	}
 
@@ -373,7 +376,7 @@ func (r *openidConnectPolicyResource) Read(ctx context.Context, req resource.Rea
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OIDC Policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp, &customId)
 		}
 		return
 	}
@@ -409,14 +412,14 @@ func (r *openidConnectPolicyResource) Update(ctx context.Context, req resource.U
 
 	err := addOptionalOauthOpenIdConnectPolicyFields(updatedPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the OIDC Policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the OIDC Policy: "+err.Error())
 		return
 	}
 
 	updateOIDCPolicyRequest = updateOIDCPolicyRequest.Body(*updatedPolicy)
 	updateResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicyExecute(updateOIDCPolicyRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OIDC Policy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the OIDC Policy", err, httpResp, &customId)
 		return
 	}
 
@@ -441,7 +444,7 @@ func (r *openidConnectPolicyResource) Delete(ctx context.Context, req resource.D
 	}
 	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp, &customId)
 	}
 }
 

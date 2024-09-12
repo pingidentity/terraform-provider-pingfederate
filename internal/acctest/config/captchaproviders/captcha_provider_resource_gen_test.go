@@ -195,6 +195,7 @@ resource "pingfederate_captcha_provider" "example" {
 // Validate any computed values when applying minimal HCL
 func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
 			map[string]string{
 				"value": "recaptcha-v2-invisible.js",
@@ -210,6 +211,7 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		// The PingOneProtectProvider was added in PF version 12.0+
 		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "12"),
 			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
@@ -236,6 +238,7 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	} else {
 		// For earlier versions use captcha v3
 		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "4"),
 			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
