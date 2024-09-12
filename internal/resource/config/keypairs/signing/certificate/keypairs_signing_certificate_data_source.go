@@ -15,6 +15,8 @@ import (
 var (
 	_ datasource.DataSource              = &keypairsSigningCertificateDataSource{}
 	_ datasource.DataSourceWithConfigure = &keypairsSigningCertificateDataSource{}
+
+	customId = "key_id"
 )
 
 func KeypairsSigningCertificateDataSource() datasource.DataSource {
@@ -77,7 +79,7 @@ func (r *keypairsSigningCertificateDataSource) Read(ctx context.Context, req dat
 	exportRequest := r.apiClient.KeyPairsSigningAPI.ExportCertificateFile(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString())
 	responseData, httpResp, err := exportRequest.Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while exporting the certificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while exporting the certificate", err, httpResp, &customId)
 		return
 	}
 
