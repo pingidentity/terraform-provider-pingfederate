@@ -16,6 +16,7 @@ const (
 	InternalProviderError          = "Internal provider error"
 	PingFederateValidationError    = "PingFederate validation error"
 	PingFederateAPIError           = "PingFederate API error"
+	ConfigurationWarning           = "Plugin configuration warning"
 )
 
 func WarnConfigurationCannotBeReset(resourceName string, diags *diag.Diagnostics) {

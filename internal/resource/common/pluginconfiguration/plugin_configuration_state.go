@@ -1,10 +1,14 @@
 package pluginconfiguration
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -81,7 +85,6 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 				planFieldObj.Attributes()["value"].(types.String).ValueStringPointer()
 		}
 	}
-	//TODO some more logic for warnings for when a non-sensitive field doesn't get returned by the PF API
 	if planSensitiveFields != nil {
 		for _, planField := range planSensitiveFields.Elements() {
 			planFieldObj := planField.(types.Object)
@@ -96,15 +99,20 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 		attrValues["value"] = types.StringPointerValue(field.Value)
 
 		// If this field is in the plan, add it to the list of plan fields
-		//TODO validation that you don't put the same field in both sets
 		fieldAdded := false
 		if planFields != nil {
 			planValue, ok := plannedFieldsValues[field.Name]
 			if ok {
 				planAttrValues := map[string]attr.Value{}
 				planAttrValues["name"] = types.StringValue(field.Name)
+				if field.EncryptedValue != nil && *field.EncryptedValue != "" {
+					diags.AddAttributeWarning(
+						path.Root("configuration"),
+						providererror.ConfigurationWarning,
+						fmt.Sprintf("Field with name %s was return encrypted by the PingFederate API. If the field is sensitive, move it to the `sensitive_fields` attribute.", field.Name),
+					)
+				}
 				if field.Value == nil {
-					//TODO warning
 					planAttrValues["value"] = types.StringPointerValue(planValue)
 				} else {
 					planAttrValues["value"] = types.StringPointerValue(field.Value)
@@ -120,10 +128,16 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 			if ok {
 				planAttrValues := map[string]attr.Value{}
 				planAttrValues["name"] = types.StringValue(field.Name)
+				if field.EncryptedValue == nil && field.Value != nil && *field.Value != "" {
+					diags.AddAttributeWarning(
+						path.Root("configuration"),
+						providererror.ConfigurationWarning,
+						fmt.Sprintf("Sensitive field with name %s was returned in cleartext by the PingFederate API. If the field is not sensitive, move it to the `fields` attribute.", field.Name),
+					)
+				}
 				if field.Value == nil {
 					planAttrValues["value"] = types.StringPointerValue(planValue)
 				} else {
-					//TODO warning
 					planAttrValues["value"] = types.StringPointerValue(field.Value)
 				}
 				objVal, respDiags := types.ObjectValue(fieldAttrTypes, planAttrValues)

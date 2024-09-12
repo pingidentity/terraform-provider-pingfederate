@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -111,6 +112,9 @@ func ToSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: "Plugin instance configuration.",
 		Required:    true,
+		Validators: []validator.Object{
+			noDuplicateFields(),
+		},
 		Attributes: map[string]schema.Attribute{
 			"tables": schema.SetNestedAttribute{
 				Description:  "List of configuration tables.",
