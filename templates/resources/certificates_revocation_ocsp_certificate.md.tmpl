@@ -9,8 +9,6 @@ description: |-
 
 {{ .Description | trimspace }}
 
-!> The pingfederate_server_settings_system_keys resource is deprecated and will be removed in a future release. Use the pingfederate_server_settings_system_keys_rotate resource instead.
-
 ## Example Usage
 
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
@@ -21,6 +19,6 @@ description: |-
 
 Import is supported using the following syntax:
 
-~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
+~> "certificateId" should be the id of the certificate to be imported
 
 {{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}

@@ -35,9 +35,11 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders"
 	captchaproviderssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders/settings"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/ca"
+	certificatesrevocationocspcertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/ocspcertificates"
 	certificatesrevocationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/settings"
 	clustersettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/settings"
 	clusterstatus "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/status"
+	configurationencryptionkeysrotate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/configurationencryptionkeys/rotate"
 	connectionmetadataexport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/connectionmetadata/export"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	extendedproperties "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/extendedproperties"
@@ -51,7 +53,9 @@ import (
 	kerberosrealmssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms/settings"
 	keypairsoauthopenidconnectadditionalkeysets "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect/additionalkeysets"
 	keypairsigning "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing"
+	keypairssigningcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/certificate"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
+	keypairssigningrotationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/rotationsettings"
 	keypairssslserver "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
 	keypairssslserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/settings"
@@ -70,6 +74,7 @@ import (
 	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
 	oauthcibaserverpolicysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/cibaserverpolicy/settings"
 	oauthclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/client"
+	oauthclientregistrationpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/clientregistrationpolicies"
 	oauthidpadaptermappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/idpadaptermappings"
 	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
@@ -85,6 +90,7 @@ import (
 	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
 	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
 	serversettingssystemkeys "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys"
+	serversettingswstruststssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings"
 	sessionapplicationsessionpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/applicationsessionpolicy"
 	sessionauthenticationsessionpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies"
 	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
@@ -687,6 +693,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		idpdefaulturls.IdpDefaultUrlsDataSource,
 		idpspconnection.IdpSpConnectionDataSource,
 		keypairsigning.KeypairsSigningKeyDataSource,
+		keypairssigningcertificate.KeypairsSigningCertificateDataSource,
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
@@ -738,8 +745,10 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		captchaproviders.CaptchaProviderResource,
 		captchaproviderssettings.CaptchaProviderSettingsResource,
 		certificate.CertificateCAResource,
-		clustersettings.ClusterSettingsResource,
+		certificatesrevocationocspcertificates.CertificatesRevocationOcspCertificateResource,
 		certificatesrevocationsettings.CertificatesRevocationSettingsResource,
+		clustersettings.ClusterSettingsResource,
+		configurationencryptionkeysrotate.ConfigurationEncryptionKeysRotateResource,
 		connectionmetadataexport.ConnectionMetadataExportResource,
 		defaulturls.DefaultUrlsResource,
 		extendedproperties.ExtendedPropertiesResource,
@@ -754,6 +763,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keypairsoauthopenidconnectadditionalkeysets.KeypairsOauthOpenidConnectAdditionalKeySetResource,
 		keypairsigning.KeypairsSigningKeyResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
+		keypairssigningrotationsettings.KeypairsSigningKeyRotationSettingsResource,
 		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
 		keypairssslserversettings.KeypairsSslServerSettingsResource,
@@ -776,6 +786,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeResource,
 		oauthcibaserverpolicysettings.OauthCibaServerPolicySettingsResource,
 		oauthclient.OauthClientResource,
+		oauthclientregistrationpolicies.OauthClientRegistrationPolicyResource,
 		oauthidpadaptermappings.OauthIdpAdapterMappingResource,
 		oauthissuer.OauthIssuerResource,
 		oauthopenidconnectpolicy.OpenidConnectPolicyResource,
@@ -796,6 +807,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettingslogsettings.ServerSettingsLoggingResource,
 		serversettingslogsettings.ServerSettingsLogSettingsResource,
 		serversettingssystemkeys.ServerSettingsSystemKeysResource,
+		serversettingswstruststssettings.ServerSettingsWsTrustStsSettingsResource,
 		sessionapplicationsessionpolicy.SessionApplicationPolicyResource,
 		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
 		sessionauthenticationsessionpolicies.SessionAuthenticationPolicyResource,
