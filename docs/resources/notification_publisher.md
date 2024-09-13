@@ -16,10 +16,20 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
   publisher_id = "EmailSMTPPublisherSettings"
   name         = "Email SMTP Publisher Settings"
   configuration = {
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
+      },
+    ]
     fields = [
       {
         name  = "Email Server"
         value = "localhost"
+      },
+      {
+        name  = "Username"
+        value = var.email_smtp_server_username
       },
       {
         name  = "From Address"
@@ -40,14 +50,6 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
       {
         name  = "SMTPS Port"
         value = "465"
-      },
-      {
-        name  = "Username"
-        value = var.email_smtp_server_username
-      },
-      {
-        name  = "Password"
-        value = var.email_smtp_server_password
       },
       {
         name  = "Verify Hostname"
@@ -95,18 +97,23 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
 
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
 
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--configuration--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 Read-Only:
 
 - `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
-- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
 
 <a id="nestedatt--configuration--fields"></a>
 ### Nested Schema for `configuration.fields`
@@ -114,7 +121,16 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String, Sensitive) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--sensitive_fields"></a>
+### Nested Schema for `configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables"></a>
@@ -135,6 +151,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--sensitive_fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`
@@ -142,7 +159,16 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String, Sensitive) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 
@@ -153,7 +179,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String, Sensitive) The value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables_all"></a>
@@ -181,7 +207,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String, Sensitive) The value for the configuration field.
 
 
 

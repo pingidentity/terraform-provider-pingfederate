@@ -17,8 +17,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -26,6 +29,8 @@ var (
 	_ resource.Resource                = &notificationPublisherResource{}
 	_ resource.ResourceWithConfigure   = &notificationPublisherResource{}
 	_ resource.ResourceWithImportState = &notificationPublisherResource{}
+
+	customId = "publisher_id"
 )
 
 func NotificationPublisherResource() resource.Resource {
@@ -53,6 +58,7 @@ func (r *notificationPublisherResource) Configure(_ context.Context, req resourc
 
 type notificationPublisherResourceModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
+	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -106,6 +112,7 @@ func (r *notificationPublisherResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *notificationPublisherResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -132,7 +139,7 @@ func (model *notificationPublisherResourceModel) buildClientStruct() (*client.No
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
 	} else {
 		result.Configuration = *configurationValue
 	}
@@ -158,10 +165,12 @@ func (model *notificationPublisherResourceModel) buildClientStruct() (*client.No
 	return result, respDiags
 }
 
-func (state *notificationPublisherResourceModel) readClientResponse(response *client.NotificationPublisher) diag.Diagnostics {
+func (state *notificationPublisherResourceModel) readClientResponse(response *client.NotificationPublisher, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -214,18 +223,21 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.NotificationPublishersAPI.CreateNotificationPublisherExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the notificationPublisher", err, httpResp, &customId)
 		return
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *notificationPublisherResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data notificationPublisherResourceModel
 
 	// Read Terraform prior state data into the model
@@ -242,13 +254,13 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Notification Publisher", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp, &customId)
 		}
 		return
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -271,12 +283,12 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublisherExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the notificationPublisher", err, httpResp, &customId)
 		return
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -296,11 +308,12 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 	httpResp, err := api.ExponentialBackOffRetryDelete([]int{403},
 		r.apiClient.NotificationPublishersAPI.DeleteNotificationPublisher(config.AuthContext(ctx, r.providerConfig), data.PublisherId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the notificationPublisher", err, httpResp, &customId)
 	}
 }
 
 func (r *notificationPublisherResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to publisher_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("publisher_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

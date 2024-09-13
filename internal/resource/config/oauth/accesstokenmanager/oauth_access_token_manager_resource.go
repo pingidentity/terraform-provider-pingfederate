@@ -25,10 +25,12 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -84,6 +86,8 @@ var (
 		"check_session_revocation_status": types.BoolValue(false),
 		"update_authn_session_activity":   types.BoolValue(false),
 	})
+
+	customId = "manager_id"
 )
 
 // OauthAccessTokenManagerResource is a helper function to simplify the provider implementation.
@@ -391,7 +395,7 @@ func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req re
 	resp.Plan.Set(ctx, plan)
 }
 
-func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan types.Object) diag.Diagnostics {
+func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)
@@ -401,7 +405,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	diags.Append(respDiags...)
 	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
-	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration, isImportRead)
 	diags.Append(respDiags...)
 
 	// state.AttributeContract
@@ -504,22 +508,21 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	pluginDescRefResLink.Id = pluginDescRefId
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+pluginDescRefErr.Error())
 		return
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfigurationWithDefaults()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 
 	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.ManagerId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
+	err = addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Manager: "+err.Error())
 		return
 	}
 
@@ -527,14 +530,14 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
 	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp, &customId)
 		return
 	}
 
 	// Read the response into the state
 	var state oauthAccessTokenManagerResourceModel
 
-	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration, false)
 	resp.Diagnostics.Append(diags...)
 
 	diags = resp.State.Set(ctx, state)
@@ -542,9 +545,12 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 }
 
 func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state oauthAccessTokenManagerResourceModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -556,13 +562,13 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Access Token Manager", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp, &customId)
 		}
 		return
 	}
 
 	// Read the response into the state
-	diags = readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration, isImportRead)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -588,36 +594,35 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	pluginDescRefResLink.Id = pluginDescRefId
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(state.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+pluginDescRefErr.Error())
 		return
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfiguration()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(state.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+	configuration, err := pluginconfiguration.ClientStruct(state.Configuration)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 
 	// Get the current state to see how any attributes are changing
 	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString())
 	createUpdateRequest := client.NewAccessTokenManager(state.ManagerId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
+	err = addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth access token manager", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth access token manager: "+err.Error())
 		return
 	}
 
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp, &customId)
 		return
 	}
 
 	// Read the response
-	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration, false)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -638,11 +643,12 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	httpResp, err := api.ExponentialBackOffRetryDelete([]int{403},
 		r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp, &customId)
 	}
 }
 
 func (r *oauthAccessTokenManagerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("manager_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

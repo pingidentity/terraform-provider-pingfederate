@@ -12,6 +12,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -46,7 +47,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 				},
 			},
 			"accepted": schema.BoolAttribute{
-				Description: "Indicates whether license agreement has been accepted. The default value is false.",
+				Description: "Indicates whether license agreement has been accepted. The default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -54,7 +55,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -98,7 +99,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	createLicenseAgreement := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createLicenseAgreement, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the license agreement", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the license agreement: "+err.Error())
 		return
 	}
 
@@ -165,7 +166,7 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for license agreement", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for license agreement: "+err.Error())
 		return
 	}
 
@@ -192,6 +193,8 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *licenseAgreementResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	providererror.WarnConfigurationCannotBeReset("pingfederate_license_agreement", &resp.Diagnostics)
 }
 
 func (r *licenseAgreementResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

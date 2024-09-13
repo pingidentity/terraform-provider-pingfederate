@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -19,12 +20,14 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -33,6 +36,8 @@ var (
 	_ resource.Resource                = &idpAdapterResource{}
 	_ resource.ResourceWithConfigure   = &idpAdapterResource{}
 	_ resource.ResourceWithImportState = &idpAdapterResource{}
+
+	customId = "adapter_id"
 )
 
 // IdpAdapterResource is a helper function to simplify the provider implementation.
@@ -54,10 +59,16 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"authn_ctx_class_ref": schema.StringAttribute{
 				Description: "The fixed value that indicates how the user was authenticated.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
@@ -82,16 +93,19 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"pseudonym": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
+									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									// These defaults cause issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
 									// Default: booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									// These defaults cause issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
@@ -111,15 +125,15 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									Required:    true,
+									Computed:    true,
 								},
 								"pseudonym": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
-									Required:    true,
+									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.",
+									Computed:    true,
 								},
 								"masked": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-									Required:    true,
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+									Computed:    true,
 								},
 							},
 						},
@@ -136,13 +150,13 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Required:    true,
 								},
 								"pseudonym": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
+									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									Default:     booldefault.StaticBool(false),
@@ -153,9 +167,12 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"unique_user_key_attribute": schema.StringAttribute{
 						Description: "The attribute to use for uniquely identify a user's authentication sessions.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"mask_ognl_values": schema.BoolAttribute{
-						Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.",
+						Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
@@ -293,21 +310,20 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
 		return
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
-	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return
 	}
 
@@ -315,40 +331,44 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	apiCreateIdpAdapter = apiCreateIdpAdapter.Body(*createIdpAdapter)
 	idpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.CreateIdpAdapterExecute(apiCreateIdpAdapter)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp, &customId)
 		return
 	}
 
 	// Read the response into the state
 	var state idpAdapterModel
 
-	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan)
+	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan, false)
 	resp.Diagnostics.Append(readResponseDiags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state idpAdapterModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Adapter", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp, &customId)
 		}
 		return
 	}
 
 	// Read the response into the state
-	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state)
+	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state, isImportRead)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
@@ -372,35 +392,34 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
 		return
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
-	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 
 	err = addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return
 	}
 
 	updateIdpAdapter = updateIdpAdapter.Body(*createUpdateRequest)
 	updateIdpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapterExecute(updateIdpAdapter)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp, &customId)
 		return
 	}
 
 	// Read the response
 	var state idpAdapterModel
-	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan)
+	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan, false)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Update computed values
@@ -420,11 +439,12 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp, &customId)
 	}
 }
 
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to adapter_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("adapter_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

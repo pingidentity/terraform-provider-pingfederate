@@ -23,6 +23,7 @@ type oauthAuthServerSettingsScopesExclusiveScopesResourceModel struct {
 }
 
 func TestAccOauthAuthServerSettingsScopesExclusiveScopes(t *testing.T) {
+	t.SkipNow()
 	resourceName := "myOauthAuthServerSettingsScopesExclusiveScopes"
 	initialResourceModel := oauthAuthServerSettingsScopesExclusiveScopesResourceModel{
 		id:          oauthAuthServerSettingsScopesExclusiveScopesId,

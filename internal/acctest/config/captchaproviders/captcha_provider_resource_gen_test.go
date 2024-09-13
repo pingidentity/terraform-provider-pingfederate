@@ -96,10 +96,6 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "provider_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -118,6 +114,8 @@ resource "pingfederate_captcha_provider" "example" {
         name  = "Site Key"
         value = "testSiteKey"
       },
+    ]
+    sensitive_fields = [
       {
         name  = "Secret Key"
         value = "testSecretKey"
@@ -149,6 +147,46 @@ resource "pingfederate_captcha_provider" "example" {
       {
         name : "PingOne Risk Policy"
         value : "f277d6e2-e073-018c-1b78-8be4cd16d898"
+      },
+      {
+        "name" : "API Request Timeout",
+        "value" : "2000"
+      },
+      {
+        "name" : "Custom Proxy Host",
+        "value" : ""
+      },
+      {
+        "name" : "Custom Proxy Port",
+        "value" : ""
+      },
+      {
+        "name" : "Custom connection pool",
+        "value" : "50"
+      },
+      {
+        "name" : "Enable Risk Evaluation",
+        "value" : "true"
+      },
+      {
+        "name" : "Failure Mode",
+        "value" : "Continue with fallback policy decision"
+      },
+      {
+        "name" : "Fallback Policy Decision Value",
+        "value" : "MEDIUM"
+      },
+      {
+        "name" : "Follow Recommended Action",
+        "value" : "true"
+      },
+      {
+        "name" : "Password Encryption",
+        "value" : "SHA-256"
+      },
+      {
+        "name" : "Proxy Settings",
+        "value" : "System Defaults"
       }
     ]
   }
@@ -195,6 +233,7 @@ resource "pingfederate_captcha_provider" "example" {
 // Validate any computed values when applying minimal HCL
 func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
 			map[string]string{
 				"value": "recaptcha-v2-invisible.js",
@@ -210,6 +249,7 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		// The PingOneProtectProvider was added in PF version 12.0+
 		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "12"),
 			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
@@ -236,6 +276,7 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	} else {
 		// For earlier versions use captcha v3
 		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "4"),
 			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
