@@ -41,8 +41,8 @@ var (
 		"fields":           types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"sensitive_fields": types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"fields_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"tables":           types.SetType{ElemType: types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}},
-		"tables_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes}},
+		"tables":           types.ListType{ElemType: types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}},
+		"tables_all":       types.ListType{ElemType: types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes}},
 	}
 )
 
@@ -64,9 +64,9 @@ type pfConfigurationRowsResult struct {
 }
 
 type pfConfigurationTablesResult struct {
-	plannedTables                 types.Set
-	allTablesSensitiveFieldsSplit types.Set
-	allTablesMergedFields         types.Set
+	plannedTables                 types.List
+	allTablesSensitiveFieldsSplit types.List
+	allTablesMergedFields         types.List
 }
 
 func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFields *types.Set, diags *diag.Diagnostics) pfConfigurationFieldsResult {
@@ -267,7 +267,7 @@ func readRowsResponse(rows []client.ConfigRow, planRows *types.List, diags *diag
 	}
 }
 
-func toTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags *diag.Diagnostics) pfConfigurationTablesResult {
+func toTablesSetValue(tables []client.ConfigTable, planTables *types.List, diags *diag.Diagnostics) pfConfigurationTablesResult {
 	// List of *all* tables values to return
 	allTablesMergedFields := []attr.Value{}
 	// List of *all* tables values to return split into sensitive and non-sensitive fields
@@ -316,29 +316,30 @@ func toTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags 
 		}
 	}
 
-	allTablesMergedFieldsSet, respDiags := types.SetValue(types.ObjectType{
+	allTablesMergedFieldsList, respDiags := types.ListValue(types.ObjectType{
 		AttrTypes: tablesMergedFieldsAttrTypes,
 	}, allTablesMergedFields)
 	diags.Append(respDiags...)
-	allTablesSensitiveFieldsSplitSet, respDiags := types.SetValue(types.ObjectType{
+	allTablesSensitiveFieldsSplitList, respDiags := types.ListValue(types.ObjectType{
 		AttrTypes: tablesSensitiveFieldsSplitAttrTypes,
 	}, allTablesSensitiveFieldsSplit)
 	diags.Append(respDiags...)
-	plannedTablesSet, respDiags := types.SetValue(types.ObjectType{
+	plannedTablesList, respDiags := types.ListValue(types.ObjectType{
 		AttrTypes: tablesSensitiveFieldsSplitAttrTypes,
 	}, plannedTables)
 	diags.Append(respDiags...)
 
 	return pfConfigurationTablesResult{
-		plannedTables:                 plannedTablesSet,
-		allTablesSensitiveFieldsSplit: allTablesSensitiveFieldsSplitSet,
-		allTablesMergedFields:         allTablesMergedFieldsSet,
+		plannedTables:                 plannedTablesList,
+		allTablesSensitiveFieldsSplit: allTablesSensitiveFieldsSplitList,
+		allTablesMergedFields:         allTablesMergedFieldsList,
 	}
 }
 
 func ToState(configFromPlan types.Object, configuration *client.PluginConfiguration, isImportRead bool) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var planFields, planSensitiveFields, planTables *types.Set
+	var planFields, planSensitiveFields *types.Set
+	var planTables *types.List
 
 	planFieldsValue, ok := configFromPlan.Attributes()["fields"]
 	if ok {
@@ -352,8 +353,8 @@ func ToState(configFromPlan types.Object, configuration *client.PluginConfigurat
 	}
 	planTablesValue, ok := configFromPlan.Attributes()["tables"]
 	if ok {
-		setVal := planTablesValue.(types.Set)
-		planTables = &setVal
+		listVal := planTablesValue.(types.List)
+		planTables = &listVal
 	}
 
 	fields := readFieldsResponse(configuration.Fields, planFields, planSensitiveFields, &diags)
@@ -395,7 +396,7 @@ func MarkComputedAttrsUnknownOnChange(planConfiguration, stateConfiguration type
 	planTables := planConfiguration.Attributes()["tables"]
 	stateTables := stateConfiguration.Attributes()["tables"]
 	if !planTables.Equal(stateTables) {
-		planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes})
+		planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes})
 	}
 
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
@@ -408,6 +409,6 @@ func MarkComputedAttrsUnknown(planConfiguration types.Object) (types.Object, dia
 	}
 	planConfigurationAttrs := planConfiguration.Attributes()
 	planConfigurationAttrs["fields_all"] = types.SetUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
-	planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes})
+	planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes})
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
 }

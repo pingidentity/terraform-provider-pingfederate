@@ -10,7 +10,7 @@ func ClientStruct(configurationObj types.Object) (*client.PluginConfiguration, e
 	configurationAttrs := configurationObj.Attributes()
 	configurationValue.Fields = fieldsFromObject(configurationAttrs["fields"].(types.Set), configurationAttrs["sensitive_fields"].(types.Set))
 	configurationValue.Tables = []client.ConfigTable{}
-	for _, tablesElement := range configurationAttrs["tables"].(types.Set).Elements() {
+	for _, tablesElement := range configurationAttrs["tables"].(types.List).Elements() {
 		tablesValue := client.ConfigTable{}
 		tablesAttrs := tablesElement.(types.Object).Attributes()
 		tablesValue.Name = tablesAttrs["name"].(types.String).ValueString()

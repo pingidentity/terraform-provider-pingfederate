@@ -146,7 +146,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	var isRadiusServerTableFound bool
 	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" || pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
 		if configuration["tables"] != nil {
-			tables := configuration["tables"].(types.Set).Elements()
+			tables := configuration["tables"].(types.List).Elements()
 			for _, table := range tables {
 				tableAttrs := table.(types.Object).Attributes()
 				tableName := tableAttrs["name"].(types.String).ValueString()

@@ -73,8 +73,8 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 				ImportStateId:     jsonWebTokenOauthAccessTokenManagerId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Some configuration tables are sensitive or are not set in this test, so they can't be verified here.
-				ImportStateVerifyIgnore: []string{"configuration.tables.1"},
+				// Some configuration table fields are sensitive or are not set in this test, so they can't be verified here.
+				ImportStateVerifyIgnore: []string{"configuration.tables.0.rows.0.sensitive_fields"},
 			},
 			{
 				// Back to minimal model
@@ -123,13 +123,13 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
               {
                 name  = "Encoding"
                 value = "b64u"
-              },
+              }
+            ]
+            sensitive_fields = [
               {
-                //TODO "Key" should be in sensitive_fields, but due to an apparent terraform bug,
-                // it ends up causing plans that completely remove 'tables' from the plan.
                 name  = "Key"
                 value = "%[5]s"
-              },
+              }
             ]
           }
         ]
@@ -199,14 +199,14 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
                 value = "%[4]s"
               },
               {
-                //TODO "Key" should be in sensitive_fields, but due to an apparent terraform bug,
-                // it ends up causing plans that completely remove 'tables' from the plan.
-                name  = "Key"
-                value = "%[5]s"
-              },
-              {
                 name  = "Encoding"
                 value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "%[5]s"
               }
             ]
             default_row = false

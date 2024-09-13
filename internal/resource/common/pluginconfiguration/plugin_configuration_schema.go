@@ -4,6 +4,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -14,7 +16,7 @@ import (
 func ToSchema() schema.SingleNestedAttribute {
 	fieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
 	sensitiveFieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
-	tablesSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}, nil)
+	tablesSetDefault, _ := types.ListValue(types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}, nil)
 	fieldsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -116,20 +118,20 @@ func ToSchema() schema.SingleNestedAttribute {
 			noDuplicateFields(),
 		},
 		Attributes: map[string]schema.Attribute{
-			"tables": schema.SetNestedAttribute{
+			"tables": schema.ListNestedAttribute{
 				Description:  "List of configuration tables.",
 				Computed:     true,
 				Optional:     true,
-				Default:      setdefault.StaticValue(tablesSetDefault),
+				Default:      listdefault.StaticValue(tablesSetDefault),
 				NestedObject: tablesNestedObject,
 			},
-			"tables_all": schema.SetNestedAttribute{
+			"tables_all": schema.ListNestedAttribute{
 				Description:  "List of configuration tables. This attribute will include any values set by default by PingFederate.",
 				Computed:     true,
 				Optional:     false,
 				NestedObject: tablesAllNestedObject,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"fields": schema.SetNestedAttribute{

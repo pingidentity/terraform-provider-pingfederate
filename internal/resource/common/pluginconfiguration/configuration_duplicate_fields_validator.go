@@ -39,7 +39,7 @@ func (v configurationDuplicateFieldsValidator) ValidateObject(ctx context.Contex
 	// Check tables.rows.fields and tables.rows.sensitive_fields
 	tables, tablesOk := req.ConfigValue.Attributes()["tables"]
 	if tablesOk {
-		tablesObj, tablesOk := tables.(types.Set)
+		tablesObj, tablesOk := tables.(types.List)
 		if tablesOk {
 			for _, table := range tablesObj.Elements() {
 				tableObj, tableOk := table.(types.Object)
