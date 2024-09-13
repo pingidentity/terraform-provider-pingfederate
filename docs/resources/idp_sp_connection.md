@@ -1271,7 +1271,7 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--sensitive_fields"></a>
@@ -1309,7 +1309,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows--sensitive_fields"></a>
@@ -1329,7 +1329,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables_all"></a>
@@ -1357,7 +1357,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 

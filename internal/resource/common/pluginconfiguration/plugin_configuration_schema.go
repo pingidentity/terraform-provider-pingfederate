@@ -26,7 +26,6 @@ func ToSchema() schema.SingleNestedAttribute {
 			"value": schema.StringAttribute{
 				Description: "The value for the configuration field.",
 				Required:    true,
-				Sensitive:   true,
 			},
 		},
 	}

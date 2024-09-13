@@ -93,7 +93,7 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--configuration--sensitive_fields"></a>
@@ -131,7 +131,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables--rows--sensitive_fields"></a>
@@ -151,7 +151,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables_all"></a>
@@ -179,7 +179,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The value for the configuration field.
+- `value` (String) The value for the configuration field.
 
 
 
