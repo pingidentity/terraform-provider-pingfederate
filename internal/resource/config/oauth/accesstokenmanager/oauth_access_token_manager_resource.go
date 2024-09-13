@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -54,7 +55,7 @@ var (
 	}
 
 	selectionSettingsAttrType = map[string]attr.Type{
-		"resource_uris": types.ListType{ElemType: types.StringType},
+		"resource_uris": types.SetType{ElemType: types.StringType},
 	}
 
 	accessControlSettingsAttrType = map[string]attr.Type{
@@ -69,7 +70,7 @@ var (
 		"update_authn_session_activity":   types.BoolType,
 	}
 
-	resourceUrisDefault, _      = types.ListValue(types.StringType, nil)
+	resourceUrisDefault, _      = types.SetValue(types.StringType, nil)
 	selectionSettingsDefault, _ = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
 		"resource_uris": resourceUrisDefault,
 	})
@@ -233,11 +234,11 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Optional:    true,
 				Default:     objectdefault.StaticValue(selectionSettingsDefault),
 				Attributes: map[string]schema.Attribute{
-					"resource_uris": schema.ListAttribute{
+					"resource_uris": schema.SetAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(resourceUrisDefault),
+						Default:     setdefault.StaticValue(resourceUrisDefault),
 						ElementType: types.StringType,
 					},
 				},
@@ -451,7 +452,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	if r.SelectionSettings == nil {
 		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
 	} else {
-		resourceUris, respDiags := types.ListValueFrom(ctx, types.StringType, r.SelectionSettings.ResourceUris)
+		resourceUris, respDiags := types.SetValueFrom(ctx, types.StringType, r.SelectionSettings.ResourceUris)
 		diags.Append(respDiags...)
 
 		state.SelectionSettings, respDiags = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
