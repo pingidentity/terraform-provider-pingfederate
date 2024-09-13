@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -20,7 +19,6 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -221,8 +219,7 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 		return
 	}
 
-	configuration := &client.PluginConfiguration{}
-	err = json.Unmarshal([]byte(internaljson.FromValue(customPlan["configuration"].(types.Object), true)), configuration)
+	configuration, err := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
 		return
@@ -259,8 +256,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 		return
 	}
 
-	configuration := &client.PluginConfiguration{}
-	err = json.Unmarshal([]byte(internaljson.FromValue(customPlan["configuration"].(types.Object), true)), configuration)
+	configuration, err := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
 		return

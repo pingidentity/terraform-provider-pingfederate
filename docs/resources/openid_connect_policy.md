@@ -30,12 +30,14 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
                 value = "keyidentifier"
               },
               {
-                name  = "Key"
-                value = var.access_token_manager_key
-              },
-              {
                 name  = "Encoding"
                 value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = var.access_token_manager_key
               }
             ]
             default_row = false
