@@ -15,7 +15,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const issuerCertificateId = "wstruststsissuercertid"
+const issuerCertificateId = "mytestissuercert"
 
 var fileDataInitial, fileDataUpdated string
 
@@ -31,6 +31,9 @@ func TestAccServerSettingsWsTrustStsSettingsIssuerCertificate_RemovalDrift(t *te
 			if fileDataUpdated == "" {
 				t.Fatal("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2 must be set for TestAccServerSettingsWsTrustStsSettingsIssuerCertificate_RemovalDrift")
 			}
+			// Attempt to delete the cert created by the ws_trust_sts_settings test
+			testClient := acctest.TestClient()
+			testClient.ServerSettingsAPI.DeleteCertificate(acctest.TestBasicAuthContext(), issuerCertificateId).Execute()
 		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
