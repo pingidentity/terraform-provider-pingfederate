@@ -6,6 +6,9 @@
 ### Data sources
 * **New Data Source:** `pingfederate_keypairs_signing_certificate` ([#305](https://github.com/pingidentity/terraform-provider-pingfederate/pull/305))
 
+### Enhancements
+* Added new `configuration.sensitive_fields` and `configuration.tables.#.rows.#.sensitive_fields` attributes to plugin configuration across the provider. Use these fields when specifying sensitive fields in plugin configuration, such as secrets and passwords. Values specified in these sets will be marked as Sensitive to Terraform and hidden in the CLI and UI output. ([#383]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/383)))
+
 # v0.16.0 September 12, 2024
 ### Resources
 * **New Resource:** `pingfederate_certificates_revocation_ocsp_certificate` ([#279]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/279)))
