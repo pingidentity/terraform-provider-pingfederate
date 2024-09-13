@@ -112,7 +112,9 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 						fmt.Sprintf("Field with name %s was return encrypted by the PingFederate API. If the field is sensitive, move it to the `sensitive_fields` attribute.", field.Name),
 					)
 				}
-				if field.Value == nil {
+				// If PF sets a default for the field when the user specifies an empty value,
+				// just use the plan value and let the PF value appear in fields_all
+				if field.Value == nil || (*planValue == "" && *field.Value != *planValue) {
 					planAttrValues["value"] = types.StringPointerValue(planValue)
 				} else {
 					planAttrValues["value"] = types.StringPointerValue(field.Value)
