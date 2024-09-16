@@ -23,16 +23,18 @@ resource "pingfederate_sp_adapter" "opentoken_example" {
   configuration = {
     fields = [
       {
+        name  = "Token Name"
+        value = "opentoken"
+      },
+    ]
+    sensitive_fields = [
+      {
         name  = "Confirm Password"
         value = var.sp_adapter_opentoken_password
       },
       {
         name  = "Password"
         value = var.sp_adapter_opentoken_password
-      },
-      {
-        name  = "Token Name"
-        value = "opentoken"
       },
     ]
   }
