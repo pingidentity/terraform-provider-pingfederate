@@ -92,6 +92,7 @@ import (
 	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
 	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
 	serversettingssystemkeys "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys"
+	serversettingssystemkeysrotate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys/rotate"
 	serversettingswstruststssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings"
 	serversettingswstruststssettingsissuercertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings/issuercertificates"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serviceauthentication"
@@ -99,6 +100,7 @@ import (
 	sessionauthenticationsessionpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies"
 	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
 	sessionsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/settings"
+	spadapters "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/adapters"
 	spauthenticationpolicycontractmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/authenticationpolicycontractmapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/defaulturls"
 	sptargeturlmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/targeturlmappings"
@@ -813,6 +815,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettingslogsettings.ServerSettingsLoggingResource,
 		serversettingslogsettings.ServerSettingsLogSettingsResource,
 		serversettingssystemkeys.ServerSettingsSystemKeysResource,
+		serversettingssystemkeysrotate.ServerSettingsSystemKeysRotateResource,
 		serversettingswstruststssettingsissuercertificates.ServerSettingsWsTrustStsSettingsIssuerCertificateResource,
 		serversettingswstruststssettings.ServerSettingsWsTrustStsSettingsResource,
 		serviceauthentication.ServiceAuthenticationResource,
@@ -822,6 +825,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationPoliciesGlobalResource,
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionsettings.SessionSettingsResource,
+		spadapters.SpAdapterResource,
 		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
 		sptargeturlmappings.SpTargetUrlMappingsResource,
 		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,
