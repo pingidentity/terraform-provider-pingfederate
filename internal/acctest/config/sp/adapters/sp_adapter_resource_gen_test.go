@@ -82,7 +82,7 @@ func TestAccSpAdapter_MinimalMaximal(t *testing.T) {
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				// configuration.fields has some sensitive values which can't be imported
-				ImportStateVerifyIgnore: []string{"configuration.fields"},
+				ImportStateVerifyIgnore: []string{"configuration.sensitive_fields"},
 			},
 		},
 	})
@@ -127,14 +127,6 @@ resource "pingfederate_sp_adapter" "example" {
   }
   configuration = {
     fields = [
-      {
-        "name" : "Password",
-        "value" : "2FederateM0re"
-      },
-      {
-        "name" : "Confirm Password",
-        "value" : "2FederateM0re"
-      },
       {
         "name" : "Transport Mode",
         "value" : "2"
@@ -226,6 +218,16 @@ resource "pingfederate_sp_adapter" "example" {
       {
         "name" : "URL Encode Cookie Values",
         "value" : "true"
+      },
+    ]
+    sensitive_fields = [
+      {
+        "name" : "Password",
+        "value" : "2FederateM0re"
+      },
+      {
+        "name" : "Confirm Password",
+        "value" : "2FederateM0re"
       },
     ]
     tables = []

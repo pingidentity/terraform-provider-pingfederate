@@ -16,16 +16,16 @@ var (
 			"name": types.StringType,
 		},
 	}
-	extendedAttributesDefault, _ = types.ListValue(attributeContractAttrObjectType, nil)
+	extendedAttributesDefault, _ = types.SetValue(attributeContractAttrObjectType, nil)
 	subjectCoreAttribute, _      = types.ObjectValue(attributeContractAttrObjectType.AttrTypes, map[string]attr.Value{
 		"name": types.StringValue("subject"),
 	})
-	coreAttributesDefault, _ = types.ListValue(attributeContractAttrObjectType, []attr.Value{
+	coreAttributesDefault, _ = types.SetValue(attributeContractAttrObjectType, []attr.Value{
 		subjectCoreAttribute,
 	})
 	attributeContractDefault, _ = types.ObjectValue(map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeContractAttrObjectType},
-		"extended_attributes": types.ListType{ElemType: attributeContractAttrObjectType},
+		"core_attributes":     types.SetType{ElemType: attributeContractAttrObjectType},
+		"extended_attributes": types.SetType{ElemType: attributeContractAttrObjectType},
 	}, map[string]attr.Value{
 		"core_attributes":     coreAttributesDefault,
 		"extended_attributes": extendedAttributesDefault,

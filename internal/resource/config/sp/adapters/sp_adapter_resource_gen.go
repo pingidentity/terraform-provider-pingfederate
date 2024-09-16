@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -23,6 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -30,6 +31,8 @@ var (
 	_ resource.Resource                = &spAdapterResource{}
 	_ resource.ResourceWithConfigure   = &spAdapterResource{}
 	_ resource.ResourceWithImportState = &spAdapterResource{}
+
+	customId = "adapter_id"
 )
 
 func SpAdapterResource() resource.Resource {
@@ -83,7 +86,7 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -94,10 +97,10 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 						},
 						Optional:    false,
 						Computed:    true,
-						Default:     listdefault.StaticValue(coreAttributesDefault),
+						Default:     setdefault.StaticValue(coreAttributesDefault),
 						Description: "A list of read-only attributes that are automatically populated by the SP adapter descriptor.",
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -108,7 +111,7 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 						},
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(extendedAttributesDefault),
+						Default:     setdefault.StaticValue(extendedAttributesDefault),
 						Description: "A list of additional attributes that can be returned by the SP adapter. The extended attributes are only used if the adapter supports them.",
 					},
 				},
@@ -189,7 +192,7 @@ func (model *spAdapterResourceModel) buildClientStruct() (*client.SpAdapter, err
 		attributeContractValue := &client.SpAdapterAttributeContract{}
 		attributeContractAttrs := model.AttributeContract.Attributes()
 		attributeContractValue.ExtendedAttributes = []client.SpAdapterAttribute{}
-		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.List).Elements() {
+		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
 			extendedAttributesValue := client.SpAdapterAttribute{}
 			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
 			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
@@ -249,8 +252,8 @@ func (state *spAdapterResourceModel) readClientResponse(response *client.SpAdapt
 	}
 	attributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: attributeContractExtendedAttributesAttrTypes}
 	attributeContractAttrTypes := map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeContractCoreAttributesElementType},
-		"extended_attributes": types.ListType{ElemType: attributeContractExtendedAttributesElementType},
+		"core_attributes":     types.SetType{ElemType: attributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: attributeContractExtendedAttributesElementType},
 	}
 	var attributeContractValue types.Object
 	if response.AttributeContract == nil {
@@ -264,7 +267,7 @@ func (state *spAdapterResourceModel) readClientResponse(response *client.SpAdapt
 			respDiags.Append(diags...)
 			attributeContractCoreAttributesValues = append(attributeContractCoreAttributesValues, attributeContractCoreAttributesValue)
 		}
-		attributeContractCoreAttributesValue, diags := types.ListValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
+		attributeContractCoreAttributesValue, diags := types.SetValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
 		respDiags.Append(diags...)
 		var attributeContractExtendedAttributesValues []attr.Value
 		for _, attributeContractExtendedAttributesResponseValue := range response.AttributeContract.ExtendedAttributes {
@@ -274,7 +277,7 @@ func (state *spAdapterResourceModel) readClientResponse(response *client.SpAdapt
 			respDiags.Append(diags...)
 			attributeContractExtendedAttributesValues = append(attributeContractExtendedAttributesValues, attributeContractExtendedAttributesValue)
 		}
-		attributeContractExtendedAttributesValue, diags := types.ListValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
+		attributeContractExtendedAttributesValue, diags := types.SetValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
 		respDiags.Append(diags...)
 		attributeContractValue, diags = types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributesValue,
@@ -349,14 +352,14 @@ func (r *spAdapterResource) Create(ctx context.Context, req resource.CreateReque
 	// Create API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the spAdapter", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the spAdapter: "+err.Error())
 		return
 	}
 	apiCreateRequest := r.apiClient.SpAdaptersAPI.CreateSpAdapter(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.SpAdaptersAPI.CreateSpAdapterExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the spAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the spAdapter", err, httpResp, &customId)
 		return
 	}
 
@@ -387,7 +390,7 @@ func (r *spAdapterResource) Read(ctx context.Context, req resource.ReadRequest, 
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SP Adapter", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the spAdapter", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the spAdapter", err, httpResp, &customId)
 		}
 		return
 	}
@@ -419,7 +422,7 @@ func (r *spAdapterResource) Update(ctx context.Context, req resource.UpdateReque
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.SpAdaptersAPI.UpdateSpAdapterExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the spAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the spAdapter", err, httpResp, &customId)
 		return
 	}
 
@@ -443,7 +446,7 @@ func (r *spAdapterResource) Delete(ctx context.Context, req resource.DeleteReque
 	// Delete API call logic
 	httpResp, err := r.apiClient.SpAdaptersAPI.DeleteSpAdapter(config.AuthContext(ctx, r.providerConfig), data.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the spAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the spAdapter", err, httpResp, &customId)
 	}
 }
 
