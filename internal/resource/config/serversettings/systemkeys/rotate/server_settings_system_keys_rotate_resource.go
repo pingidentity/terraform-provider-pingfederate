@@ -65,6 +65,7 @@ func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req
 		Attributes: map[string]schema.Attribute{
 			"current": schema.SingleNestedAttribute{
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The current secret.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -77,12 +78,14 @@ func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req
 					},
 					"creation_date": schema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: "Creation time of the key.",
 					},
 				},
 			},
 			"previous": schema.SingleNestedAttribute{
 				Computed:    true,
+				Sensitive:   true,
 				Description: "Previously used secret.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -95,12 +98,14 @@ func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req
 					},
 					"creation_date": schema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: "Creation time of the key.",
 					},
 				},
 			},
 			"pending": schema.SingleNestedAttribute{
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The next secret.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -113,6 +118,7 @@ func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req
 					},
 					"creation_date": schema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: "Creation time of the key.",
 					},
 				},
