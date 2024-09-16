@@ -1,7 +1,14 @@
 # v0.17.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate` ([#293]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/293)))
 * **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings` ([#294](https://github.com/pingidentity/terraform-provider-pingfederate/pull/294))
 * **New Resource:** `pingfederate_keypairs_signing_key_rotation_settings` ([#334]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/334)))
+
+### Data sources
+* **New Data Source:** `pingfederate_keypairs_signing_certificate` ([#305](https://github.com/pingidentity/terraform-provider-pingfederate/pull/305))
+
+### Enhancements
+* Added new `configuration.sensitive_fields` and `configuration.tables.#.rows.#.sensitive_fields` attributes to plugin configuration across the provider. Use these fields when specifying sensitive fields in plugin configuration, such as secrets and passwords. Values specified in these sets will be marked as Sensitive to Terraform and hidden in the CLI and UI output. ([#383]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/383)))
 
 # v0.16.0 September 12, 2024
 ### Resources

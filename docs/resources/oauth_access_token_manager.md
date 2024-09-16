@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_access_token_manager Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages an OAuth access token manager plugin instance.
+  Resource to create and manage an OAuth access token manager plugin instance.
 ---
 
 # pingfederate_oauth_access_token_manager (Resource)
 
-Manages an OAuth access token manager plugin instance.
+Resource to create and manage an OAuth access token manager plugin instance.
 
 ## Example Usage - Internally Managed Reference Tokens
 
@@ -111,13 +111,15 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
                 value = "jwtSymmetricKey1"
               },
               {
-                name  = "Key"
-                value = var.jwt_symmetric_key
-              },
-              {
                 name  = "Encoding"
                 value = "b64u"
               }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = var.jwt_symmetric_key
+              },
             ]
             default_row = false
           }
@@ -274,7 +276,7 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
 
 - `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
+- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be alphanumeric, contain no spaces, and be less than 33 characters.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 
@@ -299,11 +301,11 @@ Required:
 
 Optional:
 
-- `default_subject_attribute` (String) Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.
+- `default_subject_attribute` (String) Default subject attribute to use for audit logging when validating the access token. Blank value means to use `USER_KEY` attribute value after grant lookup.
 
 Read-Only:
 
-- `core_attributes` (Attributes Set) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `core_attributes` (Attributes Set) A list of core token attributes that are associated with the access token management plugin type. This field is read-only. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`
@@ -314,7 +316,7 @@ Required:
 
 Optional:
 
-- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array. The default is `false`.
 
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
@@ -333,12 +335,13 @@ Read-Only:
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--configuration--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 Read-Only:
 
 - `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
-- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
 
 <a id="nestedatt--configuration--fields"></a>
 ### Nested Schema for `configuration.fields`
@@ -346,7 +349,16 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--sensitive_fields"></a>
+### Nested Schema for `configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables"></a>
@@ -367,6 +379,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--sensitive_fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`
@@ -374,7 +387,16 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 
@@ -385,7 +407,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables_all"></a>
@@ -413,7 +435,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 
@@ -432,8 +454,8 @@ Required:
 
 Optional:
 
-- `allowed_clients` (Attributes List) If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
-- `restrict_clients` (Boolean) Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.
+- `allowed_clients` (Attributes List) If 'restrict_clients' is `true`, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
+- `restrict_clients` (Boolean) Determines whether access to this token manager is restricted to specific OAuth clients. If `false`, the `allowed_clients` field is ignored. The default value is `false`.
 
 <a id="nestedatt--access_control_settings--allowed_clients"></a>
 ### Nested Schema for `access_control_settings.allowed_clients`
@@ -457,7 +479,7 @@ Required:
 
 Optional:
 
-- `resource_uris` (List of String) The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.
+- `resource_uris` (Set of String) The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.
 
 
 <a id="nestedatt--session_validation_settings"></a>
@@ -465,17 +487,17 @@ Optional:
 
 Optional:
 
-- `check_session_revocation_status` (Boolean) Check the session revocation status when validating the access token.
-- `check_valid_authn_session` (Boolean) Check for a valid authentication session when validating the access token.
-- `include_session_id` (Boolean) Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.
-- `update_authn_session_activity` (Boolean) Update authentication session activity when validating the access token.
+- `check_session_revocation_status` (Boolean) Check the session revocation status when validating the access token. The default is `false`.
+- `check_valid_authn_session` (Boolean) Check for a valid authentication session when validating the access token. The default is `false`.
+- `include_session_id` (Boolean) Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens. The default is `false`.
+- `update_authn_session_activity` (Boolean) Update authentication session activity when validating the access token. The default is `false`.
 
 ## Import
 
 Import is supported using the following syntax:
 
+~> "oauthAccessTokenManagerId" should be the id of the Access Token Manager to be imported
+
 ```shell
-# "oauthAccessTokenManagerId" should be the id of the Access Token Manager to be imported
-# After importing this resource, a subsequent terraform apply will be needed if plain-text values are used
 terraform import pingfederate_oauth_access_token_manager.oauthAccessTokenManager oauthAccessTokenManagerId
 ```

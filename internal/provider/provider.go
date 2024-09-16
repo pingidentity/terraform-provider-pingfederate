@@ -53,6 +53,7 @@ import (
 	kerberosrealmssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms/settings"
 	keypairsoauthopenidconnectadditionalkeysets "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect/additionalkeysets"
 	keypairsigning "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing"
+	keypairssigningcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/certificate"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
 	keypairssigningrotationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/rotationsettings"
 	keypairssslserver "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver"
@@ -90,6 +91,7 @@ import (
 	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
 	serversettingssystemkeys "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys"
 	serversettingswstruststssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings"
+	serversettingswstruststssettingsissuercertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings/issuercertificates"
 	sessionapplicationsessionpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/applicationsessionpolicy"
 	sessionauthenticationsessionpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies"
 	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
@@ -262,7 +264,7 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				Optional:    true,
 			},
 			"x_bypass_external_validation_header": schema.BoolAttribute{
-				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
+				Description: "Header value in request for PingFederate. When set to `true`, connectivity checks for resources such as `pingfederate_data_store` will be skipped. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
 				Optional:    true,
 			},
 		},
@@ -692,6 +694,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		idpdefaulturls.IdpDefaultUrlsDataSource,
 		idpspconnection.IdpSpConnectionDataSource,
 		keypairsigning.KeypairsSigningKeyDataSource,
+		keypairssigningcertificate.KeypairsSigningCertificateDataSource,
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
@@ -805,6 +808,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettingslogsettings.ServerSettingsLoggingResource,
 		serversettingslogsettings.ServerSettingsLogSettingsResource,
 		serversettingssystemkeys.ServerSettingsSystemKeysResource,
+		serversettingswstruststssettingsissuercertificates.ServerSettingsWsTrustStsSettingsIssuerCertificateResource,
 		serversettingswstruststssettings.ServerSettingsWsTrustStsSettingsResource,
 		sessionapplicationsessionpolicy.SessionApplicationPolicyResource,
 		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,

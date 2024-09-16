@@ -109,7 +109,7 @@ func TestAccCustomDataStore(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// Some configuration fields are sensitive, so they can't be verified here
-				ImportStateVerifyIgnore: []string{"custom_data_store.configuration.fields"},
+				ImportStateVerifyIgnore: []string{"custom_data_store.configuration.sensitive_fields"},
 			},
 			{
 				// Back to the initial minimal model
@@ -218,10 +218,6 @@ resource "pingfederate_data_store" "%[1]s" {
           value = "Administrator"
         },
         {
-          name  = "Password"
-          value = "2FederateM0re"
-        },
-        {
           name  = "Password Reference"
           value = ""
         },
@@ -236,10 +232,6 @@ resource "pingfederate_data_store" "%[1]s" {
         {
           name  = "Client ID"
           value = "%[13]s"
-        },
-        {
-          name  = "Client Secret"
-          value = "2FederateM0re"
         },
         {
           name  = "Client Secret Reference"
@@ -280,7 +272,26 @@ resource "pingfederate_data_store" "%[1]s" {
         {
           name  = "Test Connection Body"
           value = "%[21]s"
+        },
+        {
+          name  = "Client TLS Certificate"
+          value = ""
+        },
+        {
+          name  = "Maximum Connections"
+          value = "32"
         }
+      ]
+      sensitive_fields = [
+        {
+          name  = "Client Secret"
+          value = "2FederateM0re"
+        },
+        {
+          name  = "Password"
+          value = "2FederateM0re"
+        },
+
       ]
     }
   }

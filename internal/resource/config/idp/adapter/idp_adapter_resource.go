@@ -314,14 +314,13 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
-	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
@@ -397,14 +396,13 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
-	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 
 	err = addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
 	if err != nil {

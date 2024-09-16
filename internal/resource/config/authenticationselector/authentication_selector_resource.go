@@ -206,8 +206,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}
@@ -222,7 +221,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
+	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
 	err = addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
@@ -294,8 +293,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}
@@ -311,7 +309,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 	}
 
 	updateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), plan.SelectorId.ValueString())
-	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
+	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
 	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
