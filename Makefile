@@ -29,6 +29,7 @@ starttestcontainer:
 		-d -p 9031:9031 \
 		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
+		-e "OPERATIONAL_MODE=${OPERATIONAL_MODE}" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
 		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}-edge
@@ -72,9 +73,9 @@ testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 4; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings` -timeout 10m -v -p 4; \
 	firstTestResult=$$?; \
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 1; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings` -timeout 10m -v -p 1; \
 	secondTestResult=$$?; \
 	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0"; then \
 		false; \
@@ -88,6 +89,9 @@ testauthacc:
 	if test "$$oauthResult" != 0 || test "$$atResult" != 0; then \
 		false; \
 	fi
+
+testaccclustered:
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/cluster/... -timeout 5m -v
 
 testacccomplete: spincontainer testauthacc testacc
 
@@ -127,6 +131,7 @@ tfproviderlint:
 									-c 1 \
 									-AT001.ignored-filename-suffixes=_test.go \
 									-AT003=false \
+									-R018=false \
 									-XAT001=false \
 									-XR004=false \
 									-XS002=false ./internal/...

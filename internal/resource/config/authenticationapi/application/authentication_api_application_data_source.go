@@ -50,7 +50,7 @@ func (r *authenticationApiApplicationDataSource) Schema(ctx context.Context, req
 				Computed:    true,
 				Optional:    false,
 			},
-			"additional_allowed_origins": schema.ListAttribute{
+			"additional_allowed_origins": schema.SetAttribute{
 				Description: "The domain in the redirect URL is always whitelisted. This field contains a list of additional allowed origin URL's for cross-origin datasource sharing.",
 				Computed:    true,
 				Optional:    false,

@@ -1,2 +1,1 @@
-# This resource is singleton, so the value of "notificationPublishersSettingsId" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_notification_publishers_settings.notificationPublishersSettingsExample notificationPublishersSettingsId
+terraform import pingfederate_notification_publishers_settings.publisherSettings id

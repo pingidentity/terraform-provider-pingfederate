@@ -89,7 +89,7 @@ type idpAdapterModel struct {
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan *idpAdapterModel) diag.Diagnostics {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan *idpAdapterModel, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.AuthnCtxClassRef = types.StringPointerValue(r.AuthnCtxClassRef)
 	state.AdapterId = types.StringValue(r.Id)
@@ -101,7 +101,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	respDiags.Append(diags...)
 	// Configuration
 	if plan != nil {
-		state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration)
+		state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration, isImportRead)
 		respDiags.Append(diags...)
 	} else {
 		state.Configuration, diags = datasourcepluginconfiguration.ToDataSourceState(ctx, &r.Configuration)
@@ -121,24 +121,30 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 		// Only include core_attributes specified in the plan in the response
 		if plan != nil {
-			if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
-				coreAttributes := []attr.Value{}
-				planCoreAttributeNames := map[string]bool{}
-				for _, planCoreAttr := range plan.AttributeContract.Attributes()["core_attributes"].(types.Set).Elements() {
-					planCoreAttributeNames[planCoreAttr.(types.Object).Attributes()["name"].(types.String).ValueString()] = true
-				}
-				for _, coreAttr := range r.AttributeContract.CoreAttributes {
-					_, attrInPlan := planCoreAttributeNames[coreAttr.Name]
-					if attrInPlan {
-						attrObjVal, diags := types.ObjectValueFrom(ctx, attributesAttrType, coreAttr)
-						respDiags.Append(diags...)
-						coreAttributes = append(coreAttributes, attrObjVal)
-					}
-				}
-				attributeContractValues["core_attributes"], diags = types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, coreAttributes)
+			// Imports are the exception - put the core_attributes directly in the core_attributes field as well
+			if isImportRead {
+				attributeContractValues["core_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.CoreAttributes)
 				respDiags.Append(diags...)
 			} else {
-				attributeContractValues["core_attributes"] = types.SetNull(types.ObjectType{AttrTypes: attributesAttrType})
+				if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
+					coreAttributes := []attr.Value{}
+					planCoreAttributeNames := map[string]bool{}
+					for _, planCoreAttr := range plan.AttributeContract.Attributes()["core_attributes"].(types.Set).Elements() {
+						planCoreAttributeNames[planCoreAttr.(types.Object).Attributes()["name"].(types.String).ValueString()] = true
+					}
+					for _, coreAttr := range r.AttributeContract.CoreAttributes {
+						_, attrInPlan := planCoreAttributeNames[coreAttr.Name]
+						if attrInPlan {
+							attrObjVal, diags := types.ObjectValueFrom(ctx, attributesAttrType, coreAttr)
+							respDiags.Append(diags...)
+							coreAttributes = append(coreAttributes, attrObjVal)
+						}
+					}
+					attributeContractValues["core_attributes"], diags = types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, coreAttributes)
+					respDiags.Append(diags...)
+				} else {
+					attributeContractValues["core_attributes"] = types.SetNull(types.ObjectType{AttrTypes: attributesAttrType})
+				}
 			}
 			state.AttributeContract, diags = types.ObjectValue(attributeContractAttrTypes, attributeContractValues)
 			respDiags.Append(diags...)

@@ -1,11 +1,12 @@
 resource "pingfederate_oauth_access_token_manager" "internally_managed_example" {
-  manager_id = "internallyManagedReferenceOatm"
-  name       = "internallyManagedReferenceExample"
+  manager_id = "internallyManagedReferenceOATM"
+  name       = "Internally Managed Token Manager"
+
   plugin_descriptor_ref = {
     id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
+
   configuration = {
-    tables = []
     fields = [
       {
         name  = "Token Length"
@@ -42,20 +43,27 @@ resource "pingfederate_oauth_access_token_manager" "internally_managed_example" 
     ]
   }
   attribute_contract = {
-    coreAttributes = []
     extended_attributes = [
       {
-        name         = "extended_contract"
+        name         = "givenName"
+        multi_valued = false
+      },
+      {
+        name         = "familyName"
+        multi_valued = false
+      },
+      {
+        name         = "email"
+        multi_valued = false
+      },
+      {
+        name         = "groups"
         multi_valued = true
       }
     ]
   }
-  selection_settings = {
-    resource_uris = []
-  }
   access_control_settings = {
     restrict_clients = false
-    allowedClients   = []
   }
   session_validation_settings = {
     check_valid_authn_session       = false
