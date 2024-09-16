@@ -100,7 +100,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p256_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -114,7 +117,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p256_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -128,7 +134,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p256_decryption_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -147,7 +156,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p256_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -166,7 +178,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p384_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -180,7 +195,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p384_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -194,7 +212,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p384_decryption_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -213,7 +234,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p384_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -232,7 +256,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p521_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -246,7 +273,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p521_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -260,7 +290,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p521_decryption_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -279,7 +312,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"p521_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -298,7 +334,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"rsa_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -352,7 +391,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"rsa_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -366,7 +408,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"rsa_decryption_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
@@ -385,7 +430,10 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 			"rsa_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 						Description: "The ID of the resource.",
 					},
 				},
