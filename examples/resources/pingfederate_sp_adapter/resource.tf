@@ -7,7 +7,7 @@ resource "pingfederate_sp_adapter" "spAdapter" {
   }
 
   configuration = {
-    fields = [
+    sensitive_fields = [
       {
         name  = "Password",
         value = var.opentoken_sp_adapter_password
@@ -15,7 +15,9 @@ resource "pingfederate_sp_adapter" "spAdapter" {
       {
         name  = "Confirm Password",
         value = var.opentoken_sp_adapter_password
-      },
+      }
+    ]
+    fields = [
       {
         name  = "Transport Mode",
         value = "2"
