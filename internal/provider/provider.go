@@ -95,6 +95,7 @@ import (
 	serversettingssystemkeysrotate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys/rotate"
 	serversettingswstruststssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings"
 	serversettingswstruststssettingsissuercertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings/issuercertificates"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serviceauthentication"
 	sessionapplicationsessionpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/applicationsessionpolicy"
 	sessionauthenticationsessionpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies"
 	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
@@ -817,6 +818,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettingssystemkeysrotate.ServerSettingsSystemKeysRotateResource,
 		serversettingswstruststssettingsissuercertificates.ServerSettingsWsTrustStsSettingsIssuerCertificateResource,
 		serversettingswstruststssettings.ServerSettingsWsTrustStsSettingsResource,
+		serviceauthentication.ServiceAuthenticationResource,
 		sessionapplicationsessionpolicy.SessionApplicationPolicyResource,
 		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
 		sessionauthenticationsessionpolicies.SessionAuthenticationPolicyResource,
