@@ -139,6 +139,275 @@
           "dnsTtl": 60000,
           "ldapDnsSrvPrefix": "_ldap._tcp",
           "ldapsDnsSrvPrefix": "_ldaps._tcp"
+        },
+        {
+          "type": "CUSTOM",
+          "id": "customDataStore",
+          "name": "APIStubs.io Users",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
+          },
+          "configuration": {
+            "tables": [
+              {
+                "name": "Base URLs and Tags",
+                "rows": [
+                  {
+                    "fields": [
+                      {
+                        "name": "Base URL",
+                        "value": "https://demo.apistubs.io/api/v1/users"
+                      },
+                      {
+                        "name": "Tags",
+                        "value": "production"
+                      }
+                    ],
+                    "defaultRow": true
+                  }
+                ]
+              },
+              {
+                "name": "Attributes",
+                "rows": [
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/email"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "email"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/id"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "id"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/dob"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "dob"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/avatar"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "avatar"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/lastName"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "lastName"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/firstName"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "firstName"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/staticData"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "staticData"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/password"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "password"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/username"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "username"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/createdAt"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "createdAt"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/createdBy"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "createdBy"
+                      }
+                    ],
+                    "defaultRow": false
+                  }
+                ]
+              },
+              {
+                "name": "HTTP Request Headers",
+                "rows": []
+              }
+            ],
+            "fields": [
+              {
+                "name": "Authentication Method",
+                "value": "None"
+              },
+              {
+                "name": "Client ID",
+                "value": ""
+              },
+              {
+                "name": "Client Secret Reference",
+                "value": ""
+              },
+              {
+                "name": "Client Secret",
+                "value": ""
+              },
+              {
+                "name": "HTTP Method",
+                "value": "GET"
+              },
+              {
+                "name": "OAuth Scope",
+                "value": "restapiscope"
+              },
+              {
+                "name": "OAuth Token Endpoint",
+                "value": "https://authservices.bxretail.org/as/token"
+              },
+              {
+                "name": "Password Reference",
+                "value": ""
+              },
+              {
+                "name": "Password",
+                "value": ""
+              },
+              {
+                "name": "Username",
+                "value": ""
+              },
+              {
+                "name": "Client TLS Certificate",
+                "value": ""
+              },
+              {
+                "name": "Connection Timeout (ms)",
+                "value": "10000"
+              },
+              {
+                "name": "Enable HTTPS Hostname Verification",
+                "value": "true"
+              },
+              {
+                "name": "Max Payload Size (KB)",
+                "value": "1024"
+              },
+              {
+                "name": "Maximum Retries Limit",
+                "value": "5"
+              },
+              {
+                "name": "Read Timeout (ms)",
+                "value": "10000"
+              },
+              {
+                "name": "Retry Error Codes",
+                "value": "429"
+              },
+              {
+                "name": "Retry Request",
+                "value": "true"
+              },
+              {
+                "name": "Test Connection Body",
+                "value": "{\"foo\":\"bar\"}"
+              },
+              {
+                "name": "Test Connection URL",
+                "value": "https://demo.apistubs.io/api/v1/users"
+              },
+              {
+                "name": "Maximum Connections",
+                "value": "32"
+              }
+            ]
+          },
+          "maskAttributeValues": false
         }
       ]
     },
