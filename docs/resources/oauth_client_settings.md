@@ -96,21 +96,7 @@ resource "pingfederate_oauth_client_settings" "oauthClientSettings" {
 
 ### Optional
 
-- `client_metadata` (Attributes List) The client metadata. (see [below for nested schema](#nestedatt--client_metadata))
 - `dynamic_client_registration` (Attributes) Dynamic client registration settings. (see [below for nested schema](#nestedatt--dynamic_client_registration))
-
-<a id="nestedatt--client_metadata"></a>
-### Nested Schema for `client_metadata`
-
-Required:
-
-- `parameter` (String) The metadata name.
-
-Optional:
-
-- `description` (String) The metadata description. Defaults to an empty string.
-- `multi_valued` (Boolean) If the field should allow multiple values. Default value is `false`.
-
 
 <a id="nestedatt--dynamic_client_registration"></a>
 ### Nested Schema for `dynamic_client_registration`
