@@ -22,9 +22,8 @@ func TestAccOauthClientSettings_MinimalMaximal(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				// Create the resource with a minimal model
+				// Create the resource with a minimal model. No computed values to check.
 				Config: oauthClientSettings_MinimalHCL(),
-				Check:  oauthClientSettings_CheckComputedValuesMinimal(),
 			},
 			{
 				// Update to a complete model
@@ -34,14 +33,13 @@ func TestAccOauthClientSettings_MinimalMaximal(t *testing.T) {
 				// Test importing the resource
 				Config:                               oauthClientSettings_CompleteHCL(),
 				ResourceName:                         "pingfederate_oauth_client_settings.example",
-				ImportStateVerifyIdentifierAttribute: "client_metadata.#",
+				ImportStateVerifyIdentifierAttribute: "dynamic_client_registration.client_cert_issuer_type",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 			},
 			{
 				// Back to minimal model
 				Config: oauthClientSettings_MinimalHCL(),
-				Check:  oauthClientSettings_CheckComputedValuesMinimal(),
 			},
 			{
 				// Check that expected computed values are set
@@ -123,11 +121,6 @@ func oauthClientSettings_ComputedCheckHCL() string {
 
 resource "pingfederate_oauth_client_settings" "example" {
   dynamic_client_registration = {}
-  client_metadata = [
-    {
-      parameter = "useAuthApi"
-    },
-  ]
 }
 `, oauthClientSettings_DependencyHcl())
 }
@@ -150,18 +143,6 @@ resource "pingfederate_oauth_client_settings" "example" {
   depends_on = [
     pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.exclusiveScope,
     pingfederate_oauth_open_id_connect_policy.oidcPolicy
-  ]
-  client_metadata = [
-    {
-      parameter   = "authNexp"
-      description = "Authentication Experience"
-      multiValued = false
-    },
-    {
-      parameter   = "useAuthApi"
-      description = "Use the AuthN API"
-      multiValued = false
-    }
   ]
   dynamic_client_registration = {
     allow_client_delete                          = false
@@ -228,18 +209,9 @@ resource "pingfederate_oauth_client_settings" "example" {
 `, oauthClientSettings_DependencyHcl(), versionSpecificHcl)
 }
 
-// Validate any computed values when applying minimal HCL
-func oauthClientSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "client_metadata.#", "0"),
-	)
-}
-
 // Validate any computed values when applying HCL that expects computed values
 func oauthClientSettings_CheckComputedValues() resource.TestCheckFunc {
 	testCheckFuncs := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "client_metadata.0.description", ""),
-		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "client_metadata.0.multi_valued", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.allow_client_delete", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.allowed_authorization_detail_types.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.allowed_exclusive_scopes.#", "0"),

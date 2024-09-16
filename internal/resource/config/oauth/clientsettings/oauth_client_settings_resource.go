@@ -11,20 +11,9 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 var (
-	clientMetadataElemType = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"description":  types.StringType,
-			"multi_valued": types.BoolType,
-			"parameter":    types.StringType,
-		},
-	}
-
-	clientMetadataDefault, _ = types.ListValue(clientMetadataElemType, nil)
-
 	emptyStringSetDefault, _ = types.SetValue(types.StringType, nil)
 
 	refListElemType = types.ObjectType{
@@ -208,17 +197,6 @@ func addPfIgnoredError(respDiags *diag.Diagnostics, attrName, responseValue, req
 
 func (r *oauthClientSettingsResource) buildDefaultClientStruct() *client.ClientSettings {
 	result := &client.ClientSettings{}
-	result.ClientMetadata = []client.ClientMetadata{}
-	result.ClientMetadata = append(result.ClientMetadata, client.ClientMetadata{
-		Parameter:   utils.Pointer("authNexp"),
-		Description: utils.Pointer("Authentication Experience [Single_Factor | Internal | ID-First | Multi_Factor]"),
-		MultiValued: utils.Pointer(false),
-	})
-	result.ClientMetadata = append(result.ClientMetadata, client.ClientMetadata{
-		Parameter:   utils.Pointer("useAuthnApi"),
-		Description: utils.Pointer("Use the AuthN API"),
-		MultiValued: utils.Pointer(false),
-	})
 	return result
 }
 

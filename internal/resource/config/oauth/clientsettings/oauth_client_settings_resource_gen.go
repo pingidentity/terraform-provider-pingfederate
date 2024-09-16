@@ -53,7 +53,6 @@ func (r *oauthClientSettingsResource) Configure(_ context.Context, req resource.
 }
 
 type oauthClientSettingsResourceModel struct {
-	ClientMetadata            types.List   `tfsdk:"client_metadata"`
 	DynamicClientRegistration types.Object `tfsdk:"dynamic_client_registration"`
 }
 
@@ -61,32 +60,6 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 	resp.Schema = schema.Schema{
 		Description: "Resource to manage the client settings.",
 		Attributes: map[string]schema.Attribute{
-			"client_metadata": schema.ListNestedAttribute{
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"description": schema.StringAttribute{
-							Optional:    true,
-							Computed:    true,
-							Default:     stringdefault.StaticString(""),
-							Description: "The metadata description. Defaults to an empty string.",
-						},
-						"multi_valued": schema.BoolAttribute{
-							Optional:    true,
-							Computed:    true,
-							Default:     booldefault.StaticBool(false),
-							Description: "If the field should allow multiple values. Default value is `false`.",
-						},
-						"parameter": schema.StringAttribute{
-							Required:    true,
-							Description: "The metadata name.",
-						},
-					},
-				},
-				Optional:    true,
-				Computed:    true,
-				Default:     listdefault.StaticValue(clientMetadataDefault),
-				Description: "The client metadata.",
-			},
 			"dynamic_client_registration": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"allow_client_delete": schema.BoolAttribute{
@@ -561,17 +534,6 @@ func (r *oauthClientSettingsResource) ModifyPlan(ctx context.Context, req resour
 
 func (model *oauthClientSettingsResourceModel) buildClientStruct() (*client.ClientSettings, diag.Diagnostics) {
 	result := &client.ClientSettings{}
-	// client_metadata
-	result.ClientMetadata = []client.ClientMetadata{}
-	for _, clientMetadataElement := range model.ClientMetadata.Elements() {
-		clientMetadataValue := client.ClientMetadata{}
-		clientMetadataAttrs := clientMetadataElement.(types.Object).Attributes()
-		clientMetadataValue.Description = clientMetadataAttrs["description"].(types.String).ValueStringPointer()
-		clientMetadataValue.MultiValued = clientMetadataAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
-		clientMetadataValue.Parameter = clientMetadataAttrs["parameter"].(types.String).ValueStringPointer()
-		result.ClientMetadata = append(result.ClientMetadata, clientMetadataValue)
-	}
-
 	// dynamic_client_registration
 	if !model.DynamicClientRegistration.IsNull() {
 		dynamicClientRegistrationValue := &client.DynamicClientRegistration{}
@@ -682,28 +644,7 @@ func (model *oauthClientSettingsResourceModel) buildClientStruct() (*client.Clie
 }
 
 func (state *oauthClientSettingsResourceModel) readClientResponse(response *client.ClientSettings) diag.Diagnostics {
-	var respDiags, diags diag.Diagnostics
-	// client_metadata
-	clientMetadataAttrTypes := map[string]attr.Type{
-		"description":  types.StringType,
-		"multi_valued": types.BoolType,
-		"parameter":    types.StringType,
-	}
-	clientMetadataElementType := types.ObjectType{AttrTypes: clientMetadataAttrTypes}
-	var clientMetadataValues []attr.Value
-	for _, clientMetadataResponseValue := range response.ClientMetadata {
-		clientMetadataValue, diags := types.ObjectValue(clientMetadataAttrTypes, map[string]attr.Value{
-			"description":  types.StringPointerValue(clientMetadataResponseValue.Description),
-			"multi_valued": types.BoolPointerValue(clientMetadataResponseValue.MultiValued),
-			"parameter":    types.StringPointerValue(clientMetadataResponseValue.Parameter),
-		})
-		respDiags.Append(diags...)
-		clientMetadataValues = append(clientMetadataValues, clientMetadataValue)
-	}
-	clientMetadataValue, diags := types.ListValue(clientMetadataElementType, clientMetadataValues)
-	respDiags.Append(diags...)
-
-	state.ClientMetadata = clientMetadataValue
+	var respDiags diag.Diagnostics
 	// dynamic_client_registration
 	dynamicClientRegistrationClientCertIssuerRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
@@ -916,14 +857,6 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 // Set all non-primitive attributes to null with appropriate attribute types
 func (r *oauthClientSettingsResource) emptyModel() oauthClientSettingsResourceModel {
 	var model oauthClientSettingsResourceModel
-	// client_metadata
-	clientMetadataAttrTypes := map[string]attr.Type{
-		"description":  types.StringType,
-		"multi_valued": types.BoolType,
-		"parameter":    types.StringType,
-	}
-	clientMetadataElementType := types.ObjectType{AttrTypes: clientMetadataAttrTypes}
-	model.ClientMetadata = types.ListNull(clientMetadataElementType)
 	// dynamic_client_registration
 	dynamicClientRegistrationClientCertIssuerRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
