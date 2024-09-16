@@ -33,16 +33,16 @@ resource "pingfederate_server_settings_system_keys_rotate" "systemKeysRotate" {
 
 ### Read-Only
 
-- `current` (Attributes) The current secret. (see [below for nested schema](#nestedatt--current))
-- `pending` (Attributes) The next secret. (see [below for nested schema](#nestedatt--pending))
-- `previous` (Attributes) Previously used secret. (see [below for nested schema](#nestedatt--previous))
+- `current` (Attributes, Sensitive) The current secret. (see [below for nested schema](#nestedatt--current))
+- `pending` (Attributes, Sensitive) The next secret. (see [below for nested schema](#nestedatt--pending))
+- `previous` (Attributes, Sensitive) Previously used secret. (see [below for nested schema](#nestedatt--previous))
 
 <a id="nestedatt--current"></a>
 ### Nested Schema for `current`
 
 Read-Only:
 
-- `creation_date` (String) Creation time of the key.
+- `creation_date` (String, Sensitive) Creation time of the key.
 - `encrypted_key_data` (String, Sensitive) The system key encrypted.
 
 
@@ -51,7 +51,7 @@ Read-Only:
 
 Read-Only:
 
-- `creation_date` (String) Creation time of the key.
+- `creation_date` (String, Sensitive) Creation time of the key.
 - `encrypted_key_data` (String, Sensitive) The system key encrypted.
 
 
@@ -60,7 +60,7 @@ Read-Only:
 
 Read-Only:
 
-- `creation_date` (String) Creation time of the key.
+- `creation_date` (String, Sensitive) Creation time of the key.
 - `encrypted_key_data` (String, Sensitive) The system key encrypted.
 
 ## Import
