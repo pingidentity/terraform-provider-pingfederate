@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -31,11 +32,13 @@ var (
 	_ resource.ResourceWithConfigure   = &authenticationSelectorResource{}
 	_ resource.ResourceWithImportState = &authenticationSelectorResource{}
 
+	extendedAttributesElemType = types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"name": types.StringType,
+		},
+	}
 	attributeContractAttrType = map[string]attr.Type{
-		"extended_attributes": types.SetType{ElemType: types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"name": types.StringType,
-			}}},
+		"extended_attributes": types.SetType{ElemType: extendedAttributesElemType},
 	}
 
 	customId = "selector_id"
@@ -64,6 +67,10 @@ type authenticationSelectorResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *authenticationSelectorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	attributeContractDefault, diags := types.ObjectValue(attributeContractAttrType, map[string]attr.Value{
+		"extended_attributes": types.SetNull(extendedAttributesElemType),
+	})
+	resp.Diagnostics.Append(diags...)
 	schema := schema.Schema{
 		Description: "Manages Authentication Selectors",
 		Attributes: map[string]schema.Attribute{
@@ -96,6 +103,8 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the Authentication Selector provides.",
 				Optional:    true,
+				Computed:    true,
+				Default:     objectdefault.StaticValue(attributeContractDefault),
 				Attributes: map[string]schema.Attribute{
 					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A set of additional attributes that can be returned by the Authentication Selector. The extended attributes are only used if the Authentication Selector supports them.",
