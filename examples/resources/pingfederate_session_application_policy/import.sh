@@ -1,0 +1,1 @@
+terraform import pingfederate_session_application_policy.sessionApplicationPolicy id

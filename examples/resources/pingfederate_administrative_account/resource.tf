@@ -1,10 +1,6 @@
-# WARNING! You will need to secure your state file properly when using this resource! #
-# Please refer to the link below on how to best store state files and data within. #
-# https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
-
 resource "pingfederate_administrative_account" "administrativeAccount" {
-  username    = "example"
+  username    = "username"
   description = "description"
-  password    = "2FederateM0re"
+  password    = var.pingfederate_administrative_account_password
   roles       = ["USER_ADMINISTRATOR"]
 }

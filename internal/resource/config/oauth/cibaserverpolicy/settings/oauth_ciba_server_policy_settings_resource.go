@@ -12,6 +12,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -52,7 +53,7 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -98,7 +99,7 @@ func (r *oauthCibaServerPolicySettingsResource) Create(ctx context.Context, req 
 	createOauthCibaServerPolicySettings := client.NewCibaServerPolicySettings()
 	createOauthCibaServerPolicySettings.DefaultRequestPolicyRef, err = resourcelink.ClientStruct(plan.DefaultRequestPolicyRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_request_policy_ref to add request for OAuth CIBA Server Policy Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_request_policy_ref to add request for OAuth CIBA Server Policy Settings: "+err.Error())
 		return
 	}
 
@@ -166,7 +167,7 @@ func (r *oauthCibaServerPolicySettingsResource) Update(ctx context.Context, req 
 	createUpdateRequest := client.NewCibaServerPolicySettings()
 	createUpdateRequest.DefaultRequestPolicyRef, err = resourcelink.ClientStruct(plan.DefaultRequestPolicyRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_request_policy_ref to add request for OAuth CIBA Server Policy Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_request_policy_ref to add request for OAuth CIBA Server Policy Settings: "+err.Error())
 		return
 	}
 
@@ -194,6 +195,8 @@ func (r *oauthCibaServerPolicySettingsResource) Update(ctx context.Context, req 
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *oauthCibaServerPolicySettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	providererror.WarnConfigurationCannotBeReset("pingfederate_oauth_ciba_server_policy_settings", &resp.Diagnostics)
 }
 
 func (r *oauthCibaServerPolicySettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

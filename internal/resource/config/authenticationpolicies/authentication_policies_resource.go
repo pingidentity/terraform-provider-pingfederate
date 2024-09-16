@@ -23,6 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -154,7 +155,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -307,11 +308,11 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 	newPolicy := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(newPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for Authentication Policies", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for Authentication Policies: "+err.Error())
 		return
 	}
 
-	apiCreatePolicy := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreatePolicy := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreatePolicy = apiCreatePolicy.Body(*newPolicy)
 	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicyExecute(apiCreatePolicy)
 	if err != nil {
@@ -334,7 +335,7 @@ func (r *authenticationPoliciesResource) Read(ctx context.Context, req resource.
 		return
 	}
 
-	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetDefaultAuthenticationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Policies", httpResp)
@@ -368,11 +369,11 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 		return
 	}
 
-	updatePolicyRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updatePolicyRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig))
 	updatedPolicies := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(updatedPolicies, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for the Authentication Policies", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for the Authentication Policies: "+err.Error())
 		return
 	}
 
@@ -397,8 +398,15 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	resp.Diagnostics.Append(diags...)
 }
 
-// This resource is a put operation, so we do not need to implement the Delete method
 func (r *authenticationPoliciesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This delete will remove all authentication policies.
+	authPoliciesClientData := client.NewAuthenticationPolicy()
+	authPoliciesApiUpdateRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig))
+	authPoliciesApiUpdateRequest = authPoliciesApiUpdateRequest.Body(*authPoliciesClientData)
+	_, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicyExecute(authPoliciesApiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the Authentication Policies", err, httpResp)
+	}
 }
 
 func (r *authenticationPoliciesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
