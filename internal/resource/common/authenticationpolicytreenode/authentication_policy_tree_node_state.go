@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/policyaction"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 func GetRootNodeAttrTypes() map[string]attr.Type {
@@ -36,7 +37,7 @@ func ToState(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (ty
 func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNode, depth int, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if node == nil {
-		diags.AddError("provided authentication policy tree node is nil", "")
+		diags.AddError(providererror.InternalProviderError, "provided authentication policy tree node is nil")
 		return types.ObjectNull(attrTypes), diags
 	}
 	var attrValues = map[string]attr.Value{}

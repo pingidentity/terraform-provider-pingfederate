@@ -15,6 +15,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -73,7 +74,8 @@ type keyPairsSigningImportResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a file for importing a key pair.",
+		Description:        "Manages a file for importing a key pair.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Use the `pingfederate_keypairs_signing_key` resource instead.",
 		Attributes: map[string]schema.Attribute{
 			"file_data": schema.StringAttribute{
 				Description: "Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required.",
@@ -310,7 +312,7 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 	createKeyPairsSigningImport := client.NewKeyPairFile(plan.FileData.ValueString(), plan.Password.ValueString())
 	err := addOptionalKeyPairsSigningImportFields(ctx, createKeyPairsSigningImport, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a key pair signing import resource", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a key pair signing import resource: "+err.Error())
 		return
 	}
 

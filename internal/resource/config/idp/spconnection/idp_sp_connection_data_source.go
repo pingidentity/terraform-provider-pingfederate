@@ -44,7 +44,7 @@ var (
 
 	outboundProvisionDataSourceAttrTypes = map[string]attr.Type{
 		"type":            types.StringType,
-		"target_settings": types.ListType{ElemType: targetSettingsDataSourceElemAttrType},
+		"target_settings": types.SetType{ElemType: targetSettingsDataSourceElemAttrType},
 		"custom_schema":   types.ObjectType{AttrTypes: customSchemaAttrTypes},
 		"channels":        types.ListType{ElemType: channelsElemDataSourceAttrType},
 	}
@@ -63,7 +63,7 @@ type idpSpConnectionDataSource struct {
 
 // GetSchema defines the schema for the datasource.
 func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	certsSchema := schema.ListNestedAttribute{
+	certsSchema := schema.SetNestedAttribute{
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"active_verification_cert": schema.BoolAttribute{
@@ -127,7 +127,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 							Computed: true,
 							Optional: false,
 						},
-						"subject_alternative_names": schema.ListAttribute{
+						"subject_alternative_names": schema.SetAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Optional:    false,
@@ -373,7 +373,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 			},
 			"additional_allowed_entities_configuration": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"additional_allowed_entities": schema.ListNestedAttribute{
+					"additional_allowed_entities": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"entity_description": schema.StringAttribute{
@@ -421,7 +421,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 				Attributes: map[string]schema.Attribute{
 					"attribute_contract_fulfillment": datasourceattributecontractfulfillment.ToDataSourceSchema(),
 					"attribute_sources":              datasourceattributesources.ToDataSourceSchema(),
-					"attributes": schema.ListAttribute{
+					"attributes": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
@@ -589,7 +589,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 								Optional:    false,
 								Description: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
 							},
-							"alternative_signing_key_pair_refs": schema.ListNestedAttribute{
+							"alternative_signing_key_pair_refs": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: datasourceresourcelink.ToDataSourceSchema(),
 								},
@@ -641,7 +641,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 			"extended_properties": schema.MapNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"values": schema.ListAttribute{
+						"values": schema.SetAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Optional:    false,
@@ -873,7 +873,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 					},
 					"custom_schema": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"attributes": schema.ListNestedAttribute{
+							"attributes": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"multi_valued": schema.BoolAttribute{
@@ -886,13 +886,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 											Optional:    false,
 											Description: "Name of the attribute.",
 										},
-										"sub_attributes": schema.ListAttribute{
+										"sub_attributes": schema.SetAttribute{
 											ElementType: types.StringType,
 											Computed:    true,
 											Optional:    false,
 											Description: "List of sub-attributes for an attribute.",
 										},
-										"types": schema.ListAttribute{
+										"types": schema.SetAttribute{
 											ElementType: types.StringType,
 											Computed:    true,
 											Optional:    false,
@@ -912,7 +912,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Custom SCIM Attributes configuration.",
 					},
-					"target_settings": schema.ListNestedAttribute{
+					"target_settings": schema.SetNestedAttribute{
 						NestedObject: outboundProvisionTargetSettingsNestedObject,
 						Computed:     true,
 						Optional:     false,
@@ -930,7 +930,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 			},
 			"sp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.ListNestedAttribute{
+					"adapter_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -942,13 +942,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 									Attributes: map[string]schema.Attribute{
 										"attribute_contract": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
-												"core_attributes": schema.ListNestedAttribute{
+												"core_attributes": schema.SetNestedAttribute{
 													NestedObject: adapterOverrideSettingsAttribute,
 													Computed:     true,
 													Optional:     false,
 													Description:  "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 												},
-												"extended_attributes": schema.ListNestedAttribute{
+												"extended_attributes": schema.SetNestedAttribute{
 													NestedObject: adapterOverrideSettingsAttribute,
 													Computed:     true,
 													Optional:     false,
@@ -1010,7 +1010,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 									Optional:    false,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
 								},
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Computed:    true,
 									Optional:    false,
@@ -1034,7 +1034,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 								Optional:    false,
 								Description: "The lifetime of the artifact in seconds.",
 							},
-							"resolver_locations": schema.ListNestedAttribute{
+							"resolver_locations": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"index": schema.Int64Attribute{
@@ -1082,13 +1082,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"core_attributes": schema.ListNestedAttribute{
+							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: spBrowserSSOAttribute,
 								Computed:     true,
 								Optional:     false,
 								Description:  "A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate.",
 							},
-							"extended_attributes": schema.ListNestedAttribute{
+							"extended_attributes": schema.SetNestedAttribute{
 								NestedObject: spBrowserSSOAttribute,
 								Computed:     true,
 								Optional:     false,
@@ -1099,7 +1099,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "A set of user attributes that the IdP sends in the SAML assertion.",
 					},
-					"authentication_policy_contract_assertion_mappings": schema.ListNestedAttribute{
+					"authentication_policy_contract_assertion_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -1116,7 +1116,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 									Optional:    false,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
 								},
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Computed:    true,
 									Optional:    false,
@@ -1133,7 +1133,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Default Target URL for SAML1.x connections.",
 					},
-					"enabled_profiles": schema.ListAttribute{
+					"enabled_profiles": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
@@ -1151,7 +1151,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 								Optional:    false,
 								Description: "Encrypt the name-identifier attribute in outbound SLO messages.",
 							},
-							"encrypted_attributes": schema.ListAttribute{
+							"encrypted_attributes": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
 								Optional:    false,
@@ -1167,13 +1167,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Defines what to encrypt in the browser-based SSO profile.",
 					},
-					"incoming_bindings": schema.ListAttribute{
+					"incoming_bindings": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
 						Description: "The SAML bindings that are enabled for browser-based SSO.",
 					},
-					"message_customizations": schema.ListNestedAttribute{
+					"message_customizations": schema.SetNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
 						Computed:     true,
 						Optional:     false,
@@ -1199,7 +1199,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Sign SAML Response as required by the associated binding and encryption policy.",
 					},
-					"slo_service_endpoints": schema.ListNestedAttribute{
+					"slo_service_endpoints": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
@@ -1233,7 +1233,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Process in which users authenticated by the IdP are associated with user accounts local to the SP for WS-Federation connection types.",
 					},
-					"sso_service_endpoints": schema.ListNestedAttribute{
+					"sso_service_endpoints": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
@@ -1262,7 +1262,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "A list of possible endpoints to send assertions to.",
 					},
-					"url_whitelist_entries": schema.ListNestedAttribute{
+					"url_whitelist_entries": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"allow_query_and_fragment": schema.BoolAttribute{
@@ -1331,13 +1331,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"core_attributes": schema.ListNestedAttribute{
+							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: wsTrustAttribute,
 								Computed:     true,
 								Optional:     false,
 								Description:  "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
-							"extended_attributes": schema.ListNestedAttribute{
+							"extended_attributes": schema.SetNestedAttribute{
 								NestedObject: wsTrustAttribute,
 								Computed:     true,
 								Optional:     false,
@@ -1363,7 +1363,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "When selected, the STS generates a symmetric key to be used in conjunction with the \"Holder of Key\" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.",
 					},
-					"message_customizations": schema.ListNestedAttribute{
+					"message_customizations": schema.SetNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
 						Computed:     true,
 						Optional:     false,
@@ -1384,21 +1384,21 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "When selected, four additional token-type requests become available.",
 					},
-					"partner_service_ids": schema.ListAttribute{
+					"partner_service_ids": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
 						Description: "The partner service identifiers.",
 					},
 					"request_contract_ref": datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("Request Contract to be used to map attribute values into the security token."),
-					"token_processor_mappings": schema.ListNestedAttribute{
+					"token_processor_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"attribute_contract_fulfillment": datasourceattributecontractfulfillment.ToDataSourceSchema(),
 								"attribute_sources":              datasourceattributesources.ToDataSourceSchema(),
 								"idp_token_processor_ref":        datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("Reference to the associated token processor."),
 								"issuance_criteria":              datasourceissuancecriteria.ToDataSourceSchema(),
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Computed:    true,
 									Optional:    false,

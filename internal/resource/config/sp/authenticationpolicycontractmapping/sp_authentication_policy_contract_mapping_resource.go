@@ -3,10 +3,14 @@ package spauthenticationpolicycontractmapping
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -14,6 +18,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -42,6 +47,7 @@ type spAuthenticationPolicyContractMappingResourceModel struct {
 	Id                               types.String `tfsdk:"id"`
 	SourceId                         types.String `tfsdk:"source_id"`
 	TargetId                         types.String `tfsdk:"target_id"`
+	MappingId                        types.String `tfsdk:"mapping_id"`
 	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
 	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
 }
@@ -57,18 +63,43 @@ func (r *spAuthenticationPolicyContractMappingResource) Schema(ctx context.Conte
 			"source_id": schema.StringAttribute{
 				Description: "The id of the Authentication Policy Contract.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this APC-to-adapter mapping configuration.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"target_id": schema.StringAttribute{
 				Description: "The id of the SP Adapter.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"license_connection_group_assignment": schema.StringAttribute{
 				Description: "The license connection group",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"mapping_id": schema.StringAttribute{
+				Description: "The id of the APC-to-SP Adapter mapping.",
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -132,6 +163,7 @@ func readSpAuthenticationPolicyContractMappingResourceResponse(ctx context.Conte
 	state.SourceId = types.StringValue(r.SourceId)
 	state.TargetId = types.StringValue(r.TargetId)
 	state.Id = types.StringPointerValue(r.Id)
+	state.MappingId = types.StringPointerValue(r.Id)
 	state.DefaultTargetResource = types.StringPointerValue(r.DefaultTargetResource)
 	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
 	return diags
@@ -147,13 +179,13 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 	}
 	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
 		return
 	}
 	createSpAuthenticationPolicyContractMappingResource := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err = addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createSpAuthenticationPolicyContractMappingResource, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the SP Authentication Policy Contract Mapping Resource", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the SP Authentication Policy Contract Mapping Resource: "+err.Error())
 		return
 	}
 
@@ -214,14 +246,14 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 	}
 	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
 		return
 	}
 	updateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingById(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	createUpdateRequest := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err = addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SP Authentication Policy Contract Mapping Resource", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for SP Authentication Policy Contract Mapping Resource: "+err.Error())
 		return
 	}
 	updateSpAuthenticationPolicyContractMappingResource = updateSpAuthenticationPolicyContractMappingResource.Body(*createUpdateRequest)

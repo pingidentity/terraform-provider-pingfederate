@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &customIdReqValidator{}
@@ -13,7 +14,7 @@ var _ validator.String = &customIdReqValidator{}
 type customIdReqValidator struct{}
 
 func (v customIdReqValidator) Description(ctx context.Context) string {
-	return "Verifies custom_id contains more than 33 characters, contain no spaces, and be alphanumeric"
+	return "Verifies the string contains less than 33 characters, contains no spaces, and is alphanumeric"
 }
 
 func (v customIdReqValidator) MarkdownDescription(ctx context.Context) string {
@@ -31,8 +32,8 @@ func (v customIdReqValidator) ValidateString(ctx context.Context, req validator.
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid custom_id Value",
-			fmt.Sprintf("The custom_id of %s must be less than 33 characters, contain no spaces, and be alphanumeric", req.ConfigValue),
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("The id of %s must be less than 33 characters, contain no spaces, and be alphanumeric", req.ConfigValue),
 		)
 	}
 }
