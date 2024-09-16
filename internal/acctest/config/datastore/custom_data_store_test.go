@@ -11,6 +11,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // These variables cannot be modified due to resource dependent values
@@ -138,6 +139,19 @@ func TestAccCustomDataStore(t *testing.T) {
 }
 
 func testAccCustomDataStore(resourceName string, resourceModel customDataStoreResourceModel) string {
+	versionedFields := ""
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		versionedFields += `
+        {
+          name  = "Client TLS Certificate"
+          value = ""
+        },
+        {
+          name  = "Maximum Connections"
+          value = "32"
+        },
+		`
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "%[1]s" {
   data_store_id         = "%[2]s"
@@ -273,14 +287,7 @@ resource "pingfederate_data_store" "%[1]s" {
           name  = "Test Connection Body"
           value = "%[21]s"
         },
-        {
-          name  = "Client TLS Certificate"
-          value = ""
-        },
-        {
-          name  = "Maximum Connections"
-          value = "32"
-        }
+		%[22]s
       ]
       sensitive_fields = [
         {
@@ -319,6 +326,7 @@ data "pingfederate_data_store" "%[1]s" {
 		resourceModel.maximumRetriesLimit,
 		resourceModel.testConnectionUrl,
 		resourceModel.testConnectionBody,
+		versionedFields,
 	)
 }
 

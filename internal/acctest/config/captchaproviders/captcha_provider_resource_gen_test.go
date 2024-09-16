@@ -96,6 +96,8 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "provider_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
+				// Sensitive values aren't returned by PF, so they can't be verified
+				ImportStateVerifyIgnore: []string{"configuration.sensitive_fields.0.value"},
 			},
 		},
 	})
@@ -209,10 +211,6 @@ resource "pingfederate_captcha_provider" "example" {
         value : "1234"
       },
       {
-        name : "Secret Key"
-        value : "1234"
-      },
-      {
         name : "Pass Score Threshold"
         value : "0.8"
       },
@@ -220,6 +218,12 @@ resource "pingfederate_captcha_provider" "example" {
         name : "JavaScript File Name"
         value : "recaptcha-v3.js"
       }
+    ]
+    sensitive_fields = [
+      {
+        name : "Secret Key"
+        value : "1234"
+      },
     ]
   }
   plugin_descriptor_ref = {

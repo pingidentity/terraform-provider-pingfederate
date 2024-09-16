@@ -11,6 +11,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // #nosec G101
@@ -180,6 +181,28 @@ data "pingfederate_oauth_access_token_manager" "%[1]s" {
 }
 
 func testAccJsonWebOauthAccessTokenManager(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagerResourceModel) string {
+	versionedFields := ""
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		versionedFields += `
+      {
+        name  = "Not Before Claim Offset"
+        value = ""
+      },
+      {
+        name  = "Include Issued At Claim",
+        value = "false"
+      },
+    `
+	}
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		versionedFields += `
+      {
+        name  = "Publish Keys to the PingFederate JWKS Endpoint"
+        value = "false"
+      },
+    `
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "%[1]s" {
   manager_id = "%[2]s"
@@ -332,18 +355,6 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
         value = "false"
       },
       {
-        name  = "Publish Keys to the PingFederate JWKS Endpoint"
-        value = "false"
-      },
-      {
-        name  = "Not Before Claim Offset"
-        value = ""
-      },
-      {
-        name  = "Include Issued At Claim",
-        value = "false"
-      },
-      {
         name  = "Include JWE X.509 Thumbprint Header Parameter",
         value = "false"
       },
@@ -351,6 +362,7 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
         name  = "Include X.509 Thumbprint Header Parameter",
         value = "false"
       },
+      %[9]s
     ]
   }
   attribute_contract = {
@@ -404,6 +416,7 @@ data "pingfederate_oauth_access_token_manager" "%[1]s" {
 		*resourceModel.tokenLifetime,
 		resourceModel.activeSymmetricKeyId,
 		*resourceModel.checkValidAuthnSession,
+		versionedFields,
 	)
 }
 

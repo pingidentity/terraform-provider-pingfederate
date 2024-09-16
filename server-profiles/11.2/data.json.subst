@@ -362,10 +362,6 @@
                 "value": ""
               },
               {
-                "name": "Client TLS Certificate",
-                "value": ""
-              },
-              {
                 "name": "Connection Timeout (ms)",
                 "value": "10000"
               },
@@ -400,10 +396,6 @@
               {
                 "name": "Test Connection URL",
                 "value": "https://demo.apistubs.io/api/v1/users"
-              },
-              {
-                "name": "Maximum Connections",
-                "value": "32"
               }
             ]
           },
