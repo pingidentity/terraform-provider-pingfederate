@@ -122,6 +122,7 @@ resource "pingfederate_idp_to_sp_adapter_mapping" "idpToSpAdapterMapping" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `mapping_id` (String) The id of the IdP-to-SP Adapter mapping. This field is read-only.
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>

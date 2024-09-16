@@ -151,7 +151,7 @@ Read-Only:
 
 Read-Only:
 
-- `resource_uris` (List of String) The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.
+- `resource_uris` (Set of String) The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.
 
 
 <a id="nestedatt--session_validation_settings"></a>

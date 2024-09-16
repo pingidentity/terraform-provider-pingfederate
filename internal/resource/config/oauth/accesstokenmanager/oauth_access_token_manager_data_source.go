@@ -156,7 +156,7 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Optional:    false,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"resource_uris": schema.ListAttribute{
+					"resource_uris": schema.SetAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
 						Required:    false,
 						Optional:    false,

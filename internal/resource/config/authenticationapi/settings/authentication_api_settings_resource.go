@@ -11,6 +11,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -136,7 +137,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the authentication API settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the authentication API settings: "+err.Error())
 		return
 	}
 
@@ -203,7 +204,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the authentication API settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the authentication API settings: "+err.Error())
 		return
 	}
 

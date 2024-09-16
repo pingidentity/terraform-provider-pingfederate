@@ -18,8 +18,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -57,6 +59,7 @@ type sessionAuthenticationPolicyResourceModel struct {
 	AuthenticationSource  types.Object `tfsdk:"authentication_source"`
 	AuthnContextSensitive types.Bool   `tfsdk:"authn_context_sensitive"`
 	EnableSessions        types.Bool   `tfsdk:"enable_sessions"`
+	Id                    types.String `tfsdk:"id"`
 	IdleTimeoutMins       types.Int64  `tfsdk:"idle_timeout_mins"`
 	MaxTimeoutMins        types.Int64  `tfsdk:"max_timeout_mins"`
 	Persistent            types.Bool   `tfsdk:"persistent"`
@@ -162,13 +165,14 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *sessionAuthenticationPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	// Compare to version 12.0.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1200 := compare >= 0
@@ -227,6 +231,8 @@ func (model *sessionAuthenticationPolicyResourceModel) buildClientStruct() *clie
 
 func (state *sessionAuthenticationPolicyResourceModel) readClientResponse(response *client.AuthenticationSessionPolicy) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// authentication_source
 	authenticationSourceSourceRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
