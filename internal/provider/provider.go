@@ -51,6 +51,7 @@ import (
 	incomingproxysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/incomingproxysettings"
 	kerberosrealms "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms"
 	kerberosrealmssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms/settings"
+	keypairsoauthopenidconnect "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect"
 	keypairsoauthopenidconnectadditionalkeysets "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect/additionalkeysets"
 	keypairsigning "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing"
 	keypairssigningcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/certificate"
@@ -762,6 +763,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
+		keypairsoauthopenidconnect.KeypairsOauthOpenidConnectResource,
 		keypairsoauthopenidconnectadditionalkeysets.KeypairsOauthOpenidConnectAdditionalKeySetResource,
 		keypairsigning.KeypairsSigningKeyResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
