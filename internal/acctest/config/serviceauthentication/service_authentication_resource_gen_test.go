@@ -38,9 +38,7 @@ func TestAccServiceAuthentication_MinimalMaximal(t *testing.T) {
 				// The PF API won't return the shared secret values
 				ImportStateVerifyIgnore: []string{
 					"attribute_query.shared_secret",
-					"connection_management.shared_secret",
 					"jmx.shared_secret",
-					"sso_directory_service.shared_secret",
 				},
 			},
 			{
@@ -67,15 +65,7 @@ resource "pingfederate_service_authentication" "example" {
     id            = "heuristics"
     shared_secret = "2FederateM0re"
   }
-  connection_management = {
-    id            = "heuristics"
-    shared_secret = "2FederateM0re"
-  }
   jmx = {
-    id            = "heuristics"
-    shared_secret = "2FederateM0re"
-  }
-  sso_directory_service = {
     id            = "heuristics"
     shared_secret = "2FederateM0re"
   }

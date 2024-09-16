@@ -30,9 +30,7 @@ resource "pingfederate_service_authentication" "serviceAuthentication" {
 ### Optional
 
 - `attribute_query` (Attributes) SAML2.0 attribute query service. Remove the JSON field to deactivate the attribute query service. (see [below for nested schema](#nestedatt--attribute_query))
-- `connection_management` (Attributes) (Deprecated) Connection management service. Remove the JSON field to deactivate the connection management service. (see [below for nested schema](#nestedatt--connection_management))
 - `jmx` (Attributes) JMX application management and monitoring service. Remove the JSON field to deactivate the JMX service. (see [below for nested schema](#nestedatt--jmx))
-- `sso_directory_service` (Attributes) (Deprecated) SSO directory service. Remove the JSON field to deactivate the SSO Directory service. (see [below for nested schema](#nestedatt--sso_directory_service))
 
 <a id="nestedatt--attribute_query"></a>
 ### Nested Schema for `attribute_query`
@@ -43,26 +41,8 @@ Required:
 - `shared_secret` (String, Sensitive) Shared secret for the service.
 
 
-<a id="nestedatt--connection_management"></a>
-### Nested Schema for `connection_management`
-
-Required:
-
-- `id` (String) Id of the service.
-- `shared_secret` (String, Sensitive) Shared secret for the service.
-
-
 <a id="nestedatt--jmx"></a>
 ### Nested Schema for `jmx`
-
-Required:
-
-- `id` (String) Id of the service.
-- `shared_secret` (String, Sensitive) Shared secret for the service.
-
-
-<a id="nestedatt--sso_directory_service"></a>
-### Nested Schema for `sso_directory_service`
 
 Required:
 

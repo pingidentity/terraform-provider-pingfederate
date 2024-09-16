@@ -47,10 +47,8 @@ func (r *serviceAuthenticationResource) Configure(_ context.Context, req resourc
 }
 
 type serviceAuthenticationResourceModel struct {
-	AttributeQuery       types.Object `tfsdk:"attribute_query"`
-	ConnectionManagement types.Object `tfsdk:"connection_management"`
-	Jmx                  types.Object `tfsdk:"jmx"`
-	SsoDirectoryService  types.Object `tfsdk:"sso_directory_service"`
+	AttributeQuery types.Object `tfsdk:"attribute_query"`
+	Jmx            types.Object `tfsdk:"jmx"`
 }
 
 func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -78,27 +76,6 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 				Optional:    true,
 				Description: "SAML2.0 attribute query service. Remove the JSON field to deactivate the attribute query service.",
 			},
-			"connection_management": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Required:    true,
-						Description: "Id of the service.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-					"shared_secret": schema.StringAttribute{
-						Required:    true,
-						Sensitive:   true,
-						Description: "Shared secret for the service.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-				},
-				Optional:    true,
-				Description: "(Deprecated) Connection management service. Remove the JSON field to deactivate the connection management service.",
-			},
 			"jmx": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
@@ -120,27 +97,6 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 				Optional:    true,
 				Description: "JMX application management and monitoring service. Remove the JSON field to deactivate the JMX service.",
 			},
-			"sso_directory_service": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Required:    true,
-						Description: "Id of the service.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-					"shared_secret": schema.StringAttribute{
-						Required:    true,
-						Sensitive:   true,
-						Description: "Shared secret for the service.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-				},
-				Optional:    true,
-				Description: "(Deprecated) SSO directory service. Remove the JSON field to deactivate the SSO Directory service.",
-			},
 		},
 	}
 }
@@ -156,15 +112,6 @@ func (model *serviceAuthenticationResourceModel) buildClientStruct() (*client.Se
 		result.AttributeQuery = attributeQueryValue
 	}
 
-	// connection_management
-	if !model.ConnectionManagement.IsNull() {
-		connectionManagementValue := &client.ServiceModel{}
-		connectionManagementAttrs := model.ConnectionManagement.Attributes()
-		connectionManagementValue.Id = connectionManagementAttrs["id"].(types.String).ValueStringPointer()
-		connectionManagementValue.SharedSecret = connectionManagementAttrs["shared_secret"].(types.String).ValueStringPointer()
-		result.ConnectionManagement = connectionManagementValue
-	}
-
 	// jmx
 	if !model.Jmx.IsNull() {
 		jmxValue := &client.ServiceModel{}
@@ -172,15 +119,6 @@ func (model *serviceAuthenticationResourceModel) buildClientStruct() (*client.Se
 		jmxValue.Id = jmxAttrs["id"].(types.String).ValueStringPointer()
 		jmxValue.SharedSecret = jmxAttrs["shared_secret"].(types.String).ValueStringPointer()
 		result.Jmx = jmxValue
-	}
-
-	// sso_directory_service
-	if !model.SsoDirectoryService.IsNull() {
-		ssoDirectoryServiceValue := &client.ServiceModel{}
-		ssoDirectoryServiceAttrs := model.SsoDirectoryService.Attributes()
-		ssoDirectoryServiceValue.Id = ssoDirectoryServiceAttrs["id"].(types.String).ValueStringPointer()
-		ssoDirectoryServiceValue.SharedSecret = ssoDirectoryServiceAttrs["shared_secret"].(types.String).ValueStringPointer()
-		result.SsoDirectoryService = ssoDirectoryServiceValue
 	}
 
 	return result, nil
@@ -205,23 +143,6 @@ func (state *serviceAuthenticationResourceModel) readClientResponse(response *cl
 	}
 
 	state.AttributeQuery = attributeQueryValue
-	// connection_management
-	connectionManagementAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
-	}
-	var connectionManagementValue types.Object
-	if response.ConnectionManagement == nil {
-		connectionManagementValue = types.ObjectNull(connectionManagementAttrTypes)
-	} else {
-		connectionManagementValue, diags = types.ObjectValue(connectionManagementAttrTypes, map[string]attr.Value{
-			"id":            types.StringPointerValue(response.ConnectionManagement.Id),
-			"shared_secret": state.readClientResponseSharedSecret(state.ConnectionManagement),
-		})
-		respDiags.Append(diags...)
-	}
-
-	state.ConnectionManagement = connectionManagementValue
 	// jmx
 	jmxAttrTypes := map[string]attr.Type{
 		"id":            types.StringType,
@@ -239,23 +160,6 @@ func (state *serviceAuthenticationResourceModel) readClientResponse(response *cl
 	}
 
 	state.Jmx = jmxValue
-	// sso_directory_service
-	ssoDirectoryServiceAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
-	}
-	var ssoDirectoryServiceValue types.Object
-	if response.SsoDirectoryService == nil {
-		ssoDirectoryServiceValue = types.ObjectNull(ssoDirectoryServiceAttrTypes)
-	} else {
-		ssoDirectoryServiceValue, diags = types.ObjectValue(ssoDirectoryServiceAttrTypes, map[string]attr.Value{
-			"id":            types.StringPointerValue(response.SsoDirectoryService.Id),
-			"shared_secret": state.readClientResponseSharedSecret(state.SsoDirectoryService),
-		})
-		respDiags.Append(diags...)
-	}
-
-	state.SsoDirectoryService = ssoDirectoryServiceValue
 	return respDiags
 }
 
@@ -268,24 +172,12 @@ func (r *serviceAuthenticationResource) emptyModel() serviceAuthenticationResour
 		"shared_secret": types.StringType,
 	}
 	model.AttributeQuery = types.ObjectNull(attributeQueryAttrTypes)
-	// connection_management
-	connectionManagementAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
-	}
-	model.ConnectionManagement = types.ObjectNull(connectionManagementAttrTypes)
 	// jmx
 	jmxAttrTypes := map[string]attr.Type{
 		"id":            types.StringType,
 		"shared_secret": types.StringType,
 	}
 	model.Jmx = types.ObjectNull(jmxAttrTypes)
-	// sso_directory_service
-	ssoDirectoryServiceAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
-	}
-	model.SsoDirectoryService = types.ObjectNull(ssoDirectoryServiceAttrTypes)
 	return model
 }
 
