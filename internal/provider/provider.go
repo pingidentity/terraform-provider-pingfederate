@@ -99,6 +99,7 @@ import (
 	sessionauthenticationsessionpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies"
 	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
 	sessionsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/settings"
+	spadapters "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/adapters"
 	spauthenticationpolicycontractmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/authenticationpolicycontractmapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/defaulturls"
 	sptargeturlmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/targeturlmappings"
@@ -822,6 +823,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationPoliciesGlobalResource,
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionsettings.SessionSettingsResource,
+		spadapters.SpAdapterResource,
 		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
 		sptargeturlmappings.SpTargetUrlMappingsResource,
 		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,

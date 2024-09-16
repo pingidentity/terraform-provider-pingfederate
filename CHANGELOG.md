@@ -1,6 +1,7 @@
 # v0.17.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_server_settings_system_keys_rotate` ([#292](https://github.com/pingidentity/terraform-provider-pingfederate/pull/292))
+* **New Resource:** `pingfederate_sp_adapter` ([#265]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/265)))
 * **New Resource:** `pingfederate_keypairs_oauth_openid_connect` ([#267]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/267)))
 * **New Resource:** `pingfederate_oauth_client_settings` ([#286]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/286)))
 * **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate` ([#293]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/293)))
