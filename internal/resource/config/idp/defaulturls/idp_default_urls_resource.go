@@ -13,6 +13,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -61,7 +62,7 @@ func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.Schema
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -107,7 +108,7 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 	createIdpDefaultUrls := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createIdpDefaultUrls, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP default URL settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdP default URL settings: "+err.Error())
 		return
 	}
 
@@ -171,7 +172,7 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP default URL settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdP default URL settings: "+err.Error())
 		return
 	}
 

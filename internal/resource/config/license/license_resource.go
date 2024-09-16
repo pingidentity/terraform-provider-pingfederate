@@ -4,17 +4,19 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -81,108 +83,77 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name of the person the license was issued to.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"max_connections": schema.Int64Attribute{
 				Description: "Maximum number of connections that can be created under this license (if applicable).",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"used_connections": schema.Int64Attribute{
 				Description: "Number of used connections under this license.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"tier": schema.StringAttribute{
 				Description: "The tier value from the license file. The possible values are FREE, PERPETUAL or SUBSCRIPTION.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"issue_date": schema.StringAttribute{
 				Description: "The issue date value from the license file.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"expiration_date": schema.StringAttribute{
 				Description: "The expiration date value from the license file (if applicable).",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"enforcement_type": schema.StringAttribute{
 				Description: "The enforcement type is a 3-bit binary value, expressed as a decimal digit. The bits from left to right are: 1: Shutdown on expire. 2: Notify on expire. 4: Enforce minor version. if all three enforcements are active, the enforcement type will be 7 (1 + 2 + 4); if only the first two are active, you have an enforcement type of 3 (1 + 2).",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"version": schema.StringAttribute{
 				Description: "The Ping Identity product version from the license file.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"product": schema.StringAttribute{
 				Description: "The Ping Identity product value from the license file.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"organization": schema.StringAttribute{
 				Description: "The organization value from the license file.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"grace_period": schema.Int64Attribute{
 				Description: "Number of days provided as grace period, past the expiration date (if applicable).",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"node_limit": schema.Int64Attribute{
 				Description: "Maximum number of clustered nodes allowed under this license (if applicable).",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"license_groups": schema.ListNestedAttribute{
 				Description: "License connection groups, if applicable.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "Group name from the license file.",
-							Required:    false,
-							Optional:    false,
 							Computed:    true,
 						},
 						"connection_count": schema.Int64Attribute{
 							Description: "Maximum number of connections permitted under the group.",
-							Required:    false,
-							Optional:    false,
 							Computed:    true,
 						},
 						"start_date": schema.StringAttribute{
 							Description: "Start date for the group.",
-							Required:    false,
-							Optional:    false,
 							Computed:    true,
 						},
 						"end_date": schema.StringAttribute{
 							Description: "End date for the group.",
-							Required:    false,
-							Optional:    false,
 							Computed:    true,
 						},
 					},
@@ -190,45 +161,31 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"oauth_enabled": schema.BoolAttribute{
 				Description: "Indicates whether OAuth role is enabled for this license.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"ws_trust_enabled": schema.BoolAttribute{
 				Description: "Indicates whether WS-Trust role is enabled for this license.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"provisioning_enabled": schema.BoolAttribute{
 				Description: "Indicates whether Provisioning role is enabled for this license.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"bridge_mode": schema.BoolAttribute{
 				Description: "Indicates whether this license is a bridge license or not.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 			},
 			"features": schema.ListNestedAttribute{
 				Description: "Other licence features, if applicable.",
-				Required:    false,
-				Optional:    false,
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "The name of the license feature.",
-							Required:    false,
-							Optional:    false,
 							Computed:    true,
 						},
 						"value": schema.StringAttribute{
 							Description: "The value of the license feature.",
-							Required:    false,
-							Optional:    false,
 							Computed:    true,
 						},
 					},
@@ -236,7 +193,7 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -382,8 +339,6 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *licenseResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-}
-
-func (r *licenseResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	providererror.WarnConfigurationCannotBeReset("pingfederate_license", &resp.Diagnostics)
 }

@@ -129,6 +129,27 @@ func optionalHcl(resourceModel oauthAccessTokenMappingResourceModel) string {
 					filter       = "$%[6]s"
 					column_names = %[7]s
 				}
+			},
+			{
+				custom_attribute_source = {
+					data_store_ref = {
+					  	id = "customDataStore"
+					}
+					description = "APIStubs"
+					filter_fields = [
+					  	{
+					  	  	name = "Authorization Header"
+					  	},
+					  	{
+					  	  	name = "Body"
+					  	},
+					  	{
+					  	  	name  = "Resource Path"
+					  	  	value = "/users/$${external_id}"
+					  	},
+					]
+					id = "APIStubs"
+				}
 			}
 		]
 		`, resourceModel.attributeSource.DataStoreRef.Id,
@@ -293,6 +314,9 @@ func testAccCheckExpectedOauthAccessTokenMappingAttributes(config oauthAccessTok
 		if config.attributeSource != nil {
 			// attribute_source
 			attributeSourceResp := response.AttributeSources[0]
+			if attributeSourceResp.JdbcAttributeSource == nil {
+				attributeSourceResp = response.AttributeSources[1]
+			}
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthAccessTokenMappingId), "id", *config.attributeSource.Id, *attributeSourceResp.JdbcAttributeSource.Id)
 			if err != nil {
 				return err

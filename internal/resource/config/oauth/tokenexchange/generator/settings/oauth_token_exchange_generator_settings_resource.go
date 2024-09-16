@@ -12,6 +12,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -52,7 +53,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Schema(ctx context.Context
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -99,7 +100,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Create(ctx context.Context
 	createOauthTokenExchangeGeneratorSettings := client.NewTokenExchangeGeneratorSettings()
 	createOauthTokenExchangeGeneratorSettings.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_generator_group_ref to add request for OAuth Token Exchange Generator Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_generator_group_ref to add request for OAuth Token Exchange Generator Settings: "+err.Error())
 		return
 	}
 
@@ -167,7 +168,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 	createUpdateRequest := client.NewTokenExchangeGeneratorSettings()
 	createUpdateRequest.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_generator_group_ref to add request for OAuth Token Exchange Generator Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_generator_group_ref to add request for OAuth Token Exchange Generator Settings: "+err.Error())
 		return
 	}
 
@@ -197,6 +198,8 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *oauthTokenExchangeGeneratorSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	providererror.WarnConfigurationCannotBeReset("pingfederate_oauth_token_exchange_generator_settings", &resp.Diagnostics)
 }
 
 func (r *oauthTokenExchangeGeneratorSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

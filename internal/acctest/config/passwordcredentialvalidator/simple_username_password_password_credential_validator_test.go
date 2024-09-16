@@ -60,10 +60,8 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 				ImportStateId:     simpleUsernamePasswordPasswordCredentialValidatorsId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Tables get imported to tables_all, so can't verify them here
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-				},
+				// Sensitive table field values can't be imported so they can't be verified
+				ImportStateVerifyIgnore: []string{"configuration.tables"},
 			},
 			{
 				// Back to minimal model
@@ -118,19 +116,19 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
                 value = "example"
               },
               {
-                name = "Password"
-                # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "%[4]s"
-              },
-              {
-                name = "Confirm Password"
-                # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "%[4]s"
-              },
-              {
                 name  = "Relax Password Requirements"
                 value = "false"
               }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Password"
+                value = "%[4]s"
+              },
+              {
+                name  = "Confirm Password"
+                value = "%[4]s"
+              },
             ]
             default_row = false
           },
@@ -141,19 +139,19 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
                 value = "example2"
               },
               {
-                name = "Password"
-                # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "%[4]s"
-              },
-              {
-                name = "Confirm Password"
-                # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "%[4]s"
-              },
-              {
                 name  = "Relax Password Requirements"
                 value = "false"
               }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Password"
+                value = "%[4]s"
+              },
+              {
+                name  = "Confirm Password"
+                value = "%[4]s"
+              },
             ]
             default_row = false
           }

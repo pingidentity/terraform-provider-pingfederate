@@ -20,6 +20,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -40,6 +41,8 @@ var (
 	coreAttributesDefaultObjValue, _ = types.ObjectValue(coreAttributesDefaultObjAttrType, coreAttributesDefaultObjAttrValue)
 	coreAttributesDefaultListAttrVal = []attr.Value{coreAttributesDefaultObjValue}
 	coreAttributesDefaultListVal, _  = types.ListValue(attributeElemAttrType, coreAttributesDefaultListAttrVal)
+
+	customId = "contract_id"
 )
 
 // AuthenticationPolicyContractResource is a helper function to simplify the provider implementation.
@@ -172,7 +175,7 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 	createAuthenticationPolicyContracts := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createAuthenticationPolicyContracts, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an authentication policy contract", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an authentication policy contract: "+err.Error())
 		return
 	}
 
@@ -180,7 +183,7 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 	apiCreateAuthenticationPolicyContracts = apiCreateAuthenticationPolicyContracts.Body(*createAuthenticationPolicyContracts)
 	authenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContractExecute(apiCreateAuthenticationPolicyContracts)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an authentication policy contract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating an authentication policy contract", err, httpResp, &customId)
 		return
 	}
 
@@ -207,7 +210,8 @@ func (r *authenticationPolicyContractResource) Read(ctx context.Context, req res
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Policy Contract", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an authentication policy contract", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an authentication policy contract", err, httpResp, &customId)
+
 		}
 		return
 	}
@@ -237,14 +241,14 @@ func (r *authenticationPolicyContractResource) Update(ctx context.Context, req r
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an authentication policy contract", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an authentication policy contract: "+err.Error())
 		return
 	}
 
 	updateAuthenticationPolicyContracts = updateAuthenticationPolicyContracts.Body(*createUpdateRequest)
 	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an authentication policy contract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an authentication policy contract", err, httpResp, &customId)
 		return
 	}
 
@@ -268,7 +272,7 @@ func (r *authenticationPolicyContractResource) Delete(ctx context.Context, req r
 	}
 	httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an authentication policy contract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an authentication policy contract", err, httpResp, &customId)
 	}
 
 }

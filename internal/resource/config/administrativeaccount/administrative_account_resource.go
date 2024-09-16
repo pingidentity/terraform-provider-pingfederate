@@ -3,16 +3,20 @@ package administrativeaccount
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -40,13 +44,13 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 		Description: "Manages an administrative account.",
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
-				Description: "Indicates whether the account is active or not.",
+				Description: "Indicates whether the account is active or not. Default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"auditor": schema.BoolAttribute{
-				Description: "Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.",
+				Description: "Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles. Default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -54,17 +58,26 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 			"department": schema.StringAttribute{
 				Description: "The Department name of the account user.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the account.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"email_address": schema.StringAttribute{
 				Description: "Email address associated with the account.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"password": schema.StringAttribute{
-				Description: "Password for the Account. This field is only applicable during account creation.",
+				Description: "Password for the Account. This field is immutable.",
 				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
@@ -72,10 +85,11 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"encrypted_password": schema.StringAttribute{
-				Description: "Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
-				Computed:    true,
-				Optional:    false,
-				Sensitive:   true,
+				Description:        "Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
+				DeprecationMessage: "This field is deprecated and will be removed in a future release.",
+				Computed:           true,
+				Optional:           false,
+				Sensitive:          true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -83,15 +97,27 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 			"phone_number": schema.StringAttribute{
 				Description: "Phone number associated with the account.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"roles": schema.SetAttribute{
-				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
+				Description: "Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions.",
 				Required:    true,
 				ElementType: types.StringType,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(stringvalidator.OneOf("USER_ADMINISTRATOR", "CRYPTO_ADMINISTRATOR", "ADMINISTRATOR", "EXPRESSION_ADMINISTRATOR")),
+				},
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 		},
 	}
@@ -170,7 +196,7 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	createAdministrativeAccount := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan, true)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to the add request for the administrative account", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to the add request for the administrative account: "+err.Error())
 		return
 	}
 
@@ -233,7 +259,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan, false)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to the add request for the administrative account", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to the add request for the administrative account: "+err.Error())
 		return
 	}
 
