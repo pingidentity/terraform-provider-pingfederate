@@ -4017,6 +4017,53 @@
           }
         }
       ]
+    },
+    {
+      "resourceType": "/oauth/clientRegistrationPolicies",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "clientRegistrationPolicy",
+          "name": "clientRegistrationPolicy",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin",
+            "location": "https://localhost:9999/pf-admin-api/v1/oauth/clientRegistrationPolicies/descriptors/com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
+          },
+          "configuration": {
+            "tables": [],
+            "fields": [
+              {
+                "name": "code",
+                "value": "true"
+              },
+              {
+                "name": "code id_token",
+                "value": "true"
+              },
+              {
+                "name": "code id_token token",
+                "value": "true"
+              },
+              {
+                "name": "code token",
+                "value": "true"
+              },
+              {
+                "name": "id_token",
+                "value": "true"
+              },
+              {
+                "name": "id_token token",
+                "value": "true"
+              },
+              {
+                "name": "token",
+                "value": "true"
+              }
+            ]
+          }
+        }
+      ]
     }
   ]
 }
