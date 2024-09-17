@@ -86,6 +86,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/pingoneconnection"
 	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
+	protocolmetadatasigningsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/signingsettings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/secretmanagers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
@@ -807,6 +808,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		pingoneconnection.DeprecatedPingOneConnectionResource,
 		pingoneconnection.PingoneConnectionResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
+		protocolmetadatasigningsettings.ProtocolMetadataSigningSettingsResource,
 		redirectvalidation.RedirectValidationResource,
 		secretmanagers.SecretManagerResource,
 		serversettings.ServerSettingsResource,

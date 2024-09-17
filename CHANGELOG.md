@@ -1,5 +1,6 @@
 # v0.17.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_protocol_metadata_signing_settings` ([#290](https://github.com/pingidentity/terraform-provider-pingfederate/pull/290))
 * **New Resource:** `pingfederate_service_authentication` ([#295](https://github.com/pingidentity/terraform-provider-pingfederate/pull/295))
 * **New Resource:** `pingfederate_server_settings_system_keys_rotate` ([#292](https://github.com/pingidentity/terraform-provider-pingfederate/pull/292))
 * **New Resource:** `pingfederate_sp_adapter` ([#265]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/265)))
