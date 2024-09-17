@@ -18,16 +18,18 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
                 value = "example"
               },
               {
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
+            ]
+            sensitive_fields = [
+              {
                 name  = "Password"
                 value = var.pcv_password_user1
               },
               {
                 name  = "Confirm Password"
                 value = var.pcv_password_user1
-              },
-              {
-                name  = "Relax Password Requirements"
-                value = "false"
               }
             ]
             default_row = false
@@ -39,16 +41,18 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
                 value = "example2"
               },
               {
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
+            ]
+            sensitive_fields = [
+              {
                 name  = "Password"
                 value = var.pcv_password_user2
               },
               {
                 name  = "Confirm Password"
                 value = var.pcv_password_user2
-              },
-              {
-                name  = "Relax Password Requirements"
-                value = "false"
               }
             ]
             default_row = false

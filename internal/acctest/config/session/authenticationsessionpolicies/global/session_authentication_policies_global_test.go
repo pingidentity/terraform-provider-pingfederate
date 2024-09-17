@@ -27,10 +27,10 @@ type sessionAuthenticationPoliciesGlobalResourceModel struct {
 func TestAccSessionAuthenticationPoliciesGlobal(t *testing.T) {
 	resourceName := "mySessionAuthenticationPoliciesGlobal"
 	initialResourceModel := sessionAuthenticationPoliciesGlobalResourceModel{
-		enableSessions: true,
+		enableSessions: false,
 	}
 	updatedResourceModel := sessionAuthenticationPoliciesGlobalResourceModel{
-		enableSessions:             false,
+		enableSessions:             true,
 		persistentSessions:         pointers.Bool(false),
 		hashUniqueUserKeyAttribute: pointers.Bool(false),
 		idleTimeoutMins:            pointers.Int64(120),

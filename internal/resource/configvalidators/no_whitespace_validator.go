@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &noWhitespaceValidator{}
@@ -31,7 +32,7 @@ func (v noWhitespaceValidator) ValidateString(ctx context.Context, req validator
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Contains whitespace",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("%s must not contain any whitespace", req.ConfigValue),
 		)
 		return

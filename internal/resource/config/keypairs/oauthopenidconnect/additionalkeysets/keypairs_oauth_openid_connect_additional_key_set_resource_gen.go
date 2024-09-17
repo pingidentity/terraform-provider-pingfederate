@@ -17,8 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -27,6 +29,8 @@ var (
 	_ resource.Resource                = &keypairsOauthOpenidConnectAdditionalKeySetResource{}
 	_ resource.ResourceWithConfigure   = &keypairsOauthOpenidConnectAdditionalKeySetResource{}
 	_ resource.ResourceWithImportState = &keypairsOauthOpenidConnectAdditionalKeySetResource{}
+
+	customId = "set_id"
 )
 
 func KeypairsOauthOpenidConnectAdditionalKeySetResource() resource.Resource {
@@ -54,6 +58,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Configure(_ context
 
 type keypairsOauthOpenidConnectAdditionalKeySetResourceModel struct {
 	Description types.String `tfsdk:"description"`
+	Id          types.String `tfsdk:"id"`
 	Issuers     types.Set    `tfsdk:"issuers"`
 	Name        types.String `tfsdk:"name"`
 	SetId       types.String `tfsdk:"set_id"`
@@ -271,13 +276,14 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	// Compare to version 12.0.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
@@ -454,6 +460,8 @@ func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClien
 
 func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClientResponse(response *client.AdditionalKeySet, versionAtLeast1201 bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// description
 	state.Description = types.StringPointerValue(response.Description)
 	// issuers
@@ -683,7 +691,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Create(ctx context.
 	// Create API call logic
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
@@ -692,7 +700,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Create(ctx context.
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.CreateKeySetExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp, &customId)
 		return
 	}
 
@@ -720,7 +728,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Read(ctx context.Co
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Additional Key Set", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp, &customId)
 		}
 		return
 	}
@@ -728,7 +736,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Read(ctx context.Co
 	// Read response into the model
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
@@ -751,7 +759,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Update(ctx context.
 	// Update API call logic
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
@@ -760,7 +768,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Update(ctx context.
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.UpdateKeySetExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp, &customId)
 		return
 	}
 
@@ -784,7 +792,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Delete(ctx context.
 	// Delete API call logic
 	httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.DeleteKeySet(config.AuthContext(ctx, r.providerConfig), data.SetId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp, &customId)
 	}
 }
 

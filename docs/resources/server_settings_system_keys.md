@@ -9,6 +9,8 @@ description: |-
 
 Manages the system encryption keys.
 
+!> The pingfederate_server_settings_system_keys resource is deprecated and will be removed in a future release. Use the pingfederate_server_settings_system_keys_rotate resource instead.
+
 ## Example Usage
 
 ```terraform

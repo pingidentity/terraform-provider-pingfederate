@@ -15,6 +15,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -311,7 +312,7 @@ func (r *keyPairsSslServerImportResource) Create(ctx context.Context, req resour
 	createKeyPairsSslServerImport := client.NewKeyPairFile(plan.FileData.ValueString(), plan.Password.ValueString())
 	err := addOptionalKeyPairsSslServerImportFields(ctx, createKeyPairsSslServerImport, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPair SSL Server Import", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for KeyPair SSL Server Import: "+err.Error())
 		return
 	}
 

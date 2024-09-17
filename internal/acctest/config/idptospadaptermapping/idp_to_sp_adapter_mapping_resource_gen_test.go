@@ -139,6 +139,7 @@ resource "pingfederate_idp_to_sp_adapter_mapping" "example" {
 // Validate any computed values when applying minimal HCL
 func idpToSpAdapterMapping_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_idp_to_sp_adapter_mapping.example", "id", idpToSpAdapterMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_idp_to_sp_adapter_mapping.example", "mapping_id", idpToSpAdapterMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_idp_to_sp_adapter_mapping.example", "attribute_sources.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_idp_to_sp_adapter_mapping.example", "issuance_criteria.conditional_criteria.#", "0"),
@@ -148,6 +149,7 @@ func idpToSpAdapterMapping_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func idpToSpAdapterMapping_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_idp_to_sp_adapter_mapping.example", "id", idpToSpAdapterMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_idp_to_sp_adapter_mapping.example", "mapping_id", idpToSpAdapterMappingMappingId),
 	)
 }
