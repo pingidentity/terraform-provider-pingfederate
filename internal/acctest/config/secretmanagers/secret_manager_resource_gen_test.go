@@ -159,6 +159,7 @@ func secretManager_expectedFieldCount() string {
 // Validate any computed values when applying minimal HCL
 func secretManager_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "id", secretManagerManagerId),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.2.name", "Connection Timeout (sec)"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.2.value", "30"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.#", secretManager_expectedFieldCount()),
@@ -170,6 +171,7 @@ func secretManager_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func secretManager_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "id", secretManagerManagerId),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.#", secretManager_expectedFieldCount()),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.tables.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.tables_all.#", "0"),

@@ -10,6 +10,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -103,7 +104,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Protocol Metadata Lifetime Settings: "+err.Error())
 		return
 	}
 
@@ -168,7 +169,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Protocol Metadata Lifetime Settings: "+err.Error())
 		return
 	}
 

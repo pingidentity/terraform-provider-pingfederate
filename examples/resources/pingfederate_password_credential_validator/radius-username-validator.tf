@@ -25,6 +25,8 @@ resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCre
                 name  = "Authentication Protocol"
                 value = "PAP"
               },
+            ]
+            sensitive_fields = [
               {
                 name  = "Shared Secret"
                 value = var.pcv_shared_secret

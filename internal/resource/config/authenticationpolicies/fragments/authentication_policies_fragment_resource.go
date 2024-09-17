@@ -13,6 +13,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -144,7 +145,7 @@ func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req
 	newPolicyFragment := client.NewAuthenticationPolicyFragment()
 	err := addOptionalAuthenticationPoliciesFragmentFields(newPolicyFragment, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the Authentication Policy Fragment: "+err.Error())
 		return
 	}
 
@@ -206,7 +207,7 @@ func (r *authenticationPoliciesFragmentResource) Update(ctx context.Context, req
 	updatedFragment := client.NewAuthenticationPolicyFragment()
 	err := addOptionalAuthenticationPoliciesFragmentFields(updatedFragment, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the Authentication Policy Fragment: "+err.Error())
 		return
 	}
 

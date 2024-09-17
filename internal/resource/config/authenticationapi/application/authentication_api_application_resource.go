@@ -19,6 +19,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -29,6 +30,7 @@ var (
 	_ resource.ResourceWithImportState = &authenticationApiApplicationResource{}
 
 	emptyStringSet, _ = types.SetValue(types.StringType, nil)
+	customId          = "application_id"
 )
 
 // AuthenticationApiApplicationResource is a helper function to simplify the provider implementation.
@@ -154,7 +156,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 	createAuthenticationApiApplication := client.NewAuthnApiApplication(plan.ApplicationId.ValueString(), plan.Name.ValueString(), plan.Url.ValueString())
 	err := addOptionalAuthenticationApiApplicationFields(ctx, createAuthenticationApiApplication, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Api Application", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Api Application: "+err.Error())
 		return
 	}
 
@@ -162,7 +164,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 	apiCreateAuthenticationApiApplication = apiCreateAuthenticationApiApplication.Body(*createAuthenticationApiApplication)
 	authenticationApiApplicationResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.CreateApplicationExecute(apiCreateAuthenticationApiApplication)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Api Application", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Api Application", err, httpResp, &customId)
 		return
 	}
 
@@ -172,7 +174,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
 		authenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp, &customId)
 		}
 	}
 
@@ -199,7 +201,7 @@ func (r *authenticationApiApplicationResource) Read(ctx context.Context, req res
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication API Application", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp, &customId)
 		}
 		return
 	}
@@ -226,14 +228,14 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 	createUpdateRequest := client.NewAuthnApiApplication(plan.ApplicationId.ValueString(), plan.Name.ValueString(), plan.Url.ValueString())
 	err := addOptionalAuthenticationApiApplicationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Api Application", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Api Application: "+err.Error())
 		return
 	}
 
 	updateAuthenticationApiApplication = updateAuthenticationApiApplication.Body(*createUpdateRequest)
 	updateAuthenticationApiApplicationResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateApplicationExecute(updateAuthenticationApiApplication)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Api Application", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Api Application", err, httpResp, &customId)
 		return
 	}
 
@@ -243,7 +245,7 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
 		updateAuthenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp, &customId)
 		}
 	}
 
@@ -266,7 +268,7 @@ func (r *authenticationApiApplicationResource) Delete(ctx context.Context, req r
 	}
 	httpResp, err := r.apiClient.AuthenticationApiAPI.DeleteApplication(config.AuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Api Application", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Api Application", err, httpResp, &customId)
 		return
 	}
 

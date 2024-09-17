@@ -2,10 +2,20 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
   publisher_id = "EmailSMTPPublisherSettings"
   name         = "Email SMTP Publisher Settings"
   configuration = {
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
+      },
+    ]
     fields = [
       {
         name  = "Email Server"
         value = "localhost"
+      },
+      {
+        name  = "Username"
+        value = var.email_smtp_server_username
       },
       {
         name  = "From Address"
@@ -26,14 +36,6 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
       {
         name  = "SMTPS Port"
         value = "465"
-      },
-      {
-        name  = "Username"
-        value = var.email_smtp_server_username
-      },
-      {
-        name  = "Password"
-        value = var.email_smtp_server_password
       },
       {
         name  = "Verify Hostname"
