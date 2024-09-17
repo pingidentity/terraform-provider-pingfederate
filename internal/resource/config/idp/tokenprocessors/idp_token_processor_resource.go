@@ -12,5 +12,5 @@ var (
 			"masked": types.BoolType,
 		},
 	}
-	extendedAttributesDefault, _ = types.ListValue(attributeContractAttrObjectType, nil)
+	extendedAttributesDefault, _ = types.SetValue(attributeContractAttrObjectType, nil)
 )

@@ -182,7 +182,12 @@ func idpTokenProcessor_CheckComputedValuesMinimal() resource.TestCheckFunc {
 func idpTokenProcessor_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "attribute_contract.core_attributes.0.masked", "false"),
-		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "attribute_contract.extended_attributes.1.masked", "false"),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_idp_token_processor.example", "attribute_contract.extended_attributes.*",
+			map[string]string{
+				"name":   "MyClearAttr",
+				"masked": "false",
+			},
+		),
 	)
 }
 

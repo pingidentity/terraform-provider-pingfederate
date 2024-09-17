@@ -5,7 +5,7 @@ package idptokenprocessors
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -74,7 +74,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"masked": schema.BoolAttribute{
@@ -90,12 +90,12 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 							},
 						},
 						Required: true,
-						Validators: []validator.List{
-							listvalidator.SizeAtLeast(1),
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
 						},
 						Description: "A list of token processor attributes that correspond to the attributes exposed by the token processor type.",
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"masked": schema.BoolAttribute{
@@ -112,7 +112,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 						},
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(extendedAttributesDefault),
+						Default:     setdefault.StaticValue(extendedAttributesDefault),
 						Description: "A list of additional attributes that can be returned by the token processor. The extended attributes are only used if the token processor supports them.",
 					},
 					"mask_ognl_values": schema.BoolAttribute{
@@ -201,7 +201,7 @@ func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenP
 		attributeContractValue := &client.TokenProcessorAttributeContract{}
 		attributeContractAttrs := model.AttributeContract.Attributes()
 		attributeContractValue.CoreAttributes = []client.TokenProcessorAttribute{}
-		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.List).Elements() {
+		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
 			coreAttributesValue := client.TokenProcessorAttribute{}
 			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
 			coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
@@ -209,7 +209,7 @@ func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenP
 			attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
 		}
 		attributeContractValue.ExtendedAttributes = []client.TokenProcessorAttribute{}
-		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.List).Elements() {
+		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
 			extendedAttributesValue := client.TokenProcessorAttribute{}
 			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
 			extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
@@ -265,8 +265,8 @@ func (state *idpTokenProcessorResourceModel) readClientResponse(response *client
 	}
 	attributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: attributeContractExtendedAttributesAttrTypes}
 	attributeContractAttrTypes := map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeContractCoreAttributesElementType},
-		"extended_attributes": types.ListType{ElemType: attributeContractExtendedAttributesElementType},
+		"core_attributes":     types.SetType{ElemType: attributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: attributeContractExtendedAttributesElementType},
 		"mask_ognl_values":    types.BoolType,
 	}
 	var attributeContractValue types.Object
@@ -282,7 +282,7 @@ func (state *idpTokenProcessorResourceModel) readClientResponse(response *client
 			respDiags.Append(diags...)
 			attributeContractCoreAttributesValues = append(attributeContractCoreAttributesValues, attributeContractCoreAttributesValue)
 		}
-		attributeContractCoreAttributesValue, diags := types.ListValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
+		attributeContractCoreAttributesValue, diags := types.SetValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
 		respDiags.Append(diags...)
 		var attributeContractExtendedAttributesValues []attr.Value
 		for _, attributeContractExtendedAttributesResponseValue := range response.AttributeContract.ExtendedAttributes {
@@ -293,7 +293,7 @@ func (state *idpTokenProcessorResourceModel) readClientResponse(response *client
 			respDiags.Append(diags...)
 			attributeContractExtendedAttributesValues = append(attributeContractExtendedAttributesValues, attributeContractExtendedAttributesValue)
 		}
-		attributeContractExtendedAttributesValue, diags := types.ListValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
+		attributeContractExtendedAttributesValue, diags := types.SetValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
 		respDiags.Append(diags...)
 		attributeContractValue, diags = types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributesValue,
