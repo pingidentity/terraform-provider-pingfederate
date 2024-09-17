@@ -23,6 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -30,6 +31,8 @@ var (
 	_ resource.Resource                = &idpTokenProcessorResource{}
 	_ resource.ResourceWithConfigure   = &idpTokenProcessorResource{}
 	_ resource.ResourceWithImportState = &idpTokenProcessorResource{}
+
+	customId = "processor_id"
 )
 
 func IdpTokenProcessorResource() resource.Resource {
@@ -220,7 +223,7 @@ func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenP
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
 	} else {
 		result.Configuration = *configurationValue
 	}
@@ -355,7 +358,7 @@ func (r *idpTokenProcessorResource) Create(ctx context.Context, req resource.Cre
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpTokenProcessorsAPI.CreateTokenProcessorExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the idpTokenProcessor", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the idpTokenProcessor", err, httpResp, &customId)
 		return
 	}
 
@@ -386,7 +389,7 @@ func (r *idpTokenProcessorResource) Read(ctx context.Context, req resource.ReadR
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Token Processor", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the idpTokenProcessor", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the idpTokenProcessor", err, httpResp, &customId)
 		}
 		return
 	}
@@ -415,7 +418,7 @@ func (r *idpTokenProcessorResource) Update(ctx context.Context, req resource.Upd
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpTokenProcessorsAPI.UpdateTokenProcessorExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the idpTokenProcessor", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the idpTokenProcessor", err, httpResp, &customId)
 		return
 	}
 
@@ -439,7 +442,7 @@ func (r *idpTokenProcessorResource) Delete(ctx context.Context, req resource.Del
 	// Delete API call logic
 	httpResp, err := r.apiClient.IdpTokenProcessorsAPI.DeleteTokenProcessor(config.AuthContext(ctx, r.providerConfig), data.ProcessorId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the idpTokenProcessor", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the idpTokenProcessor", err, httpResp, &customId)
 	}
 }
 
