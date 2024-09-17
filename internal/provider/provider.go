@@ -47,6 +47,7 @@ import (
 	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
 	idpspconnection "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/spconnection"
 	idpstsrequestparameterscontracts "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/stsrequestparameterscontracts"
+	idptokenprocessors "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/tokenprocessors"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idptospadaptermapping"
 	incomingproxysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/incomingproxysettings"
 	kerberosrealms "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms"
@@ -765,6 +766,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		idpspconnection.IdpSpConnectionResource,
 		idpstsrequestparameterscontracts.IdpStsRequestParametersContractResource,
 		idptospadaptermapping.IdpToSpAdapterMappingResource,
+		idptokenprocessors.IdpTokenProcessorResource,
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
