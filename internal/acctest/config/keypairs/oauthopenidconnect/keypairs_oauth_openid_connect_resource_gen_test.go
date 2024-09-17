@@ -67,6 +67,22 @@ func keyspairsOauthOpenidConnect_VersionRestrictedHCL() string {
   rsa_decryption_active_key_id = "rsadecryptactive"
   rsa_decryption_previous_key_id = "rsadecryptprevious"
   rsa_previous_key_id = "rsaprevious"
+  rsa_algorithm_active_key_ids = [
+    {
+      key_id       = "rsalistactive"
+      rsa_alg_type = "RS256"
+    }
+  ]
+  rsa_algorithm_previous_key_ids = [
+    {
+      key_id       = "rsalistpreviousone"
+      rsa_alg_type = "RS384"
+    },
+    {
+      key_id       = "rsalistprevioustwo"
+      rsa_alg_type = "RS512"
+    }
+  ]
 `
 	}
 	return ""
@@ -127,22 +143,6 @@ resource "pingfederate_keypairs_oauth_openid_connect" "example" {
   rsa_active_cert_ref = {
     id = "419x9yg43rlawqwq9v6az997k"
   }
-  rsa_algorithm_active_key_ids = [
-    {
-      key_id       = "rsalistactive"
-      rsa_alg_type = "RS256"
-    }
-  ]
-  rsa_algorithm_previous_key_ids = [
-    {
-      key_id       = "rsalistpreviousone"
-      rsa_alg_type = "RS384"
-    },
-    {
-      key_id       = "rsalistprevioustwo"
-      rsa_alg_type = "RS512"
-    }
-  ]
   rsa_decryption_active_cert_ref = {
     id = "419x9yg43rlawqwq9v6az997k"
   }
