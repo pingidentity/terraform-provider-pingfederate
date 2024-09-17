@@ -31,7 +31,7 @@ var (
 	}
 
 	scopeAttributeMappingsElemAttrTypes = map[string]attr.Type{
-		"values": types.ListType{ElemType: types.StringType},
+		"values": types.SetType{ElemType: types.StringType},
 	}
 
 	scopeAttributeMappingsDefault, _  = types.MapValue(types.ObjectType{AttrTypes: scopeAttributeMappingsElemAttrTypes}, nil)
