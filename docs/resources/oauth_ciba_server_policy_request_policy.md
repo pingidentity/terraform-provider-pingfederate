@@ -61,7 +61,7 @@ resource "pingfederate_oauth_ciba_server_policy_request_policy" "requestPolicy" 
 ### Optional
 
 - `allow_unsigned_login_hint_token` (Boolean) Allow unsigned login hint token. Default value is `false`.
-- `alternative_login_hint_token_issuers` (Attributes List) Alternative login hint token issuers. (see [below for nested schema](#nestedatt--alternative_login_hint_token_issuers))
+- `alternative_login_hint_token_issuers` (Attributes Set) Alternative login hint token issuers. (see [below for nested schema](#nestedatt--alternative_login_hint_token_issuers))
 - `identity_hint_contract` (Attributes) Identity hint attribute contract. (see [below for nested schema](#nestedatt--identity_hint_contract))
 - `identity_hint_contract_fulfillment` (Attributes) Identity hint attribute contract fulfillment. (see [below for nested schema](#nestedatt--identity_hint_contract_fulfillment))
 - `require_token_for_identity_hint` (Boolean) Require token for identity hint. Default value is `false`.
@@ -370,11 +370,11 @@ Optional:
 
 Optional:
 
-- `extended_attributes` (Attributes List) A list of additional identity hint contract attributes. (see [below for nested schema](#nestedatt--identity_hint_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A list of additional identity hint contract attributes. (see [below for nested schema](#nestedatt--identity_hint_contract--extended_attributes))
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of required identity hint contract attributes. (see [below for nested schema](#nestedatt--identity_hint_contract--core_attributes))
+- `core_attributes` (Attributes Set) A list of required identity hint contract attributes. (see [below for nested schema](#nestedatt--identity_hint_contract--core_attributes))
 
 <a id="nestedatt--identity_hint_contract--extended_attributes"></a>
 ### Nested Schema for `identity_hint_contract.extended_attributes`

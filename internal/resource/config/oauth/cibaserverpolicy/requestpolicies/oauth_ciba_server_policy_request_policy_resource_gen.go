@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -61,7 +61,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Configure(_ context.Context
 
 type oauthCibaServerPolicyRequestPolicyResourceModel struct {
 	AllowUnsignedLoginHintToken      types.Bool   `tfsdk:"allow_unsigned_login_hint_token"`
-	AlternativeLoginHintTokenIssuers types.List   `tfsdk:"alternative_login_hint_token_issuers"`
+	AlternativeLoginHintTokenIssuers types.Set    `tfsdk:"alternative_login_hint_token_issuers"`
 	AuthenticatorRef                 types.Object `tfsdk:"authenticator_ref"`
 	Id                               types.String `tfsdk:"id"`
 	IdentityHintContract             types.Object `tfsdk:"identity_hint_contract"`
@@ -84,7 +84,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 				Default:     booldefault.StaticBool(false),
 				Description: "Allow unsigned login hint token. Default value is `false`.",
 			},
-			"alternative_login_hint_token_issuers": schema.ListNestedAttribute{
+			"alternative_login_hint_token_issuers": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"issuer": schema.StringAttribute{
@@ -103,7 +103,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 				},
 				Optional:    true,
 				Computed:    true,
-				Default:     listdefault.StaticValue(alternativeLoginHintTokenIssuersDefault),
+				Default:     setdefault.StaticValue(alternativeLoginHintTokenIssuersDefault),
 				Description: "Alternative login hint token issuers.",
 			},
 			"authenticator_ref": schema.SingleNestedAttribute{
@@ -118,7 +118,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 			},
 			"identity_hint_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -128,10 +128,10 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 							},
 						},
 						Computed:    true,
-						Default:     listdefault.StaticValue(coreAttributesDefault),
+						Default:     setdefault.StaticValue(coreAttributesDefault),
 						Description: "A list of required identity hint contract attributes.",
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -142,7 +142,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 						},
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(extendedAttributesDefault),
+						Default:     setdefault.StaticValue(extendedAttributesDefault),
 						Description: "A list of additional identity hint contract attributes.",
 					},
 				},
@@ -246,14 +246,14 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 	identityHintContractValue := client.IdentityHintContract{}
 	identityHintContractAttrs := model.IdentityHintContract.Attributes()
 	identityHintContractValue.CoreAttributes = []client.IdentityHintAttribute{}
-	for _, coreAttributesElement := range identityHintContractAttrs["core_attributes"].(types.List).Elements() {
+	for _, coreAttributesElement := range identityHintContractAttrs["core_attributes"].(types.Set).Elements() {
 		coreAttributesValue := client.IdentityHintAttribute{}
 		coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
 		coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
 		identityHintContractValue.CoreAttributes = append(identityHintContractValue.CoreAttributes, coreAttributesValue)
 	}
 	identityHintContractValue.ExtendedAttributes = []client.IdentityHintAttribute{}
-	for _, extendedAttributesElement := range identityHintContractAttrs["extended_attributes"].(types.List).Elements() {
+	for _, extendedAttributesElement := range identityHintContractAttrs["extended_attributes"].(types.Set).Elements() {
 		extendedAttributesValue := client.IdentityHintAttribute{}
 		extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
 		extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
@@ -341,7 +341,7 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 		respDiags.Append(diags...)
 		alternativeLoginHintTokenIssuersValues = append(alternativeLoginHintTokenIssuersValues, alternativeLoginHintTokenIssuersValue)
 	}
-	alternativeLoginHintTokenIssuersValue, diags := types.ListValue(alternativeLoginHintTokenIssuersElementType, alternativeLoginHintTokenIssuersValues)
+	alternativeLoginHintTokenIssuersValue, diags := types.SetValue(alternativeLoginHintTokenIssuersElementType, alternativeLoginHintTokenIssuersValues)
 	respDiags.Append(diags...)
 
 	state.AlternativeLoginHintTokenIssuers = alternativeLoginHintTokenIssuersValue
@@ -365,8 +365,8 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 	}
 	identityHintContractExtendedAttributesElementType := types.ObjectType{AttrTypes: identityHintContractExtendedAttributesAttrTypes}
 	identityHintContractAttrTypes := map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: identityHintContractCoreAttributesElementType},
-		"extended_attributes": types.ListType{ElemType: identityHintContractExtendedAttributesElementType},
+		"core_attributes":     types.SetType{ElemType: identityHintContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: identityHintContractExtendedAttributesElementType},
 	}
 	var identityHintContractCoreAttributesValues []attr.Value
 	for _, identityHintContractCoreAttributesResponseValue := range response.IdentityHintContract.CoreAttributes {
@@ -376,7 +376,7 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 		respDiags.Append(diags...)
 		identityHintContractCoreAttributesValues = append(identityHintContractCoreAttributesValues, identityHintContractCoreAttributesValue)
 	}
-	identityHintContractCoreAttributesValue, diags := types.ListValue(identityHintContractCoreAttributesElementType, identityHintContractCoreAttributesValues)
+	identityHintContractCoreAttributesValue, diags := types.SetValue(identityHintContractCoreAttributesElementType, identityHintContractCoreAttributesValues)
 	respDiags.Append(diags...)
 	var identityHintContractExtendedAttributesValues []attr.Value
 	for _, identityHintContractExtendedAttributesResponseValue := range response.IdentityHintContract.ExtendedAttributes {
@@ -386,7 +386,7 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 		respDiags.Append(diags...)
 		identityHintContractExtendedAttributesValues = append(identityHintContractExtendedAttributesValues, identityHintContractExtendedAttributesValue)
 	}
-	identityHintContractExtendedAttributesValue, diags := types.ListValue(identityHintContractExtendedAttributesElementType, identityHintContractExtendedAttributesValues)
+	identityHintContractExtendedAttributesValue, diags := types.SetValue(identityHintContractExtendedAttributesElementType, identityHintContractExtendedAttributesValues)
 	respDiags.Append(diags...)
 	identityHintContractValue, diags := types.ObjectValue(identityHintContractAttrTypes, map[string]attr.Value{
 		"core_attributes":     identityHintContractCoreAttributesValue,

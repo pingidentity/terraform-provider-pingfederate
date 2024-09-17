@@ -19,23 +19,23 @@ var (
 			"jwks_url": types.StringType,
 		},
 	}
-	alternativeLoginHintTokenIssuersDefault, _ = types.ListValue(alternativeLoginHintTokenIssuersElemType, nil)
+	alternativeLoginHintTokenIssuersDefault, _ = types.SetValue(alternativeLoginHintTokenIssuersElemType, nil)
 
 	attributeElemType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"name": types.StringType,
 		},
 	}
-	extendedAttributesDefault, _ = types.ListValue(attributeElemType, nil)
+	extendedAttributesDefault, _ = types.SetValue(attributeElemType, nil)
 
 	identityHintSubjectCoreAttribute, _ = types.ObjectValue(attributeElemType.AttrTypes, map[string]attr.Value{
 		"name": types.StringValue("IDENTITY_HINT_SUBJECT"),
 	})
-	coreAttributesDefault, _ = types.ListValue(attributeElemType, []attr.Value{identityHintSubjectCoreAttribute})
+	coreAttributesDefault, _ = types.SetValue(attributeElemType, []attr.Value{identityHintSubjectCoreAttribute})
 
 	identityHintContractDefault, _ = types.ObjectValue(map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeElemType},
-		"extended_attributes": types.ListType{ElemType: attributeElemType},
+		"core_attributes":     types.SetType{ElemType: attributeElemType},
+		"extended_attributes": types.SetType{ElemType: attributeElemType},
 	}, map[string]attr.Value{
 		"core_attributes":     coreAttributesDefault,
 		"extended_attributes": extendedAttributesDefault,
