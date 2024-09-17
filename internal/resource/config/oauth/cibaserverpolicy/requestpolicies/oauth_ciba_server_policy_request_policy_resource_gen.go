@@ -496,7 +496,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Create(ctx context.Context,
 	resp.Diagnostics.Append(diags...)
 	apiCreateRequest := r.apiClient.OauthCibaServerPolicyAPI.CreateCibaServerPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
-	responseData, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.CreateCibaServerPolicyExecute(apiCreateRequest)
+	responseData, httpResp, err := r.exponentialBackOffRetryCreate(ctx, apiCreateRequest, data.PolicyId.ValueString())
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the oauthCibaServerPolicyRequestPolicy", err, httpResp)
 		return
