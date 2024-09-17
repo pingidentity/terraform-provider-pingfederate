@@ -577,7 +577,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Delete(ctx context.Context,
 	}
 
 	// Delete API call logic
-	httpResp, err := api.ExponentialBackOffRetryDelete([]int{403},
+	httpResp, err := api.ExponentialBackOffRetryDelete([]int{403, 422},
 		r.apiClient.OauthCibaServerPolicyAPI.DeleteCibaServerPolicy(config.AuthContext(ctx, r.providerConfig), data.PolicyId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthCibaServerPolicyRequestPolicy", err, httpResp)
