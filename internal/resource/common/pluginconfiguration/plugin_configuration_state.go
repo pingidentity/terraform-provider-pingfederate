@@ -399,6 +399,45 @@ func MarkComputedAttrsUnknownOnChange(planConfiguration, stateConfiguration type
 	stateTables := stateConfiguration.Attributes()["tables"]
 	if !planTables.Equal(stateTables) {
 		planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes})
+	} else {
+		// If there is a tables_all table with rows defined, ensure there is a table in the plan with
+		// the same number of rows defined. If not, assume it's a drift, and set tables_all to unknown
+		tablesAllTablesWithRows := map[string]types.Object{}
+		matchesFound := map[string]bool{}
+		stateTablesAll := stateConfiguration.Attributes()["tables_all"].(types.List)
+		for _, table := range stateTablesAll.Elements() {
+			tableObj := table.(types.Object)
+			rows, ok := tableObj.Attributes()["rows"]
+			if ok && !rows.IsNull() && !rows.IsUnknown() && len(rows.(types.List).Elements()) > 0 {
+				name := tableObj.Attributes()["name"].(types.String).ValueString()
+				tablesAllTablesWithRows[name] = tableObj
+				matchesFound[name] = false
+			}
+		}
+
+		// Look for tables in the plan that match the tables in tables_all
+		planTables := planConfiguration.Attributes()["tables"].(types.List)
+		for _, table := range planTables.Elements() {
+			tableObj := table.(types.Object)
+			name := tableObj.Attributes()["name"].(types.String).ValueString()
+			tablesAllTable, ok := tablesAllTablesWithRows[name]
+			if ok && !tableObj.IsNull() && !tableObj.IsUnknown() {
+				// Compare length of rows
+				tablesAllRowCount := len(tablesAllTable.Attributes()["rows"].(types.List).Elements())
+				planTableRowCount := len(tableObj.Attributes()["rows"].(types.List).Elements())
+				if tablesAllRowCount == planTableRowCount {
+					matchesFound[name] = true
+				}
+			}
+		}
+
+		// If there was no match found for at least one of the tables in tables_all, set tables_all to unknown
+		for _, found := range matchesFound {
+			if !found {
+				planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes})
+				break
+			}
+		}
 	}
 
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
