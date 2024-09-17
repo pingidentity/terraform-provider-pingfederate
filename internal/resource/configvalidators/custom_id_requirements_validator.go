@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &customIdReqValidator{}
@@ -31,7 +32,7 @@ func (v customIdReqValidator) ValidateString(ctx context.Context, req validator.
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid id value",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("The id of %s must be less than 33 characters, contain no spaces, and be alphanumeric", req.ConfigValue),
 		)
 	}

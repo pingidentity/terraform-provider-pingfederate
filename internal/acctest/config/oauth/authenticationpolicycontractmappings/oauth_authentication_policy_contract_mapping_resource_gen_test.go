@@ -163,6 +163,7 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthAuthenticationPolicyContractMapping_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.example", "id", oauthAuthenticationPolicyContractMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.example", "mapping_id", oauthAuthenticationPolicyContractMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.example", "issuance_criteria.conditional_criteria.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.example", "attribute_sources.#", "0"),
@@ -172,6 +173,7 @@ func oauthAuthenticationPolicyContractMapping_CheckComputedValuesMinimal() resou
 // Validate any computed values when applying complete HCL
 func oauthAuthenticationPolicyContractMapping_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.example", "id", oauthAuthenticationPolicyContractMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.example", "mapping_id", oauthAuthenticationPolicyContractMappingMappingId),
 	)
 }
