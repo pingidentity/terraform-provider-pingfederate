@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -452,7 +453,9 @@ func (r *openidConnectPolicyResource) Delete(ctx context.Context, req resource.D
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	// Delete API call logic
+	httpResp, err := api.ExponentialBackOffRetryDelete([]int{422},
+		r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp, &customId)
 	}
