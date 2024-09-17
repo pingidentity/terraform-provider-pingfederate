@@ -30,6 +30,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -586,7 +587,10 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if scopeEntryIsDynamic {
 				if strings.Count(scopeEntryName, "*") != 1 {
-					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
+					resp.Diagnostics.AddAttributeError(
+						path.Root("scopes"),
+						providererror.InvalidAttributeConfiguration,
+						fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
 				}
 			}
 		}
@@ -603,7 +607,10 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if eScopeEntryIsDynamic {
 				if strings.Index(eScopeEntryName, "*") != 0 {
-					resp.Diagnostics.AddError("Exclusive scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
+					resp.Diagnostics.AddAttributeError(
+						path.Root("exclusive_scopes"),
+						providererror.InvalidAttributeConfiguration,
+						fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
 				}
 			}
 		}
@@ -612,12 +619,17 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 	// Test if values in sets match
 	matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
 	if matchVal != nil {
-		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", *matchVal))
+		resp.Diagnostics.AddError(
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("The scope name \"%s\" is defined in both scopes and exclusive_scopes", *matchVal))
 	}
 
 	// offline_access_require_consent_prompt can't be true if require_offline_access_scope_to_issue_refresh_tokens is false
 	if model.OfflineAccessRequireConsentPrompt.ValueBool() && !model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueBool() {
-		resp.Diagnostics.AddError("require_offline_access_scope_to_issue_refresh_tokens must be set to true to set offline_access_require_consent_prompt to true", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("require_offline_access_scope_to_issue_refresh_tokens"),
+			providererror.InvalidAttributeConfiguration,
+			"require_offline_access_scope_to_issue_refresh_tokens must be set to true to set offline_access_require_consent_prompt to true")
 	}
 }
 
@@ -625,19 +637,19 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 	// Compare to versions 11.3, 12.0, and 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
@@ -878,7 +890,7 @@ func (r *oauthServerSettingsResource) Create(ctx context.Context, req resource.C
 	createOauthServerSettings := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
 	err := addOptionalOauthServerSettingsFields(ctx, createOauthServerSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings: "+err.Error())
 		return
 	}
 
@@ -947,7 +959,7 @@ func (r *oauthServerSettingsResource) Update(ctx context.Context, req resource.U
 	createUpdateRequest := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
 	err := addOptionalOauthServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings: "+err.Error())
 		return
 	}
 

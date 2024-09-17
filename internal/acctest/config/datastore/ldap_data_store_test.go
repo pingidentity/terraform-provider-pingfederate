@@ -116,7 +116,7 @@ func TestAccLdapDataStore(t *testing.T) {
 				ImportStateId:           ldapDataStoreId,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ldap_data_store.user_dn", "ldap_data_store.password"},
+				ImportStateVerifyIgnore: []string{"ldap_data_store.password"},
 			},
 			{
 				// Back to the initial minimal model

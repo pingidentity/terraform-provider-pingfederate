@@ -6,8 +6,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -125,10 +127,19 @@ func validateActiveAndPreviousCertRef(prefix string, active, previous types.Obje
 		activeId := active.Attributes()["id"].(types.String)
 		previousId := previous.Attributes()["id"].(types.String)
 		if !activeId.IsUnknown() && activeId.Equal(previousId) {
-			respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different.", prefix), fmt.Sprintf("active id: %s, previous id: %s", activeId.ValueString(), previousId.ValueString()))
+			respDiags.AddAttributeError(
+				path.Root("signing_keys"),
+				providererror.InvalidAttributeConfiguration,
+				fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different. "+
+					"active id: %[2]s, previous id: %[3]s", prefix, activeId.ValueString(), previousId.ValueString()),
+			)
 		}
 	} else if !internaltypes.IsDefined(active) && internaltypes.IsDefined(previous) {
 		// active must be set to set the previous cert ref
-		respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref attribute must be set when signing_keys.%[1]sprevious_cert_ref is set.", prefix), "")
+		respDiags.AddAttributeError(
+			path.Root("signing_keys"),
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref attribute must be set when signing_keys.%[1]sprevious_cert_ref is set.", prefix),
+		)
 	}
 }

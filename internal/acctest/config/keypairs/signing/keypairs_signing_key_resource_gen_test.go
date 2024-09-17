@@ -182,6 +182,7 @@ func keypairsSigningKey_CheckComputedValuesGenerateMinimal() resource.TestCheckF
 	testChecks := []resource.TestCheckFunc{}
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "id", keypairsSigningKeyGenerateKeyId),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "expires"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example, O=Ping Identity, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "key_size", "2048"),
@@ -208,6 +209,7 @@ func keypairsSigningKey_CheckComputedValuesGenerateComplete() resource.TestCheck
 	testChecks := []resource.TestCheckFunc{}
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "id", keypairsSigningKeyGenerateKeyId),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "expires"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
 			resource.TestCheckNoResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "rotation_settings"),
@@ -233,6 +235,7 @@ func keypairsSigningKey_CheckComputedValuesImportMinimal() resource.TestCheckFun
 	testChecks := []resource.TestCheckFunc{}
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "id", keypairsSigningKeyImportKeyId),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "expires", "2044-07-24T15:46:27Z"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example Authority, O=Example Corporation, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "key_size", "2048"),
@@ -259,6 +262,7 @@ func keypairsSigningKey_CheckComputedValuesImportComplete() resource.TestCheckFu
 	testChecks := []resource.TestCheckFunc{}
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "id", keypairsSigningKeyImportKeyId),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "expires", "2025-08-01T15:16:44Z"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Another Authority, O=Example Corporation, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "key_size", "2048"),
