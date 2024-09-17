@@ -553,7 +553,7 @@ Optional:
 
 Optional:
 
-- `values` (List of String) A List of values.
+- `values` (Set of String) A List of values.
 
 ## Import
 
