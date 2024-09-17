@@ -54,10 +54,6 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
         value = var.email_smtp_server_username
       },
       {
-        name  = "Password"
-        value = var.email_smtp_server_password
-      },
-      {
         name  = "Verify Hostname"
         value = "true"
       },
@@ -80,6 +76,12 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
       {
         name  = "Enable SMTP Debugging Messages"
         value = "true"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
       }
     ]
   }
@@ -108,7 +110,7 @@ resource "pingfederate_local_identity_identity_profile" "identityProfileExample"
     update_attributes = false
     update_interval   = 0
   }
-  registration_enabled = false
+  registration_enabled = true
   registration_config = {
 
     template_name                           = "local.identity.registration.html"
@@ -361,6 +363,8 @@ Required:
 Optional:
 
 - `attributes` (Map of Boolean) Attributes of the local identity field.
+- `default_value` (String) The default value for this field.
+- `options` (Set of String) The list of options for this selection field.
 - `profile_page_field` (Boolean) Whether this is a profile page field or not. The default value is `false`.
 - `registration_page_field` (Boolean) Whether this is a registration page field or not. The default value is `false`.
 

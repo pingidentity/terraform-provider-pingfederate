@@ -6,7 +6,9 @@ resource "pingfederate_captcha_provider" "reCAPTCHAv2ProviderExample" {
       {
         name  = "Site Key"
         value = var.recaptcha_v2_site_key
-      },
+      }
+    ]
+    sensitive_fields = [
       {
         name  = "Secret Key"
         value = var.recaptcha_v2_secret_key

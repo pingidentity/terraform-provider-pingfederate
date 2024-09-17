@@ -16,8 +16,10 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -25,6 +27,8 @@ var (
 	_ resource.Resource                = &oauthIdpAdapterMappingResource{}
 	_ resource.ResourceWithConfigure   = &oauthIdpAdapterMappingResource{}
 	_ resource.ResourceWithImportState = &oauthIdpAdapterMappingResource{}
+
+	customId = "mapping_id"
 )
 
 func OauthIdpAdapterMappingResource() resource.Resource {
@@ -53,6 +57,7 @@ func (r *oauthIdpAdapterMappingResource) Configure(_ context.Context, req resour
 type oauthIdpAdapterMappingResourceModel struct {
 	AttributeContractFulfillment types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
+	Id                           types.String `tfsdk:"id"`
 	IdpAdapterRef                types.Object `tfsdk:"idp_adapter_ref"`
 	IssuanceCriteria             types.Object `tfsdk:"issuance_criteria"`
 	MappingId                    types.String `tfsdk:"mapping_id"`
@@ -89,6 +94,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.IdpAdapterMapping, error) {
@@ -119,6 +125,8 @@ func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.I
 
 func (state *oauthIdpAdapterMappingResourceModel) readClientResponse(response *client.IdpAdapterMapping) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// attribute_contract_fulfillment
 	attributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.AttributeContractFulfillment)
 	respDiags.Append(diags...)
@@ -167,14 +175,14 @@ func (r *oauthIdpAdapterMappingResource) Create(ctx context.Context, req resourc
 	// Create API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the oauthIdpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the oauthIdpAdapterMapping: "+err.Error())
 		return
 	}
 	apiCreateRequest := r.apiClient.OauthIdpAdapterMappingsAPI.CreateIdpAdapterMapping(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.OauthIdpAdapterMappingsAPI.CreateIdpAdapterMappingExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the oauthIdpAdapterMapping", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the oauthIdpAdapterMapping", err, httpResp, &customId)
 		return
 	}
 
@@ -202,7 +210,7 @@ func (r *oauthIdpAdapterMappingResource) Read(ctx context.Context, req resource.
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth IdP Adapter Mapping", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthIdpAdapterMapping", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the oauthIdpAdapterMapping", err, httpResp, &customId)
 		}
 		return
 	}
@@ -227,14 +235,14 @@ func (r *oauthIdpAdapterMappingResource) Update(ctx context.Context, req resourc
 	// Update API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the oauthIdpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the oauthIdpAdapterMapping: "+err.Error())
 		return
 	}
 	apiUpdateRequest := r.apiClient.OauthIdpAdapterMappingsAPI.UpdateIdpAdapterMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString())
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.OauthIdpAdapterMappingsAPI.UpdateIdpAdapterMappingExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the oauthIdpAdapterMapping", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the oauthIdpAdapterMapping", err, httpResp, &customId)
 		return
 	}
 
@@ -258,7 +266,7 @@ func (r *oauthIdpAdapterMappingResource) Delete(ctx context.Context, req resourc
 	// Delete API call logic
 	httpResp, err := r.apiClient.OauthIdpAdapterMappingsAPI.DeleteIdpAdapterMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthIdpAdapterMapping", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthIdpAdapterMapping", err, httpResp, &customId)
 	}
 }
 

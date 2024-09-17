@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &validPathValidator{}
@@ -30,7 +31,7 @@ func (v validPathValidator) ValidateString(ctx context.Context, req validator.St
 	if !strings.HasPrefix(strVal, "/") {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Path must begin with forward slash",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("%s must be prefixed with a '/'", req.ConfigValue),
 		)
 	}
@@ -38,7 +39,7 @@ func (v validPathValidator) ValidateString(ctx context.Context, req validator.St
 	if strings.HasSuffix(strVal, "/") {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Path must not end with forward slash",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("%s must not end with a '/'", req.ConfigValue),
 		)
 	}
