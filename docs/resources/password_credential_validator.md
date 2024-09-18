@@ -111,12 +111,14 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
                 name = "Client IP"
                 # IP of Client
                 value = var.pcv_client_ip
-              },
+              }
+            ],
+            sensitive_fields = [
               {
                 name  = "Client Shared Secret"
                 value = var.pcv_shared_secret
               }
-            ],
+            ]
             default_row = false
           }
         ]
@@ -256,11 +258,6 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
         value = "VPN"
       },
       {
-        # use_base64_key value from PingID Properties File
-        name  = "State Encryption Key"
-        value = var.pcv_state_encryption_key
-      },
-      {
         name  = "State Lifetime"
         value = "300"
       },
@@ -283,6 +280,13 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
       {
         name  = "Newline Character"
         value = "None"
+      }
+    ]
+    sensitive_fields = [
+      {
+        # use_base64_key value from PingID Properties File
+        name  = "State Encryption Key"
+        value = var.pcv_state_encryption_key
       }
     ]
   }
@@ -364,10 +368,6 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
         value = "ping_federate_client_id"
       },
       {
-        name  = "Client Secret"
-        value = var.pcv_client_secret
-      },
-      {
         name  = "PingOne URL"
         value = "https://directory-api.pingone.com/api"
       },
@@ -390,6 +390,12 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
       {
         name  = "Connection Pool Idle Timeout"
         value = "4000"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Client Secret"
+        value = var.pcv_client_secret
       }
     ]
   }
@@ -426,6 +432,8 @@ resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCre
                 name  = "Authentication Protocol"
                 value = "PAP"
               },
+            ]
+            sensitive_fields = [
               {
                 name  = "Shared Secret"
                 value = var.pcv_shared_secret
@@ -488,16 +496,18 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
                 value = "example"
               },
               {
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
+            ]
+            sensitive_fields = [
+              {
                 name  = "Password"
                 value = var.pcv_password_user1
               },
               {
                 name  = "Confirm Password"
                 value = var.pcv_password_user1
-              },
-              {
-                name  = "Relax Password Requirements"
-                value = "false"
               }
             ]
             default_row = false
@@ -509,16 +519,18 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
                 value = "example2"
               },
               {
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
+            ]
+            sensitive_fields = [
+              {
                 name  = "Password"
                 value = var.pcv_password_user2
               },
               {
                 name  = "Confirm Password"
                 value = var.pcv_password_user2
-              },
-              {
-                name  = "Relax Password Requirements"
-                value = "false"
               }
             ]
             default_row = false
@@ -555,12 +567,13 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--configuration--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 Read-Only:
 
 - `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
-- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
 
 <a id="nestedatt--configuration--fields"></a>
 ### Nested Schema for `configuration.fields`
@@ -568,7 +581,16 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--sensitive_fields"></a>
+### Nested Schema for `configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables"></a>
@@ -589,6 +611,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--sensitive_fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`
@@ -596,7 +619,16 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 
@@ -607,7 +639,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--configuration--tables_all"></a>
@@ -635,7 +667,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 

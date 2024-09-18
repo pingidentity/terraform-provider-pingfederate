@@ -13,10 +13,6 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
         value = "ping_federate_client_id"
       },
       {
-        name  = "Client Secret"
-        value = var.pcv_client_secret
-      },
-      {
         name  = "PingOne URL"
         value = "https://directory-api.pingone.com/api"
       },
@@ -39,6 +35,12 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
       {
         name  = "Connection Pool Idle Timeout"
         value = "4000"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Client Secret"
+        value = var.pcv_client_secret
       }
     ]
   }

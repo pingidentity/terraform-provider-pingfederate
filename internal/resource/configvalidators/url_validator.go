@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &urlValidator{}
@@ -42,8 +43,8 @@ func validateUrlValue(path path.Path, value types.String, respDiags *diag.Diagno
 	if err != nil {
 		respDiags.AddAttributeError(
 			path,
-			fmt.Sprintf("Invalid URL Format for '%s'", value.ValueString()),
-			err.Error(),
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("Invalid URL Format for '%s': %s", value.ValueString(), err.Error()),
 		)
 	}
 }
@@ -71,11 +72,6 @@ func (v urlListValidator) ValidateList(ctx context.Context, req validator.ListRe
 	for _, elem := range listElems {
 		elemString, ok := elem.(types.String)
 		if !ok {
-			resp.Diagnostics.AddAttributeError(
-				req.Path,
-				"URL Validation can only be applied to a list of strings",
-				"",
-			)
 			return
 		}
 		validateUrlValue(req.Path, elemString, &resp.Diagnostics)
@@ -106,11 +102,6 @@ func (v urlSetValidator) ValidateSet(ctx context.Context, req validator.SetReque
 	for _, elem := range setElems {
 		elemString, ok := elem.(types.String)
 		if !ok {
-			resp.Diagnostics.AddAttributeError(
-				req.Path,
-				"URL Validation can only be applied to a set of strings",
-				"",
-			)
 			return
 		}
 		validateUrlValue(req.Path, elemString, &resp.Diagnostics)

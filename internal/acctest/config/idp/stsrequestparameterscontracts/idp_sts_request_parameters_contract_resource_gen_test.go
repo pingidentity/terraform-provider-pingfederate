@@ -51,6 +51,7 @@ func TestAccIdpStsRequestParametersContract_MinimalMaximal(t *testing.T) {
 			{
 				// Create the resource with a minimal model
 				Config: idpStsRequestParametersContract_MinimalHCL(),
+				Check:  idpStsRequestParametersContract_CheckComputedValues(),
 			},
 			{
 				// Delete the minimal model
@@ -60,14 +61,17 @@ func TestAccIdpStsRequestParametersContract_MinimalMaximal(t *testing.T) {
 			{
 				// Re-create with a complete model
 				Config: idpStsRequestParametersContract_CompleteHCL(),
+				Check:  idpStsRequestParametersContract_CheckComputedValues(),
 			},
 			{
 				// Back to minimal model
 				Config: idpStsRequestParametersContract_MinimalHCL(),
+				Check:  idpStsRequestParametersContract_CheckComputedValues(),
 			},
 			{
 				// Back to complete model
 				Config: idpStsRequestParametersContract_CompleteHCL(),
+				Check:  idpStsRequestParametersContract_CheckComputedValues(),
 			},
 			{
 				// Test importing the resource
@@ -102,6 +106,11 @@ resource "pingfederate_idp_sts_request_parameters_contract" "example" {
   parameters  = ["oneparam", "twoparam", "threeparam"]
 }
 `, idpStsRequestParametersContractContractId)
+}
+
+// Validate any computed values when applying HCL
+func idpStsRequestParametersContract_CheckComputedValues() resource.TestCheckFunc {
+	return resource.TestCheckResourceAttr("pingfederate_idp_sts_request_parameters_contract.example", "id", idpStsRequestParametersContractContractId)
 }
 
 // Delete the resource

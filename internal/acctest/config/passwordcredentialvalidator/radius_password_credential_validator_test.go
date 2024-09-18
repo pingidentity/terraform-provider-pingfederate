@@ -69,7 +69,7 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// Sensitive table field values can't be imported so they can't be verified
-				ImportStateVerifyIgnore: []string{"configuration.tables", "configuration.tables_all"},
+				ImportStateVerifyIgnore: []string{"configuration.tables"},
 			},
 			{
 				// Back to minimal model
@@ -157,9 +157,10 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
                 name  = "Authentication Protocol"
                 value = "PAP"
               },
+            ]
+            sensitive_fields = [
               {
-                name = "Shared Secret"
-                # This value will be stored into your state file and will not detect any configuration changes made in the UI
+                name  = "Shared Secret"
                 value = "%[5]s"
               }
             ]

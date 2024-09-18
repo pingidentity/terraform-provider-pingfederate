@@ -75,6 +75,7 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "oauthAuthe
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `mapping_id` (String) The ID of the authentication policy contract to persistent grant mapping.
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>

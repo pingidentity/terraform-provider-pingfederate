@@ -20,6 +20,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -115,9 +116,8 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 							},*/
 						},
 						"enabled": schema.BoolAttribute{
-							Description: "Determines whether or not the log category is enabled. The default is `false`.",
-							Optional:    true,
-							Computed:    true,
+							Description: "Determines whether or not the log category is enabled.",
+							Required:    true,
 							// This default causes issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
 							// Default:     booldefault.StaticBool(false),
 						},
@@ -246,7 +246,7 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 	createServerSettingsLogging := client.NewLogSettings()
 	err := addOptionalServerSettingsLoggingFields(ctx, createServerSettingsLogging, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
 		return
 	}
 
@@ -317,7 +317,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 	createUpdateRequest := client.NewLogSettings()
 	err := addOptionalServerSettingsLoggingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
 		return
 	}
 
@@ -343,10 +343,16 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 	resp.Diagnostics.Append(diags...)
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsLoggingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	serverLogSettingsClientData := client.NewLogSettings()
+	serverLogSettingsApiUpdateRequest := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.AuthContext(ctx, r.providerConfig))
+	serverLogSettingsApiUpdateRequest = serverLogSettingsApiUpdateRequest.Body(*serverLogSettingsClientData)
+	_, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateLogSettingsExecute(serverLogSettingsApiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the Server Log Settings", err, httpResp)
+	}
 }
 
 func (r *serverSettingsLoggingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

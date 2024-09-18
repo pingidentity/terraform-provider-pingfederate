@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &emailValidator{}
@@ -31,7 +32,7 @@ func (v emailValidator) ValidateString(ctx context.Context, req validator.String
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid E-mail Address",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("The email %s must be of the form '<address>@<company>.<domain>', where 'domain' contains only alphabetic characters and is at least 2 characters in length.", req.ConfigValue),
 		)
 	}
