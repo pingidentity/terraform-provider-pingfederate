@@ -22,15 +22,68 @@ func TestAccKeypairsSigningCsrExportResource(t *testing.T) {
 				Config: keypairsSigningCsrExportResource_MinimalHCL(),
 				Check:  keypairsSigningCsrExportResource_CheckComputedValues(),
 			},
+			{
+				// Expect no additional rotation
+				Config: keypairsSigningCsrExportResource_NoExportHCL(),
+				Check:  keypairsSigningCsrExportResource_CheckComputedValues(),
+			},
+			{
+				// Expect rotation
+				Config: keypairsSigningCsrExportResource_SecondExportHCL(),
+				Check:  keypairsSigningCsrExportResource_CheckComputedValues(),
+			},
+			{
+				// Expect no additional rotation
+				Config: keypairsSigningCsrExportResource_SecondNoExportHCL(),
+				Check:  keypairsSigningCsrExportResource_CheckComputedValues(),
+			},
+			{
+				// Back to the original with no trigger values
+				Config: keypairsSigningCsrExportResource_MinimalHCL(),
+				Check:  keypairsSigningCsrExportResource_CheckComputedValues(),
+			},
 		},
 	})
 }
 
-// Only the keypair_id attribute can be set on this resource
 func keypairsSigningCsrExportResource_MinimalHCL() string {
 	return `
 resource "pingfederate_keypairs_signing_csr_export" "example" {
   keypair_id = "419x9yg43rlawqwq9v6az997k"
+}
+`
+}
+
+func keypairsSigningCsrExportResource_NoExportHCL() string {
+	return `
+resource "pingfederate_keypairs_signing_csr_export" "example" {
+  keypair_id = "419x9yg43rlawqwq9v6az997k"
+  export_trigger_values = {
+    "trigger" = "false"
+  }
+}
+`
+}
+
+func keypairsSigningCsrExportResource_SecondExportHCL() string {
+	return `
+resource "pingfederate_keypairs_signing_csr_export" "example" {
+  keypair_id = "419x9yg43rlawqwq9v6az997k"
+  export_trigger_values = {
+    "trigger"    = "updated"
+    "newtrigger" = "new"
+  }
+}
+`
+}
+
+func keypairsSigningCsrExportResource_SecondNoExportHCL() string {
+	return `
+resource "pingfederate_keypairs_signing_csr_export" "example" {
+  keypair_id = "419x9yg43rlawqwq9v6az997k"
+  export_trigger_values = {
+    "trigger" = "updated"
+  }
 }
 `
 }

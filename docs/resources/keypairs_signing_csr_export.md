@@ -13,8 +13,16 @@ Datasource to generate a new certificate signing request (CSR) for a key pair.
 ## Example Usage
 
 ```terraform
+// Example of using the time provider to control regular export of CSR
+resource "time_rotating" "csr_export" {
+  rotation_days = 30
+}
+
 resource "pingfederate_keypairs_signing_csr_export" "signingCsr" {
   keypair_id = "mysigningkeypair"
+  export_trigger_values = {
+    "export_rfc3339" : time_rotating.csr_export.rotation_rfc3339,
+  }
 }
 ```
 
@@ -24,6 +32,10 @@ resource "pingfederate_keypairs_signing_csr_export" "signingCsr" {
 ### Required
 
 - `keypair_id` (String) The ID of the keypair.
+
+### Optional
+
+- `export_trigger_values` (Map of String) A meta-argument map of values that, if any values are changed, will force export of a new CSR. Adding values to and removing values from the map will not trigger an export. This parameter can be used to control time-based exports using Terraform.
 
 ### Read-Only
 

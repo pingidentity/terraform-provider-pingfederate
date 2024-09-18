@@ -9,7 +9,7 @@ missing_changelog_entries = set()
 
 noImportResources = [
   "pingfederate_connection_metadata_export",
-  "pingfederate_keypairs_signing_csr_export"
+  "pingfederate_keypairs_signing_csr_export",
   "pingfederate_keypairs_signing_key",
   "pingfederate_keypairs_ssl_server_key",
   "pingfederate_license"
@@ -25,6 +25,7 @@ for dir in dirs:
   
   has_import_file = os.path.isfile(f"{dir}/import.sh")
   if not has_import_file and resource_name.decode() not in noImportResources:
+    print(resource_name.decode())
     no_import_dirs.add(dir)
 
 if len(missing_changelog_entries) > 0:
