@@ -3,7 +3,9 @@ package idptospadaptermapping
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -25,7 +27,10 @@ func (r *idpToSpAdapterMappingResource) ValidateConfig(ctx context.Context, req 
 		}
 
 		if !subjectKeyFound {
-			resp.Diagnostics.AddError("attribute_contract_fulfillment.subject is required", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("attribute_contract_fulfillment"),
+				providererror.InvalidAttributeConfiguration,
+				"attribute_contract_fulfillment.subject is required")
 		}
 	}
 }

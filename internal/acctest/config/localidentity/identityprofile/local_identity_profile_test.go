@@ -82,7 +82,7 @@ func updatedRegistrationConfig() *client.RegistrationConfig {
 		},
 		TemplateName:                        "local.identity.registration.html",
 		CreateAuthnSessionAfterRegistration: pointers.Bool(true),
-		UsernameField:                       pointers.String("cn"),
+		UsernameField:                       pointers.String("mail"),
 		ThisIsMyDeviceEnabled:               pointers.Bool(false),
 	}
 }
@@ -132,16 +132,15 @@ func profileConfigHcl(config *client.ProfileConfig) string {
 }
 
 func updatedFieldConfig() *client.FieldConfig {
-	emailAttrs := map[string]bool{
+	textAttrs := map[string]bool{
 		"Read-Only":       false,
 		"Required":        true,
 		"Unique ID Field": true,
 		"Mask Log Values": false,
 	}
-	textAttrs := map[string]bool{
+	checkboxGroupAttrs := map[string]bool{
 		"Read-Only":       false,
-		"Required":        true,
-		"Unique ID Field": false,
+		"Must Pick One":   false,
 		"Mask Log Values": false,
 	}
 	hiddenAttrs := map[string]bool{
@@ -152,28 +151,30 @@ func updatedFieldConfig() *client.FieldConfig {
 	return &client.FieldConfig{
 		Fields: []client.LocalIdentityField{
 			{
-				Type:                  "EMAIL",
-				Id:                    "mail",
-				Label:                 "Email address",
-				RegistrationPageField: pointers.Bool(true),
-				ProfilePageField:      pointers.Bool(true),
-				Attributes:            &emailAttrs,
-			},
-			{
 				Type:                  "TEXT",
-				Id:                    "cn",
+				Id:                    "mail",
 				Label:                 "First Name",
 				RegistrationPageField: pointers.Bool(true),
 				ProfilePageField:      pointers.Bool(true),
 				Attributes:            &textAttrs,
+				DefaultValue:          pointers.String("defaultValue"),
 			},
 			{
 				Type:                  "HIDDEN",
-				Id:                    "entryUUID",
-				Label:                 "entryUUID",
-				RegistrationPageField: pointers.Bool(true),
+				Id:                    "cn",
+				Label:                 "cn",
+				RegistrationPageField: pointers.Bool(false),
 				ProfilePageField:      pointers.Bool(true),
 				Attributes:            &hiddenAttrs,
+			},
+			{
+				Type:                  "CHECKBOX_GROUP",
+				Id:                    "entryUUID",
+				Label:                 "entryUUID",
+				RegistrationPageField: pointers.Bool(false),
+				ProfilePageField:      pointers.Bool(true),
+				Attributes:            &checkboxGroupAttrs,
+				Options:               []string{"option1, option2"},
 			},
 		},
 		StripSpaceFromUniqueField: pointers.Bool(true),
@@ -190,6 +191,16 @@ func fieldHcl(field client.LocalIdentityField) string {
 		attributes.WriteString("}\n")
 	}
 
+	defaultValue := ""
+	if field.DefaultValue != nil {
+		defaultValue = fmt.Sprintf("default_value = \"%s\"", *field.DefaultValue)
+	}
+
+	options := ""
+	if len(field.Options) > 0 {
+		options = fmt.Sprintf("options = %s", acctest.StringSliceToTerraformString(field.Options))
+	}
+
 	return fmt.Sprintf(`
 	{
 		type = "%s"
@@ -198,13 +209,17 @@ func fieldHcl(field client.LocalIdentityField) string {
 		registration_page_field = %t
 		profile_page_field = %t
 		%s
+		%s
+		%s
 	},
 	`, field.Type,
 		field.Id,
 		field.Label,
 		*field.RegistrationPageField,
 		*field.ProfilePageField,
-		attributes.String())
+		attributes.String(),
+		defaultValue,
+		options)
 }
 
 func fieldConfigHcl(config *client.FieldConfig) string {
@@ -240,7 +255,7 @@ func updatedEmailVerificationConfig() *client.EmailVerificationConfig {
 		OtpRetryAttempts:                     pointers.Int64(3),
 		OtpTimeToLive:                        pointers.Int64(1440),
 		FieldForEmailToVerify:                "mail",
-		FieldStoringVerificationStatus:       "entryUUID",
+		FieldStoringVerificationStatus:       "cn",
 		NotificationPublisherRef: &client.ResourceLink{
 			Id: "exampleSmtpPublisher",
 		},

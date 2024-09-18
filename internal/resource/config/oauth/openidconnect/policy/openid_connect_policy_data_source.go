@@ -148,7 +148,7 @@ func (r *openidConnectPolicyDataSource) Schema(ctx context.Context, req datasour
 				Optional:    false,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"values": schema.ListAttribute{
+						"values": schema.SetAttribute{
 							Description: "A List of values.",
 							Computed:    true,
 							Optional:    false,

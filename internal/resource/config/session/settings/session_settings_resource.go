@@ -11,6 +11,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -103,7 +104,7 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 	createSessionSettings := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createSessionSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Session Settings: "+err.Error())
 		return
 	}
 
@@ -169,7 +170,7 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 	createUpdateRequest := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Session Settings: "+err.Error())
 		return
 	}
 

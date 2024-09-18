@@ -26,6 +26,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -468,7 +469,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore == nil {
-		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read Ldap data store from PingFederate. The response from PingFederate was nil.")
 		return ldapDataStoreEmptyStateObj, diags
 	}
 
@@ -563,7 +564,7 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore == nil {
-		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read Ldap data store from PingFederate. The response from PingFederate was nil.")
 		return ldapDataStoreEmptyStateObj, diags
 	}
 
@@ -793,13 +794,13 @@ func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	createLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
 	err = addOptionalLdapDataStoreFields(createLdapDataStore, con, client.LdapDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
 	response, httpResponse, err := createDataStore(createLdapDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse, &customId)
 		return
 	}
 
@@ -820,13 +821,13 @@ func updateLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	updateLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
 	err = addOptionalLdapDataStoreFields(updateLdapDataStore, con, client.LdapDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the DataStore: "+err.Error())
 		return
 	}
 
 	response, httpResponse, err := updateDataStore(updateLdapDataStore, dsr, con, resp, plan.Id.ValueString())
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse, &customId)
 		return
 	}
 

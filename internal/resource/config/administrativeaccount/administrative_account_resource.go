@@ -16,6 +16,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -114,6 +115,9 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 		},
 	}
@@ -192,7 +196,7 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	createAdministrativeAccount := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan, true)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to the add request for the administrative account", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to the add request for the administrative account: "+err.Error())
 		return
 	}
 
@@ -255,7 +259,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan, false)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to the add request for the administrative account", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to the add request for the administrative account: "+err.Error())
 		return
 	}
 
