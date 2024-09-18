@@ -25,7 +25,6 @@ for dir in dirs:
   
   has_import_file = os.path.isfile(f"{dir}/import.sh")
   if not has_import_file and resource_name.decode() not in noImportResources:
-    print(resource_name.decode())
     no_import_dirs.add(dir)
 
 if len(missing_changelog_entries) > 0:
