@@ -22,6 +22,26 @@ func TestAccKeypairsSslClientCsrExport(t *testing.T) {
 				Config: keypairsSslClientCsrExport_MinimalHCL(),
 				Check:  keypairsSslClientCsrExport_CheckComputedValues(),
 			},
+			{
+				// Expect no additional rotation
+				Config: keypairsSslClientCsrExport_NoExportHCL(),
+				Check:  keypairsSslClientCsrExport_CheckComputedValues(),
+			},
+			{
+				// Expect rotation
+				Config: keypairsSslClientCsrExport_SecondExportHCL(),
+				Check:  keypairsSslClientCsrExport_CheckComputedValues(),
+			},
+			{
+				// Expect no additional rotation
+				Config: keypairsSslClientCsrExport_SecondNoExportHCL(),
+				Check:  keypairsSslClientCsrExport_CheckComputedValues(),
+			},
+			{
+				// Back to the original with no trigger values
+				Config: keypairsSslClientCsrExport_MinimalHCL(),
+				Check:  keypairsSslClientCsrExport_CheckComputedValues(),
+			},
 		},
 	})
 }
@@ -32,6 +52,40 @@ func keypairsSslClientCsrExport_MinimalHCL() string {
 	return `
 resource "pingfederate_keypairs_ssl_client_csr_export" "example" {
   keypair_id = "419x9yg43rlawqwq9v6az997k"
+}
+`
+}
+
+func keypairsSslClientCsrExport_NoExportHCL() string {
+	return `
+resource "pingfederate_keypairs_ssl_client_csr_export" "example" {
+  keypair_id = "419x9yg43rlawqwq9v6az997k"
+  export_trigger_values = {
+    "trigger" = "false"
+  }
+}
+`
+}
+
+func keypairsSslClientCsrExport_SecondExportHCL() string {
+	return `
+resource "pingfederate_keypairs_ssl_client_csr_export" "example" {
+  keypair_id = "419x9yg43rlawqwq9v6az997k"
+  export_trigger_values = {
+    "trigger"    = "updated"
+    "newtrigger" = "new"
+  }
+}
+`
+}
+
+func keypairsSslClientCsrExport_SecondNoExportHCL() string {
+	return `
+resource "pingfederate_keypairs_ssl_client_csr_export" "example" {
+  keypair_id = "419x9yg43rlawqwq9v6az997k"
+  export_trigger_values = {
+    "trigger" = "updated"
+  }
 }
 `
 }
