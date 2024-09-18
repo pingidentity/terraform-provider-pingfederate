@@ -180,7 +180,7 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
   attribute_contract = {
     extended_attributes = [
       {
-        name         = "contract"
+        name = "contract"
       },
       {
         name         = "another"
