@@ -161,8 +161,10 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 									Optional:    true,
 								},
 								"multi_valued": schema.BoolAttribute{
-									Description: "Indicates whether attribute value is always returned as an array.",
+									Description: "Indicates whether attribute value is always returned as an array. Defaults to `false`.",
 									Optional:    true,
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},

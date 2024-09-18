@@ -181,6 +181,9 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
     extended_attributes = [
       {
         name         = "contract"
+      },
+      {
+        name         = "another"
         multi_valued = false
       }
     ]
