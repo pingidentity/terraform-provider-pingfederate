@@ -120,6 +120,7 @@ resource "pingfederate_metadata_url" "example" {
 // Validate any computed values when applying minimal HCL
 func metadataUrl_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "id", metadataUrlUrlId),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "validate_signature", "true"),
 	)
 }
@@ -127,6 +128,7 @@ func metadataUrl_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func metadataUrl_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "id", metadataUrlUrlId),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.expires", "2025-06-24T20:49:11Z"),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.id", "myx509id"),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.issuer_dn", "CN=common, O=org, C=us"),
