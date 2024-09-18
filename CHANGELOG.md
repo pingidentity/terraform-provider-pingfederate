@@ -1,5 +1,6 @@
 # v0.17.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_keypairs_signing_csr_export` ([#307](https://github.com/pingidentity/terraform-provider-pingfederate/pull/307))
 * **New Resource:** `pingfederate_idp_token_processor` ([#277]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/277)))
 * **New Resource:** `pingfederate_protocol_metadata_signing_settings` ([#290](https://github.com/pingidentity/terraform-provider-pingfederate/pull/290))
 * **New Resource:** `pingfederate_service_authentication` ([#295](https://github.com/pingidentity/terraform-provider-pingfederate/pull/295))
