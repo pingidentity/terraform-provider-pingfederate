@@ -20,6 +20,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -27,6 +28,8 @@ var (
 	_ resource.Resource                = &certificatesGroupResource{}
 	_ resource.ResourceWithConfigure   = &certificatesGroupResource{}
 	_ resource.ResourceWithImportState = &certificatesGroupResource{}
+
+	customId = "group_id"
 )
 
 func CertificatesGroupResource() resource.Resource {
@@ -247,7 +250,7 @@ func (r *certificatesGroupResource) Create(ctx context.Context, req resource.Cre
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.CertificatesGroupsAPI.ImportFeatureCertExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the certificatesGroup", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the certificatesGroup", err, httpResp, &customId)
 		return
 	}
 
@@ -275,7 +278,7 @@ func (r *certificatesGroupResource) Read(ctx context.Context, req resource.ReadR
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificates Group", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesGroup", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesGroup", err, httpResp, &customId)
 		}
 		return
 	}
@@ -304,14 +307,14 @@ func (r *certificatesGroupResource) Delete(ctx context.Context, req resource.Del
 	// Delete API call logic
 	httpResp, err := r.apiClient.CertificatesGroupsAPI.DeleteCertificateFromGroup(config.AuthContext(ctx, r.providerConfig), data.GroupName.ValueString(), data.GroupId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the certificatesGroup", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the certificatesGroup", err, httpResp, &customId)
 	}
 }
 
 func (r *certificatesGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	split := strings.Split(req.ID, "/")
 	if len(split) != 2 {
-		resp.Diagnostics.AddError("Invalid import id for resource", "Expected [group_name]/[group_id]. Got: "+req.ID)
+		resp.Diagnostics.AddError(providererror.InvalidResourceIdForImport, "Expected [group_name]/[group_id]. Got: "+req.ID)
 		return
 	}
 	// Set the required attributes to read the resource
