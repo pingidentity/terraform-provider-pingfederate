@@ -11,7 +11,7 @@ noImportResources = [
   "pingfederate_connection_metadata_export",
   "pingfederate_keypairs_signing_key",
   "pingfederate_keypairs_ssl_server_csr",
-  "pingfederate_keypairs_ssl_server_csr_export"
+  "pingfederate_keypairs_ssl_server_csr_export",
   "pingfederate_keypairs_ssl_server_key",
   "pingfederate_license"
 ]
