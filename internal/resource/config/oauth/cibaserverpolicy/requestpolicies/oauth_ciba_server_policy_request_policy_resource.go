@@ -14,7 +14,9 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
@@ -62,24 +64,62 @@ var (
 			AttrTypes: issuancecriteria.AttrTypes(),
 		},
 	}
+
+	issuanceCriteriaDefault = types.ObjectValueMust(issuancecriteria.AttrTypes(), map[string]attr.Value{
+		"conditional_criteria": types.SetValueMust(issuancecriteria.ConditionalCriteriaElemType(), nil),
+		"expression_criteria":  types.SetNull(issuancecriteria.ExpressionCriteriaElemType()),
+	})
+	attributeSourcesDefault = types.SetValueMust(types.ObjectType{AttrTypes: attributesources.AttrTypes()}, nil)
 )
 
 func (r *oauthCibaServerPolicyRequestPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// If the identity_hint_contract has changed, invalidate the identity_hint_contract_fulfillment value if it is not included in the config,
-	// since it is computed and uses UseStateForUnknown.
-	if !req.State.Raw.IsNull() && !req.Plan.Raw.IsNull() && !req.Plan.Raw.Equal(req.State.Raw) {
-		var plan, config, state oauthCibaServerPolicyRequestPolicyResourceModel
-		req.Config.Get(ctx, &config)
-		// Ensure the attribute was not explicitly specified in the config by the user
-		if config.IdentityHintContractFulfillment.IsNull() {
-			req.Plan.Get(ctx, &plan)
-			req.State.Get(ctx, &state)
-			// If the identity_hint_contract has changed, then invalidate the computed contract_fulfillment
-			if !plan.IdentityHintContract.Equal(state.IdentityHintContract) {
-				plan.IdentityHintContractFulfillment = types.ObjectUnknown(identityHintContractFulfillmentAttrTypes)
-				resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	// Calculate a default for identity_hint_contract_fulfillment if it is not included in the config
+	var plan *oauthCibaServerPolicyRequestPolicyResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil {
+		return
+	}
+
+	if plan.IdentityHintContractFulfillment.IsUnknown() {
+		subjectSource, diags := types.ObjectValue(sourcetypeidkey.AttrTypes(), map[string]attr.Value{
+			"id":   types.StringNull(),
+			"type": types.StringValue("REQUEST"),
+		})
+		resp.Diagnostics.Append(diags...)
+		idHintSubjectValue, diags := types.ObjectValue(attributecontractfulfillment.AttrTypes(), map[string]attr.Value{
+			"source": subjectSource,
+			"value":  types.StringValue("IDENTITY_HINT_SUBJECT"),
+		})
+		fulfillmentValues := map[string]attr.Value{
+			"IDENTITY_HINT_SUBJECT": idHintSubjectValue,
+		}
+
+		if internaltypes.IsDefined(plan.IdentityHintContract) {
+			extendedAttrs := plan.IdentityHintContract.Attributes()["extended_attributes"].(types.Set)
+			for _, extendedAttr := range extendedAttrs.Elements() {
+				attrName := extendedAttr.(types.Object).Attributes()["name"].(types.String).ValueString()
+				fulfillmentValue, diags := types.ObjectValue(attributecontractfulfillment.AttrTypes(), map[string]attr.Value{
+					"source": subjectSource,
+					"value":  types.StringValue(attrName),
+				})
+				resp.Diagnostics.Append(diags...)
+				fulfillmentValues[attrName] = fulfillmentValue
 			}
 		}
+
+		attributeContractFulfillmentDefault, diags := types.MapValue(
+			types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()},
+			fulfillmentValues,
+		)
+		resp.Diagnostics.Append(diags...)
+
+		plan.IdentityHintContractFulfillment, diags = types.ObjectValue(identityHintContractFulfillmentAttrTypes, map[string]attr.Value{
+			"attribute_contract_fulfillment": attributeContractFulfillmentDefault,
+			"attribute_sources":              attributeSourcesDefault,
+			"issuance_criteria":              issuanceCriteriaDefault,
+		})
+
+		resp.Plan.Set(ctx, plan)
 	}
 }
 
