@@ -66,6 +66,7 @@ resource "pingfederate_keypairs_signing_key" "signingKeyGenerate" {
 ### Read-Only
 
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
+- `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name
 - `rotation_settings` (Attributes) The local identity profile data store configuration. (see [below for nested schema](#nestedatt--rotation_settings))
 - `serial_number` (String) The serial number assigned by the CA

@@ -184,6 +184,7 @@ resource "pingfederate_notification_publisher" "example" {
 // Validate any computed values when applying minimal HCL
 func notificationPublisher_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "id", notificationPublisherPublisherId),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.#", "13"),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_notification_publisher.example", "configuration.fields_all.*",
 			map[string]string{
@@ -199,6 +200,7 @@ func notificationPublisher_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func notificationPublisher_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "id", notificationPublisherPublisherId),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.#", "13"),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.tables.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.tables_all.#", "0"),
