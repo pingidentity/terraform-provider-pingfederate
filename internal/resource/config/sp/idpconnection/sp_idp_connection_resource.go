@@ -3,6 +3,7 @@ package spidpconnection
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -4553,6 +4554,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	return diags
 }
 
+func (r *spIdpConnectionResource) warnFor500Err(httpResp *http.Response, diags *diag.Diagnostics) {
+	if httpResp != nil && httpResp.StatusCode == 500 {
+		diags.AddError("PingFederate API error", "PingFederate API returned a 500 error. Due to a known issue in PingFederate, you may have to set the `virtual_entity_ids` attribute to `[]` to work around this issue")
+	}
+}
+
 func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan, state spIdpConnectionResourceModel
 
@@ -4573,6 +4580,7 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 	apiCreateSpIdpConnection = apiCreateSpIdpConnection.Body(*createSpIdpConnection)
 	spIdpConnectionResponse, httpResp, err := r.apiClient.SpIdpConnectionsAPI.CreateConnectionExecute(apiCreateSpIdpConnection)
 	if err != nil {
+		r.warnFor500Err(httpResp, &resp.Diagnostics)
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SpIdpConnection", err, httpResp)
 		return
 	}
@@ -4636,6 +4644,7 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 	updateSpIdpConnection = updateSpIdpConnection.Body(*createUpdateRequest)
 	updateSpIdpConnectionResponse, httpResp, err := r.apiClient.SpIdpConnectionsAPI.UpdateConnectionExecute(updateSpIdpConnection)
 	if err != nil {
+		r.warnFor500Err(httpResp, &resp.Diagnostics)
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Sp Idp Connection", err, httpResp)
 		return
 	}

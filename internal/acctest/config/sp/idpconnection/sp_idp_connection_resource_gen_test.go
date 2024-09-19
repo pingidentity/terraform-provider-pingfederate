@@ -96,6 +96,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   connection_id = "%s"
   name          = "connection name"
   entity_id     = "entity_id"
+  virtual_entity_ids = []
   credentials = {
     certs = [{
       x509_file = {
