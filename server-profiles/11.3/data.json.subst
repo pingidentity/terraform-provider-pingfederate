@@ -1973,8 +1973,7 @@
             "accessTokenManagerRef": {
               "id": "oidcSettingsTestATM"
             },
-            "scopeAttributeMappings": {},
-            "lastModified": "2024-09-18T20:52:33.797Z"
+            "scopeAttributeMappings": {}
           }
         ]
     },

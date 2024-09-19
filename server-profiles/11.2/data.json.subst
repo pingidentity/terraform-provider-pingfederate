@@ -1674,14 +1674,6 @@
                 "value": ""
               },
               {
-                "name": "Not Before Claim Offset",
-                "value": ""
-              },
-              {
-                "name": "Include Issued At Claim",
-                "value": "false"
-              },
-              {
                 "name": "JWT ID Claim Length",
                 "value": "0"
               },
@@ -1958,15 +1950,12 @@
             "includeSriInIdToken": false,
             "includeUserInfoInIdToken": false,
             "includeSHashInIdToken": false,
-            "includeX5tInIdToken": false,
-            "idTokenTypHeaderValue": "",
             "returnIdTokenOnRefreshGrant": false,
             "reissueIdTokenInHybridFlow": false,
             "accessTokenManagerRef": {
               "id": "oidcSettingsTestATM"
             },
-            "scopeAttributeMappings": {},
-            "lastModified": "2024-09-18T20:52:33.797Z"
+            "scopeAttributeMappings": {}
           }
         ]
     },
