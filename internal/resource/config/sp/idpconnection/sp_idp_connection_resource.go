@@ -37,6 +37,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -605,6 +606,8 @@ var (
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
 	}
 	emptyStringSet, _ = types.SetValue(types.StringType, []attr.Value{})
+
+	customId = "connection_id"
 )
 
 // SpIdpConnectionResource is a helper function to simplify the provider implementation.
@@ -3428,14 +3431,14 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	// Compare to version 12.0.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1200 := compare >= 0
 	// Compare to version 12.1.0 of PF
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1210 := compare >= 0
@@ -3760,7 +3763,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
 	// by the `server_settings_general` resource
 	if plan != nil && plan.LoggingMode.ValueString() != state.LoggingMode.ValueString() {
-		diags.AddAttributeError(path.Root("logging_mode"), "Conflicting attribute value",
+		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
 			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
 				"If `idp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
 				" `logging_mode` should be configured to the same value in this resource.")
@@ -4565,7 +4568,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 func (r *spIdpConnectionResource) warnFor500Err(httpResp *http.Response, diags *diag.Diagnostics) {
 	if httpResp != nil && httpResp.StatusCode == 500 {
-		diags.AddError("PingFederate API error", "PingFederate API returned a 500 error. Due to a known issue in PingFederate, you may have to set the `virtual_entity_ids` attribute to `[]` to work around this issue")
+		diags.AddError(providererror.PingFederateAPIError, "PingFederate API returned a 500 error. Due to a known issue in PingFederate, you may have to set the `virtual_entity_ids` attribute to `[]` to work around this issue")
 	}
 }
 
@@ -4581,7 +4584,7 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 	createSpIdpConnection := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalSpIdpConnectionFields(ctx, createSpIdpConnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SpIdpConnection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for SpIdpConnection: "+err.Error())
 		return
 	}
 
@@ -4590,7 +4593,7 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 	spIdpConnectionResponse, httpResp, err := r.apiClient.SpIdpConnectionsAPI.CreateConnectionExecute(apiCreateSpIdpConnection)
 	if err != nil {
 		r.warnFor500Err(httpResp, &resp.Diagnostics)
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SpIdpConnection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the SpIdpConnection", err, httpResp, &customId)
 		return
 	}
 
@@ -4618,7 +4621,7 @@ func (r *spIdpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Sp Idp Connection", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Sp Idp Connection", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting a Sp Idp Connection", err, httpResp, &customId)
 		}
 		return
 	}
@@ -4646,7 +4649,7 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 	createUpdateRequest := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Sp Idp Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Sp Idp Connection: "+err.Error())
 		return
 	}
 
@@ -4654,7 +4657,7 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 	updateSpIdpConnectionResponse, httpResp, err := r.apiClient.SpIdpConnectionsAPI.UpdateConnectionExecute(updateSpIdpConnection)
 	if err != nil {
 		r.warnFor500Err(httpResp, &resp.Diagnostics)
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Sp Idp Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating Sp Idp Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -4678,7 +4681,7 @@ func (r *spIdpConnectionResource) Delete(ctx context.Context, req resource.Delet
 	}
 	httpResp, err := r.apiClient.SpIdpConnectionsAPI.DeleteConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Sp Idp Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a Sp Idp Connection", err, httpResp, &customId)
 	}
 }
 
