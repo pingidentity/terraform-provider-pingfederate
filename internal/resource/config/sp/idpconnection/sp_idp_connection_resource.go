@@ -287,24 +287,25 @@ var (
 	}
 	idpBrowserSsoOidcProviderSettingsRequestParametersElementType = types.ObjectType{AttrTypes: idpBrowserSsoOidcProviderSettingsRequestParametersAttrTypes}
 	idpBrowserSsoOidcProviderSettingsAttrTypes                    = map[string]attr.Type{
-		"authentication_scheme":                 types.StringType,
-		"authentication_signing_algorithm":      types.StringType,
-		"authorization_endpoint":                types.StringType,
-		"back_channel_logout_uri":               types.StringType,
-		"enable_pkce":                           types.BoolType,
-		"front_channel_logout_uri":              types.StringType,
-		"jwks_url":                              types.StringType,
-		"login_type":                            types.StringType,
-		"logout_endpoint":                       types.StringType,
-		"post_logout_redirect_uri":              types.StringType,
-		"pushed_authorization_request_endpoint": types.StringType,
-		"redirect_uri":                          types.StringType,
-		"request_parameters":                    types.SetType{ElemType: idpBrowserSsoOidcProviderSettingsRequestParametersElementType},
-		"request_signing_algorithm":             types.StringType,
-		"scopes":                                types.StringType,
-		"token_endpoint":                        types.StringType,
-		"track_user_sessions_for_logout":        types.BoolType,
-		"user_info_endpoint":                    types.StringType,
+		"authentication_scheme":                        types.StringType,
+		"authentication_signing_algorithm":             types.StringType,
+		"authorization_endpoint":                       types.StringType,
+		"back_channel_logout_uri":                      types.StringType,
+		"enable_pkce":                                  types.BoolType,
+		"front_channel_logout_uri":                     types.StringType,
+		"jwks_url":                                     types.StringType,
+		"jwt_secured_authorization_response_mode_type": types.StringType,
+		"login_type":                                   types.StringType,
+		"logout_endpoint":                              types.StringType,
+		"post_logout_redirect_uri":                     types.StringType,
+		"pushed_authorization_request_endpoint":        types.StringType,
+		"redirect_uri":                                 types.StringType,
+		"request_parameters":                           types.SetType{ElemType: idpBrowserSsoOidcProviderSettingsRequestParametersElementType},
+		"request_signing_algorithm":                    types.StringType,
+		"scopes":                                       types.StringType,
+		"token_endpoint":                               types.StringType,
+		"track_user_sessions_for_logout":               types.BoolType,
+		"user_info_endpoint":                           types.StringType,
 	}
 	idpBrowserSsoSloServiceEndpointsAttrTypes = map[string]attr.Type{
 		"binding":      types.StringType,
@@ -1950,6 +1951,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
+							"jwt_secured_authorization_response_mode_type": schema.StringAttribute{
+								Optional:    true,
+								Description: "The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL. Supported in PingFederate `12.1` and later.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+									stringvalidator.OneOf("DISABLED", "QUERY_JWT", "FORM_POST_JWT"),
+								},
+							},
 							"login_type": schema.StringAttribute{
 								Required:            true,
 								Description:         "The OpenID Connect login type. These values maps to: \n CODE: Authentication using Code Flow \n  POST: Authentication using Form Post \n  POST_AT: Authentication using Form Post with Access Token. Options are `CODE`, `POST`, `POST_AT`.",
@@ -3414,7 +3423,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 }
 
 func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-
 	// Compare to version 12.0.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
@@ -3422,6 +3430,13 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		return
 	}
 	pfVersionAtLeast1200 := compare >= 0
+	// Compare to version 12.1.0 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1210 := compare >= 0
 	var plan *spIdpConnectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -3450,6 +3465,37 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri",
 						r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
 				}
+			}
+		}
+	}
+	if !pfVersionAtLeast1210 {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) {
+			oidcProviderSettings := plan.IdpBrowserSso.Attributes()["oidc_provider_settings"]
+			if internaltypes.IsDefined(oidcProviderSettings) {
+				jwtSecuredAuthorizationResponseModeType := oidcProviderSettings.(types.Object).Attributes()["jwt_secured_authorization_response_mode_type"]
+				if internaltypes.IsDefined(jwtSecuredAuthorizationResponseModeType) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type",
+						r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+				}
+			}
+		}
+	}
+
+	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+
+	if pfVersionAtLeast1210 && internaltypes.IsDefined(plan.IdpBrowserSso) {
+		browserSsoAttributes := plan.IdpBrowserSso.Attributes()
+		oidcProviderSettings := browserSsoAttributes["oidc_provider_settings"].(types.Object)
+		if internaltypes.IsDefined(oidcProviderSettings) {
+			oidcProviderSettingsAttributes := oidcProviderSettings.Attributes()
+			jwtSecuredAuthorizationResponseModeType := oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"]
+			if jwtSecuredAuthorizationResponseModeType.IsUnknown() {
+				oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringValue("DISABLED")
+				var diags diag.Diagnostics
+				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
+				resp.Diagnostics.Append(diags...)
+				browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
+				plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
+				resp.Diagnostics.Append(diags...)
 			}
 		}
 	}
@@ -3711,10 +3757,6 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	state.Name = types.StringValue(r.Name)
 	state.Type = types.StringPointerValue(r.Type)
 	state.VirtualEntityIds = internaltypes.GetStringSet(r.VirtualEntityIds)
-
-	//  OIDC Client Credentials
-	state.OidcClientCredentials, objDiags = types.ObjectValueFrom(ctx, oidcClientCredentialsAttrTypes, r.OidcClientCredentials)
-	diags = append(diags, objDiags...)
 
 	// LicenseConnectionGroup
 	if r.LicenseConnectionGroup != nil {
@@ -3981,7 +4023,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						}
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, diags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues)
 						diags.Append(objDiags...)
-						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue, diags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes, map[string]attr.Value{
+						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes, map[string]attr.Value{
 							"core_attributes":     idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue,
 							"extended_attributes": idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue,
 						})
@@ -3995,7 +4037,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue = types.ObjectNull(resourcelink.AttrType())
 					} else {
-						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue, diags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue, objDiags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 							"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef.Id),
 						})
 						diags.Append(objDiags...)
@@ -4008,13 +4050,13 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo == nil {
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue = types.ObjectNull(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes)
 					} else {
-						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue, diags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes, map[string]attr.Value{
+						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes, map[string]attr.Value{
 							"application_icon_url": types.StringPointerValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo.ApplicationIconUrl),
 							"application_name":     types.StringPointerValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo.ApplicationName),
 						})
 						diags.Append(objDiags...)
 					}
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue, diags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes, map[string]attr.Value{
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes, map[string]attr.Value{
 						"attribute_contract":      idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue,
 						"configuration":           idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue,
 						"id":                      types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Id),
@@ -4034,7 +4076,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 				var idpBrowserSsoAdapterMappingsIssuanceCriteriaValue types.Object
 				if idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria != nil && (len(idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria.ConditionalCriteria) > 0 || len(idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria.ExpressionCriteria) > 0) {
-					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue, diags = issuancecriteria.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
+					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue, objDiags = issuancecriteria.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
 					diags.Append(objDiags...)
 				} else {
 					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue = types.ObjectNull(issuancecriteria.AttrTypes())
@@ -4058,7 +4100,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				diags.Append(objDiags...)
 				idpBrowserSsoAdapterMappingsValues = append(idpBrowserSsoAdapterMappingsValues, idpBrowserSsoAdapterMappingsValue)
 			}
-			idpBrowserSsoAdapterMappingsValue, diags = types.SetValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
+			idpBrowserSsoAdapterMappingsValue, objDiags = types.SetValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
 			diags.Append(objDiags...)
 		}
 
@@ -4162,7 +4204,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			diags.Append(objDiags...)
 		}
 
-		idpBrowserSsoValue, diags = types.ObjectValue(idpBrowserSsoAttrTypes, map[string]attr.Value{
+		idpBrowserSsoValue, objDiags = types.ObjectValue(idpBrowserSsoAttrTypes, map[string]attr.Value{
 			"adapter_mappings":                         idpBrowserSsoAdapterMappingsValue,
 			"always_sign_artifact_response":            idpBrowserSsoAlwaysSignArtifactResponse,
 			"artifact":                                 idpBrowserSsoArtifactValue,
