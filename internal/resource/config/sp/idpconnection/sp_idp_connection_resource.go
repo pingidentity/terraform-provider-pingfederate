@@ -3179,8 +3179,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"logging_mode": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`.",
-				MarkdownDescription: "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`.",
+				Description:         "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`. If the `idp_connection_transaction_logging_override` attribute is set to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource, then this attribute must be set to the same value.",
+				MarkdownDescription: "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`. If the `idp_connection_transaction_logging_override` attribute is set to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource, then this attribute must be set to the same value.",
 				Default:             stringdefault.StaticString("STANDARD"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("NONE", "STANDARD", "ENHANCED", "FULL"),
@@ -3744,6 +3744,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	state.AdditionalAllowedEntitiesConfiguration, objDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
 	diags.Append(objDiags...)
 	state.AttributeQuery, objDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
+	diags.Append(objDiags...)
 	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
 	diags.Append(objDiags...)
 	state.ConnectionId = types.StringPointerValue(r.Id)
@@ -3756,6 +3757,14 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	diags.Append(objDiags...)
 	state.Id = types.StringPointerValue(r.Id)
 	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
+	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
+	// by the `server_settings_general` resource
+	if plan != nil && plan.LoggingMode.ValueString() != state.LoggingMode.ValueString() {
+		diags.AddAttributeError(path.Root("logging_mode"), "Conflicting attribute value",
+			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
+				"If `idp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
+				" `logging_mode` should be configured to the same value in this resource.")
+	}
 	state.MetadataReloadSettings, objDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
 	diags.Append(objDiags...)
 	state.Name = types.StringValue(r.Name)

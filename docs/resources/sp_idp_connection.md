@@ -203,7 +203,7 @@ resource "pingfederate_sp_idp_connection" "spIdpConnection" {
 - `idp_oauth_grant_attribute_mapping` (Attributes) The OAuth Assertion Grant settings used to map from your IdP. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping))
 - `inbound_provisioning` (Attributes) SCIM Inbound Provisioning specifies how and when to provision user accounts and groups. (see [below for nested schema](#nestedatt--inbound_provisioning))
 - `license_connection_group` (String) The license connection group. If your PingFederate license is based on connection groups, each connection must be assigned to a group before it can be used.
-- `logging_mode` (String) The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`.
+- `logging_mode` (String) The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`. If the `idp_connection_transaction_logging_override` attribute is set to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource, then this attribute must be set to the same value.
 - `metadata_reload_settings` (Attributes) Configuration settings to enable automatic reload of partner's metadata. (see [below for nested schema](#nestedatt--metadata_reload_settings))
 - `oidc_client_credentials` (Attributes) The OpenID Connect Client Credentials settings. This is required for an OIDC Connection. (see [below for nested schema](#nestedatt--oidc_client_credentials))
 - `type` (String) The type of this connection. Default is `IDP`.
