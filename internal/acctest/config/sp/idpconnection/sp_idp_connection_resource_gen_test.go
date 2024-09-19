@@ -93,9 +93,9 @@ func TestAccSpIdpConnection_MinimalMaximal(t *testing.T) {
 func spIdpConnection_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_idp_connection" "example" {
-  connection_id = "%s"
-  name          = "connection name"
-  entity_id     = "entity_id"
+  connection_id      = "%s"
+  name               = "connection name"
+  entity_id          = "entity_id"
   virtual_entity_ids = []
   credentials = {
     certs = [{
