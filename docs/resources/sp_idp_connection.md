@@ -541,7 +541,7 @@ Optional:
 - `authentication_policy_contract_mappings` (Attributes List) A list of Authentication Policy Contracts that map to incoming assertions. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings))
 - `authn_context_mappings` (Attributes Set) A list of authentication context mappings between local and remote values. Applicable for SAML 2.0 and OIDC protocol connections. (see [below for nested schema](#nestedatt--idp_browser_sso--authn_context_mappings))
 - `decryption_policy` (Attributes) Defines what to decrypt in the browser-based SSO profile. (see [below for nested schema](#nestedatt--idp_browser_sso--decryption_policy))
-- `default_target_url` (String) The default target URL for this connection. If defined, this overrides the default URL.
+- `default_target_url` (String) The default target URL for this connection. If defined, this overrides the default URL. The default value is an empty string.
 - `enabled_profiles` (Set of String) The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO. This is required for SAMLx.x Connections.
 - `incoming_bindings` (Set of String) The SAML bindings that are enabled for browser-based SSO. This is required for SAML 2.0 connections when the enabled profiles contain the SP-initiated SSO profile or either SLO profile. For SAML 1.x based connections, it is not used for SP Connections and it is optional for IdP Connections.
 - `jit_provisioning` (Attributes) The settings used to specify how and when to provision user accounts. (see [below for nested schema](#nestedatt--idp_browser_sso--jit_provisioning))
@@ -1075,8 +1075,8 @@ Optional:
 
 - `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--issuance_criteria))
-- `restrict_virtual_server_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
-- `restricted_virtual_server_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
+- `restrict_virtual_server_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
+- `restricted_virtual_server_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to. The default value is an empty set.
 
 <a id="nestedatt--idp_browser_sso--authentication_policy_contract_mappings--attribute_contract_fulfillment"></a>
 ### Nested Schema for `idp_browser_sso.authentication_policy_contract_mappings.attribute_contract_fulfillment`
@@ -1556,7 +1556,6 @@ Optional:
 
 - `authentication_scheme` (String) The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. Options are `BASIC`, `CLIENT_SECRET_JWT`, `POST`, `PRIVATE_KEY_JWT`.
 - `authentication_signing_algorithm` (String) The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `NONE`, `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `PS256`, `PS384`, `PS512` `RS256`, `RS384`, `RS512`.
-- `back_channel_logout_uri` (String) The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.
 - `enable_pkce` (Boolean) Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.
 - `jwt_secured_authorization_response_mode_type` (String) The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL. Supported in PingFederate `12.1` and later.
 - `logout_endpoint` (String) URL of the OpenID Provider's RP-Initiated Logout Endpoint.
@@ -1569,6 +1568,7 @@ Optional:
 
 Read-Only:
 
+- `back_channel_logout_uri` (String) The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.
 - `front_channel_logout_uri` (String) The Front-Channel Logout URI. This is a read-only parameter.
 - `post_logout_redirect_uri` (String) The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.
 - `redirect_uri` (String) The redirect URI. This is a read-only parameter.

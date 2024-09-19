@@ -1284,6 +1284,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "A list of adapters that map to incoming assertions.",
 						MarkdownDescription: "A list of adapters that map to incoming assertions.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"always_sign_artifact_response": schema.BoolAttribute{
 						Computed:            true,
@@ -1416,14 +1419,18 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"issuance_criteria": issuancecriteria.ToSchema(),
 								"restrict_virtual_server_ids": schema.BoolAttribute{
 									Optional:            true,
-									Description:         "Restricts this mapping to specific virtual entity IDs.",
-									MarkdownDescription: "Restricts this mapping to specific virtual entity IDs.",
+									Computed:            true,
+									Default:             booldefault.StaticBool(false),
+									Description:         "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
+									MarkdownDescription: "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
 								},
 								"restricted_virtual_server_ids": schema.SetAttribute{
 									ElementType:         types.StringType,
 									Optional:            true,
-									Description:         "The list of virtual server IDs that this mapping is restricted to.",
-									MarkdownDescription: "The list of virtual server IDs that this mapping is restricted to.",
+									Computed:            true,
+									Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, nil)),
+									Description:         "The list of virtual server IDs that this mapping is restricted to. The default value is an empty set.",
+									MarkdownDescription: "The list of virtual server IDs that this mapping is restricted to. The default value is an empty set.",
 								},
 							},
 						},
@@ -1490,11 +1497,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"default_target_url": schema.StringAttribute{
 						Optional:            true,
-						Description:         "The default target URL for this connection. If defined, this overrides the default URL.",
-						MarkdownDescription: "The default target URL for this connection. If defined, this overrides the default URL.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
+						Description:         "The default target URL for this connection. If defined, this overrides the default URL. The default value is an empty string.",
+						MarkdownDescription: "The default target URL for this connection. If defined, this overrides the default URL. The default value is an empty string.",
 					},
 					"enabled_profiles": schema.SetAttribute{
 						ElementType:         types.StringType,
@@ -1925,12 +1931,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"back_channel_logout_uri": schema.StringAttribute{
-								Optional:            true,
+								Computed:            true,
 								Description:         "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 								MarkdownDescription: "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
 							},
 							"enable_pkce": schema.BoolAttribute{
 								Optional:            true,
@@ -3241,10 +3244,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				Computed:            true,
 				Description:         "List of alternate entity IDs that identifies the local server to this partner.",
 				MarkdownDescription: "List of alternate entity IDs that identifies the local server to this partner.",
-				Default:             setdefault.StaticValue(emptyStringSet),
 			},
 			"ws_trust": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -3515,9 +3516,11 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 
 	addRequest.LoggingMode = plan.LoggingMode.ValueStringPointer()
 
-	var virtualIdentitySlice []string
-	plan.VirtualEntityIds.ElementsAs(ctx, &virtualIdentitySlice, false)
-	addRequest.VirtualEntityIds = virtualIdentitySlice
+	if internaltypes.IsDefined(plan.VirtualEntityIds) {
+		var virtualIdentitySlice []string
+		plan.VirtualEntityIds.ElementsAs(ctx, &virtualIdentitySlice, false)
+		addRequest.VirtualEntityIds = virtualIdentitySlice
+	}
 
 	if internaltypes.IsDefined(plan.OidcClientCredentials) {
 		addRequest.OidcClientCredentials = &client.OIDCClientCredentials{}
@@ -3756,7 +3759,11 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	diags.Append(objDiags...)
 	state.Name = types.StringValue(r.Name)
 	state.Type = types.StringPointerValue(r.Type)
-	state.VirtualEntityIds = internaltypes.GetStringSet(r.VirtualEntityIds)
+	if r.VirtualEntityIds == nil {
+		state.VirtualEntityIds = types.SetNull(types.StringType)
+	} else {
+		state.VirtualEntityIds = internaltypes.GetStringSet(r.VirtualEntityIds)
+	}
 
 	// LicenseConnectionGroup
 	if r.LicenseConnectionGroup != nil {
