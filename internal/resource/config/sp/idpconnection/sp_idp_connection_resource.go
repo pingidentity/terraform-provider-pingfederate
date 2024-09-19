@@ -605,7 +605,6 @@ var (
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
 	}
-	emptyStringSet, _ = types.SetValue(types.StringType, []attr.Value{})
 
 	customId = "connection_id"
 )
