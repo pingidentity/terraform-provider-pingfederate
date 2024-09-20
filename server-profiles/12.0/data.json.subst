@@ -625,6 +625,17 @@
       "operationType": "SAVE",
       "items": [
         {
+          "password": "${PRIVATE_KEYSTORE_PIN}",
+          "fileData": "${PRIVATE_KEYSTORE}",
+          "id": "sslclientcert"
+        }
+      ],
+      "resourceType": "/keyPairs/sslClient"
+    },
+    {
+      "operationType": "SAVE",
+      "items": [
+        {
           "activeRuntimeServerCerts": [
             {
               "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/keyPairs/sslServer/sslservercert",
