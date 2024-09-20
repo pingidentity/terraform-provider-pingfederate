@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -628,8 +629,9 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	// type Configure methods.
 	var resourceConfig internaltypes.ResourceConfiguration
 	providerConfig := internaltypes.ProviderConfiguration{
-		HttpsHost:      httpsHost,
-		ProductVersion: parsedProductVersion,
+		HttpsHost:          httpsHost,
+		ProductVersion:     parsedProductVersion,
+		KeypairCreateMutex: &sync.Mutex{},
 	}
 
 	if username != "" {

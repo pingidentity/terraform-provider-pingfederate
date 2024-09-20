@@ -480,7 +480,9 @@ func (r *keypairsSslClientKeyResource) Create(ctx context.Context, req resource.
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSslClientAPI.CreateSslClientKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
+		r.providerConfig.KeypairCreateMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSslClientAPI.CreateSslClientKeyPairExecute(apiCreateRequest)
+		r.providerConfig.KeypairCreateMutex.Unlock()
 		if err != nil {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while generating the ssl client key", err, httpResp)
 			return
@@ -490,7 +492,9 @@ func (r *keypairsSslClientKeyResource) Create(ctx context.Context, req resource.
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSslClientAPI.ImportSslClientKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
+		r.providerConfig.KeypairCreateMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSslClientAPI.ImportSslClientKeyPairExecute(apiCreateRequest)
+		r.providerConfig.KeypairCreateMutex.Unlock()
 		if err != nil {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while importing the ssl client key", err, httpResp)
 			return
