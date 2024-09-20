@@ -60,7 +60,11 @@ import (
 	keypairssigningcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/certificate"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
 	keypairssigningrotationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/rotationsettings"
+	keypairssslclientcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient/certificate"
+	keypairssslclientcsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient/csr"
 	keypairssslserver "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver"
+	keypairssslservercertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/certificate"
+	keypairssslservercsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/csr"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
 	keypairssslserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -696,6 +700,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
+		certificate.CertificatesCAExportDataSource,
 		certificate.CertificateDataSource,
 		clusterstatus.ClusterStatusDataSource,
 		datastore.DataStoreDataSource,
@@ -707,6 +712,8 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
+		keypairssslclientcertificate.KeypairsSslClientCertificateDataSource,
+		keypairssslservercertificate.KeypairsSslServerCertificateDataSource,
 		license.LicenseDataSource,
 		licenseagreement.LicenseAgreementDataSource,
 		localidentity.LocalIdentityProfileDataSource,
@@ -780,6 +787,10 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keypairssigningrotationsettings.KeypairsSigningKeyRotationSettingsResource,
 		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
+		keypairssslclientcsr.KeypairsSslClientCsrExportResource,
+		keypairssslclientcsr.KeypairsSslClientCsrResource,
+		keypairssslservercsr.KeypairsSslServerCsrExportResource,
+		keypairssslservercsr.KeypairsSslServerCsrResource,
 		keypairssslserversettings.KeypairsSslServerSettingsResource,
 		datastore.DataStoreResource,
 		license.LicenseResource,
