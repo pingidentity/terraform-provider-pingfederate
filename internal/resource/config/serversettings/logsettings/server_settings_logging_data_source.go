@@ -62,7 +62,7 @@ func (r *serverSettingsLoggingDataSource) Schema(ctx context.Context, req dataso
 							Optional:    false,
 						},
 						"enabled": schema.BoolAttribute{
-							Description: "Determines whether or not the log category is enabled. The default is false.",
+							Description: "Determines whether or not the log category is enabled.",
 							Computed:    true,
 							Optional:    false,
 						},

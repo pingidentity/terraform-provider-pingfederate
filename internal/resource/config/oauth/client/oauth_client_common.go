@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -189,7 +190,7 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		// This attribute is returned as empty string when set to its default, and it only exists on PF 12.1+
 		compare, err := version.Compare(productVersion, version.PingFederate1210)
 		if err != nil {
-			diags.AddError("Failed to compare PingFederate versions", err.Error())
+			diags.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		}
 		pfVersionAtLeast121 := compare >= 0
 		if r.GetRefreshTokenRollingIntervalTimeUnit() == "" && pfVersionAtLeast121 {

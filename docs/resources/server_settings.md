@@ -69,9 +69,9 @@ resource "pingfederate_server_settings" "serverSettings" {
 
 ### Optional
 
-- `captcha_settings` (Attributes) Captcha Settings. (see [below for nested schema](#nestedatt--captcha_settings))
+- `captcha_settings` (Attributes, Deprecated) Captcha Settings. (see [below for nested schema](#nestedatt--captcha_settings))
 - `contact_info` (Attributes) Information that identifies the server. (see [below for nested schema](#nestedatt--contact_info))
-- `email_server` (Attributes) Email Server Settings. (see [below for nested schema](#nestedatt--email_server))
+- `email_server` (Attributes, Deprecated) Email Server Settings. (see [below for nested schema](#nestedatt--email_server))
 - `notifications` (Attributes) Notification settings for license and certificate expiration events. (see [below for nested schema](#nestedatt--notifications))
 
 ### Read-Only
