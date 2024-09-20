@@ -13,7 +13,13 @@ Resource to create and manage identity store provisioner instances.
 
 ```terraform
 resource "pingfederate_identity_store_provisioner" "identityStoreProvisioner" {
-  provisioner_id = "provisioner-id"
+  provisioner_id = "provisionerId"
+  name           = "My Identity Store Provisioner"
+
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.identitystoreprovisioners.sample.SampleIdentityStoreProvisioner"
+  }
+
   attribute_contract = {
     core_attributes = [
       {
@@ -33,11 +39,8 @@ resource "pingfederate_identity_store_provisioner" "identityStoreProvisioner" {
     core_attributes = [
       {
         name = "groupname"
-    }]
-  }
-  name = "My Identity Store Provisioner"
-  plugin_descriptor_ref = {
-    id = "com.pingidentity.identitystoreprovisioners.sample.SampleIdentityStoreProvisioner"
+      }
+    ]
   }
 }
 ```
