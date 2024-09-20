@@ -17,6 +17,8 @@ import (
 var (
 	_ datasource.DataSource              = &certificatesCAExportDataSource{}
 	_ datasource.DataSourceWithConfigure = &certificatesCAExportDataSource{}
+
+	caExportCustomId = "ca_id"
 )
 
 func CertificatesCAExportDataSource() datasource.DataSource {
@@ -81,7 +83,7 @@ func (r *certificatesCAExportDataSource) Read(ctx context.Context, req datasourc
 	exportRequest := r.apiClient.CertificatesCaAPI.ExportCaCertificateFile(config.AuthContext(ctx, r.providerConfig), data.CaId.ValueString())
 	responseData, httpResp, err := exportRequest.Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while exporting the CA certificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while exporting the CA certificate", err, httpResp, &caExportCustomId)
 		return
 	}
 
