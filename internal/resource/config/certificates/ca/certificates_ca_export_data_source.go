@@ -3,8 +3,10 @@ package certificatesca
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -53,6 +55,9 @@ func (r *certificatesCAExportDataSource) Schema(ctx context.Context, req datasou
 			"ca_id": schema.StringAttribute{
 				Description: "The ID of the trusted certificate authority to export.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"exported_certificate": schema.StringAttribute{
 				Description: "The exported PEM-encoded certificate.",
