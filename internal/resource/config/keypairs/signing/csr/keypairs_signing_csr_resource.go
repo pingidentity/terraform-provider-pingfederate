@@ -16,12 +16,15 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
 	_ resource.Resource              = &keypairsSigningCsrResource{}
 	_ resource.ResourceWithConfigure = &keypairsSigningCsrResource{}
+
+	customId = "keypair_id"
 )
 
 func KeypairsSigningCsrResource() resource.Resource {
@@ -34,7 +37,7 @@ type keypairsSigningCsrResource struct {
 }
 
 func (r *keypairsSigningCsrResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_keypairs_signing_csr"
+	resp.TypeName = req.ProviderTypeName + "_keypairs_signing_csr_response"
 }
 
 func (r *keypairsSigningCsrResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
@@ -70,7 +73,7 @@ type keypairsSigningCsrResourceModel struct {
 
 func (r *keypairsSigningCsrResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage CSR responses for signing key pairs.",
+		Description: "Resource to import the CSR response, once signed by a valid certificate authority, for a signing key pair.",
 		Attributes: map[string]schema.Attribute{
 			"crypto_provider": schema.StringAttribute{
 				Computed:    true,
@@ -280,7 +283,7 @@ func (r *keypairsSigningCsrResource) Create(ctx context.Context, req resource.Cr
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.KeyPairsSigningAPI.ImportCsrResponseExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while importing the certificate signing request response", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the certificate signing request response", err, httpResp, &customId)
 		return
 	}
 
@@ -302,5 +305,5 @@ func (r *keypairsSigningCsrResource) Update(ctx context.Context, req resource.Up
 
 func (r *keypairsSigningCsrResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// There is no way to delete the imported CSR response
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_keypairs_signing_csr_response", &resp.Diagnostics)
 }
