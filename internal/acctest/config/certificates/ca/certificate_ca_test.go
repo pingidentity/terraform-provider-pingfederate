@@ -1,4 +1,4 @@
-package certificateca_test
+package certificatesca_test
 
 import (
 	"fmt"

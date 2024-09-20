@@ -30,12 +30,14 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
                 value = "keyidentifier"
               },
               {
-                name  = "Key"
-                value = var.access_token_manager_key
-              },
-              {
                 name  = "Encoding"
                 value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = var.access_token_manager_key
               }
             ]
             default_row = false
@@ -261,7 +263,7 @@ Optional:
 
 - `include_in_id_token` (Boolean) Attribute is included in the ID Token.
 - `include_in_user_info` (Boolean) Attribute is included in the User Info.
-- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array. Defaults to `false`.
 
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
@@ -551,7 +553,7 @@ Optional:
 
 Optional:
 
-- `values` (List of String) A List of values.
+- `values` (Set of String) A List of values.
 
 ## Import
 

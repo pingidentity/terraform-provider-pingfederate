@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -39,7 +41,10 @@ func (r *keypairsSslServerSettingsResource) ValidateConfig(ctx context.Context, 
 				}
 			}
 			if !certRefFound {
-				resp.Diagnostics.AddError(fmt.Sprintf("`admin_console_cert_ref.id` '%s' must be included in `active_admin_console_certs`", adminConsoleCertId.ValueString()), "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("active_admin_console_certs"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintf("`admin_console_cert_ref.id` '%s' must be included in `active_admin_console_certs`", adminConsoleCertId.ValueString()))
 			}
 		}
 	}
@@ -56,7 +61,10 @@ func (r *keypairsSslServerSettingsResource) ValidateConfig(ctx context.Context, 
 				}
 			}
 			if !certRefFound {
-				resp.Diagnostics.AddError(fmt.Sprintf("`runtime_server_cert_ref.id` '%s' must be included in `active_runtime_server_certs`", runtimeServerCertId.ValueString()), "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("active_runtime_server_certs"),
+					providererror.InvalidAttributeConfiguration,
+					fmt.Sprintf("`runtime_server_cert_ref.id` '%s' must be included in `active_runtime_server_certs`", runtimeServerCertId.ValueString()))
 			}
 		}
 	}

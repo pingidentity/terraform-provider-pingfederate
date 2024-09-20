@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -35,9 +36,12 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders"
 	captchaproviderssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders/settings"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/ca"
+	certificatesgroups "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/groups"
+	certificatesrevocationocspcertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/ocspcertificates"
 	certificatesrevocationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/settings"
 	clustersettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/settings"
 	clusterstatus "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/status"
+	configurationencryptionkeysrotate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/configurationencryptionkeys/rotate"
 	connectionmetadataexport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/connectionmetadata/export"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	extendedproperties "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/extendedproperties"
@@ -45,15 +49,21 @@ import (
 	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
 	idpspconnection "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/spconnection"
 	idpstsrequestparameterscontracts "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/stsrequestparameterscontracts"
+	idptokenprocessors "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/tokenprocessors"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idptospadaptermapping"
 	incomingproxysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/incomingproxysettings"
 	kerberosrealms "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms"
 	kerberosrealmssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms/settings"
+	keypairsoauthopenidconnect "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect"
 	keypairsoauthopenidconnectadditionalkeysets "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect/additionalkeysets"
 	keypairsigning "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing"
+	keypairssigningcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/certificate"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
+	keypairssigningrotationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/rotationsettings"
 	keypairssslclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient"
+	keypairssslclientcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient/certificate"
 	keypairssslserver "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver"
+	keypairssslservercertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/certificate"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
 	keypairssslserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -71,6 +81,8 @@ import (
 	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
 	oauthcibaserverpolicysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/cibaserverpolicy/settings"
 	oauthclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/client"
+	oauthclientregistrationpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/clientregistrationpolicies"
+	oauthclientsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/clientsettings"
 	oauthidpadaptermappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/idpadaptermappings"
 	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
@@ -80,21 +92,28 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/pingoneconnection"
 	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
+	protocolmetadatasigningsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/signingsettings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/secretmanagers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
 	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
 	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
 	serversettingssystemkeys "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys"
+	serversettingssystemkeysrotate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys/rotate"
+	serversettingswstruststssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings"
+	serversettingswstruststssettingsissuercertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/wstruststssettings/issuercertificates"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serviceauthentication"
 	sessionapplicationsessionpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/applicationsessionpolicy"
 	sessionauthenticationsessionpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies"
 	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
 	sessionsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/settings"
+	spadapters "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/adapters"
 	spauthenticationpolicycontractmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/authenticationpolicycontractmapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/defaulturls"
 	sptargeturlmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/targeturlmappings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/tokenprocessortotokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/virtualhostnames"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -257,17 +276,34 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				Optional:    true,
 			},
 			"x_bypass_external_validation_header": schema.BoolAttribute{
-				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
+				Description: "Header value in request for PingFederate. When set to `true`, connectivity checks for resources such as `pingfederate_data_store` will be skipped. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
 				Optional:    true,
 			},
 		},
 	}
 }
 
-func returnAuthAttributeDiagsError(attribute string, authenticationMethod string, envVar string, resp *provider.ConfigureResponse) {
-	resp.Diagnostics.AddError(
-		fmt.Sprintf("Unable to find %s value to be used with %s authentication", attribute, authenticationMethod),
-		fmt.Sprintf("%s cannot be empty. Either set it in the configuration or use the %s environment variable.", attribute, envVar),
+func addAuthAttributeDiagsError(attribute string, authenticationMethod string, envVar string, resp *provider.ConfigureResponse) {
+	resp.Diagnostics.AddAttributeError(
+		path.Root(attribute),
+		providererror.InvalidProviderConfiguration,
+		fmt.Sprintf("%s cannot be empty when using %s authentication. Either set it in the configuration or use the %s environment variable.", attribute, authenticationMethod, envVar),
+	)
+}
+
+func addAttributeRequiredError(attribute, envVar string, diags *diag.Diagnostics) {
+	diags.AddAttributeError(
+		path.Root(attribute),
+		providererror.InvalidProviderConfiguration,
+		fmt.Sprintf("%s is required. Either set it in the configuration or use the %s environment variable", attribute, envVar),
+	)
+}
+
+func addAttributeUnknownError(attribute, envVar string, diags *diag.Diagnostics) {
+	diags.AddAttributeError(
+		path.Root(attribute),
+		providererror.InvalidProviderConfiguration,
+		fmt.Sprintf("%s cannot be unknown. It can be set either in the configuration or with the %s environment variable", attribute, envVar),
 	)
 }
 
@@ -283,10 +319,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var httpsHost string
 	if config.HttpsHost.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as https_host",
-		)
+		addAttributeUnknownError("https_host", "PINGFEDERATE_PROVIDER_HTTPS_HOST", &resp.Diagnostics)
 	} else {
 		if config.HttpsHost.IsNull() {
 			httpsHost = os.Getenv("PINGFEDERATE_PROVIDER_HTTPS_HOST")
@@ -294,10 +327,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 			httpsHost = config.HttpsHost.ValueString()
 		}
 		if httpsHost == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find https_host",
-				"https_host cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_HTTPS_HOST environment variable.",
-			)
+			addAttributeRequiredError("https_host", "PINGFEDERATE_PROVIDER_HTTPS_HOST", &resp.Diagnostics)
 		}
 	}
 
@@ -305,10 +335,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var adminApiPath string
 	if config.AdminApiPath.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as admin_api_path",
-		)
+		addAttributeUnknownError("admin_api_path", "PINGFEDERATE_PROVIDER_ADMIN_API_PATH", &resp.Diagnostics)
 	} else {
 		if config.AdminApiPath.IsNull() {
 			adminApiPath = os.Getenv("PINGFEDERATE_PROVIDER_ADMIN_API_PATH")
@@ -325,10 +352,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var hasUsername bool = false
 	if config.Username.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as username",
-		)
+		addAttributeUnknownError("username", "PINGFEDERATE_PROVIDER_USERNAME", &resp.Diagnostics)
 	} else {
 		if config.Username.IsNull() {
 			username = os.Getenv("PINGFEDERATE_PROVIDER_USERNAME")
@@ -347,10 +371,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var hasPassword bool = false
 	if config.Password.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as password",
-		)
+		addAttributeUnknownError("password", "PINGFEDERATE_PROVIDER_PASSWORD", &resp.Diagnostics)
 	} else {
 		if config.Password.IsNull() {
 			password = os.Getenv("PINGFEDERATE_PROVIDER_PASSWORD")
@@ -369,10 +390,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var hasAccessToken bool = false
 	if config.AccessToken.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as access_token",
-		)
+		addAttributeUnknownError("access_token", "PINGFEDERATE_PROVIDER_ACCESS_TOKEN", &resp.Diagnostics)
 	} else {
 		if config.AccessToken.IsNull() {
 			accessToken = os.Getenv("PINGFEDERATE_PROVIDER_ACCESS_TOKEN")
@@ -391,10 +409,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var hasClientId bool = false
 	if config.ClientId.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as client_id",
-		)
+		addAttributeUnknownError("client_id", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", &resp.Diagnostics)
 	} else {
 		if config.ClientId.IsNull() {
 			clientId = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
@@ -412,10 +427,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var hasClientSecret bool = false
 	if config.ClientSecret.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as client_secret",
-		)
+		addAttributeUnknownError("client_secret", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET", &resp.Diagnostics)
 	} else {
 		if config.ClientSecret.IsNull() {
 			clientSecret = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET")
@@ -433,10 +445,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var hasScopes bool = false
 	if config.Scopes.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as scopes",
-		)
+		addAttributeUnknownError("scopes", "PINGFEDERATE_PROVIDER_OAUTH_SCOPES", &resp.Diagnostics)
 	} else {
 		if config.Scopes.IsNull() {
 			envScopes := os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")
@@ -461,10 +470,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var hasTokenUrl bool = false
 	if config.TokenUrl.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as token_url",
-		)
+		addAttributeUnknownError("token_url", "PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL", &resp.Diagnostics)
 	} else {
 		if config.TokenUrl.IsNull() {
 			tokenUrl = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL")
@@ -481,32 +487,36 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	// Validate the configuration
 	if !hasUsername && !hasPassword && !hasAccessToken && !hasClientId && !hasClientSecret && !hasScopes && !hasTokenUrl {
 		resp.Diagnostics.AddError(
-			"Unable to find username and password, access_token, or OAuth required properties for configuration",
-			"username and password, access_token, or oauth configuration required values were not supplied. Either set them in the configuration or use the PINGFEDERATE_PROVIDER_* environment variables.",
+			providererror.InvalidProviderConfiguration,
+			"Unable to find username and password, access_token, or OAuth required properties for configuration. "+
+				"username and password, access_token, or oauth configuration required values were not supplied. Either set them in the configuration or use the PINGFEDERATE_PROVIDER_* environment variables.",
 		)
 	}
 
 	// User cannot provide username and password, access token
 	if (hasUsername || hasPassword) && hasAccessToken {
 		resp.Diagnostics.AddError(
-			"Username and password cannot be used with access_token",
-			"Only basic authentication (username and password) or access_token can be used. If you want to use access_token, remove username and password from the configuration or use the PINGFEDERATE_PROVIDER_USERNAME and PINGFEDERATE_PROVIDER_PASSWORD environment variables.",
+			providererror.InvalidProviderConfiguration,
+			"Username and password cannot be used with access_token. "+
+				"Only basic authentication (username and password) or access_token can be used. If you want to use access_token, remove username and password from the configuration or use the PINGFEDERATE_PROVIDER_USERNAME and PINGFEDERATE_PROVIDER_PASSWORD environment variables.",
 		)
 	}
 
 	// User cannot provide username and password, OAuth configuration
 	if (hasUsername || hasPassword) && (hasClientId || hasClientSecret || hasScopes || hasTokenUrl) {
 		resp.Diagnostics.AddError(
-			"Username and password cannot be used with OAuth configuration properties",
-			"Only basic authentication (username and password) or OAuth authentication can be used. If you want to use OAuth, remove username and password from the configuration or use the PINGFEDERATE_PROVIDER_USERNAME and PINGFEDERATE_PROVIDER_PASSWORD environment variables.",
+			providererror.InvalidProviderConfiguration,
+			"Username and password cannot be used with OAuth configuration properties. "+
+				"Only basic authentication (username and password) or OAuth authentication can be used. If you want to use OAuth, remove username and password from the configuration or use the PINGFEDERATE_PROVIDER_USERNAME and PINGFEDERATE_PROVIDER_PASSWORD environment variables.",
 		)
 	}
 
 	// User cannot provide access token, OAuth configuration
 	if hasAccessToken && (hasClientId || hasClientSecret || hasScopes || hasTokenUrl) {
 		resp.Diagnostics.AddError(
-			"Access token cannot be used with OAuth configuration",
-			"Only basic authentication (username and password) or access_token can be used. If you want to use basic authentication, remove access_token from the configuration or use the PINGFEDERATE_PROVIDER_ACCESS_TOKEN environment variable.",
+			providererror.InvalidProviderConfiguration,
+			"Access token cannot be used with OAuth configuration "+
+				"Only basic authentication (username and password) or access_token can be used. If you want to use basic authentication, remove access_token from the configuration or use the PINGFEDERATE_PROVIDER_ACCESS_TOKEN environment variable.",
 		)
 	}
 
@@ -516,24 +526,24 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	// If user has not provided an OAuth configuration or access token, they must provide username and password
 	if !(hasOauthConfig && hasAccessTokenAuth) && hasBasicAuth {
 		if username == "" {
-			returnAuthAttributeDiagsError("username", "basic", "PINGFEDERATE_PROVIDER_USERNAME", resp)
+			addAuthAttributeDiagsError("username", "basic", "PINGFEDERATE_PROVIDER_USERNAME", resp)
 		}
 
 		if password == "" {
-			returnAuthAttributeDiagsError("password", "basic", "PINGFEDERATE_PROVIDER_PASSWORD", resp)
+			addAuthAttributeDiagsError("password", "basic", "PINGFEDERATE_PROVIDER_PASSWORD", resp)
 		}
 	}
 
 	// If user has not provided username and password or an access token, they must provide an OAuth configuration
 	if !(hasBasicAuth || hasAccessTokenAuth) && hasOauthConfig {
 		if clientId == "" {
-			returnAuthAttributeDiagsError("client_id", "OAuth", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", resp)
+			addAuthAttributeDiagsError("client_id", "OAuth", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", resp)
 		}
 		if clientSecret == "" {
-			returnAuthAttributeDiagsError("client_secret", "OAuth", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET", resp)
+			addAuthAttributeDiagsError("client_secret", "OAuth", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET", resp)
 		}
 		if tokenUrl == "" {
-			returnAuthAttributeDiagsError("token_url", "OAuth", "PINGFEDEATE_PROVIDER_OAUTH_TOKEN_URL", resp)
+			addAuthAttributeDiagsError("token_url", "OAuth", "PINGFEDEATE_PROVIDER_OAUTH_TOKEN_URL", resp)
 		}
 		if len(scopes) == 0 {
 			tflog.Warn(ctx, "No scopes value configured.")
@@ -551,10 +561,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	if productVersion == "" {
-		resp.Diagnostics.AddError(
-			"Unable to find PingFederate version",
-			"product_version cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_PRODUCT_VERSION environment variable.",
-		)
+		addAttributeRequiredError("product_version", "PINGFEDERATE_PROVIDER_PRODUCT_VERSION", &resp.Diagnostics)
 	} else {
 		// Validate the PingFederate version
 		parsedProductVersion, diags = version.Parse(productVersion)
@@ -596,11 +603,12 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 			pemFilename := filepath.Clean(pemFilename)
 			caCert, err := os.ReadFile(pemFilename)
 			if err != nil {
-				resp.Diagnostics.AddError("Failed to read CA PEM certificate file: "+pemFilename, err.Error())
+				resp.Diagnostics.AddError(providererror.InvalidProviderConfiguration,
+					"Failed to read CA PEM certificate file: "+pemFilename+". "+err.Error())
 			}
 			tflog.Info(ctx, "Adding CA cert from file: "+pemFilename)
 			if !caCertPool.AppendCertsFromPEM(caCert) {
-				resp.Diagnostics.AddWarning("Failed to parse certificate", "Failed to parse CA PEM certificate from file: "+pemFilename)
+				resp.Diagnostics.AddWarning(providererror.InvalidProviderConfiguration, "Failed to parse CA PEM certificate from file: "+pemFilename)
 			}
 		}
 	}
@@ -692,6 +700,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
+		certificate.CertificatesCAExportDataSource,
 		certificate.CertificateDataSource,
 		clusterstatus.ClusterStatusDataSource,
 		datastore.DataStoreDataSource,
@@ -699,10 +708,13 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		idpdefaulturls.IdpDefaultUrlsDataSource,
 		idpspconnection.IdpSpConnectionDataSource,
 		keypairsigning.KeypairsSigningKeyDataSource,
+		keypairssigningcertificate.KeypairsSigningCertificateDataSource,
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
 		keypairssslclient.KeypairsSslClientKeyDataSource,
+		keypairssslclientcertificate.KeypairsSslClientCertificateDataSource,
+		keypairssslservercertificate.KeypairsSslServerCertificateDataSource,
 		license.LicenseDataSource,
 		licenseagreement.LicenseAgreementDataSource,
 		localidentity.LocalIdentityProfileDataSource,
@@ -751,8 +763,11 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		captchaproviders.CaptchaProviderResource,
 		captchaproviderssettings.CaptchaProviderSettingsResource,
 		certificate.CertificateCAResource,
-		clustersettings.ClusterSettingsResource,
+		certificatesgroups.CertificatesGroupResource,
+		certificatesrevocationocspcertificates.CertificatesRevocationOcspCertificateResource,
 		certificatesrevocationsettings.CertificatesRevocationSettingsResource,
+		clustersettings.ClusterSettingsResource,
+		configurationencryptionkeysrotate.ConfigurationEncryptionKeysRotateResource,
 		connectionmetadataexport.ConnectionMetadataExportResource,
 		defaulturls.DefaultUrlsResource,
 		extendedproperties.ExtendedPropertiesResource,
@@ -761,12 +776,15 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		idpspconnection.IdpSpConnectionResource,
 		idpstsrequestparameterscontracts.IdpStsRequestParametersContractResource,
 		idptospadaptermapping.IdpToSpAdapterMappingResource,
+		idptokenprocessors.IdpTokenProcessorResource,
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
+		keypairsoauthopenidconnect.KeypairsOauthOpenidConnectResource,
 		keypairsoauthopenidconnectadditionalkeysets.KeypairsOauthOpenidConnectAdditionalKeySetResource,
 		keypairsigning.KeypairsSigningKeyResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
+		keypairssigningrotationsettings.KeypairsSigningKeyRotationSettingsResource,
 		keypairssslclient.KeypairsSslClientKeyResource,
 		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
@@ -790,6 +808,8 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeResource,
 		oauthcibaserverpolicysettings.OauthCibaServerPolicySettingsResource,
 		oauthclient.OauthClientResource,
+		oauthclientregistrationpolicies.OauthClientRegistrationPolicyResource,
+		oauthclientsettings.OauthClientSettingsResource,
 		oauthidpadaptermappings.OauthIdpAdapterMappingResource,
 		oauthissuer.OauthIssuerResource,
 		oauthopenidconnectpolicy.OpenidConnectPolicyResource,
@@ -802,6 +822,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		pingoneconnection.DeprecatedPingOneConnectionResource,
 		pingoneconnection.PingoneConnectionResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
+		protocolmetadatasigningsettings.ProtocolMetadataSigningSettingsResource,
 		redirectvalidation.RedirectValidationResource,
 		secretmanagers.SecretManagerResource,
 		serversettings.ServerSettingsResource,
@@ -810,12 +831,17 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettingslogsettings.ServerSettingsLoggingResource,
 		serversettingslogsettings.ServerSettingsLogSettingsResource,
 		serversettingssystemkeys.ServerSettingsSystemKeysResource,
+		serversettingssystemkeysrotate.ServerSettingsSystemKeysRotateResource,
+		serversettingswstruststssettingsissuercertificates.ServerSettingsWsTrustStsSettingsIssuerCertificateResource,
+		serversettingswstruststssettings.ServerSettingsWsTrustStsSettingsResource,
+		serviceauthentication.ServiceAuthenticationResource,
 		sessionapplicationsessionpolicy.SessionApplicationPolicyResource,
 		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
 		sessionauthenticationsessionpolicies.SessionAuthenticationPolicyResource,
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationPoliciesGlobalResource,
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionsettings.SessionSettingsResource,
+		spadapters.SpAdapterResource,
 		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
 		sptargeturlmappings.SpTargetUrlMappingsResource,
 		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,

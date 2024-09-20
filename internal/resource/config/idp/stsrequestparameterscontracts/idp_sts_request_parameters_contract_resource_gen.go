@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -24,6 +25,8 @@ var (
 	_ resource.Resource                = &idpStsRequestParametersContractResource{}
 	_ resource.ResourceWithConfigure   = &idpStsRequestParametersContractResource{}
 	_ resource.ResourceWithImportState = &idpStsRequestParametersContractResource{}
+
+	customId = "contract_id"
 )
 
 func IdpStsRequestParametersContractResource() resource.Resource {
@@ -51,6 +54,7 @@ func (r *idpStsRequestParametersContractResource) Configure(_ context.Context, r
 
 type idpStsRequestParametersContractResourceModel struct {
 	ContractId types.String `tfsdk:"contract_id"`
+	Id         types.String `tfsdk:"id"`
 	Name       types.String `tfsdk:"name"`
 	Parameters types.Set    `tfsdk:"parameters"`
 }
@@ -90,6 +94,7 @@ func (r *idpStsRequestParametersContractResource) Schema(ctx context.Context, re
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *idpStsRequestParametersContractResourceModel) buildClientStruct() (*client.StsRequestParametersContract, diag.Diagnostics) {
@@ -109,6 +114,8 @@ func (model *idpStsRequestParametersContractResourceModel) buildClientStruct() (
 
 func (state *idpStsRequestParametersContractResourceModel) readClientResponse(response *client.StsRequestParametersContract) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// contract_id
 	state.ContractId = types.StringValue(response.Id)
 	// name
@@ -136,7 +143,7 @@ func (r *idpStsRequestParametersContractResource) Create(ctx context.Context, re
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpStsRequestParametersContractsAPI.CreateStsRequestParamContractExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the idpStsRequestParametersContract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the idpStsRequestParametersContract", err, httpResp, &customId)
 		return
 	}
 
@@ -164,7 +171,7 @@ func (r *idpStsRequestParametersContractResource) Read(ctx context.Context, req 
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP STS Request Parameters Contract", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the idpStsRequestParametersContract", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the idpStsRequestParametersContract", err, httpResp, &customId)
 		}
 		return
 	}
@@ -193,7 +200,7 @@ func (r *idpStsRequestParametersContractResource) Update(ctx context.Context, re
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpStsRequestParametersContractsAPI.UpdateStsRequestParamContractByIdExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the idpStsRequestParametersContract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the idpStsRequestParametersContract", err, httpResp, &customId)
 		return
 	}
 
@@ -217,7 +224,7 @@ func (r *idpStsRequestParametersContractResource) Delete(ctx context.Context, re
 	// Delete API call logic
 	httpResp, err := r.apiClient.IdpStsRequestParametersContractsAPI.DeleteStsRequestParamContractById(config.AuthContext(ctx, r.providerConfig), data.ContractId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the idpStsRequestParametersContract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the idpStsRequestParametersContract", err, httpResp, &customId)
 	}
 }
 

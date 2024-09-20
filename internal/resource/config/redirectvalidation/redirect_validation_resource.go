@@ -20,6 +20,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
@@ -258,7 +259,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	// Compare to version 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
@@ -365,7 +366,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	createRedirectValidation := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createRedirectValidation, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
 		return
 	}
 
@@ -432,7 +433,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
 		return
 	}
 

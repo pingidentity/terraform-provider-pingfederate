@@ -139,6 +139,267 @@
           "dnsTtl": 60000,
           "ldapDnsSrvPrefix": "_ldap._tcp",
           "ldapsDnsSrvPrefix": "_ldaps._tcp"
+        },
+        {
+          "type": "CUSTOM",
+          "id": "customDataStore",
+          "name": "APIStubs.io Users",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
+          },
+          "configuration": {
+            "tables": [
+              {
+                "name": "Base URLs and Tags",
+                "rows": [
+                  {
+                    "fields": [
+                      {
+                        "name": "Base URL",
+                        "value": "https://demo.apistubs.io/api/v1/users"
+                      },
+                      {
+                        "name": "Tags",
+                        "value": "production"
+                      }
+                    ],
+                    "defaultRow": true
+                  }
+                ]
+              },
+              {
+                "name": "Attributes",
+                "rows": [
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/email"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "email"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/id"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "id"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/dob"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "dob"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/avatar"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "avatar"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/lastName"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "lastName"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/firstName"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "firstName"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/staticData"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "staticData"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/password"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "password"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/username"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "username"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/createdAt"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "createdAt"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/createdBy"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "createdBy"
+                      }
+                    ],
+                    "defaultRow": false
+                  }
+                ]
+              },
+              {
+                "name": "HTTP Request Headers",
+                "rows": []
+              }
+            ],
+            "fields": [
+              {
+                "name": "Authentication Method",
+                "value": "None"
+              },
+              {
+                "name": "Client ID",
+                "value": ""
+              },
+              {
+                "name": "Client Secret Reference",
+                "value": ""
+              },
+              {
+                "name": "Client Secret",
+                "value": ""
+              },
+              {
+                "name": "HTTP Method",
+                "value": "GET"
+              },
+              {
+                "name": "OAuth Scope",
+                "value": "restapiscope"
+              },
+              {
+                "name": "OAuth Token Endpoint",
+                "value": "https://authservices.bxretail.org/as/token"
+              },
+              {
+                "name": "Password Reference",
+                "value": ""
+              },
+              {
+                "name": "Password",
+                "value": ""
+              },
+              {
+                "name": "Username",
+                "value": ""
+              },
+              {
+                "name": "Connection Timeout (ms)",
+                "value": "10000"
+              },
+              {
+                "name": "Enable HTTPS Hostname Verification",
+                "value": "true"
+              },
+              {
+                "name": "Max Payload Size (KB)",
+                "value": "1024"
+              },
+              {
+                "name": "Maximum Retries Limit",
+                "value": "5"
+              },
+              {
+                "name": "Read Timeout (ms)",
+                "value": "10000"
+              },
+              {
+                "name": "Retry Error Codes",
+                "value": "429"
+              },
+              {
+                "name": "Retry Request",
+                "value": "true"
+              },
+              {
+                "name": "Test Connection Body",
+                "value": "{\"foo\":\"bar\"}"
+              },
+              {
+                "name": "Test Connection URL",
+                "value": "https://demo.apistubs.io/api/v1/users"
+              }
+            ]
+          },
+          "maskAttributeValues": false
         }
       ]
     },
@@ -332,6 +593,12 @@
           "fileData": "/u3+7QAAAAIAAAABAAAAAQANZWM1MjFwcmV2aW91cwAAAZBMDLwCAAAAoDCBnTAOBgorBgEEASoCEQEBBQAEgYq5oSHCUBnWJrvkSzGx5VypbIwgPdENEiSNbd/LHElIXQoO9TYOTFnHujEsMnyAtRuKoeipa9aR5GZAs6/UbH/6eqm46iHl2GmuTmW7lNH4PPABRVr49f8OxmKS1lWr34aXdtoz79794q1TbkJR1D473mZjZ+C/B9QrZb9JrtQ9aBAZVfTkk+iLOyEAAAABAAVYLjUwOQAAAgMwggH/MIIBYKADAgECAhA2fueKsOBIIjVxVtVp84BdMAoGCCqGSM49BAMEMCwxCzAJBgNVBAYMAnVzMQwwCgYDVQQKDANvcmcxDzANBgNVBAMMBmNvbW1vbjAeFw0yNDA2MjQyMTAwMjFaFw0yNTA2MjQyMTAwMjFaMCwxCzAJBgNVBAYMAnVzMQwwCgYDVQQKDANvcmcxDzANBgNVBAMMBmNvbW1vbjCBmzAQBgcqhkjOPQIBBgUrgQQAIwOBhgAEACR/tjrlrmFne8AVUyl6Dxlh24/9Q+V23qNDQwGmKOLsjRgBVtdevWgEdX23rgZa9ocWyDPt/RzMJFHas55SH39IADxuFHHMch2VAFQtP84jEV3oSnt4xZoOkcpITXSp6pu/f3f+MdtUZxJOWLQHN0QxGNn+KQN7W1Eu5+60pualcHiHoyEwHzAdBgNVHQ4EFgQUYnCz6u1D4PY1bwJTBLpQESFWKmowCgYIKoZIzj0EAwQDgYwAMIGIAkIBPcz5S1Z/mfLjL31aGeYGtZ4TAXQv/qWAi/qmY0eBCAbhQV3wpZ3AvvxZcgIILZudvJAXEEtLftDMgK7HqBtTXYsCQgEXkE8Ji0jzdtjXa/Yjr3ciGpIW3lzi7IH7L2ig9aF5Qr4EdK9wbZyAZ3sHiuQPHoS6XOaNRl68mZK3ZEZFOPfUw1Tz4Y3aNKynRGb1sR+iyMXV1Pgz",
           "format": "PKCS12",
           "password": "2FederateM0re"
+        },
+        {
+          "id": "rotationsettingstestkey",
+          "fileData": "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",
+          "format": "PKCS12",
+          "password": "2FederateM0re"
         }
       ]
     },
@@ -345,6 +612,17 @@
         }
       ],
       "resourceType": "/keyPairs/sslServer"
+    },
+    {
+      "operationType": "SAVE",
+      "items": [
+        {
+          "password": "${PRIVATE_KEYSTORE_PIN}",
+          "fileData": "${PRIVATE_KEYSTORE}",
+          "id": "sslclientcert"
+        }
+      ],
+      "resourceType": "/keyPairs/sslClient"
     },
     {
       "operationType": "SAVE",
@@ -1282,6 +1560,196 @@
       "operationType": "SAVE",
       "items": [
         {
+          "id": "oidcSettingsTestATM",
+          "name": "oidcSettingsTestATM",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin",
+            "location": "https://localhost:9999/pf-admin-api/v1/oauth/accessTokenManagers/descriptors/com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+          },
+          "configuration": {
+            "tables": [
+              {
+                "name": "Symmetric Keys",
+                "rows": [
+                  {
+                    "fields": [
+                      {
+                        "name": "Encoding",
+                        "value": "b64u"
+                      },
+                      {
+                        "name": "Key ID",
+                        "value": "keyidentifier"
+                      },
+                      {
+                        "name": "Key",
+                        "encryptedValue": "OBF:JWE:eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMi4wLjAuOSJ9..glz5YmODygqZySr0VpBMng.ZM9fos2BuqvQBDjZ1dTGSlEUXM2v_PNq5t-KkAtFHigPHjDq6C0svny23SU-HtmT_68_KDRGSbanvZ8TLPRaZmiBvocaR-7545fQc5lquyY.uu9LABU6_j9X4lxV-M5M2w"
+                      }
+                    ],
+                    "defaultRow": false
+                  }
+                ]
+              },
+              {
+                "name": "Certificates",
+                "rows": []
+              }
+            ],
+            "fields": [
+              {
+                "name": "Active Symmetric Encryption Key ID",
+                "value": "keyidentifier"
+              },
+              {
+                "name": "JWE Algorithm",
+                "value": "dir"
+              },
+              {
+                "name": "JWE Content Encryption Algorithm",
+                "value": "A192CBC-HS384"
+              },
+              {
+                "name": "Token Lifetime",
+                "value": "120"
+              },
+              {
+                "name": "Use Centralized Signing Key",
+                "value": "false"
+              },
+              {
+                "name": "JWS Algorithm",
+                "value": ""
+              },
+              {
+                "name": "Active Symmetric Key ID",
+                "value": ""
+              },
+              {
+                "name": "Active Signing Certificate Key ID",
+                "value": ""
+              },
+              {
+                "name": "Asymmetric Encryption Key",
+                "value": ""
+              },
+              {
+                "name": "Asymmetric Encryption JWKS URL",
+                "value": ""
+              },
+              {
+                "name": "Enable Token Revocation",
+                "value": "false"
+              },
+              {
+                "name": "Include Key ID Header Parameter",
+                "value": "true"
+              },
+              {
+                "name": "Include X.509 Thumbprint Header Parameter",
+                "value": "false"
+              },
+              {
+                "name": "Default JWKS URL Cache Duration",
+                "value": "720"
+              },
+              {
+                "name": "Include JWE Key ID Header Parameter",
+                "value": "true"
+              },
+              {
+                "name": "Include JWE X.509 Thumbprint Header Parameter",
+                "value": "false"
+              },
+              {
+                "name": "Client ID Claim Name",
+                "value": "client_id"
+              },
+              {
+                "name": "Scope Claim Name",
+                "value": "scope"
+              },
+              {
+                "name": "Space Delimit Scope Values",
+                "value": "true"
+              },
+              {
+                "name": "Authorization Details Claim Name",
+                "value": "authorization_details"
+              },
+              {
+                "name": "Issuer Claim Value",
+                "value": ""
+              },
+              {
+                "name": "Audience Claim Value",
+                "value": ""
+              },
+              {
+                "name": "Not Before Claim Offset",
+                "value": ""
+              },
+              {
+                "name": "Include Issued At Claim",
+                "value": "false"
+              },
+              {
+                "name": "JWT ID Claim Length",
+                "value": "0"
+              },
+              {
+                "name": "Access Grant GUID Claim Name",
+                "value": ""
+              },
+              {
+                "name": "JWKS Endpoint Path",
+                "value": ""
+              },
+              {
+                "name": "JWKS Endpoint Cache Duration",
+                "value": "720"
+              },
+              {
+                "name": "Publish Key ID X.509 URL",
+                "value": "false"
+              },
+              {
+                "name": "Publish Thumbprint X.509 URL",
+                "value": "false"
+              },
+              {
+                "name": "Expand Scope Groups",
+                "value": "false"
+              },
+              {
+                "name": "Type Header Value",
+                "value": ""
+              }
+            ]
+          },
+          "attributeContract": {
+            "coreAttributes": [],
+            "extendedAttributes": [
+              {
+                "name": "contract",
+                "multiValued": false
+              }
+            ]
+          },
+          "selectionSettings": {
+            "resourceUris": []
+          },
+          "accessControlSettings": {
+            "restrictClients": false,
+            "allowedClients": []
+          },
+          "sessionValidationSettings": {
+            "checkValidAuthnSession": false,
+            "checkSessionRevocationStatus": false,
+            "updateAuthnSessionActivity": false,
+            "includeSessionId": false
+          }
+        },
+        {
           "id": "jwt",
           "name": "JSON Web Tokens",
           "pluginDescriptorRef": {
@@ -1474,6 +1942,51 @@
           "sequenceNumber": 2
         }
       ]
+    },
+    {
+      "resourceType": "/oauth/openIdConnect/policies",
+      "operationType": "SAVE",
+        "items": [
+          {
+            "id": "oidcSettingsTestPolicy",
+            "name": "oidcSettingsTestPolicy",
+            "idTokenLifetime": 5,
+            "attributeContract": {
+              "coreAttributes": [
+                {
+                  "name": "sub",
+                  "multiValued": false
+                }
+              ],
+              "extendedAttributes": []
+            },
+            "attributeMapping": {
+              "attributeSources": [],
+              "attributeContractFulfillment": {
+                "sub": {
+                  "source": {
+                    "type": "TOKEN"
+                  },
+                  "value": "contract"
+                }
+              },
+              "issuanceCriteria": {
+                "conditionalCriteria": []
+              }
+            },
+            "includeSriInIdToken": false,
+            "includeUserInfoInIdToken": false,
+            "includeSHashInIdToken": false,
+            "includeX5tInIdToken": false,
+            "idTokenTypHeaderValue": "",
+            "returnIdTokenOnRefreshGrant": false,
+            "reissueIdTokenInHybridFlow": false,
+            "accessTokenManagerRef": {
+              "id": "oidcSettingsTestATM"
+            },
+            "scopeAttributeMappings": {}
+          }
+        ]
     },
     {
       "resourceType": "/oauth/accessTokenManagers/settings",
@@ -3711,6 +4224,53 @@
               },
               {
                 "name": "Internal"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "/oauth/clientRegistrationPolicies",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "clientRegistrationPolicy",
+          "name": "clientRegistrationPolicy",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin",
+            "location": "https://localhost:9999/pf-admin-api/v1/oauth/clientRegistrationPolicies/descriptors/com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
+          },
+          "configuration": {
+            "tables": [],
+            "fields": [
+              {
+                "name": "code",
+                "value": "true"
+              },
+              {
+                "name": "code id_token",
+                "value": "true"
+              },
+              {
+                "name": "code id_token token",
+                "value": "true"
+              },
+              {
+                "name": "code token",
+                "value": "true"
+              },
+              {
+                "name": "id_token",
+                "value": "true"
+              },
+              {
+                "name": "id_token token",
+                "value": "true"
+              },
+              {
+                "name": "token",
+                "value": "true"
               }
             ]
           }
