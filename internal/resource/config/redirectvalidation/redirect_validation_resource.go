@@ -294,7 +294,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	if localSettingsModified {
 		plan.RedirectValidationLocalSettings, diags = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, localSettingsAttrs)
 		resp.Diagnostics.Append(diags...)
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

@@ -129,7 +129,7 @@ func (r *notificationPublisherResource) ModifyPlan(ctx context.Context, req reso
 	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (model *notificationPublisherResourceModel) buildClientStruct() (*client.NotificationPublisher, diag.Diagnostics) {

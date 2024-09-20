@@ -382,7 +382,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		resp.Diagnostics.Append(respDiags...)
 	}
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func createDataStore(dataStore client.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.CreateResponse) (*client.DataStoreAggregation, *http.Response, error) {

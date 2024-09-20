@@ -131,7 +131,7 @@ func (r *captchaProviderResource) ModifyPlan(ctx context.Context, req resource.M
 	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (model *captchaProviderResourceModel) buildClientStruct() (*client.CaptchaProvider, diag.Diagnostics) {

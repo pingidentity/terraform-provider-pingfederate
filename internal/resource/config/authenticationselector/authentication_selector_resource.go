@@ -178,7 +178,7 @@ func (r *authenticationSelectorResource) ModifyPlan(ctx context.Context, req res
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readAuthenticationSelectorsResponse(ctx context.Context, r *client.AuthenticationSelector, state *authenticationSelectorResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {

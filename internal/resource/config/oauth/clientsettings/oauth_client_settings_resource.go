@@ -71,7 +71,7 @@ func (r *oauthClientSettingsResource) setVersionDependentDefaults(ctx context.Co
 	var diags diag.Diagnostics
 	plan.DynamicClientRegistration, diags = types.ObjectValue(plan.DynamicClientRegistration.AttributeTypes(ctx), attrs)
 	resp.Diagnostics.Append(diags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (r *oauthClientSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {

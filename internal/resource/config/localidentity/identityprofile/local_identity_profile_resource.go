@@ -838,7 +838,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		}
 	}
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {

@@ -129,7 +129,7 @@ func (r *secretManagerResource) ModifyPlan(ctx context.Context, req resource.Mod
 	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (model *secretManagerResourceModel) buildClientStruct() (*client.SecretManager, diag.Diagnostics) {

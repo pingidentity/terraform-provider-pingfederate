@@ -194,7 +194,7 @@ func (r *sessionAuthenticationPolicyResource) ModifyPlan(ctx context.Context, re
 		} else {
 			plan.UserDeviceType = types.StringNull()
 		}
-		resp.Plan.Set(ctx, plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

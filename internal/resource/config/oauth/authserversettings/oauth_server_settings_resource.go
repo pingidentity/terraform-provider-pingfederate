@@ -761,7 +761,7 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 	}
 
 	if !resp.Diagnostics.HasError() {
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

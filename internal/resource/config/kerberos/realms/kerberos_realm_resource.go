@@ -220,7 +220,7 @@ func (r *kerberosRealmsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		}
 	}
 	resp.Diagnostics.Append(r.validatePlan(ctx, plan)...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readKerberosRealmsResponse(ctx context.Context, r *client.KerberosRealm, state *kerberosRealmsResourceModel, plan *kerberosRealmsResourceModel) diag.Diagnostics {

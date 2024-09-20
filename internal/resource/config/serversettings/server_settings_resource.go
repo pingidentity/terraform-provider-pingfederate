@@ -772,7 +772,7 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		plan.Notifications, diags = types.ObjectValue(plan.Notifications.AttributeTypes(ctx), planNotificationsAttrs)
 		resp.Diagnostics.Append(diags...)
 
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

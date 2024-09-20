@@ -1939,7 +1939,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"back_channel_logout_uri": schema.StringAttribute{
-								Computed:            true,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 								Description:         "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 								MarkdownDescription: "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 							},
@@ -1949,8 +1952,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								MarkdownDescription: "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.",
 							},
 							"front_channel_logout_uri": schema.StringAttribute{
-								Optional:            false,
-								Computed:            true,
+								Optional: false,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 								Description:         "The Front-Channel Logout URI. This is a read-only parameter.",
 								MarkdownDescription: "The Front-Channel Logout URI. This is a read-only parameter.",
 							},
@@ -1991,8 +1997,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"post_logout_redirect_uri": schema.StringAttribute{
-								Optional:            false,
-								Computed:            true,
+								Optional: false,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 								Description:         "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 								MarkdownDescription: "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 							},
@@ -2005,8 +2014,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"redirect_uri": schema.StringAttribute{
-								Optional:            false,
-								Computed:            true,
+								Optional: false,
+								Computed: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 								Description:         "The redirect URI. This is a read-only parameter.",
 								MarkdownDescription: "The redirect URI. This is a read-only parameter.",
 							},
@@ -2229,8 +2241,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						MarkdownDescription: "A list of possible endpoints to send SLO requests and responses.",
 					},
 					"sso_application_endpoint": schema.StringAttribute{
-						Optional:            false,
-						Computed:            true,
+						Optional: false,
+						Computed: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 						Description:         "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 						MarkdownDescription: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 					},
@@ -3480,6 +3495,8 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 
 	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+
+	planModified := false
+	var diags diag.Diagnostics
 	if pfVersionAtLeast1210 && internaltypes.IsDefined(plan.IdpBrowserSso) {
 		browserSsoAttributes := plan.IdpBrowserSso.Attributes()
 		oidcProviderSettings := browserSsoAttributes["oidc_provider_settings"].(types.Object)
@@ -3488,14 +3505,45 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			jwtSecuredAuthorizationResponseModeType := oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"]
 			if jwtSecuredAuthorizationResponseModeType.IsUnknown() {
 				oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringValue("DISABLED")
-				var diags diag.Diagnostics
 				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
 				resp.Diagnostics.Append(diags...)
 				browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
 				plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
 				resp.Diagnostics.Append(diags...)
+				planModified = true
 			}
 		}
+	}
+
+	// If the entity_id has been changed, then mark corresponding attributes as unknown
+	var state *spIdpConnectionResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if state == nil {
+		return
+	}
+
+	if (plan.EntityId.IsUnknown() || !plan.EntityId.Equal(state.EntityId)) && internaltypes.IsDefined(plan.IdpBrowserSso) {
+		browserSsoAttributes := plan.IdpBrowserSso.Attributes()
+		oidcProviderSettings := browserSsoAttributes["oidc_provider_settings"].(types.Object)
+		if internaltypes.IsDefined(oidcProviderSettings) {
+			oidcProviderSettingsAttributes := oidcProviderSettings.Attributes()
+			oidcProviderSettingsAttributes["back_channel_logout_uri"] = types.StringUnknown()
+			oidcProviderSettingsAttributes["front_channel_logout_uri"] = types.StringUnknown()
+			oidcProviderSettingsAttributes["post_logout_redirect_uri"] = types.StringUnknown()
+			oidcProviderSettingsAttributes["redirect_uri"] = types.StringUnknown()
+			var diags diag.Diagnostics
+			oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
+			resp.Diagnostics.Append(diags...)
+			browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
+		}
+		browserSsoAttributes["sso_application_endpoint"] = types.StringUnknown()
+		plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
+		resp.Diagnostics.Append(diags...)
+		planModified = true
+	}
+
+	if planModified {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
