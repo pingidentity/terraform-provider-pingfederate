@@ -306,10 +306,6 @@ resource "pingfederate_data_store" "customDataStore" {
           value = var.rest_data_store_basic_auth_username
         },
         {
-          name  = "Password"
-          value = var.rest_data_store_basic_auth_password
-        },
-        {
           name  = "Password Reference"
           value = ""
         },
@@ -324,10 +320,6 @@ resource "pingfederate_data_store" "customDataStore" {
         {
           name  = "Client ID"
           value = var.rest_data_store_oauth2_client_id
-        },
-        {
-          name  = "Client Secret"
-          value = var.rest_data_store_oauth2_client_secret
         },
         {
           name  = "Client Secret Reference"
@@ -368,6 +360,16 @@ resource "pingfederate_data_store" "customDataStore" {
         {
           name  = "Test Connection Body"
           value = "{\"foo\":\"bar\"}"
+        }
+      ]
+      sensitive_fields = [
+        {
+          name  = "Password"
+          value = var.rest_data_store_basic_auth_password
+        },
+        {
+          name  = "Client Secret"
+          value = var.rest_data_store_oauth2_client_secret
         }
       ]
     }
@@ -414,12 +416,13 @@ Read-Only:
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables))
 
 Read-Only:
 
 - `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields_all))
-- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all))
 
 <a id="nestedatt--custom_data_store--configuration--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.fields`
@@ -427,7 +430,16 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--custom_data_store--configuration--sensitive_fields"></a>
+### Nested Schema for `custom_data_store.configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 <a id="nestedatt--custom_data_store--configuration--tables"></a>
@@ -448,6 +460,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--sensitive_fields))
 
 <a id="nestedatt--custom_data_store--configuration--tables--rows--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.tables.rows.fields`
@@ -455,7 +468,16 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--custom_data_store--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `custom_data_store.configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
 
 
 
@@ -466,7 +488,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--custom_data_store--configuration--tables_all"></a>
@@ -494,7 +516,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 

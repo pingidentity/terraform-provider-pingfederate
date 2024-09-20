@@ -10,6 +10,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var (
@@ -84,7 +85,7 @@ func AttrTypes() map[string]attr.Type {
 func ToState(ctx context.Context, response *client.PolicyActionAggregation) (types.Object, diag.Diagnostics) {
 	var diags, respDiags diag.Diagnostics
 	if response == nil {
-		diags.AddError("provided client struct is nil", "")
+		diags.AddError(providererror.InternalProviderError, "provided client struct is nil")
 		return types.ObjectNull(policyActionAttrTypes), diags
 	}
 
@@ -182,7 +183,7 @@ func ToState(ctx context.Context, response *client.PolicyActionAggregation) (typ
 		diags.Append(respDiags...)
 
 	} else {
-		diags.AddError("no valid non-nil policy action type found in struct", "")
+		diags.AddError(providererror.InternalProviderError, "no valid non-nil policy action type found in struct")
 	}
 
 	if diags.HasError() {

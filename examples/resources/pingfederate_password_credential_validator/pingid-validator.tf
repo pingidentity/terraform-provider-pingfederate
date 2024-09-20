@@ -17,12 +17,14 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
                 name = "Client IP"
                 # IP of Client
                 value = var.pcv_client_ip
-              },
+              }
+            ],
+            sensitive_fields = [
               {
                 name  = "Client Shared Secret"
                 value = var.pcv_shared_secret
               }
-            ],
+            ]
             default_row = false
           }
         ]
@@ -162,11 +164,6 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
         value = "VPN"
       },
       {
-        # use_base64_key value from PingID Properties File
-        name  = "State Encryption Key"
-        value = var.pcv_state_encryption_key
-      },
-      {
         name  = "State Lifetime"
         value = "300"
       },
@@ -189,6 +186,13 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
       {
         name  = "Newline Character"
         value = "None"
+      }
+    ]
+    sensitive_fields = [
+      {
+        # use_base64_key value from PingID Properties File
+        name  = "State Encryption Key"
+        value = var.pcv_state_encryption_key
       }
     ]
   }

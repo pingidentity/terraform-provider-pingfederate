@@ -11,6 +11,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // #nosec G101
@@ -73,8 +74,8 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 				ImportStateId:     jsonWebTokenOauthAccessTokenManagerId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Some configuration fields and tables are sensitive or are not set in this test, so they can't be verified here.
-				ImportStateVerifyIgnore: []string{"configuration.fields", "configuration.tables.1", "configuration.tables_all.1"},
+				// Some configuration table fields are sensitive or are not set in this test, so they can't be verified here.
+				ImportStateVerifyIgnore: []string{"configuration.tables.0.rows.0.sensitive_fields"},
 			},
 			{
 				// Back to minimal model
@@ -121,12 +122,14 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
                 value = "%[4]s"
               },
               {
-                name  = "Key"
-                value = "%[5]s"
-              },
-              {
                 name  = "Encoding"
                 value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "%[5]s"
               }
             ]
           }
@@ -178,6 +181,28 @@ data "pingfederate_oauth_access_token_manager" "%[1]s" {
 }
 
 func testAccJsonWebOauthAccessTokenManager(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagerResourceModel) string {
+	versionedFields := ""
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		versionedFields += `
+      {
+        name  = "Not Before Claim Offset"
+        value = ""
+      },
+      {
+        name  = "Include Issued At Claim",
+        value = "false"
+      },
+    `
+	}
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		versionedFields += `
+      {
+        name  = "Publish Keys to the PingFederate JWKS Endpoint"
+        value = "false"
+      },
+    `
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "%[1]s" {
   manager_id = "%[2]s"
@@ -197,12 +222,14 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
                 value = "%[4]s"
               },
               {
-                name  = "Key"
-                value = "%[5]s"
-              },
-              {
                 name  = "Encoding"
                 value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "%[5]s"
               }
             ]
             default_row = false
@@ -318,7 +345,24 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
       {
         name  = "Type Header Value"
         value = ""
-      }
+      },
+      {
+        name  = "Publish Thumbprint X.509 URL"
+        value = "false"
+      },
+      {
+        name  = "Publish Key ID X.509 URL"
+        value = "false"
+      },
+      {
+        name  = "Include JWE X.509 Thumbprint Header Parameter",
+        value = "false"
+      },
+      {
+        name  = "Include X.509 Thumbprint Header Parameter",
+        value = "false"
+      },
+      %[9]s
     ]
   }
   attribute_contract = {
@@ -372,6 +416,7 @@ data "pingfederate_oauth_access_token_manager" "%[1]s" {
 		*resourceModel.tokenLifetime,
 		resourceModel.activeSymmetricKeyId,
 		*resourceModel.checkValidAuthnSession,
+		versionedFields,
 	)
 }
 

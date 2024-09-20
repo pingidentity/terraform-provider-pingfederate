@@ -16,6 +16,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -51,7 +52,8 @@ type serverSettingsSystemKeysResource struct {
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages the system encryption keys.",
+		Description:        "Manages the system encryption keys.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Use the `pingfederate_server_settings_system_keys_rotate` resource instead.",
 		Attributes: map[string]schema.Attribute{
 			"current": schema.SingleNestedAttribute{
 				Description: "Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
@@ -318,7 +320,7 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 // This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsSystemKeysResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_server_settings_system_keys", &resp.Diagnostics)
 }
 
 func (r *serverSettingsSystemKeysResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

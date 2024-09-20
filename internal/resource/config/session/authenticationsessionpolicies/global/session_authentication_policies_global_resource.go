@@ -14,6 +14,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -94,6 +95,19 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Schema(ctx context.Context
 	resp.Schema = schema
 }
 
+func (r *sessionAuthenticationPoliciesGlobalResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config *sessionAuthenticationPoliciesGlobalModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if config == nil {
+		return
+	}
+
+	if internaltypes.IsDefined(config.PersistentSessions) && !config.EnableSessions.ValueBool() {
+		resp.Diagnostics.AddAttributeError(path.Root("persistent_sessions"), providererror.InvalidAttributeConfiguration, "persistent_sessions cannot be set when enable_sessions is set to \"false\"")
+	}
+}
+
 func addOptionalSessionAuthenticationPoliciesGlobalFields(ctx context.Context, addRequest *client.GlobalAuthenticationSessionPolicy, plan sessionAuthenticationPoliciesGlobalModel) error {
 	if internaltypes.IsDefined(plan.EnableSessions) {
 		addRequest.EnableSessions = plan.EnableSessions.ValueBool()
@@ -160,7 +174,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Create(ctx context.Context
 	createSessionAuthenticationPoliciesGlobal := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationPoliciesGlobalFields(ctx, createSessionAuthenticationPoliciesGlobal, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the global authentication session policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the global authentication session policy: "+err.Error())
 		return
 	}
 
@@ -226,7 +240,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Update(ctx context.Context
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationPoliciesGlobalFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the global authentication session policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the global authentication session policy: "+err.Error())
 		return
 	}
 

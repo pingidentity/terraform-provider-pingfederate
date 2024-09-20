@@ -13,7 +13,7 @@ var _ validator.String = &pingFederateIdWithCharLimitValidator{}
 type pingFederateIdWithCharLimitValidator struct{}
 
 func (v pingFederateIdWithCharLimitValidator) Description(ctx context.Context) string {
-	return "Verifies custom_id contains less than 33 characters, contains no spaces, and is alphanumeric"
+	return "Verifies the string contains less than 33 characters, contains no spaces, and is alphanumeric"
 }
 
 func (v pingFederateIdWithCharLimitValidator) MarkdownDescription(ctx context.Context) string {

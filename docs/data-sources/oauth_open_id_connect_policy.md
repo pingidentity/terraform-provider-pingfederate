@@ -315,4 +315,4 @@ Read-Only:
 
 Read-Only:
 
-- `values` (List of String) A List of values.
+- `values` (Set of String) A List of values.

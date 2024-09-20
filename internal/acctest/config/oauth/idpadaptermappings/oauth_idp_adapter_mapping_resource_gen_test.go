@@ -144,6 +144,7 @@ resource "pingfederate_oauth_idp_adapter_mapping" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthIdpAdapterMapping_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.example", "id", oauthIdpAdapterMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.example", "idp_adapter_ref.id", oauthIdpAdapterMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.example", "attribute_sources.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.example", "issuance_criteria.conditional_criteria.#", "0"),
@@ -153,6 +154,7 @@ func oauthIdpAdapterMapping_CheckComputedValuesMinimal() resource.TestCheckFunc 
 // Validate any computed values when applying complete HCL
 func oauthIdpAdapterMapping_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.example", "id", oauthIdpAdapterMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.example", "idp_adapter_ref.id", oauthIdpAdapterMappingMappingId),
 	)
 }

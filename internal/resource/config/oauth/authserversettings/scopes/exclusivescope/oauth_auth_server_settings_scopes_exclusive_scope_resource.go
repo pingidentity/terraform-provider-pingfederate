@@ -13,6 +13,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -70,8 +71,11 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) ValidateConfig(ctx
 	if model.Dynamic.ValueBool() && (model.Name.ValueString() != "" || !model.Name.IsNull()) {
 		{
 			containsAsteriskPrefix := strings.Index(model.Name.ValueString(), "*")
-			if containsAsteriskPrefix != 0 {
-				resp.Diagnostics.AddError("Dynamic property is set to true with Name property incorrectly specified!", "The Name property must be prefixed with an \"*\". For example, \"*example\"")
+			if containsAsteriskPrefix == -1 {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("name"),
+					providererror.InvalidAttributeConfiguration,
+					"The name must include a \"*\" when set to dynamic")
 			}
 		}
 	}
@@ -120,7 +124,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Create(ctx context
 	createOauthAuthServerSettingsScopesExclusiveScopes := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx, createOauthAuthServerSettingsScopesExclusiveScopes, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Exclusive Scope", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Exclusive Scope: "+err.Error())
 		return
 	}
 
@@ -184,7 +188,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Update(ctx context
 	createUpdateRequest := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Exclusive Scope", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Exclusive Scope: "+err.Error())
 		return
 	}
 
