@@ -695,6 +695,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
+		certificate.CertificatesCAExportDataSource,
 		certificate.CertificateDataSource,
 		clusterstatus.ClusterStatusDataSource,
 		datastore.DataStoreDataSource,
