@@ -660,16 +660,21 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"additional_allowed_entities_configuration": schema.SingleNestedAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Additional allowed entities or issuers configuration. Currently only used in OIDC IdP (RP) connection.",
 				Attributes: map[string]schema.Attribute{
 					"allow_additional_entities": schema.BoolAttribute{
 						Optional:            true,
-						Description:         "Set to true to configure additional entities or issuers to be accepted during entity or issuer validation.",
-						MarkdownDescription: "Set to true to configure additional entities or issuers to be accepted during entity or issuer validation.",
+						Computed:            true,
+						Default:             booldefault.StaticBool(false),
+						Description:         "Set to true to configure additional entities or issuers to be accepted during entity or issuer validation. The default value is `false`.",
+						MarkdownDescription: "Set to true to configure additional entities or issuers to be accepted during entity or issuer validation. The default value is `false`.",
 					},
 					"allow_all_entities": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Set to true to accept any entity or issuer during entity or issuer validation. (Not Recommended)",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "Set to true to accept any entity or issuer during entity or issuer validation. (Not Recommended). The default value is `false`.",
 					},
 					"additional_allowed_entities": schema.SetNestedAttribute{
 						Optional:            true,
@@ -2104,6 +2109,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									},
 								},
 								Optional:            true,
+								Computed:            true,
+								Default:             setdefault.StaticValue(types.SetValueMust(idpBrowserSsoOidcProviderSettingsRequestParametersElementType, nil)),
 								Description:         "A list of request parameters. Request parameters with same name but different attribute values are treated as a multi-valued request parameter.",
 								MarkdownDescription: "A list of request parameters. Request parameters with same name but different attribute values are treated as a multi-valued request parameter.",
 							},
