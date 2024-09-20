@@ -1,5 +1,7 @@
 # v0.17.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr_response` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr_export` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
 * **New Resource:** `pingfederate_keypairs_ssl_server_csr_response` ([#336]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/336)))
 * **New Resource:** `pingfederate_keypairs_ssl_server_csr_export` ([#336]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/336)))
 * **New Resource:** `pingfederate_certificates_group` ([#278]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/278)))
