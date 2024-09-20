@@ -39,6 +39,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
@@ -641,7 +642,6 @@ type spIdpConnectionResourceModel struct {
 	MetadataReloadSettings                 types.Object `tfsdk:"metadata_reload_settings"`
 	Name                                   types.String `tfsdk:"name"`
 	OidcClientCredentials                  types.Object `tfsdk:"oidc_client_credentials"`
-	Type                                   types.String `tfsdk:"type"`
 	VirtualEntityIds                       types.Set    `tfsdk:"virtual_entity_ids"`
 	WsTrust                                types.Object `tfsdk:"ws_trust"`
 }
@@ -3238,16 +3238,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Description:         "The OpenID Connect Client Credentials settings. This is required for an OIDC Connection.",
 				MarkdownDescription: "The OpenID Connect Client Credentials settings. This is required for an OIDC Connection.",
 			},
-			"type": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  stringdefault.StaticString("IDP"),
-				Validators: []validator.String{
-					stringvalidator.OneOf("IDP", "SP"),
-				},
-				Description:         "The type of this connection. Default is `IDP`.",
-				MarkdownDescription: "The type of this connection. Default is `IDP`.",
-			},
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
@@ -3512,7 +3502,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel) error {
 	addRequest.ErrorPageMsgId = plan.ErrorPageMsgId.ValueStringPointer()
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
-	addRequest.Type = plan.Type.ValueStringPointer()
+	addRequest.Type = utils.Pointer("IDP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
 	addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
@@ -3774,7 +3764,6 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	state.MetadataReloadSettings, objDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
 	diags.Append(objDiags...)
 	state.Name = types.StringValue(r.Name)
-	state.Type = types.StringPointerValue(r.Type)
 	if r.VirtualEntityIds == nil {
 		if plan != nil && internaltypes.IsDefined(plan.VirtualEntityIds) && len(plan.VirtualEntityIds.Elements()) == 0 {
 			state.VirtualEntityIds, objDiags = types.SetValue(types.StringType, nil)

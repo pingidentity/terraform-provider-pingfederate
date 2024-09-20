@@ -497,7 +497,6 @@ func spIdpConnection_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.primary_verification_cert", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.secondary_verification_cert", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "logging_mode", "STANDARD"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "type", "IDP"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "ws_trust.attribute_contract.core_attributes.0.name", "TOKEN_SUBJECT"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "ws_trust.attribute_contract.core_attributes.0.masked", "false"),
 	)
