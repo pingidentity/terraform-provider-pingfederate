@@ -1,4 +1,4 @@
-package keypairsigning
+package keypairssslclient
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -27,24 +26,24 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &keypairsSigningKeyResource{}
-	_ resource.ResourceWithConfigure = &keypairsSigningKeyResource{}
+	_ resource.Resource              = &keypairsSslClientKeyResource{}
+	_ resource.ResourceWithConfigure = &keypairsSslClientKeyResource{}
 
 	customId = "key_id"
 )
 
-// KeypairsSigningKeyResource is a helper function to simplify the provider implementation.
-func KeypairsSigningKeyResource() resource.Resource {
-	return &keypairsSigningKeyResource{}
+// KeypairsSslClientKeyResource is a helper function to simplify the provider implementation.
+func KeypairsSslClientKeyResource() resource.Resource {
+	return &keypairsSslClientKeyResource{}
 }
 
-// keypairsSigningKeyResource is the resource implementation.
-type keypairsSigningKeyResource struct {
+// keypairsSslClientKeyResource is the resource implementation.
+type keypairsSslClientKeyResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type keypairsSigningKeyResourceModel struct {
+type keypairsSslClientKeyResourceModel struct {
 	City                    types.String `tfsdk:"city"`
 	CommonName              types.String `tfsdk:"common_name"`
 	Country                 types.String `tfsdk:"country"`
@@ -60,7 +59,6 @@ type keypairsSigningKeyResourceModel struct {
 	Organization            types.String `tfsdk:"organization"`
 	OrganizationUnit        types.String `tfsdk:"organization_unit"`
 	Password                types.String `tfsdk:"password"`
-	RotationSettings        types.Object `tfsdk:"rotation_settings"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
 	Sha1Fingerprint         types.String `tfsdk:"sha1_fingerprint"`
 	Sha256Fingerprint       types.String `tfsdk:"sha256_fingerprint"`
@@ -75,9 +73,9 @@ type keypairsSigningKeyResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *keypairsSigningKeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *keypairsSslClientKeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage signing key pairs.",
+		Description: "Resource to create and manage ssl client key pairs.",
 		Attributes: map[string]schema.Attribute{
 			"key_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replace plan if changed.",
@@ -278,48 +276,14 @@ func (r *keypairsSigningKeyResource) Schema(ctx context.Context, req resource.Sc
 				Description: "Status of the item.",
 				Computed:    true,
 			},
-			"rotation_settings": schema.SingleNestedAttribute{
-				Description: "The local identity profile data store configuration.",
-				Computed:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
-						Computed:    true,
-					},
-					"creation_buffer_days": schema.Int64Attribute{
-						Description: "Buffer days before key pair expiration for creation of a new key pair.",
-						Computed:    true,
-					},
-					"activation_buffer_days": schema.Int64Attribute{
-						Description: "Buffer days before key pair expiration for activation of the new key pair.",
-						Computed:    true,
-					},
-					"valid_days": schema.Int64Attribute{
-						Description: "Valid days for the new key pair to be created. If this property is unset, the validity days of the original key pair will be used.",
-						Computed:    true,
-					},
-					"key_algorithm": schema.StringAttribute{
-						Description: "Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
-						Computed:    true,
-					},
-					"key_size": schema.Int64Attribute{
-						Description: "Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint.",
-						Computed:    true,
-					},
-					"signature_algorithm": schema.StringAttribute{
-						Description: "Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
-						Computed:    true,
-					},
-				},
-			},
 		},
 	}
 	id.ToSchema(&resp.Schema)
 }
 
-func (r *keypairsSigningKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *keypairsSigningKeyResourceModel
-	var config *keypairsSigningKeyResourceModel
+func (r *keypairsSslClientKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan *keypairsSslClientKeyResourceModel
+	var config *keypairsSslClientKeyResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() || plan == nil {
@@ -447,7 +411,7 @@ func (r *keypairsSigningKeyResource) ModifyPlan(ctx context.Context, req resourc
 	}
 }
 
-func (model *keypairsSigningKeyResourceModel) buildGenerateClientStruct() (*client.NewKeyPairSettings, diag.Diagnostics) {
+func (model *keypairsSslClientKeyResourceModel) buildGenerateClientStruct() (*client.NewKeyPairSettings, diag.Diagnostics) {
 	result := &client.NewKeyPairSettings{}
 	// city
 	result.City = model.City.ValueStringPointer()
@@ -486,7 +450,7 @@ func (model *keypairsSigningKeyResourceModel) buildGenerateClientStruct() (*clie
 	return result, nil
 }
 
-func (model *keypairsSigningKeyResourceModel) buildImportClientStruct() (*client.KeyPairFile, diag.Diagnostics) {
+func (model *keypairsSslClientKeyResourceModel) buildImportClientStruct() (*client.KeyPairFile, diag.Diagnostics) {
 	result := &client.KeyPairFile{}
 	// crypto_provider
 	result.CryptoProvider = model.CryptoProvider.ValueStringPointer()
@@ -501,7 +465,7 @@ func (model *keypairsSigningKeyResourceModel) buildImportClientStruct() (*client
 	return result, nil
 }
 
-func (state *keypairsSigningKeyResourceModel) readClientResponse(response *client.KeyPairView) diag.Diagnostics {
+func (state *keypairsSslClientKeyResourceModel) readClientResponse(response *client.KeyPairView) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// id
 	state.Id = types.StringPointerValue(response.Id)
@@ -517,33 +481,6 @@ func (state *keypairsSigningKeyResourceModel) readClientResponse(response *clien
 	state.KeyId = types.StringPointerValue(response.Id)
 	// key_size
 	state.KeySize = types.Int64PointerValue(response.KeySize)
-	// rotation_settings
-	rotationSettingsAttrTypes := map[string]attr.Type{
-		"activation_buffer_days": types.Int64Type,
-		"creation_buffer_days":   types.Int64Type,
-		"id":                     types.StringType,
-		"key_algorithm":          types.StringType,
-		"key_size":               types.Int64Type,
-		"signature_algorithm":    types.StringType,
-		"valid_days":             types.Int64Type,
-	}
-	var rotationSettingsValue types.Object
-	if response.RotationSettings == nil {
-		rotationSettingsValue = types.ObjectNull(rotationSettingsAttrTypes)
-	} else {
-		rotationSettingsValue, diags = types.ObjectValue(rotationSettingsAttrTypes, map[string]attr.Value{
-			"activation_buffer_days": types.Int64Value(response.RotationSettings.ActivationBufferDays),
-			"creation_buffer_days":   types.Int64Value(response.RotationSettings.CreationBufferDays),
-			"id":                     types.StringPointerValue(response.RotationSettings.Id),
-			"key_algorithm":          types.StringPointerValue(response.RotationSettings.KeyAlgorithm),
-			"key_size":               types.Int64PointerValue(response.RotationSettings.KeySize),
-			"signature_algorithm":    types.StringPointerValue(response.RotationSettings.SignatureAlgorithm),
-			"valid_days":             types.Int64PointerValue(response.RotationSettings.ValidDays),
-		})
-		respDiags.Append(diags...)
-	}
-
-	state.RotationSettings = rotationSettingsValue
 	// serial_number
 	state.SerialNumber = types.StringPointerValue(response.SerialNumber)
 	// sha1_fingerprint
@@ -571,11 +508,11 @@ func (state *keypairsSigningKeyResourceModel) readClientResponse(response *clien
 }
 
 // Metadata returns the resource type name.
-func (r *keypairsSigningKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_keypairs_signing_key"
+func (r *keypairsSslClientKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_keypairs_ssl_client_key"
 }
 
-func (r *keypairsSigningKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *keypairsSslClientKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -585,8 +522,8 @@ func (r *keypairsSigningKeyResource) Configure(_ context.Context, req resource.C
 	r.apiClient = providerCfg.ApiClient
 }
 
-func (r *keypairsSigningKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data keypairsSigningKeyResourceModel
+func (r *keypairsSslClientKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data keypairsSslClientKeyResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -602,25 +539,25 @@ func (r *keypairsSigningKeyResource) Create(ctx context.Context, req resource.Cr
 	if !internaltypes.IsDefined(data.FileData) {
 		clientData, diags := data.buildGenerateClientStruct()
 		resp.Diagnostics.Append(diags...)
-		apiCreateRequest := r.apiClient.KeyPairsSigningAPI.CreateSigningKeyPair(config.AuthContext(ctx, r.providerConfig))
+		apiCreateRequest := r.apiClient.KeyPairsSslClientAPI.CreateSslClientKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
 		r.providerConfig.KeypairCreateMutex.Lock()
-		responseData, httpResp, err = r.apiClient.KeyPairsSigningAPI.CreateSigningKeyPairExecute(apiCreateRequest)
+		responseData, httpResp, err = r.apiClient.KeyPairsSslClientAPI.CreateSslClientKeyPairExecute(apiCreateRequest)
 		r.providerConfig.KeypairCreateMutex.Unlock()
 		if err != nil {
-			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while generating the signing key", err, httpResp, &customId)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while generating the ssl client key", err, httpResp, &customId)
 			return
 		}
 	} else {
 		clientData, diags := data.buildImportClientStruct()
 		resp.Diagnostics.Append(diags...)
-		apiCreateRequest := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPair(config.AuthContext(ctx, r.providerConfig))
+		apiCreateRequest := r.apiClient.KeyPairsSslClientAPI.ImportSslClientKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
 		r.providerConfig.KeypairCreateMutex.Lock()
-		responseData, httpResp, err = r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPairExecute(apiCreateRequest)
+		responseData, httpResp, err = r.apiClient.KeyPairsSslClientAPI.ImportSslClientKeyPairExecute(apiCreateRequest)
 		r.providerConfig.KeypairCreateMutex.Unlock()
 		if err != nil {
-			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the signing key", err, httpResp, &customId)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the ssl client key", err, httpResp, &customId)
 			return
 		}
 	}
@@ -632,8 +569,8 @@ func (r *keypairsSigningKeyResource) Create(ctx context.Context, req resource.Cr
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *keypairsSigningKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data keypairsSigningKeyResourceModel
+func (r *keypairsSslClientKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data keypairsSslClientKeyResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -643,10 +580,10 @@ func (r *keypairsSigningKeyResource) Read(ctx context.Context, req resource.Read
 	}
 
 	// Read API call logic
-	responseData, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
+	responseData, httpResp, err := r.apiClient.KeyPairsSslClientAPI.GetSslClientKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Signing Key Pair", httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SSL Client Key Pair", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp, &customId)
@@ -663,12 +600,12 @@ func (r *keypairsSigningKeyResource) Read(ctx context.Context, req resource.Read
 
 // Update updates the resource and sets the updated Terraform state on success.
 // Since all non-computed attributes require replacing the resource, there is no need to implement Update for this resource.
-func (r *keypairsSigningKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *keypairsSslClientKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
-func (r *keypairsSigningKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data keypairsSigningKeyResourceModel
+func (r *keypairsSslClientKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data keypairsSslClientKeyResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -678,8 +615,8 @@ func (r *keypairsSigningKeyResource) Delete(ctx context.Context, req resource.De
 	}
 
 	// Delete API call logic
-	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
+	httpResp, err := r.apiClient.KeyPairsSslClientAPI.DeleteSslClientKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the signing key", err, httpResp, &customId)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the ssl client key", err, httpResp, &customId)
 	}
 }
