@@ -72,12 +72,11 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_authentication_api_application." + resourceName,
-				ImportStateId:           authenticationApiApplicationId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"client_for_redirectless_mode_ref"},
+				Config:            testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_authentication_api_application." + resourceName,
+				ImportStateId:     authenticationApiApplicationId,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccAuthenticationApiApplication(resourceName, initialResourceModel),

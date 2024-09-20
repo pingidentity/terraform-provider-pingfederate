@@ -13,6 +13,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -70,8 +71,11 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) ModifyPlan(ctx contex
 	if plan.Dynamic.ValueBool() && (plan.Name.ValueString() != "" || !plan.Name.IsNull()) {
 		{
 			containsAsteriskPrefix := strings.Index(plan.Name.ValueString(), "*")
-			if containsAsteriskPrefix != 0 {
-				resp.Diagnostics.AddError("Dynamic property is set to true with Name property incorrectly specified!", "The Name property must be prefixed with an \"*\". For example, \"*example\"")
+			if containsAsteriskPrefix == -1 {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("name"),
+					providererror.InvalidAttributeConfiguration,
+					"The name must include a \"*\" when set to dynamic")
 			}
 		}
 	}
@@ -120,7 +124,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Create(ctx context.Co
 	createOauthAuthServerSettingsScopesCommonScopes := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx, createOauthAuthServerSettingsScopesCommonScopes, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope: "+err.Error())
 		return
 	}
 
@@ -184,7 +188,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Update(ctx context.Co
 	createUpdateRequest := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope: "+err.Error())
 		return
 	}
 

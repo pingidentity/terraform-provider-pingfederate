@@ -1,8 +1,28 @@
-# v0.16.0 (Unreleased)
-### Breaking changes
-* The `pingfederate_server_settings_system_keys` attribute `previous` has been changed to read-only. ([#362]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/362)))
-
+# v0.17.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_certificates_group` ([#278]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/278)))
+* **New Resource:** `pingfederate_idp_token_processor` ([#277]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/277)))
+* **New Resource:** `pingfederate_protocol_metadata_signing_settings` ([#290](https://github.com/pingidentity/terraform-provider-pingfederate/pull/290))
+* **New Resource:** `pingfederate_service_authentication` ([#295](https://github.com/pingidentity/terraform-provider-pingfederate/pull/295))
+* **New Resource:** `pingfederate_server_settings_system_keys_rotate` ([#292](https://github.com/pingidentity/terraform-provider-pingfederate/pull/292))
+* **New Resource:** `pingfederate_sp_adapter` ([#265]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/265)))
+* **New Resource:** `pingfederate_keypairs_oauth_openid_connect` ([#267]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/267)))
+* **New Resource:** `pingfederate_oauth_client_settings` ([#286]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/286)))
+* **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate` ([#293]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/293)))
+* **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings` ([#294](https://github.com/pingidentity/terraform-provider-pingfederate/pull/294))
+* **New Resource:** `pingfederate_keypairs_signing_key_rotation_settings` ([#334]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/334)))
+
+### Data sources
+* **New Data Source:** `pingfederate_keypairs_signing_certificate` ([#305](https://github.com/pingidentity/terraform-provider-pingfederate/pull/305))
+
+### Enhancements
+* Added new `configuration.sensitive_fields` and `configuration.tables.#.rows.#.sensitive_fields` attributes to plugin configuration across the provider. Use these fields when specifying sensitive fields in plugin configuration, such as secrets and passwords. Values specified in these sets will be marked as Sensitive to Terraform and hidden in the CLI and UI output. ([#383]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/383)))
+
+# v0.16.0 September 12, 2024
+### Resources
+* **New Resource:** `pingfederate_certificates_revocation_ocsp_certificate` ([#279]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/279)))
+* **New Resource:** `pingfederate_configuration_encryption_keys_rotate` ([#289](https://github.com/pingidentity/terraform-provider-pingfederate/pull/289))
+* **New Resource:** `pingfederate_oauth_client_registration_policy` ([#330](https://github.com/pingidentity/terraform-provider-pingfederate/pull/330))
 * **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 * **New Resource:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
 * **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
@@ -16,14 +36,19 @@
 ### Enhancements
 * Updated resources using read-only `_all` attributes to read to the non-`_all` attribute on import. This includes common attributes such as `configuration.fields` and `configuration.tables`. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
 * Various documentations and schema improvements for resources released in previous versions.
+* Improved consistency and readability of error and warning messages.
 
 ### Bug fixes
 * Fixed terraform plan error after generating import HCL for `pingfederate_oauth_client` due to `persistent_grant_expiration_time` and `persistent_grant_expiration_time_unit` attributes. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
+
+### Breaking changes
+* The `pingfederate_server_settings_system_keys` attribute `previous` has been changed to read-only. That resource has also been deprecated (see below). ([#362]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/362)))
 
 ### Deprecated
 * The `id` attribute that was formerly deprecated in non-singleton-resources is no longer deprecated. ([#367]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/367)))
 * The `pingfederate_key_pair_ssl_server_import` resource and data source have been renamed. Use `pingfederate_keypairs_ssl_server_key` instead. `pingfederate_key_pair_ssl_server_import` will be removed in a future release. ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
 * The `pingfederate_key_pair_signing_import` resource and data source have been renamed. Use `pingfederate_keypairs_signing_key` instead. `pingfederate_key_pair_signing_import` will be removed in a future release. ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
+* The `pingfederate_server_settings_system_keys` resource is deprecated. Use `pingfederate_server_settings_system_keys_rotate` instead. `pingfederate_server_settings_system_keys` will be removed in a future release. ([#382]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/382)))
 
 # v0.15.0 August 29, 2024
 ### Resources
