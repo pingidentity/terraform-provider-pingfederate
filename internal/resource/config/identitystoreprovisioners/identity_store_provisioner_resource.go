@@ -22,9 +22,9 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 	}
 	attributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: attributeContractExtendedAttributesAttrTypes}
 	attributeContractAttrTypes := map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeContractCoreAttributesElementType},
-		"core_attributes_all": types.ListType{ElemType: attributeContractCoreAttributesElementType},
-		"extended_attributes": types.ListType{ElemType: attributeContractExtendedAttributesElementType},
+		"core_attributes":     types.SetType{ElemType: attributeContractCoreAttributesElementType},
+		"core_attributes_all": types.SetType{ElemType: attributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: attributeContractExtendedAttributesElementType},
 	}
 	var attributeContractValue types.Object
 	if response.AttributeContract == nil {
@@ -36,7 +36,7 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 		// Only include core_attributes set in the plan in the state core_attributes value, unless this is an import read.
 		// On import reads, just read everything into the core_attributes value.
 		if internaltypes.IsDefined(state.AttributeContract) {
-			for _, coreAttr := range state.AttributeContract.Attributes()["core_attributes"].(types.List).Elements() {
+			for _, coreAttr := range state.AttributeContract.Attributes()["core_attributes"].(types.Set).Elements() {
 				coreAttributeNamesInPlan = append(coreAttributeNamesInPlan, coreAttr.(types.Object).Attributes()["name"].(types.String).ValueString())
 			}
 		}
@@ -50,9 +50,9 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 				attributeContractCoreAttributesValues = append(attributeContractCoreAttributesValues, attributeContractCoreAttributesValue)
 			}
 		}
-		attributeContractCoreAttributesAllValue, diags := types.ListValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesAllValues)
+		attributeContractCoreAttributesAllValue, diags := types.SetValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesAllValues)
 		respDiags.Append(diags...)
-		attributeContractCoreAttributesValue, diags := types.ListValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
+		attributeContractCoreAttributesValue, diags := types.SetValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
 		respDiags.Append(diags...)
 		var attributeContractExtendedAttributesValues []attr.Value
 		for _, attributeContractExtendedAttributesResponseValue := range response.AttributeContract.ExtendedAttributes {
@@ -62,7 +62,7 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 			respDiags.Append(diags...)
 			attributeContractExtendedAttributesValues = append(attributeContractExtendedAttributesValues, attributeContractExtendedAttributesValue)
 		}
-		attributeContractExtendedAttributesValue, diags := types.ListValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
+		attributeContractExtendedAttributesValue, diags := types.SetValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
 		respDiags.Append(diags...)
 		attributeContractValue, diags = types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributesValue,
@@ -84,7 +84,7 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 		// Only include core_attributes set in the plan in the state core_attributes value, unless this is an import read.
 		// On import reads, just read everything into the core_attributes value.
 		if internaltypes.IsDefined(state.GroupAttributeContract) {
-			for _, coreAttr := range state.GroupAttributeContract.Attributes()["core_attributes"].(types.List).Elements() {
+			for _, coreAttr := range state.GroupAttributeContract.Attributes()["core_attributes"].(types.Set).Elements() {
 				coreAttributeNamesInPlan = append(coreAttributeNamesInPlan, coreAttr.(types.Object).Attributes()["name"].(types.String).ValueString())
 			}
 		}
@@ -98,9 +98,9 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 				groupAttributeContractCoreAttributesValues = append(groupAttributeContractCoreAttributesValues, groupAttributeContractCoreAttributesValue)
 			}
 		}
-		groupAttributeContractCoreAttributesAllValue, diags := types.ListValue(attributeContractCoreAttributesElementType, groupAttributeContractCoreAttributesAllValues)
+		groupAttributeContractCoreAttributesAllValue, diags := types.SetValue(attributeContractCoreAttributesElementType, groupAttributeContractCoreAttributesAllValues)
 		respDiags.Append(diags...)
-		groupAttributeContractCoreAttributesValue, diags := types.ListValue(attributeContractCoreAttributesElementType, groupAttributeContractCoreAttributesValues)
+		groupAttributeContractCoreAttributesValue, diags := types.SetValue(attributeContractCoreAttributesElementType, groupAttributeContractCoreAttributesValues)
 		respDiags.Append(diags...)
 		var groupAttributeContractExtendedAttributesValues []attr.Value
 		for _, groupAttributeContractExtendedAttributesResponseValue := range response.GroupAttributeContract.ExtendedAttributes {
@@ -110,7 +110,7 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 			respDiags.Append(diags...)
 			groupAttributeContractExtendedAttributesValues = append(groupAttributeContractExtendedAttributesValues, groupAttributeContractExtendedAttributesValue)
 		}
-		groupAttributeContractExtendedAttributesValue, diags := types.ListValue(attributeContractExtendedAttributesElementType, groupAttributeContractExtendedAttributesValues)
+		groupAttributeContractExtendedAttributesValue, diags := types.SetValue(attributeContractExtendedAttributesElementType, groupAttributeContractExtendedAttributesValues)
 		respDiags.Append(diags...)
 		groupAttributeContractValue, diags = types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     groupAttributeContractCoreAttributesValue,

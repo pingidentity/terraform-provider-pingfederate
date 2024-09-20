@@ -21,6 +21,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -28,6 +29,8 @@ var (
 	_ resource.Resource                = &identityStoreProvisionerResource{}
 	_ resource.ResourceWithConfigure   = &identityStoreProvisionerResource{}
 	_ resource.ResourceWithImportState = &identityStoreProvisionerResource{}
+
+	customId = "provisioner_id"
 )
 
 func IdentityStoreProvisionerResource() resource.Resource {
@@ -70,7 +73,7 @@ func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resou
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -82,7 +85,7 @@ func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resou
 						Required:    true,
 						Description: "A list of identity store provisioner attributes that correspond to the attributes exposed by the identity store provisioner type.",
 					},
-					"core_attributes_all": schema.ListNestedAttribute{
+					"core_attributes_all": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -94,7 +97,7 @@ func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resou
 						Computed:    true,
 						Description: "A list of identity store provisioner attributes that correspond to the attributes exposed by the identity store provisioner type, including attributes computed by PingFederate.",
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -113,7 +116,7 @@ func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resou
 			"configuration": pluginconfiguration.ToSchema(),
 			"group_attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -125,7 +128,7 @@ func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resou
 						Required:    true,
 						Description: "A list of identity store provisioner group attributes that correspond to the group attributes exposed by the identity store provisioner type.",
 					},
-					"core_attributes_all": schema.ListNestedAttribute{
+					"core_attributes_all": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -137,7 +140,7 @@ func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resou
 						Computed:    true,
 						Description: "A list of identity store provisioner group attributes that correspond to the group attributes exposed by the identity store provisioner type, including attributes computed by PingFederate.",
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -226,14 +229,14 @@ func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client
 		attributeContractValue := &client.IdentityStoreProvisionerAttributeContract{}
 		attributeContractAttrs := model.AttributeContract.Attributes()
 		attributeContractValue.CoreAttributes = []client.Attribute{}
-		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.List).Elements() {
+		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
 			coreAttributesValue := client.Attribute{}
 			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
 			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
 			attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
 		}
 		attributeContractValue.ExtendedAttributes = []client.Attribute{}
-		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.List).Elements() {
+		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
 			extendedAttributesValue := client.Attribute{}
 			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
 			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
@@ -245,7 +248,7 @@ func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
 	} else {
 		result.Configuration = *configurationValue
 	}
@@ -255,14 +258,14 @@ func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client
 		groupAttributeContractValue := &client.IdentityStoreProvisionerGroupAttributeContract{}
 		groupAttributeContractAttrs := model.GroupAttributeContract.Attributes()
 		groupAttributeContractValue.CoreAttributes = []client.GroupAttribute{}
-		for _, coreAttributesElement := range groupAttributeContractAttrs["core_attributes"].(types.List).Elements() {
+		for _, coreAttributesElement := range groupAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
 			coreAttributesValue := client.GroupAttribute{}
 			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
 			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
 			groupAttributeContractValue.CoreAttributes = append(groupAttributeContractValue.CoreAttributes, coreAttributesValue)
 		}
 		groupAttributeContractValue.ExtendedAttributes = []client.GroupAttribute{}
-		for _, extendedAttributesElement := range groupAttributeContractAttrs["extended_attributes"].(types.List).Elements() {
+		for _, extendedAttributesElement := range groupAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
 			extendedAttributesValue := client.GroupAttribute{}
 			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
 			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
@@ -352,7 +355,7 @@ func (r *identityStoreProvisionerResource) Create(ctx context.Context, req resou
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdentityStoreProvisionersAPI.CreateIdentityStoreProvisionerExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the identityStoreProvisioner", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the identityStoreProvisioner", err, httpResp, &customId)
 		return
 	}
 
@@ -383,7 +386,7 @@ func (r *identityStoreProvisionerResource) Read(ctx context.Context, req resourc
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Identity Store Provisioner", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the identityStoreProvisioner", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the identityStoreProvisioner", err, httpResp, &customId)
 		}
 		return
 	}
@@ -412,7 +415,7 @@ func (r *identityStoreProvisionerResource) Update(ctx context.Context, req resou
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdentityStoreProvisionersAPI.UpdateIdentityStoreProvisionerExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the identityStoreProvisioner", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the identityStoreProvisioner", err, httpResp, &customId)
 		return
 	}
 
@@ -436,7 +439,7 @@ func (r *identityStoreProvisionerResource) Delete(ctx context.Context, req resou
 	// Delete API call logic
 	httpResp, err := r.apiClient.IdentityStoreProvisionersAPI.DeleteIdentityStoreProvisioner(config.AuthContext(ctx, r.providerConfig), data.ProvisionerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the identityStoreProvisioner", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the identityStoreProvisioner", err, httpResp, &customId)
 	}
 }
 
