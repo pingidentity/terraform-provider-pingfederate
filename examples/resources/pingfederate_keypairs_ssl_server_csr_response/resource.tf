@@ -4,7 +4,7 @@ resource "pingfederate_keypairs_ssl_server_key" "sslServerKey" {
   format    = "PKCS12"
 }
 
-resource "pingfederate_keypairs_ssl_server_csr" "example" {
+resource "pingfederate_keypairs_ssl_server_csr_response" "example" {
   keypair_id = pingfederate_keypairs_ssl_server_key.sslServerKey.id
   file_data  = filebase64("./path/to/csr_response.pem")
 }
