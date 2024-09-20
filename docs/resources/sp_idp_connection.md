@@ -206,7 +206,6 @@ resource "pingfederate_sp_idp_connection" "spIdpConnection" {
 - `logging_mode` (String) The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`. If the `idp_connection_transaction_logging_override` attribute is set to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource, then this attribute must be set to the same value.
 - `metadata_reload_settings` (Attributes) Configuration settings to enable automatic reload of partner's metadata. (see [below for nested schema](#nestedatt--metadata_reload_settings))
 - `oidc_client_credentials` (Attributes) The OpenID Connect Client Credentials settings. This is required for an OIDC Connection. (see [below for nested schema](#nestedatt--oidc_client_credentials))
-- `type` (String) The type of this connection. Default is `IDP`.
 - `virtual_entity_ids` (Set of String) List of alternate entity IDs that identifies the local server to this partner.
 - `ws_trust` (Attributes) Ws-Trust STS provides validation of incoming tokens which enable SSO access to Web Services. It also allows generation of local tokens for Web Services. (see [below for nested schema](#nestedatt--ws_trust))
 
@@ -220,8 +219,8 @@ resource "pingfederate_sp_idp_connection" "spIdpConnection" {
 Optional:
 
 - `additional_allowed_entities` (Attributes Set) An array of additional allowed entities or issuers to be accepted during entity or issuer validation. (see [below for nested schema](#nestedatt--additional_allowed_entities_configuration--additional_allowed_entities))
-- `allow_additional_entities` (Boolean) Set to true to configure additional entities or issuers to be accepted during entity or issuer validation.
-- `allow_all_entities` (Boolean) Set to true to accept any entity or issuer during entity or issuer validation. (Not Recommended)
+- `allow_additional_entities` (Boolean) Set to true to configure additional entities or issuers to be accepted during entity or issuer validation. The default value is `false`.
+- `allow_all_entities` (Boolean) Set to true to accept any entity or issuer during entity or issuer validation. (Not Recommended). The default value is `false`.
 
 <a id="nestedatt--additional_allowed_entities_configuration--additional_allowed_entities"></a>
 ### Nested Schema for `additional_allowed_entities_configuration.additional_allowed_entities`
@@ -2592,6 +2591,9 @@ Required:
 Required:
 
 - `client_id` (String) The OpenID Connect client identitification.
+
+Optional:
+
 - `client_secret` (String) The OpenID Connect client secret.
 
 
