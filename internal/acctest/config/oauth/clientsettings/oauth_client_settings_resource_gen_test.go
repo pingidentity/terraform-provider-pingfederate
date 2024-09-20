@@ -81,7 +81,7 @@ resource "pingfederate_oauth_access_token_manager" "accessTokenManager" {
   }
 }
 
-resource "pingfederate_oauth_open_id_connect_policy" "oidcPolicy" {
+resource "pingfederate_openid_connect_policy" "oidcPolicy" {
   policy_id = "oidcPolicy"
   name      = "oidcPolicy"
   access_token_manager_ref = {
@@ -142,7 +142,7 @@ func oauthClientSettings_CompleteHCL() string {
 resource "pingfederate_oauth_client_settings" "example" {
   depends_on = [
     pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.exclusiveScope,
-    pingfederate_oauth_open_id_connect_policy.oidcPolicy
+    pingfederate_openid_connect_policy.oidcPolicy
   ]
   dynamic_client_registration = {
     allow_client_delete                          = false

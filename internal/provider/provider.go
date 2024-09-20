@@ -35,6 +35,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders"
 	captchaproviderssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders/settings"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/ca"
+	certificatesgroups "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/groups"
 	certificatesrevocationocspcertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/ocspcertificates"
 	certificatesrevocationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/settings"
 	clustersettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/settings"
@@ -59,7 +60,11 @@ import (
 	keypairssigningcsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/csr"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
 	keypairssigningrotationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/rotationsettings"
+	keypairssslclientcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient/certificate"
+	keypairssslclientcsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient/csr"
 	keypairssslserver "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver"
+	keypairssslservercertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/certificate"
+	keypairssslservercsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/csr"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
 	keypairssslserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -695,6 +700,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
+		certificate.CertificatesCAExportDataSource,
 		certificate.CertificateDataSource,
 		clusterstatus.ClusterStatusDataSource,
 		datastore.DataStoreDataSource,
@@ -706,6 +712,8 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
+		keypairssslclientcertificate.KeypairsSslClientCertificateDataSource,
+		keypairssslservercertificate.KeypairsSslServerCertificateDataSource,
 		license.LicenseDataSource,
 		licenseagreement.LicenseAgreementDataSource,
 		localidentity.LocalIdentityProfileDataSource,
@@ -754,6 +762,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		captchaproviders.CaptchaProviderResource,
 		captchaproviderssettings.CaptchaProviderSettingsResource,
 		certificate.CertificateCAResource,
+		certificatesgroups.CertificatesGroupResource,
 		certificatesrevocationocspcertificates.CertificatesRevocationOcspCertificateResource,
 		certificatesrevocationsettings.CertificatesRevocationSettingsResource,
 		clustersettings.ClusterSettingsResource,
@@ -778,6 +787,10 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keypairssigningrotationsettings.KeypairsSigningKeyRotationSettingsResource,
 		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
+		keypairssslclientcsr.KeypairsSslClientCsrExportResource,
+		keypairssslclientcsr.KeypairsSslClientCsrResource,
+		keypairssslservercsr.KeypairsSslServerCsrExportResource,
+		keypairssslservercsr.KeypairsSslServerCsrResource,
 		keypairssslserversettings.KeypairsSslServerSettingsResource,
 		datastore.DataStoreResource,
 		license.LicenseResource,

@@ -1,6 +1,11 @@
 # v0.17.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_keypairs_signing_csr` ([#306]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/306)))
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr_response` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr_export` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+* **New Resource:** `pingfederate_keypairs_ssl_server_csr_response` ([#336]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/336)))
+* **New Resource:** `pingfederate_keypairs_ssl_server_csr_export` ([#336]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/336)))
+* **New Resource:** `pingfederate_certificates_group` ([#278]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/278)))
 * **New Resource:** `pingfederate_idp_token_processor` ([#277]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/277)))
 * **New Resource:** `pingfederate_protocol_metadata_signing_settings` ([#290](https://github.com/pingidentity/terraform-provider-pingfederate/pull/290))
 * **New Resource:** `pingfederate_service_authentication` ([#295](https://github.com/pingidentity/terraform-provider-pingfederate/pull/295))
@@ -13,6 +18,9 @@
 * **New Resource:** `pingfederate_keypairs_signing_key_rotation_settings` ([#334]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/334)))
 
 ### Data sources
+* **New Data Source:** `pingfederate_keypairs_ssl_client_certificate` ([#338]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/338)))
+* **New Data Source:** `pingfederate_keypairs_ssl_server_certificate` ([#338]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/338)))
+* **New Data Source:** `pingfederate_certificates_ca_export` ([#296](https://github.com/pingidentity/terraform-provider-pingfederate/pull/296))
 * **New Data Source:** `pingfederate_keypairs_signing_certificate` ([#305](https://github.com/pingidentity/terraform-provider-pingfederate/pull/305))
 
 ### Enhancements
