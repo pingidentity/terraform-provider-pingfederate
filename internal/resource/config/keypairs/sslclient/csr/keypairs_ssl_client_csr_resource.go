@@ -15,6 +15,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -220,7 +221,7 @@ func (r *keypairsSslClientCsrResource) Create(ctx context.Context, req resource.
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.KeyPairsSslClientAPI.ImportSslClientCsrResponseExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while importing the certificate signing request response", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the certificate signing request response", err, httpResp, &customId)
 		return
 	}
 
@@ -242,5 +243,5 @@ func (r *keypairsSslClientCsrResource) Update(ctx context.Context, req resource.
 
 func (r *keypairsSslClientCsrResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// There is no way to delete the imported CSR response
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_keypairs_ssl_client_csr_response", &resp.Diagnostics)
 }
