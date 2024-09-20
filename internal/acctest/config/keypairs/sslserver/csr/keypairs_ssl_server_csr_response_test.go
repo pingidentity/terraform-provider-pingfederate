@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
@@ -41,7 +40,6 @@ func TestAccKeypairsSslServerCsrResponseResource(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: keypairsSslServerCsrResponse_DeleteCA(),
 		Steps: []resource.TestStep{
 			{
 				// Initial CSR response import on create
@@ -65,7 +63,7 @@ func keypairsSslServerCsrResponse_ImportCA(t *testing.T) {
 		FileData: fileDataCa,
 	})
 	_, httpResp, err := testClient.CertificatesCaAPI.ImportTrustedCAExecute(trustCaImportReq)
-	if err != nil {
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 422) {
 		errorMsg := "Failed to import test CA: " + err.Error()
 		if httpResp != nil {
 			body, internalErr := io.ReadAll(httpResp.Body)
@@ -75,14 +73,6 @@ func keypairsSslServerCsrResponse_ImportCA(t *testing.T) {
 		}
 		t.Error(errorMsg)
 		t.FailNow()
-	}
-}
-
-func keypairsSslServerCsrResponse_DeleteCA() resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		testClient := acctest.TestClient()
-		_, err := testClient.CertificatesCaAPI.DeleteTrustedCA(acctest.TestBasicAuthContext(), signingCaId).Execute()
-		return err
 	}
 }
 
