@@ -3219,12 +3219,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 					},
 					"client_secret": schema.StringAttribute{
-						Required:            true,
+						Optional:            true,
 						Description:         "The OpenID Connect client secret.",
 						MarkdownDescription: "The OpenID Connect client secret.",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-						},
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
@@ -3772,7 +3769,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	state.Name = types.StringValue(r.Name)
 	state.Type = types.StringPointerValue(r.Type)
 	if r.VirtualEntityIds == nil {
-		state.VirtualEntityIds = types.SetNull(types.StringType)
+		if plan != nil && internaltypes.IsDefined(plan.VirtualEntityIds) && len(plan.VirtualEntityIds.Elements()) == 0 {
+			state.VirtualEntityIds, objDiags = types.SetValue(types.StringType, nil)
+			diags.Append(objDiags...)
+		} else {
+			state.VirtualEntityIds = types.SetNull(types.StringType)
+		}
 	} else {
 		state.VirtualEntityIds = internaltypes.GetStringSet(r.VirtualEntityIds)
 	}
@@ -3990,13 +3992,13 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	// OidcClientCredentials
 	if r.OidcClientCredentials != nil {
 		var oidcClientCredentialsAttrValues map[string]attr.Value
-		var clientSecret string = ""
+		var clientSecret *string
 		if len(plan.OidcClientCredentials.Attributes()) > 0 && plan.OidcClientCredentials.Attributes()["client_secret"] != nil {
-			clientSecret = plan.OidcClientCredentials.Attributes()["client_secret"].(types.String).ValueString()
+			clientSecret = plan.OidcClientCredentials.Attributes()["client_secret"].(types.String).ValueStringPointer()
 		}
 		oidcClientCredentialsAttrValues = map[string]attr.Value{
 			"client_id":     types.StringValue(r.OidcClientCredentials.ClientId),
-			"client_secret": types.StringValue(clientSecret),
+			"client_secret": types.StringPointerValue(clientSecret),
 		}
 
 		state.OidcClientCredentials, objDiags = types.ObjectValue(oidcClientCredentialsAttrTypes, oidcClientCredentialsAttrValues)
