@@ -204,7 +204,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
+	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 

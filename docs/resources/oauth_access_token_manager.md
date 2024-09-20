@@ -276,9 +276,9 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
 
 - `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be alphanumeric, contain no spaces, and be less than 33 characters.
+- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be alphanumeric, contain no spaces, and be less than 33 characters. This field is immutable and will trigger a replacement plan if changed.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 
 ### Optional
 
@@ -446,7 +446,7 @@ Required:
 
 Required:
 
-- `id` (String) The ID of the resource.
+- `id` (String) The ID of the resource. This field is immutable and will trigger a replacement plan if changed.
 
 
 <a id="nestedatt--access_control_settings"></a>

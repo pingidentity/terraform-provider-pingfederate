@@ -77,7 +77,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"password": schema.StringAttribute{
-				Description: "Password for the Account. This field is immutable.",
+				Description: "Password for the Account. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
@@ -110,7 +110,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"username": schema.StringAttribute{
-				Description: "Username for the Administrative Account.",
+				Description: "Username for the Administrative Account. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

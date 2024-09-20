@@ -101,7 +101,7 @@ func (r *keypairsSigningKeyRotationSettingsResource) Schema(ctx context.Context,
 			},
 			"key_pair_id": schema.StringAttribute{
 				Required:    true,
-				Description: "ID of the key pair to retrieve its rotation settings.",
+				Description: "ID of the key pair to retrieve its rotation settings. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),

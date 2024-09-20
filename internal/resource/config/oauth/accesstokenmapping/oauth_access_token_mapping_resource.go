@@ -68,7 +68,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 		Description: "Manages an OAuth Access Token Mapping",
 		Attributes: map[string]schema.Attribute{
 			"context": schema.SingleNestedAttribute{
-				Description: "The context of the OAuth Access Token Mapping. This property cannot be changed after the mapping is created.",
+				Description: "The context of the OAuth Access Token Mapping. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -93,7 +93,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"access_token_manager_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the access token manager this mapping is associated with. This property cannot be changed after the mapping is created.",
+				Description: "Reference to the access token manager this mapping is associated with. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),

@@ -79,7 +79,8 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 		Description: "Manages a license summary object.",
 		Attributes: map[string]schema.Attribute{
 			"file_data": schema.StringAttribute{
-				Required: true,
+				Description: "The license file data. This field is immutable and will trigger a replacement plan if changed.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},

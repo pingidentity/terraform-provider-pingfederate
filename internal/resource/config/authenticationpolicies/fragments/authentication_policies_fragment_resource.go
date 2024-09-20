@@ -71,7 +71,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique.")
+	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 

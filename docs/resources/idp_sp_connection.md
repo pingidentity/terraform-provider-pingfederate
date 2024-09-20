@@ -339,7 +339,7 @@ resource "pingfederate_idp_sp_connection" "wsTrustExample" {
 
 ### Required
 
-- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`.
+- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.
 - `entity_id` (String) The partner's entity ID (connection ID) or issuer value (for OIDC Connections).
 - `name` (String) The connection name.
 

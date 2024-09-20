@@ -116,7 +116,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 		"validator_id",
 		true,
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be less than 33 characters, contain no spaces, and be alphanumeric.")
+		"The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed. Must be less than 33 characters, contain no spaces, and be alphanumeric.")
 	resp.Schema = schema
 }
 

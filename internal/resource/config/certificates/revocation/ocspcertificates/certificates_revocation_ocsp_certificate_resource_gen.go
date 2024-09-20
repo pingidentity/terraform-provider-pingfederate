@@ -80,7 +80,7 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 			"certificate_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -92,7 +92,7 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 			},
 			"crypto_provider": schema.StringAttribute{
 				Optional:    true,
-				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.",
+				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`. This field is immutable and will trigger a replacement plan if changed.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"LOCAL",
@@ -109,7 +109,7 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 			},
 			"file_data": schema.StringAttribute{
 				Required:    true,
-				Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
+				Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},

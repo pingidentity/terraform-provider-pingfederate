@@ -738,7 +738,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		Description: "Manages an IdP SP Connection",
 		Attributes: map[string]schema.Attribute{
 			"connection_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`.",
+				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

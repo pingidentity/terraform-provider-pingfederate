@@ -66,7 +66,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 		Description: "Manages a trusted Certificate CA.",
 		Attributes: map[string]schema.Attribute{
 			"ca_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -79,7 +79,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 				},
 			},
 			"crypto_provider": schema.StringAttribute{
-				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"LOCAL", "HSM"}...),
@@ -93,7 +93,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 				Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
 			},
 			"file_data": schema.StringAttribute{
-				Description: "The certificate data in PEM format, base64-encoded. New line characters should be omitted or encoded in this value.",
+				Description: "The certificate data in PEM format, base64-encoded. New line characters should be omitted or encoded in this value. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

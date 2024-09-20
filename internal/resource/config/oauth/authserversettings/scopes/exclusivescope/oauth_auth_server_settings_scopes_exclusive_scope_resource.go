@@ -42,7 +42,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Schema(ctx context
 		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Use the `pingfederate_oauth_auth_server_settings` resource instead.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				Description: "The name of the scope.",
+				Description: "The name of the scope. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

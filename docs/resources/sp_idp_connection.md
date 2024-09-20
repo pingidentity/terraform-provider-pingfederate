@@ -193,7 +193,7 @@ resource "pingfederate_sp_idp_connection" "spIdpConnection" {
 - `additional_allowed_entities_configuration` (Attributes) Additional allowed entities or issuers configuration. Currently only used in OIDC IdP (RP) connection. (see [below for nested schema](#nestedatt--additional_allowed_entities_configuration))
 - `attribute_query` (Attributes) The attribute query profile supports local applications in requesting user attributes from an attribute authority. (see [below for nested schema](#nestedatt--attribute_query))
 - `base_url` (String) The fully-qualified hostname and port on which your partner's federation deployment runs.
-- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
+- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 - `contact_info` (Attributes) Contact information. (see [below for nested schema](#nestedatt--contact_info))
 - `credentials` (Attributes) The certificates and settings for encryption, signing, and signature verification. (see [below for nested schema](#nestedatt--credentials))
 - `default_virtual_entity_id` (String) The default alternate entity ID that identifies the local server to this partner. It is required when `virtual_entity_ids` is not empty and must be included in that list.

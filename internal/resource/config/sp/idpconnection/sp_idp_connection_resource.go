@@ -799,7 +799,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"connection_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				Validators: []validator.String{
 					configvalidators.PingFederateId(),
 					stringvalidator.LengthAtLeast(1),

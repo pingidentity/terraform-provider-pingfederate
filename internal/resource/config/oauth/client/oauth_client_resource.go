@@ -71,7 +71,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 		Description: "Manages an Oauth Client",
 		Attributes: map[string]schema.Attribute{
 			"client_id": schema.StringAttribute{
-				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes.",
+				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
