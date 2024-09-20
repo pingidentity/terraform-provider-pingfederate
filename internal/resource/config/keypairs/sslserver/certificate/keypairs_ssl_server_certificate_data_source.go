@@ -3,8 +3,10 @@ package keypairssslservercertificate
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -15,6 +17,8 @@ import (
 var (
 	_ datasource.DataSource              = &keypairsSslServerCertificateDataSource{}
 	_ datasource.DataSourceWithConfigure = &keypairsSslServerCertificateDataSource{}
+
+	customId = "key_id"
 )
 
 func KeypairsSslServerCertificateDataSource() datasource.DataSource {
@@ -54,6 +58,9 @@ func (r *keypairsSslServerCertificateDataSource) Schema(ctx context.Context, req
 			"key_id": schema.StringAttribute{
 				Description: "The ID of the key pair to export.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"exported_certificate": schema.StringAttribute{
 				Description: "The exported PEM-encoded certificate.",
@@ -77,7 +84,7 @@ func (r *keypairsSslServerCertificateDataSource) Read(ctx context.Context, req d
 	exportRequest := r.apiClient.KeyPairsSslServerAPI.ExportSslServerCertificateFile(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString())
 	responseData, httpResp, err := exportRequest.Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while exporting the certificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while exporting the certificate", err, httpResp, &customId)
 		return
 	}
 
