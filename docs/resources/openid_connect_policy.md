@@ -263,7 +263,7 @@ Optional:
 
 - `include_in_id_token` (Boolean) Attribute is included in the ID Token.
 - `include_in_user_info` (Boolean) Attribute is included in the User Info.
-- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array. Defaults to `false`.
 
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
