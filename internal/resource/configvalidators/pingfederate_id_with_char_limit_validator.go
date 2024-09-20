@@ -6,22 +6,21 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
-var _ validator.String = &customIdReqValidator{}
+var _ validator.String = &pingFederateIdWithCharLimitValidator{}
 
-type customIdReqValidator struct{}
+type pingFederateIdWithCharLimitValidator struct{}
 
-func (v customIdReqValidator) Description(ctx context.Context) string {
+func (v pingFederateIdWithCharLimitValidator) Description(ctx context.Context) string {
 	return "Verifies the string contains less than 33 characters, contains no spaces, and is alphanumeric"
 }
 
-func (v customIdReqValidator) MarkdownDescription(ctx context.Context) string {
+func (v pingFederateIdWithCharLimitValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v customIdReqValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+func (v pingFederateIdWithCharLimitValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	// If the value is unknown or null, there is nothing to validate.
 	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
 		return
@@ -32,12 +31,12 @@ func (v customIdReqValidator) ValidateString(ctx context.Context, req validator.
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			providererror.InvalidAttributeConfiguration,
+			"Invalid id value",
 			fmt.Sprintf("The id of %s must be less than 33 characters, contain no spaces, and be alphanumeric", req.ConfigValue),
 		)
 	}
 }
 
-func ValidChars() customIdReqValidator {
-	return customIdReqValidator{}
+func PingFederateIdWithCharLimit() pingFederateIdWithCharLimitValidator {
+	return pingFederateIdWithCharLimitValidator{}
 }
