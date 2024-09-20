@@ -34,7 +34,7 @@ type keypairsSslClientCsrResource struct {
 }
 
 func (r *keypairsSslClientCsrResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_keypairs_ssl_client_csr"
+	resp.TypeName = req.ProviderTypeName + "_keypairs_ssl_client_csr_response"
 }
 
 func (r *keypairsSslClientCsrResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
@@ -69,7 +69,7 @@ type keypairsSslClientCsrResourceModel struct {
 
 func (r *keypairsSslClientCsrResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage CSR responses for SSL client key pairs.",
+		Description: "Resource to import the CSR response, once signed by a valid certificate authority, for an SSL client key pair.",
 		Attributes: map[string]schema.Attribute{
 			"crypto_provider": schema.StringAttribute{
 				Computed:    true,
