@@ -9,82 +9,122 @@ description: |-
 
 Manages an Oauth Client
 
-## Example Usage
+## Example Usage - Authorization Code with PKCE
 
 ```terraform
-resource "pingfederate_oauth_client" "oauthClient" {
-  client_id = "oauthClientId"
-  grant_types = [
-    "IMPLICIT",
-    "AUTHORIZATION_CODE",
-    "RESOURCE_OWNER_CREDENTIALS",
-    "REFRESH_TOKEN",
-    "EXTENSION",
-    "DEVICE_CODE",
-    "ACCESS_TOKEN_VALIDATION",
-    "CIBA",
-    "TOKEN_EXCHANGE"
-  ]
-  name                          = "oauthClient"
-  allow_authentication_api_init = false
-  bypass_approval_page          = true
-  ciba_delivery_mode            = "PING"
-  ciba_polling_interval         = 1
-  ciba_require_signed_requests  = true
-  ciba_user_code_supported      = false
-  ciba_notification_endpoint    = "https://example.com"
+resource "pingfederate_oauth_client" "spa_oic_client" {
+  client_id = "spa_oic_client"
+  name      = "OpenID Connect Authorization Code with PKCE"
+  enabled   = true
+
+  client_auth = {
+    type = "NONE"
+  }
+
+  require_proof_key_for_code_exchange = true
+  bypass_approval_page                = true
+
+  default_access_token_manager_ref = {
+    id = "jwt"
+  }
+
+  grant_types = ["AUTHORIZATION_CODE", "REFRESH_TOKEN"]
+
+  redirect_uris = ["https://www.bxretail.org/oidc/callback"]
+
+  oidc_policy = {
+    policy_group = {
+      id = "OAuthPlayground"
+    }
+  }
+}
+```
+
+## Example Usage - Authorization Code
+
+```terraform
+resource "pingfederate_oauth_client" "web_oic_client" {
+  client_id = "web_oic_client"
+  name      = "OpenID Connect Authorization Code"
+  enabled   = true
+
   client_auth = {
     type   = "SECRET"
-    secret = var.oauth_client_auth_secret
-    secondary_secrets = [
-      {
-        secret      = var.oauth_client_secondary_auth_secret
-        expiry_time = "2030-01-02T15:24:00Z"
-      }
-    ]
+    secret = var.web_oic_client_secret
   }
-  enabled = true
-  jwks_settings = {
-    jwks_url = "https://example.com"
+
+  bypass_approval_page = true
+
+  default_access_token_manager_ref = {
+    id = "jwt"
   }
-  jwt_secured_authorization_response_mode_encryption_algorithm         = "RSA_OAEP"
-  jwt_secured_authorization_response_mode_content_encryption_algorithm = "AES_128_CBC_HMAC_SHA_256"
-  logo_url                                                             = "https://example.com"
+
+  grant_types = ["AUTHORIZATION_CODE", "REFRESH_TOKEN"]
+
+  redirect_uris = ["https://www.bxretail.org/oidc/callback"]
+
   oidc_policy = {
-    id_token_signing_algorithm                  = "HS256"
-    grant_access_session_revocation_api         = false
-    grant_access_session_session_management_api = true
-    ping_access_logout_capable                  = false
-    pairwise_identifier_user_type               = true
-    sector_identifier_uri                       = "https://example.com"
-    id_token_encryption_algorithm               = "A192GCMKW"
-    id_token_content_encryption_algorithm       = "AES_128_CBC_HMAC_SHA_256"
+    policy_group = {
+      id = "OAuthPlayground"
+    }
   }
-  redirect_uris = [
-    "https://example.com"
-  ]
-  require_jwt_secured_authorization_response_mode = false
-  require_pushed_authorization_requests           = false
-  require_proof_key_for_code_exchange             = false
-  require_signed_requests                         = true
-  restrict_scopes                                 = true
-  restricted_scopes = [
-    "openid"
-  ]
-  restricted_response_types = [
-    "code",
-    "code id_token",
-    "code id_token token",
-    "code token",
-    "id_token",
-    "id_token token",
-    "token"
-  ]
-  restrict_to_default_access_token_manager         = false
-  token_introspection_signing_algorithm            = "RS256"
-  token_introspection_encryption_algorithm         = "DIR"
-  token_introspection_content_encryption_algorithm = "AES_128_CBC_HMAC_SHA_256"
-  validate_using_all_eligible_atms                 = false
+}
+```
+
+## Example Usage - Client Credentials
+
+```terraform
+resource "pingfederate_oauth_client" "cc_secret_client" {
+  client_id = "cc_secret_client"
+  name      = "Client Credentials (Secret)"
+  enabled   = true
+
+  client_auth = {
+    type   = "SECRET"
+    secret = var.client_credentials_client_secret
+  }
+
+  grant_types = ["CLIENT_CREDENTIALS"]
+}
+```
+
+## Example Usage - Device Flow
+
+```terraform
+resource "pingfederate_oauth_client" "df_client" {
+  client_id = "df_client"
+  name      = "Device Authorization"
+  enabled   = true
+
+  client_auth = {
+    type   = "SECRET"
+    secret = var.df_client_secret
+  }
+
+  default_access_token_manager_ref = {
+    id = "jwt"
+  }
+
+  grant_types = ["DEVICE_CODE"]
+}
+```
+
+## Example Usage - Resource Server
+
+```terraform
+resource "pingfederate_oauth_client" "rs_client" {
+  client_id = "rs_client"
+  name      = "Resource Server Client"
+  enabled   = true
+
+  client_auth = {
+    type   = "SECRET"
+    secret = var.rs_client_secret
+  }
+
+  grant_types = ["ACCESS_TOKEN_VALIDATION"]
+
+  validate_using_all_eligible_atms = true
 }
 ```
 
