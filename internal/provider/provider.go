@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -44,6 +45,7 @@ import (
 	connectionmetadataexport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/connectionmetadata/export"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	extendedproperties "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/extendedproperties"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/identitystoreprovisioners"
 	idpadapter "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/adapter"
 	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
 	idpspconnection "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/spconnection"
@@ -59,7 +61,12 @@ import (
 	keypairssigningcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/certificate"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
 	keypairssigningrotationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/rotationsettings"
+	keypairssslclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient"
+	keypairssslclientcertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient/certificate"
+	keypairssslclientcsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient/csr"
 	keypairssslserver "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver"
+	keypairssslservercertificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/certificate"
+	keypairssslservercsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/csr"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
 	keypairssslserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -634,8 +641,9 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	// type Configure methods.
 	var resourceConfig internaltypes.ResourceConfiguration
 	providerConfig := internaltypes.ProviderConfiguration{
-		HttpsHost:      httpsHost,
-		ProductVersion: parsedProductVersion,
+		HttpsHost:          httpsHost,
+		ProductVersion:     parsedProductVersion,
+		KeypairCreateMutex: &sync.Mutex{},
 	}
 
 	if username != "" {
@@ -696,6 +704,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
+		certificate.CertificatesCAExportDataSource,
 		certificate.CertificateDataSource,
 		clusterstatus.ClusterStatusDataSource,
 		datastore.DataStoreDataSource,
@@ -707,6 +716,9 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
+		keypairssslclient.KeypairsSslClientKeyDataSource,
+		keypairssslclientcertificate.KeypairsSslClientCertificateDataSource,
+		keypairssslservercertificate.KeypairsSslServerCertificateDataSource,
 		license.LicenseDataSource,
 		licenseagreement.LicenseAgreementDataSource,
 		localidentity.LocalIdentityProfileDataSource,
@@ -763,6 +775,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		connectionmetadataexport.ConnectionMetadataExportResource,
 		defaulturls.DefaultUrlsResource,
 		extendedproperties.ExtendedPropertiesResource,
+		identitystoreprovisioners.IdentityStoreProvisionerResource,
 		idpadapter.IdpAdapterResource,
 		idpdefaulturls.IdpDefaultUrlsResource,
 		idpspconnection.IdpSpConnectionResource,
@@ -777,8 +790,13 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keypairsigning.KeypairsSigningKeyResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
 		keypairssigningrotationsettings.KeypairsSigningKeyRotationSettingsResource,
+		keypairssslclient.KeypairsSslClientKeyResource,
 		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
+		keypairssslclientcsr.KeypairsSslClientCsrExportResource,
+		keypairssslclientcsr.KeypairsSslClientCsrResource,
+		keypairssslservercsr.KeypairsSslServerCsrExportResource,
+		keypairssslservercsr.KeypairsSslServerCsrResource,
 		keypairssslserversettings.KeypairsSslServerSettingsResource,
 		datastore.DataStoreResource,
 		license.LicenseResource,

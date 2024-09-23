@@ -196,7 +196,6 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 			"id_token_typ_header_value": schema.StringAttribute{
 				Description: "ID Token Type (typ) Header Value. Supported in PF version `11.3` or later.",
 				Optional:    true,
-				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
