@@ -25,9 +25,9 @@ resource "pingfederate_administrative_account" "administrativeAccount" {
 
 ### Required
 
-- `password` (String, Sensitive) Password for the Account. This field is immutable.
+- `password` (String, Sensitive) Password for the Account. This field is immutable and will trigger a replacement plan if changed.
 - `roles` (Set of String) Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions.
-- `username` (String) Username for the Administrative Account.
+- `username` (String) Username for the Administrative Account. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 

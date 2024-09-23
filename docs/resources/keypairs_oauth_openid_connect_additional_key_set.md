@@ -77,7 +77,7 @@ resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "keypai
 ### Optional
 
 - `description` (String) A description of the key set.
-- `set_id` (String) The unique ID for the key set. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
+- `set_id` (String) The unique ID for the key set. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 
 ### Read-Only
 

@@ -1,5 +1,6 @@
 # v0.17.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_sp_idp_connection` ([#342]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/342)))
 * **New Resource:** `pingfederate_keypairs_ssl_client_key` ([#337]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/337)))
 * **New Resource:** `pingfederate_identity_store_provisioner` ([#303]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/303)))
 * **New Resource:** `pingfederate_keypairs_ssl_client_csr_response` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))

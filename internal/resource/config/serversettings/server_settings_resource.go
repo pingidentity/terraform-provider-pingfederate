@@ -685,9 +685,9 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan serverSettingsModel
-	req.Plan.Get(ctx, &plan)
-	if !internaltypes.IsDefined(plan.Notifications) {
+	var plan *serverSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil || !internaltypes.IsDefined(plan.Notifications) {
 		return
 	}
 
@@ -772,7 +772,7 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		plan.Notifications, diags = types.ObjectValue(plan.Notifications.AttributeTypes(ctx), planNotificationsAttrs)
 		resp.Diagnostics.Append(diags...)
 
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

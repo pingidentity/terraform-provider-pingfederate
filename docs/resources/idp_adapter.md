@@ -286,7 +286,7 @@ resource "pingfederate_idp_adapter" "idpAdapterExample" {
 
 ### Required
 
-- `adapter_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
+- `adapter_id` (String) The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))

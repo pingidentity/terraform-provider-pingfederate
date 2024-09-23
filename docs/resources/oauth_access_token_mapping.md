@@ -127,9 +127,9 @@ resource "pingfederate_oauth_access_token_mapping" "example_device" {
 
 ### Required
 
-- `access_token_manager_ref` (Attributes) Reference to the access token manager this mapping is associated with. This property cannot be changed after the mapping is created. (see [below for nested schema](#nestedatt--access_token_manager_ref))
+- `access_token_manager_ref` (Attributes) Reference to the access token manager this mapping is associated with. This field is immutable and will trigger a replacement plan if changed. (see [below for nested schema](#nestedatt--access_token_manager_ref))
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
-- `context` (Attributes) The context of the OAuth Access Token Mapping. This property cannot be changed after the mapping is created. (see [below for nested schema](#nestedatt--context))
+- `context` (Attributes) The context of the OAuth Access Token Mapping. This field is immutable and will trigger a replacement plan if changed. (see [below for nested schema](#nestedatt--context))
 
 ### Optional
 

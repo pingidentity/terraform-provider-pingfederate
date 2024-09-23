@@ -124,7 +124,7 @@ func (r *keypairsOauthOpenidConnectResource) setConditionalDefaults(ctx context.
 		}
 	}
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (config *keypairsOauthOpenidConnectResourceModel) validatePlan() diag.Diagnostics {

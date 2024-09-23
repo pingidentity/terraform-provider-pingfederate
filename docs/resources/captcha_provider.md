@@ -112,8 +112,8 @@ resource "pingfederate_captcha_provider" "riskProviderExample" {
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
-- `provider_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
+- `provider_id` (String) The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 
@@ -240,7 +240,7 @@ Required:
 
 Required:
 
-- `id` (String) The ID of the resource.
+- `id` (String) The ID of the resource. This field is immutable and will trigger a replacement plan if changed.
 
 
 <a id="nestedatt--parent_ref"></a>

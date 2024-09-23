@@ -19,6 +19,7 @@ const (
 	PingFederateAPIError            = "PingFederate API error"
 	ConfigurationWarning            = "Plugin configuration warning"
 	ConfigurationCannotBeResetError = "Configuration cannot be returned to original state"
+	ConflictingValueReturnedError   = "PingFederate returned conflicting value"
 )
 
 func WarnConfigurationCannotBeReset(resourceName string, diags *diag.Diagnostics) {

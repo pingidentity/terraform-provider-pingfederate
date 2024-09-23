@@ -738,7 +738,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		Description: "Manages an IdP SP Connection",
 		Attributes: map[string]schema.Attribute{
 			"connection_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`.",
+				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -1109,7 +1109,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("STANDARD"),
-				Description: "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `NONE`, `STANDARD`, `ENHANCED`, `FULL`.",
+				Description: "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `NONE`, `STANDARD`, `ENHANCED`, `FULL`. If the `sp_connection_transaction_logging_override` attribute is set to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource, then this attribute must be set to the same value.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"NONE",
@@ -2907,6 +2907,14 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	// license_connection_group
 	state.LicenseConnectionGroup = types.StringPointerValue(response.LicenseConnectionGroup)
 	// logging_mode
+	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
+	// by the `server_settings_general` resource
+	if response.LoggingMode != nil && state.LoggingMode.ValueString() != *response.LoggingMode {
+		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
+			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
+				"If `sp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
+				" `logging_mode` should be configured to the same value in this resource.")
+	}
 	state.LoggingMode = types.StringPointerValue(response.LoggingMode)
 	// metadata_reload_settings
 	metadataReloadSettingsMetadataUrlRefAttrTypes := map[string]attr.Type{

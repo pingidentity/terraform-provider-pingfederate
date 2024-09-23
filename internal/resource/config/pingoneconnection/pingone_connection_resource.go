@@ -124,7 +124,7 @@ func (r *pingoneConnectionResource) Schema(ctx context.Context, req resource.Sch
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID of the connection.")
+	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID of the connection. This field is immutable and will trigger a replacement plan if changed.")
 
 	resp.Schema = schema
 }

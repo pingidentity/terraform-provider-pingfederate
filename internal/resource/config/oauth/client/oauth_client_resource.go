@@ -71,7 +71,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 		Description: "Manages an Oauth Client",
 		Attributes: map[string]schema.Attribute{
 			"client_id": schema.StringAttribute{
-				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes.",
+				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -1147,10 +1147,13 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan, state oauthClientModel
+	var plan *oauthClientModel
 	var diags diag.Diagnostics
-	req.Plan.Get(ctx, &plan)
-	req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil {
+		return
+	}
+
 	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
@@ -1267,7 +1270,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	if planModified {
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

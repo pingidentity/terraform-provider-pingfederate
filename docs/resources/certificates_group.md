@@ -23,13 +23,13 @@ resource "pingfederate_certificates_group" "certGroup" {
 
 ### Required
 
-- `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
-- `group_name` (String) Name of the group to manage certificates for.
+- `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value. This field is immutable and will trigger a replacement plan if changed.
+- `group_name` (String) Name of the group to manage certificates for. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL` or `HSM`.
-- `group_id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL` or `HSM`. This field is immutable and will trigger a replacement plan if changed.
+- `group_id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 
 ### Read-Only
 

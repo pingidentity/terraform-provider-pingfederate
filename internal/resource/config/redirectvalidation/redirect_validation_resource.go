@@ -263,8 +263,11 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan redirectValidationModel
+	var plan *redirectValidationModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	// If redirect_validation_local_settings.uri_allow_list is set prior to PF version 11.3, throw an error
 	var diags diag.Diagnostics
 	var localSettingsAttrs map[string]attr.Value
@@ -294,7 +297,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	if localSettingsModified {
 		plan.RedirectValidationLocalSettings, diags = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, localSettingsAttrs)
 		resp.Diagnostics.Append(diags...)
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

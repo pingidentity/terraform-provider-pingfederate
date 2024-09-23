@@ -71,14 +71,14 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Schema(ctx context.Co
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
-						Description: "The ID of the resource.",
+						Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},
 				Required:    true,
-				Description: "Reference to the associated authentication policy contract. The reference cannot be changed after the mapping has been created.",
+				Description: "Reference to the associated authentication policy contract. This field is immutable and will trigger a replacement plan if changed.",
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
 			"mapping_id": schema.StringAttribute{

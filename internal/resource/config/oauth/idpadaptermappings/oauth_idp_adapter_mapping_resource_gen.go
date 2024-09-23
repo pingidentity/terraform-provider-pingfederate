@@ -86,7 +86,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 			"issuance_criteria": issuancecriteria.ToSchema(),
 			"mapping_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the adapter mapping.",
+				Description: "The ID of the adapter mapping. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),

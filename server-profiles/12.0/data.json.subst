@@ -4315,6 +4315,45 @@
           }
         }
       ]
+    },
+    {
+      "resourceType": "/identityStoreProvisioners",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "identityStoreProvisioner",
+          "name": "SP IdP Connection Dependency",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.identitystoreprovisioners.sample.SampleIdentityStoreProvisioner",
+            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/identityStoreProvisioners/descriptors/com.pingidentity.identitystoreprovisioners.sample.SampleIdentityStoreProvisioner"
+          },
+          "configuration": {
+            "tables": [],
+            "fields": [
+              {
+                "name": "Delete user behavior",
+                "value": "Disable User"
+              }
+            ]
+          },
+          "attributeContract": {
+            "coreAttributes": [
+              {
+                "name": "username"
+              }
+            ],
+            "inherited": false
+          },
+          "groupAttributeContract": {
+            "coreAttributes": [
+              {
+                "name": "groupname"
+              }
+            ],
+            "inherited": false
+          }
+        }
+      ]
     }
   ]
 }

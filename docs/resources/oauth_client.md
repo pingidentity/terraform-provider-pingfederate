@@ -93,7 +93,7 @@ resource "pingfederate_oauth_client" "oauthClient" {
 
 ### Required
 
-- `client_id` (String) A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes.
+- `client_id` (String) A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. This field is immutable and will trigger a replacement plan if changed.
 - `grant_types` (Set of String) The grant types allowed for this client. The `EXTENSION` grant type applies to SAML/JWT assertion grants. Supported values are `IMPLICIT`, `AUTHORIZATION_CODE`, `RESOURCE_OWNER_CREDENTIALS`, `CLIENT_CREDENTIALS`, `REFRESH_TOKEN`, `EXTENSION`, `DEVICE_CODE`, `ACCESS_TOKEN_VALIDATION`, `CIBA`, and `TOKEN_EXCHANGE`.
 - `name` (String) A descriptive name for the client instance. This name appears when the user is prompted for authorization.
 

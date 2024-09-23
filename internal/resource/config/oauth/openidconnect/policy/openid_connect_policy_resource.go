@@ -203,7 +203,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
+	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 
@@ -215,8 +215,11 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
-	var plan oauthOpenIdConnectPolicyModel
+	var plan *oauthOpenIdConnectPolicyModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	planModified := false
 	// If include_x5t_in_id_token or id_token_typ_header_value is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
@@ -242,7 +245,7 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 	}
 
 	if planModified {
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

@@ -81,11 +81,11 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.RequiresReplace(),
 								},
-								Description: "The ID of the resource.",
+								Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
 							},
 						},
 						Required:    true,
-						Description: "A reference to the authentication source.",
+						Description: "A reference to the authentication source. This field is immutable and will trigger a replacement plan if changed.",
 					},
 					"type": schema.StringAttribute{
 						Required:    true,
@@ -128,7 +128,7 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 			"policy_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the session policy. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the session policy. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -194,7 +194,7 @@ func (r *sessionAuthenticationPolicyResource) ModifyPlan(ctx context.Context, re
 		} else {
 			plan.UserDeviceType = types.StringNull()
 		}
-		resp.Plan.Set(ctx, plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

@@ -132,8 +132,8 @@ resource "pingfederate_sp_authentication_policy_contract_mapping" "spAuthenticat
 ### Required
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
-- `source_id` (String) The id of the Authentication Policy Contract.
-- `target_id` (String) The id of the SP Adapter.
+- `source_id` (String) The id of the Authentication Policy Contract. This field is immutable and will trigger a replacement plan if changed.
+- `target_id` (String) The id of the SP Adapter. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 

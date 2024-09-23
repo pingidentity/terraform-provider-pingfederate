@@ -78,21 +78,21 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Use the `pingfederate_keypairs_signing_key` resource instead.",
 		Attributes: map[string]schema.Attribute{
 			"file_data": schema.StringAttribute{
-				Description: "Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required.",
+				Description: "Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"format": schema.StringAttribute{
-				Description: "Key pair file format. If specified, this field will control what file format is expected, otherwise the format will be auto-detected. In BCFIPS mode, only PEM is supported. (PKCS12, PEM)",
+				Description: "Key pair file format. If specified, this field will control what file format is expected, otherwise the format will be auto-detected. In BCFIPS mode, only PEM is supported. (PKCS12, PEM) This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"password": schema.StringAttribute{
-				Description: "Password for the file. In BCFIPS mode, the password must be at least 14 characters.",
+				Description: "Password for the file. In BCFIPS mode, the password must be at least 14 characters. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
@@ -100,7 +100,7 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 				},
 			},
 			"crypto_provider": schema.StringAttribute{
-				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. (LOCAL, HSM)",
+				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. (LOCAL, HSM) This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -243,7 +243,7 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 		"import_id",
 		true,
 		false,
-		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
+		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 

@@ -653,8 +653,11 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan oauthServerSettingsModel
+	var plan *oauthServerSettingsModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
 	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
@@ -761,7 +764,7 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 	}
 
 	if !resp.Diagnostics.HasError() {
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
