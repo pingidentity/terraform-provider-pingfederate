@@ -25,7 +25,7 @@ resource "pingfederate_oauth_client" "spa_oic_client" {
   bypass_approval_page                = true
 
   default_access_token_manager_ref = {
-    id = "jwt"
+    id = pingfederate_oauth_access_token_manager.jwt_example.id
   }
 
   grant_types = ["AUTHORIZATION_CODE", "REFRESH_TOKEN"]
@@ -34,7 +34,7 @@ resource "pingfederate_oauth_client" "spa_oic_client" {
 
   oidc_policy = {
     policy_group = {
-      id = "OAuthPlayground"
+      id = pingfederate_openid_connect_policy.OIDCPolicy.id
     }
   }
 }
@@ -56,7 +56,7 @@ resource "pingfederate_oauth_client" "web_oic_client" {
   bypass_approval_page = true
 
   default_access_token_manager_ref = {
-    id = "jwt"
+    id = pingfederate_oauth_access_token_manager.jwt_example.id
   }
 
   grant_types = ["AUTHORIZATION_CODE", "REFRESH_TOKEN"]
@@ -65,7 +65,7 @@ resource "pingfederate_oauth_client" "web_oic_client" {
 
   oidc_policy = {
     policy_group = {
-      id = "OAuthPlayground"
+      id = pingfederate_openid_connect_policy.OIDCPolicy.id
     }
   }
 }
@@ -102,7 +102,7 @@ resource "pingfederate_oauth_client" "df_client" {
   }
 
   default_access_token_manager_ref = {
-    id = "jwt"
+    id = pingfederate_oauth_access_token_manager.jwt_device_example.id
   }
 
   grant_types = ["DEVICE_CODE"]
