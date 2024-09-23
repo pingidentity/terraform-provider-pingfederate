@@ -213,10 +213,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
 								Description: "Email address where notifications are sent.",
-								Required:    true,
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
+								Optional:    true,
 							},
 							"thread_dump_enabled": schema.BoolAttribute{
 								Description: "Generate a thread dump when approaching thread pool exhaustion.",

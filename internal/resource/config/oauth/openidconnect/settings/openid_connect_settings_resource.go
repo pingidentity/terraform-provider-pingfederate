@@ -61,7 +61,7 @@ func (r *openidConnectSettingsResource) Schema(ctx context.Context, req resource
 		Attributes: map[string]schema.Attribute{
 			"default_policy_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the default policy.",
-				Required:    true,
+				Optional:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
 			"session_settings": schema.SingleNestedAttribute{
