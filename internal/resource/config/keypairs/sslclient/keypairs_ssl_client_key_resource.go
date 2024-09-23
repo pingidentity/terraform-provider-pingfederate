@@ -3,6 +3,7 @@ package keypairssslclient
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -29,7 +30,8 @@ var (
 	_ resource.Resource              = &keypairsSslClientKeyResource{}
 	_ resource.ResourceWithConfigure = &keypairsSslClientKeyResource{}
 
-	customId = "key_id"
+	customId    = "key_id"
+	createMutex sync.Mutex
 )
 
 // KeypairsSslClientKeyResource is a helper function to simplify the provider implementation.
@@ -541,9 +543,9 @@ func (r *keypairsSslClientKeyResource) Create(ctx context.Context, req resource.
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSslClientAPI.CreateSslClientKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
-		r.providerConfig.KeypairCreateMutex.Lock()
+		createMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSslClientAPI.CreateSslClientKeyPairExecute(apiCreateRequest)
-		r.providerConfig.KeypairCreateMutex.Unlock()
+		createMutex.Unlock()
 		if err != nil {
 			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while generating the ssl client key", err, httpResp, &customId)
 			return
@@ -553,9 +555,9 @@ func (r *keypairsSslClientKeyResource) Create(ctx context.Context, req resource.
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSslClientAPI.ImportSslClientKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
-		r.providerConfig.KeypairCreateMutex.Lock()
+		createMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSslClientAPI.ImportSslClientKeyPairExecute(apiCreateRequest)
-		r.providerConfig.KeypairCreateMutex.Unlock()
+		createMutex.Unlock()
 		if err != nil {
 			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the ssl client key", err, httpResp, &customId)
 			return
