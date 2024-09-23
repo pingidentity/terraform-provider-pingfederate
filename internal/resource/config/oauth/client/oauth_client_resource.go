@@ -289,10 +289,12 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 			},
 			"bypass_approval_page": schema.BoolAttribute{
-				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection. Defaults to `false`.",
+				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection.",
 				Computed:    true,
 				Optional:    true,
-				Default:     booldefault.StaticBool(false),
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"restrict_scopes": schema.BoolAttribute{
 				Description: "Restricts this client's access to specific scopes.",

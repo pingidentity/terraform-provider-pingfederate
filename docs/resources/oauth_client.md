@@ -102,7 +102,7 @@ resource "pingfederate_oauth_client" "oauthClient" {
 - `allow_authentication_api_init` (Boolean) Set to `true` to allow this client to initiate the authentication API redirectless flow. Defaults to `false`.
 - `authorization_detail_types` (Set of String) The authorization detail types available for this client.
 - `bypass_activation_code_confirmation_override` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if `verification_url_complete` is used by the end user to authorize a device. This overrides the `bypass_use_code_confirmation` value present in Authorization Server Settings.
-- `bypass_approval_page` (Boolean) Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection. Defaults to `false`.
+- `bypass_approval_page` (Boolean) Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection.
 - `ciba_delivery_mode` (String) The token delivery mode for the client. The default value is `POLL`. Supported values are `POLL` and `PING`.
 - `ciba_notification_endpoint` (String) The endpoint the OP will call after a successful or failed end-user authentication.
 - `ciba_polling_interval` (Number) The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is `0` seconds. Must be between `0` and `3600` seconds.
