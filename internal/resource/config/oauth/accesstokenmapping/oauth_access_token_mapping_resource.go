@@ -152,11 +152,21 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	state.Id = types.StringPointerValue(r.Id)
 	state.MappingId = types.StringPointerValue(r.Id)
 
-	contextRefObjValue, objDiags := resourcelink.ToState(ctx, &r.Context.ContextRef)
-	diags.Append(objDiags...)
+	contextRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	var contextRefValue types.Object
+	if r.Context.ContextRef.Id == "" {
+		contextRefValue = types.ObjectNull(contextRefAttrTypes)
+	} else {
+		contextRefValue, objDiags = types.ObjectValue(contextRefAttrTypes, map[string]attr.Value{
+			"id": types.StringValue(r.Context.ContextRef.Id),
+		})
+		diags.Append(objDiags...)
+	}
 	contextAttrValue := map[string]attr.Value{
 		"type":        types.StringValue(r.Context.Type),
-		"context_ref": contextRefObjValue,
+		"context_ref": contextRefValue,
 	}
 	state.Context, objDiags = types.ObjectValue(accessTokenMappingContext, contextAttrValue)
 	diags.Append(objDiags...)
