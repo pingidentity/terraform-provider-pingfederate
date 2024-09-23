@@ -280,7 +280,7 @@ Optional:
 `HS256` - HMAC using SHA-256
 `HS384` - HMAC using SHA-384
 `HS512` - HMAC using SHA-512.
-- `type` (String) Client authentication type. The required field for type `SECRET` is secret.	The required fields for type `CERTIFICATE` are client_cert_issuer_dn and client_cert_subject_dn. The required field for type `PRIVATE_KEY_JWT` is: either jwks or jwks_url.
+- `type` (String) Client authentication type. The required field for type `SECRET` is `secret`.	The required fields for type `CERTIFICATE` are `client_cert_issuer_dn` and `client_cert_subject_dn`. The required field for type `PRIVATE_KEY_JWT` is: either `jwks` or `jwks_url`.
 
 <a id="nestedatt--client_auth--secondary_secrets"></a>
 ### Nested Schema for `client_auth.secondary_secrets`
