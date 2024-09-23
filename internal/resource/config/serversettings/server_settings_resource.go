@@ -685,9 +685,9 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan serverSettingsModel
-	req.Plan.Get(ctx, &plan)
-	if !internaltypes.IsDefined(plan.Notifications) {
+	var plan *serverSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil || !internaltypes.IsDefined(plan.Notifications) {
 		return
 	}
 

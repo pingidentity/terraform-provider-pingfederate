@@ -1147,10 +1147,13 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan, state oauthClientModel
+	var plan *oauthClientModel
 	var diags diag.Diagnostics
-	req.Plan.Get(ctx, &plan)
-	req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil {
+		return
+	}
+
 	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {

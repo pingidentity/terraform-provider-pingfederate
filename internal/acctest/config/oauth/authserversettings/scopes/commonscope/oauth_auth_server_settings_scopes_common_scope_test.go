@@ -23,7 +23,6 @@ type oauthAuthServerSettingsScopesCommonScopesResourceModel struct {
 }
 
 func TestAccOauthAuthServerSettingsScopesCommonScopes(t *testing.T) {
-	t.SkipNow()
 	resourceName := "myOauthAuthServerSettingsScopesCommonScopes"
 	initialResourceModel := oauthAuthServerSettingsScopesCommonScopesResourceModel{
 		id:          oauthAuthServerSettingsScopesCommonScopesId,

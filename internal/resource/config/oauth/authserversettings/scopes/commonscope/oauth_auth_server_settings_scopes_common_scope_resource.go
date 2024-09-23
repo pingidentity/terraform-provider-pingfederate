@@ -66,8 +66,11 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Schema(ctx context.Co
 }
 
 func (r *oauthAuthServerSettingsScopesCommonScopeResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan oauthAuthServerSettingsScopesCommonScopeModel
-	req.Plan.Get(ctx, &plan)
+	var plan *oauthAuthServerSettingsScopesCommonScopeModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil {
+		return
+	}
 	if plan.Dynamic.ValueBool() && (plan.Name.ValueString() != "" || !plan.Name.IsNull()) {
 		{
 			containsAsteriskPrefix := strings.Index(plan.Name.ValueString(), "*")
