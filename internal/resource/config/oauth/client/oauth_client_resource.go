@@ -509,7 +509,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     objectdefault.StaticValue(clientAuthDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "Client authentication type. The required field for type `SECRET` is secret.	The required fields for type `CERTIFICATE` are client_cert_issuer_dn and client_cert_subject_dn. The required field for type `PRIVATE_KEY_JWT` is: either jwks or jwks_url.",
+						Description: "Client authentication type. The required field for type `SECRET` is `secret`.	The required fields for type `CERTIFICATE` are `client_cert_issuer_dn` and `client_cert_subject_dn`. The required field for type `PRIVATE_KEY_JWT` is: either `jwks` or `jwks_url`.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -974,17 +974,40 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
 			switch clientAuthType {
 			case "PRIVATE_KEY_JWT":
-				if !internaltypes.IsNonEmptyObj(model.JwksSettings) {
+				errorMsg := "jwks_settings.jwks or jwks_settings.jwks_url must be defined when client_auth is configured to \"PRIVATE_KEY_JWT\"."
+				if model.JwksSettings.IsNull() {
 					resp.Diagnostics.AddAttributeError(
 						path.Root("jwks_settings"),
 						providererror.InvalidAttributeConfiguration,
-						"jwks_settings must be defined when client_auth is configured to \"PRIVATE_KEY_JWT\".")
+						errorMsg)
+				} else if !model.JwksSettings.IsUnknown() {
+					jwksSettingsAttributes := model.JwksSettings.Attributes()
+					if jwksSettingsAttributes["jwks"].IsNull() && jwksSettingsAttributes["jwks_url"].IsNull() {
+						resp.Diagnostics.AddAttributeError(
+							path.Root("jwks_settings"),
+							providererror.InvalidAttributeConfiguration,
+							errorMsg)
+					}
 				}
 			case "CERTIFICATE":
-				if !internaltypes.IsDefined(clientAuthAttributes["client_cert_subject_dn"]) || !internaltypes.IsDefined(clientAuthAttributes["client_cert_issuer_dn"]) {
-					resp.Diagnostics.AddError(
+				if clientAuthAttributes["client_cert_subject_dn"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
 						providererror.InvalidAttributeConfiguration,
-						"client_cert_subject_dn and client_cert_issuer_dn must be defined when client_auth is configured to \"CERTIFICATE\".")
+						"client_cert_subject_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
+				}
+				if clientAuthAttributes["client_cert_issuer_dn"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
+						providererror.InvalidAttributeConfiguration,
+						"client_cert_issuer_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
+				}
+			case "SECRET":
+				if clientAuthAttributes["secret"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
+						providererror.InvalidAttributeConfiguration,
+						"client_auth.secret must be defined when client_auth.type is configured to \"SECRET\".")
 				}
 			}
 		}
@@ -996,22 +1019,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	for _, grantType := range model.GrantTypes.Elements() {
 		grantTypeVal := grantType.(types.String).ValueString()
 		if grantTypeVal == "CLIENT_CREDENTIALS" {
-			if clientAuthDefined {
-				clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
-				clientAuthSecret := clientAuthAttributes["secret"].(types.String)
-				if clientAuthType != "NONE" && clientAuthType != "SECRET" {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("client_auth").AtMapKey("type"),
-						providererror.InvalidAttributeConfiguration,
-						"client_auth.type must be set to \"SECRET\" when \"CLIENT_CREDENTIALS\" is included in grant_types.")
-				}
-				if clientAuthSecret.IsNull() || (!clientAuthSecret.IsUnknown() && clientAuthSecret.ValueString() == "") {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("client_auth").AtMapKey("secret"),
-						providererror.InvalidAttributeConfiguration,
-						"client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.")
-				}
-			} else if !clientAuthDefined {
+			if !clientAuthDefined {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("client_auth"),
 					providererror.InvalidAttributeConfiguration,
