@@ -43,7 +43,7 @@ terraform {
   required_providers {
     pingfederate = {
       source  = "pingidentity/pingfederate"
-      version = "~> 0.29"
+      version = "~> 0.16"
     }
   }
 }
