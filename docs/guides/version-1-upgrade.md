@@ -30,7 +30,7 @@ Removal of deprecated resources / data sources are expected on each major releas
 
 ### Removal of support for previous PingFederate versions
 
-The support of PingFederate product versions aligns with the [Ping Identity End of Life Policy](https://www.pingidentity.com/en/legal/end-of-life-policy.html).  In this major release, supported PingFederate versions remain unchanged, versions `11.2` through `12.1` of PingFederate are supported.
+The support of PingFederate product versions aligns with the [Ping Identity End of Life Policy](https://www.pingidentity.com/en/legal/end-of-life-policy.html).  In this major release, supported PingFederate versions remain unchanged, versions `11.2` through `12.1` of PingFederate (supported in the `v0.*` release) are still supported.
 
 ## Provider Configuration Changes
 
