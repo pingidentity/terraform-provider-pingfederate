@@ -20,10 +20,9 @@ vet:
 	go vet ./...
 
 define productversiondir
- 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}" | cut -b 1-4)
+ 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.3}" | cut -b 1-4)
 endef
 
-#TODO: replace `edge` with `latest` here once a sprint release is available for PF 12.1
 starttestcontainer:
 	$(call productversiondir) && docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
@@ -32,7 +31,7 @@ starttestcontainer:
 		-e "OPERATIONAL_MODE=${OPERATIONAL_MODE}" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
 		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
-		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}-edge
+		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.3}-latest
 # Wait for the instance to become ready
 	sleep 1
 	duration=0

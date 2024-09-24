@@ -28,6 +28,7 @@
 
 ### Enhancements
 * Added new `configuration.sensitive_fields` and `configuration.tables.#.rows.#.sensitive_fields` attributes to plugin configuration across the provider. Use these fields when specifying sensitive fields in plugin configuration, such as secrets and passwords. Values specified in these sets will be marked as Sensitive to Terraform and hidden in the CLI and UI output. ([#383]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/383)))
+* Added support for PingFederate patches through `11.2.10`, `11.3.8`, `12.0.5`, `12.1.3`. ([#406]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/406)))
 
 # v0.16.0 September 12, 2024
 ### Resources
