@@ -71,8 +71,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the password credential validator provides.",
-				Computed:    true,
-				Optional:    true,
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",

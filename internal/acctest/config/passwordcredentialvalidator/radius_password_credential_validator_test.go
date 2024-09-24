@@ -129,6 +129,10 @@ func testAccRadiusPasswordCredentialValidators(resourceName string, resourceMode
 			]
 	  	}
 	`
+	} else {
+		attributeContractHcl = `
+		attribute_contract = {}
+	`
 	}
 
 	return fmt.Sprintf(`
