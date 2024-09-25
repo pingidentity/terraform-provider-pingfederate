@@ -292,8 +292,8 @@ Optional:
 - `outbound_back_channel_auth` (Attributes) The SOAP authentication methods when sending or receiving a message using SOAP back channel. (see [below for nested schema](#nestedatt--credentials--outbound_back_channel_auth))
 - `secondary_decryption_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--secondary_decryption_key_pair_ref))
 - `signing_settings` (Attributes) Settings related to signing messages sent to this partner. (see [below for nested schema](#nestedatt--credentials--signing_settings))
-- `verification_issuer_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
-- `verification_subject_dn` (String) If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.
 
 <a id="nestedatt--credentials--certs"></a>
 ### Nested Schema for `credentials.certs`
@@ -304,14 +304,14 @@ Required:
 
 Optional:
 
-- `active_verification_cert` (Boolean) Indicates if this is the active verification certificate. Default is `false`.
-- `encryption_cert` (Boolean) Indicates if this is the encryption certificate. Default is `false`.
-- `primary_verification_cert` (Boolean) Indicates if this is the primary verification certificate. Default is `false`.
-- `secondary_verification_cert` (Boolean) Indicates if this is the secondary verification certificate. Default is `false`.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
 
 Read-Only:
 
-- `cert_view` (Attributes) A certificate used for signature verification or XML encryption. (see [below for nested schema](#nestedatt--credentials--certs--cert_view))
+- `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--certs--cert_view))
 
 <a id="nestedatt--credentials--certs--x509_file"></a>
 ### Nested Schema for `credentials.certs.x509_file`
@@ -364,18 +364,14 @@ Required:
 <a id="nestedatt--credentials--inbound_back_channel_auth"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth`
 
-Required:
-
-- `type` (String) The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.
-
 Optional:
 
 - `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
 - `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
 - `http_basic_credentials` (Attributes) Username and password credentials. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--http_basic_credentials))
 - `require_ssl` (Boolean) Incoming HTTP transmissions must use a secure channel.
-- `verification_issuer_dn` (String) If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
-- `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
+- `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs`
@@ -386,14 +382,14 @@ Required:
 
 Optional:
 
-- `active_verification_cert` (Boolean) Indicates if this is the active verification certificate. Default is `false`.
-- `encryption_cert` (Boolean) Indicates if this is the encryption certificate. Default is `false`.
-- `primary_verification_cert` (Boolean) Indicates if this is the primary verification certificate. Default is `false`.
-- `secondary_verification_cert` (Boolean) Indicates if this is the secondary verification certificate. Default is `false`.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
 
 Read-Only:
 
-- `cert_view` (Attributes) A certificate used for signature verification or XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--cert_view))
+- `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--cert_view))
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509_file"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509_file`
@@ -448,10 +444,6 @@ Optional:
 <a id="nestedatt--credentials--outbound_back_channel_auth"></a>
 ### Nested Schema for `credentials.outbound_back_channel_auth`
 
-Required:
-
-- `type` (String) The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.
-
 Optional:
 
 - `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
@@ -490,18 +482,18 @@ Required:
 
 Optional:
 
-- `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
-- `alternative_signing_key_pair_refs` (Set of Object) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
-- `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature element.
-- `include_raw_key_in_signature` (Boolean) Determines whether the element with the raw public key is included in the signature element.
+- `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
+- `alternative_signing_key_pair_refs` (Attributes Set) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
+- `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element. The default value is `false`.
+- `include_raw_key_in_signature` (Boolean) Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.
 - `signing_key_pair_ref` (Attributes) A reference to a signing key pair. (see [below for nested schema](#nestedatt--credentials--signing_settings--signing_key_pair_ref))
 
 <a id="nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs"></a>
 ### Nested Schema for `credentials.signing_settings.alternative_signing_key_pair_refs`
 
-Optional:
+Required:
 
-- `id` (String)
+- `id` (String) The ID of the resource.
 
 
 <a id="nestedatt--credentials--signing_settings--signing_key_pair_ref"></a>

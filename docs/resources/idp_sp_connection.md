@@ -693,37 +693,37 @@ Optional:
 
 Optional:
 
-- `block_encryption_algorithm` (String) The algorithm used to encrypt assertions sent to this partner. `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM` and `Triple_DES` are supported.
-- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
+- `block_encryption_algorithm` (String) The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.
+- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
 - `decryption_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--decryption_key_pair_ref))
 - `inbound_back_channel_auth` (Attributes) The SOAP authentication methods when sending or receiving a message using SOAP back channel. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth))
-- `key_transport_algorithm` (String) The algorithm used to transport keys to this partner. `RSA_OAEP`, `RSA_OAEP_256` and `RSA_v15` are supported.
+- `key_transport_algorithm` (String) The algorithm used to transport keys to this partner. Options are `RSA_OAEP`, `RSA_OAEP_256`, `RSA_v15`.
 - `outbound_back_channel_auth` (Attributes) The SOAP authentication methods when sending or receiving a message using SOAP back channel. (see [below for nested schema](#nestedatt--credentials--outbound_back_channel_auth))
 - `secondary_decryption_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--secondary_decryption_key_pair_ref))
 - `signing_settings` (Attributes) Settings related to signing messages sent to this partner. (see [below for nested schema](#nestedatt--credentials--signing_settings))
-- `verification_issuer_dn` (String) If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
-- `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
+- `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.
 
 <a id="nestedatt--credentials--certs"></a>
 ### Nested Schema for `credentials.certs`
 
 Required:
 
-- `x509file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--certs--x509file))
+- `x509_file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--certs--x509_file))
 
 Optional:
 
-- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
-- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.
-- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.
-- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
 
 Read-Only:
 
 - `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--certs--cert_view))
 
-<a id="nestedatt--credentials--certs--x509file"></a>
-### Nested Schema for `credentials.certs.x509file`
+<a id="nestedatt--credentials--certs--x509_file"></a>
+### Nested Schema for `credentials.certs.x509_file`
 
 Required:
 
@@ -731,8 +731,12 @@ Required:
 
 Optional:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.
 - `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
+
+Read-Only:
+
+- `formatted_file_data` (String) The certificate data in PEM format, formatted by PingFederate. This attribute is read-only.
 
 
 <a id="nestedatt--credentials--certs--cert_view"></a>
@@ -740,17 +744,17 @@ Optional:
 
 Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
 - `id` (String) The persistent, unique ID for the certificate.
 - `issuer_dn` (String) The issuer's distinguished name.
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.
 - `serial_number` (String) The serial number assigned by the CA.
-- `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
-- `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
+- `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding.
+- `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String) Status of the item. Options are `VALID`, `EXPIRED`, `NOT_YET_VALID`, `REVOKED`.
+- `status` (String) Status of the item.
 - `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
@@ -771,37 +775,33 @@ Required:
 
 Optional:
 
-- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
+- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
 - `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
 - `http_basic_credentials` (Attributes) Username and password credentials. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--http_basic_credentials))
 - `require_ssl` (Boolean) Incoming HTTP transmissions must use a secure channel.
 - `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
-- `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
-
-Read-Only:
-
-- `type` (String, Deprecated) The back channel authentication type.
+- `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs`
 
 Required:
 
-- `x509file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--x509file))
+- `x509_file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--x509_file))
 
 Optional:
 
-- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
-- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.
-- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.
-- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
 
 Read-Only:
 
 - `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--cert_view))
 
-<a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509file"></a>
-### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509file`
+<a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509_file"></a>
+### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509_file`
 
 Required:
 
@@ -809,8 +809,12 @@ Required:
 
 Optional:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.
 - `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
+
+Read-Only:
+
+- `formatted_file_data` (String) The certificate data in PEM format, formatted by PingFederate. This attribute is read-only.
 
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs--cert_view"></a>
@@ -818,17 +822,17 @@ Optional:
 
 Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
 - `id` (String) The persistent, unique ID for the certificate.
 - `issuer_dn` (String) The issuer's distinguished name.
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.
 - `serial_number` (String) The serial number assigned by the CA.
-- `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
-- `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
+- `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding.
+- `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String) Status of the item. Options are `VALID`, `EXPIRED`, `NOT_YET_VALID`, `REVOKED`.
+- `status` (String) Status of the item.
 - `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
@@ -841,7 +845,6 @@ Read-Only:
 
 Optional:
 
-- `encrypted_password` (String, Deprecated) For GET requests, this field contains the encrypted password, if one exists.
 - `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
@@ -857,16 +860,11 @@ Optional:
 - `ssl_auth_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--outbound_back_channel_auth--ssl_auth_key_pair_ref))
 - `validate_partner_cert` (Boolean) Validate the partner server certificate. Default is `true`.
 
-Read-Only:
-
-- `type` (String, Deprecated) The back channel authentication type.
-
 <a id="nestedatt--credentials--outbound_back_channel_auth--http_basic_credentials"></a>
 ### Nested Schema for `credentials.outbound_back_channel_auth.http_basic_credentials`
 
 Optional:
 
-- `encrypted_password` (String, Deprecated) For GET requests, this field contains the encrypted password, if one exists.
 - `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
@@ -895,9 +893,9 @@ Optional:
 
 - `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
 - `alternative_signing_key_pair_refs` (Attributes Set) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
-- `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element. Default is `false`.
+- `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element. The default value is `false`.
 - `include_raw_key_in_signature` (Boolean) Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.
-- `signing_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--signing_settings--signing_key_pair_ref))
+- `signing_key_pair_ref` (Attributes) A reference to a signing key pair. (see [below for nested schema](#nestedatt--credentials--signing_settings--signing_key_pair_ref))
 
 <a id="nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs"></a>
 ### Nested Schema for `credentials.signing_settings.alternative_signing_key_pair_refs`
