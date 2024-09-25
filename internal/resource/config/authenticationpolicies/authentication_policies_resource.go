@@ -84,7 +84,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 						"id": schema.StringAttribute{
 							Optional:    true,
 							Computed:    true,
-							Description: "The authentication policy tree id. ID is unique.",
+							Description: "The authentication policy tree id. ID is unique. This value is system-assigned if not provided.",
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},

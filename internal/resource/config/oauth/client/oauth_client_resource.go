@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
@@ -289,20 +288,14 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 			},
 			"bypass_approval_page": schema.BoolAttribute{
-				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection.",
+				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"restrict_scopes": schema.BoolAttribute{
-				Description: "Restricts this client's access to specific scopes.",
+				Description: "Restricts this client's access to specific scopes. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"restricted_scopes": schema.SetAttribute{
 				Description: "The scopes available for this client.",
@@ -1133,6 +1126,14 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			"offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to \"YES\".\n"+
 				fmt.Sprintf("require_offline_access_scope_to_issue_refresh_tokens: %s\noffline_access_require_consent_prompt: %s", model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString(), model.OfflineAccessRequireConsentPrompt.ValueString()))
 	}
+
+	// bypass_approval_page Validation
+	if internaltypes.IsDefined(model.BypassApprovalPage) && !model.BypassApprovalPage.ValueBool() && model.AllowAuthenticationApiInit.ValueBool() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("bypass_approval_page"),
+			providererror.InvalidAttributeConfiguration,
+			"bypass_approval_page cannot be configured to false when allow_authentication_api_init is set to true.")
+	}
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -1263,8 +1264,12 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
-	if plan.AllowAuthenticationApiInit.ValueBool() && plan.RestrictScopes.IsUnknown() {
-		plan.RestrictScopes = types.BoolValue(true)
+	if plan.RestrictScopes.IsUnknown() {
+		plan.RestrictScopes = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())
+		planModified = true
+	}
+	if plan.BypassApprovalPage.IsUnknown() {
+		plan.BypassApprovalPage = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())
 		planModified = true
 	}
 

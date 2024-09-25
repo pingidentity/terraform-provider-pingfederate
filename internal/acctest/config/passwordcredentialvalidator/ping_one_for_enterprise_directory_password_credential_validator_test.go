@@ -107,6 +107,10 @@ func testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceNa
 			]
 	  	}
 		`
+	} else {
+		optionalHcl = `
+		attribute_contract = {}
+		`
 	}
 
 	return fmt.Sprintf(`

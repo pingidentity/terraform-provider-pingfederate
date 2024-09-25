@@ -547,6 +547,7 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
 
 ### Required
 
+- `attribute_contract` (Attributes) The list of attributes that the password credential validator provides. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
@@ -554,12 +555,39 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
 
 ### Optional
 
-- `attribute_contract` (Attributes) The list of attributes that the password credential validator provides. (see [below for nested schema](#nestedatt--attribute_contract))
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. (see [below for nested schema](#nestedatt--parent_ref))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedatt--attribute_contract"></a>
+### Nested Schema for `attribute_contract`
+
+Optional:
+
+- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+
+Read-Only:
+
+- `core_attributes` (Attributes Set) A list of read-only attributes that are automatically populated by the password credential validator descriptor. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+
+<a id="nestedatt--attribute_contract--extended_attributes"></a>
+### Nested Schema for `attribute_contract.extended_attributes`
+
+Required:
+
+- `name` (String) The name of this attribute.
+
+
+<a id="nestedatt--attribute_contract--core_attributes"></a>
+### Nested Schema for `attribute_contract.core_attributes`
+
+Read-Only:
+
+- `name` (String) The name of this attribute.
+
+
 
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
@@ -679,34 +707,6 @@ Required:
 Required:
 
 - `id` (String) The ID of the resource.
-
-
-<a id="nestedatt--attribute_contract"></a>
-### Nested Schema for `attribute_contract`
-
-Optional:
-
-- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-
-Read-Only:
-
-- `core_attributes` (Attributes Set) A list of read-only attributes that are automatically populated by the password credential validator descriptor. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
-
-<a id="nestedatt--attribute_contract--extended_attributes"></a>
-### Nested Schema for `attribute_contract.extended_attributes`
-
-Required:
-
-- `name` (String) The name of this attribute.
-
-
-<a id="nestedatt--attribute_contract--core_attributes"></a>
-### Nested Schema for `attribute_contract.core_attributes`
-
-Read-Only:
-
-- `name` (String) The name of this attribute.
-
 
 
 <a id="nestedatt--parent_ref"></a>
