@@ -9,6 +9,8 @@ description: |-
 
 Resource to manage the client settings.
 
+~> This resource depends on the `pingfederate_extended_properties` resource. Use `depends_on` when configuring both resources to ensure changes to this resource occur after any changes to `pingfederate_extended_properties`. Failure to do this may result in unexpected plans.
+
 ## Example Usage
 
 ```terraform

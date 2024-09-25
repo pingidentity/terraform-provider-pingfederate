@@ -533,7 +533,7 @@ func (r *oauthClientSettingsResource) ModifyPlan(ctx context.Context, req resour
 	r.setVersionDependentDefaults(ctx, plan, pfVersionAtLeast1210, resp)
 }
 
-func (model *oauthClientSettingsResourceModel) buildClientStruct() (*client.ClientSettings, diag.Diagnostics) {
+func (model *oauthClientSettingsResourceModel) buildClientStruct(existingExtendedProperties []client.ExtendedProperty) (*client.ClientSettings, diag.Diagnostics) {
 	result := &client.ClientSettings{}
 	// dynamic_client_registration
 	if !model.DynamicClientRegistration.IsNull() {
@@ -639,6 +639,15 @@ func (model *oauthClientSettingsResourceModel) buildClientStruct() (*client.Clie
 		}
 		dynamicClientRegistrationValue.UserAuthorizationUrlOverride = dynamicClientRegistrationAttrs["user_authorization_url_override"].(types.String).ValueStringPointer()
 		result.DynamicClientRegistration = dynamicClientRegistrationValue
+	}
+
+	result.ClientMetadata = []client.ClientMetadata{}
+	for _, extendedProperty := range existingExtendedProperties {
+		result.ClientMetadata = append(result.ClientMetadata, client.ClientMetadata{
+			Parameter:   extendedProperty.Name,
+			Description: extendedProperty.Description,
+			MultiValued: extendedProperty.MultiValued,
+		})
 	}
 
 	return result, nil
@@ -801,6 +810,11 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 		if response.DynamicClientRegistration.DisableRegistrationAccessTokens != nil {
 			disableRegistrationAccessTokens = *response.DynamicClientRegistration.DisableRegistrationAccessTokens
 		}
+		// Sometimes PF won't return grace_period_type when it's set to SERVER_DEFAULT
+		gracePeriodType := "SERVER_DEFAULT"
+		if response.DynamicClientRegistration.RefreshTokenRollingGracePeriodType != nil {
+			gracePeriodType = *response.DynamicClientRegistration.RefreshTokenRollingGracePeriodType
+		}
 		dynamicClientRegistrationValue, diags = types.ObjectValue(dynamicClientRegistrationAttrTypes, map[string]attr.Value{
 			"allow_client_delete":                                  types.BoolPointerValue(response.DynamicClientRegistration.AllowClientDelete),
 			"allowed_authorization_detail_types":                   dynamicClientRegistrationAllowedAuthorizationDetailTypesValue,
@@ -830,7 +844,7 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 			"policy_refs":                                          dynamicClientRegistrationPolicyRefsValue,
 			"refresh_rolling":                                      types.StringPointerValue(response.DynamicClientRegistration.RefreshRolling),
 			"refresh_token_rolling_grace_period":                   types.Int64PointerValue(response.DynamicClientRegistration.RefreshTokenRollingGracePeriod),
-			"refresh_token_rolling_grace_period_type":              types.StringPointerValue(response.DynamicClientRegistration.RefreshTokenRollingGracePeriodType),
+			"refresh_token_rolling_grace_period_type":              types.StringValue(gracePeriodType),
 			"refresh_token_rolling_interval":                       types.Int64PointerValue(response.DynamicClientRegistration.RefreshTokenRollingInterval),
 			"refresh_token_rolling_interval_time_unit":             types.StringPointerValue(response.DynamicClientRegistration.RefreshTokenRollingIntervalTimeUnit),
 			"refresh_token_rolling_interval_type":                  types.StringPointerValue(response.DynamicClientRegistration.RefreshTokenRollingIntervalType),
@@ -945,8 +959,15 @@ func (r *oauthClientSettingsResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
+	// This resource depends on the values in the /extendedProperties endpoint, so pass those in to build the client struct
+	apiReadExtendedProperties, httpResp, err := r.apiClient.ExtendedPropertiesAPI.GetExtendedProperties(config.AuthContext(ctx, r.providerConfig)).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the extended properties", err, httpResp)
+		return
+	}
+
 	// Update API call logic, since this is a singleton resource
-	clientData, diags := data.buildClientStruct()
+	clientData, diags := data.buildClientStruct(apiReadExtendedProperties.Items)
 	resp.Diagnostics.Append(diags...)
 	apiUpdateRequest := r.apiClient.OauthClientSettingsAPI.UpdateOauthClientSettings(config.AuthContext(ctx, r.providerConfig))
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
@@ -1002,8 +1023,15 @@ func (r *oauthClientSettingsResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
+	// This resource depends on the values in the /extendedProperties endpoint, so pass those in to build the client struct
+	apiReadExtendedProperties, httpResp, err := r.apiClient.ExtendedPropertiesAPI.GetExtendedProperties(config.AuthContext(ctx, r.providerConfig)).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the extended properties", err, httpResp)
+		return
+	}
+
 	// Update API call logic
-	clientData, diags := data.buildClientStruct()
+	clientData, diags := data.buildClientStruct(apiReadExtendedProperties.Items)
 	resp.Diagnostics.Append(diags...)
 	apiUpdateRequest := r.apiClient.OauthClientSettingsAPI.UpdateOauthClientSettings(config.AuthContext(ctx, r.providerConfig))
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)

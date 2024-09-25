@@ -9,6 +9,8 @@ description: |-
 
 {{ .Description | trimspace }}
 
+~> This resource depends on the `pingfederate_extended_properties` resource. Use `depends_on` when configuring both resources to ensure changes to this resource occur after any changes to `pingfederate_extended_properties`. Failure to do this may result in unexpected plans.
+
 ## Example Usage
 
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
