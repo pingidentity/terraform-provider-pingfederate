@@ -83,7 +83,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 					},
 					"context_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated Access Token Mapping Context instance.",
-						Required:    true,
+						Optional:    true,
 						Attributes:  resourcelink.ToSchema(),
 					},
 				},

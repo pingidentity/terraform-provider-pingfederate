@@ -178,8 +178,11 @@ Optional:
 
 Required:
 
-- `context_ref` (Attributes) Reference to the associated Access Token Mapping Context instance. (see [below for nested schema](#nestedatt--context--context_ref))
 - `type` (String) The Access Token Mapping Context type. Options are `DEFAULT`, `PCV`, `IDP_CONNECTION`, `IDP_ADAPTER`, `AUTHENTICATION_POLICY_CONTRACT`, `CLIENT_CREDENTIALS`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`.
+
+Optional:
+
+- `context_ref` (Attributes) Reference to the associated Access Token Mapping Context instance. (see [below for nested schema](#nestedatt--context--context_ref))
 
 <a id="nestedatt--context--context_ref"></a>
 ### Nested Schema for `context.context_ref`
