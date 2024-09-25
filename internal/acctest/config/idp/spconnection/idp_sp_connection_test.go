@@ -83,7 +83,7 @@ func TestAccIdpSpConnection(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// These attributes have many extra values not being set in the test used in this HCL, so those extra values
-				// will change these attributes on import.
+				// will change these attributes on import. file_data also gets formatted by PF so it won't exactly match.
 				ImportStateVerifyIgnore: []string{
 					"outbound_provision.channels.0.attribute_mapping",
 					"outbound_provision.target_settings",

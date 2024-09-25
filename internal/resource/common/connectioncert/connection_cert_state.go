@@ -58,7 +58,7 @@ func AttrTypes() map[string]attr.Type {
 	}
 }
 
-func ToState(ctx context.Context, planFileData types.String, clientConnectionCert client.ConnectionCert, diags *diag.Diagnostics) (types.Object, diag.Diagnostics) {
+func ToState(ctx context.Context, planFileData types.String, clientConnectionCert client.ConnectionCert, diags *diag.Diagnostics, isImportRead bool) (types.Object, diag.Diagnostics) {
 	var certViewValue types.Object
 	if clientConnectionCert.CertView == nil {
 		certViewValue = types.ObjectNull(CertAttrType())
@@ -100,7 +100,9 @@ func ToState(ctx context.Context, planFileData types.String, clientConnectionCer
 
 	// Get the current file_data value
 	fileDataAttr := types.StringNull()
-	if planFileData.ValueString() != "" {
+	if isImportRead {
+		fileDataAttr = types.StringValue(clientConnectionCert.X509File.FileData)
+	} else if planFileData.ValueString() != "" {
 		fileDataAttr = planFileData
 	}
 

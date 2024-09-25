@@ -3821,7 +3821,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
 					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
-						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags)
+						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags, isImportRead)
 						diags.Append(objDiags...)
 						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 						certMatchFound = true
@@ -3829,12 +3829,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					}
 				}
 				if !certMatchFound {
-					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags)
+					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
 					diags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
 			} else {
-				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags)
+				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
 				diags.Append(objDiags...)
 				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
@@ -3863,7 +3863,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
 							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
-								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags)
+								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
 								diags.Append(objDiags...)
 								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 								ibaCertMatch = true
@@ -3871,12 +3871,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 							}
 						}
 						if !ibaCertMatch {
-							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags)
+							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
 							diags.Append(objDiags...)
 							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 						}
 					} else {
-						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags)
+						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
 						diags.Append(objDiags...)
 						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 					}

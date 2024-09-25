@@ -80,6 +80,7 @@ func TestAccSpIdpConnection_MinimalMaximal(t *testing.T) {
 				ImportStateId:     spIdpConnectionConnectionId,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// file_data gets formatted by PF so it won't match, and passwords won't be returned by the API
 				ImportStateVerifyIgnore: []string{
 					"credentials.certs.0.x509_file.file_data",
 					"credentials.inbound_back_channel_auth.http_basic_credentials.password",
