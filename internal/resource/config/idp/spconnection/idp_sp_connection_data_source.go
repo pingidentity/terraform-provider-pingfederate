@@ -1371,19 +1371,71 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	state.MetadataReloadSettings, respDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
 	diags.Append(respDiags...)
 
-	state.Credentials, respDiags = types.ObjectValueFrom(ctx, credentialsDataSourceAttrTypes, r.Credentials)
-	diags.Append(respDiags...)
-	if r.Credentials != nil && r.Credentials.SigningSettings != nil && r.Credentials.SigningSettings.IncludeCertInSignature == nil {
-		// PF returns false for include_cert_in_signature as nil. If nil is returned, just set it to false
-		credentialsAttrs := state.Credentials.Attributes()
-		signingSettingsAttrs := credentialsAttrs["signing_settings"].(types.Object).Attributes()
-		signingSettingsAttrs["include_cert_in_signature"] = types.BoolValue(false)
-		newSigningSettings, respDiags := types.ObjectValue(credentialsSigningSettingsAttrTypes, signingSettingsAttrs)
+	var credentialsCertsValues []attr.Value
+	for _, cert := range r.Credentials.Certs {
+		credentailsCert, respDiags := connectioncert.ToStateDataSource(ctx, cert, &diags)
 		diags.Append(respDiags...)
-		credentialsAttrs["signing_settings"] = newSigningSettings
-		state.Credentials, respDiags = types.ObjectValue(credentialsDataSourceAttrTypes, credentialsAttrs)
+		credentialsCertsValues = append(credentialsCertsValues, credentailsCert)
+	}
+	credentialsCerts, respDiags := types.ListValue(types.ObjectType{AttrTypes: connectioncert.AttrTypesDataSource()}, credentialsCertsValues)
+	diags.Append(respDiags...)
+	var decryptionKeyPairRef types.Object
+	if r.Credentials.DecryptionKeyPairRef == nil {
+		decryptionKeyPairRef = types.ObjectNull(resourcelink.AttrType())
+	} else {
+		decryptionKeyPairRef, respDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), r.Credentials.DecryptionKeyPairRef)
 		diags.Append(respDiags...)
 	}
+	var inboundBackChannelAuth types.Object
+	if r.Credentials.InboundBackChannelAuth == nil {
+		inboundBackChannelAuth = types.ObjectNull(credentialsInboundBackChannelAuthDataSourceAttrTypes)
+	} else {
+		inboundBackChannelAuth, respDiags = types.ObjectValueFrom(ctx, credentialsInboundBackChannelAuthDataSourceAttrTypes, r.Credentials.InboundBackChannelAuth)
+		diags.Append(respDiags...)
+	}
+	var outboundBackChannelAuth types.Object
+	if r.Credentials.OutboundBackChannelAuth == nil {
+		outboundBackChannelAuth = types.ObjectNull(credentialsOutboundBackChannelAuthDataSourceAttrTypes)
+	} else {
+		outboundBackChannelAuth, respDiags = types.ObjectValueFrom(ctx, credentialsOutboundBackChannelAuthDataSourceAttrTypes, r.Credentials.OutboundBackChannelAuth)
+		diags.Append(respDiags...)
+	}
+	var secondaryDecryptionKeyPairRef types.Object
+	if r.Credentials.SecondaryDecryptionKeyPairRef == nil {
+		secondaryDecryptionKeyPairRef = types.ObjectNull(resourcelink.AttrType())
+	} else {
+		secondaryDecryptionKeyPairRef, respDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), r.Credentials.SecondaryDecryptionKeyPairRef)
+		diags.Append(respDiags...)
+	}
+	var signingSettings types.Object
+	if r.Credentials.SigningSettings == nil {
+		signingSettings = types.ObjectNull(credentialsSigningSettingsAttrTypes)
+	} else {
+		signingSettings, respDiags = types.ObjectValueFrom(ctx, credentialsSigningSettingsAttrTypes, r.Credentials.SigningSettings)
+		diags.Append(respDiags...)
+	}
+
+	if r.Credentials != nil && r.Credentials.SigningSettings != nil && r.Credentials.SigningSettings.IncludeCertInSignature == nil {
+		// PF returns false for include_cert_in_signature as nil. If nil is returned, just set it to false
+		signingSettingsAttrs := signingSettings.Attributes()
+		signingSettingsAttrs["include_cert_in_signature"] = types.BoolValue(false)
+		signingSettings, respDiags = types.ObjectValue(credentialsSigningSettingsAttrTypes, signingSettingsAttrs)
+		diags.Append(respDiags...)
+	}
+
+	state.Credentials, respDiags = types.ObjectValue(credentialsDataSourceAttrTypes, map[string]attr.Value{
+		"block_encryption_algorithm":        types.StringPointerValue(r.Credentials.BlockEncryptionAlgorithm),
+		"certs":                             credentialsCerts,
+		"decryption_key_pair_ref":           decryptionKeyPairRef,
+		"inbound_back_channel_auth":         inboundBackChannelAuth,
+		"key_transport_algorithm":           types.StringPointerValue(r.Credentials.KeyTransportAlgorithm),
+		"outbound_back_channel_auth":        outboundBackChannelAuth,
+		"secondary_decryption_key_pair_ref": secondaryDecryptionKeyPairRef,
+		"signing_settings":                  signingSettings,
+		"verification_issuer_dn":            types.StringPointerValue(r.Credentials.VerificationIssuerDN),
+		"verification_subject_dn":           types.StringPointerValue(r.Credentials.VerificationSubjectDN),
+	})
+	diags.Append(respDiags...)
 
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
 	diags.Append(respDiags...)
