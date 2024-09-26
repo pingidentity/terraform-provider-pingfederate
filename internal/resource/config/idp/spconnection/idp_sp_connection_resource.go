@@ -39,6 +39,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -100,11 +101,9 @@ var (
 		"certs":                      certsListType,
 		"decryption_key_pair_ref":    resourceLinkObjectType,
 		"inbound_back_channel_auth": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"type": types.StringType,
 			"http_basic_credentials": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"username":           types.StringType,
-				"password":           types.StringType,
-				"encrypted_password": types.StringType,
+				"username": types.StringType,
+				"password": types.StringType,
 			}},
 			"digital_signature":       types.BoolType,
 			"verification_subject_dn": types.StringType,
@@ -114,11 +113,9 @@ var (
 		}},
 		"key_transport_algorithm": types.StringType,
 		"outbound_back_channel_auth": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"type": types.StringType,
 			"http_basic_credentials": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"username":           types.StringType,
-				"password":           types.StringType,
-				"encrypted_password": types.StringType,
+				"username": types.StringType,
+				"password": types.StringType,
 			}},
 			"digital_signature":     types.BoolType,
 			"ssl_auth_key_pair_ref": resourceLinkObjectType,
@@ -517,15 +514,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 
 	httpBasicCredentialsSchema := schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
-			"encrypted_password": schema.StringAttribute{
-				Optional:           true,
-				Computed:           true,
-				DeprecationMessage: "This field is deprecated and will be removed in a future release. Use the `password` field instead.",
-				Description:        "For GET requests, this field contains the encrypted password, if one exists.",
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
 			"password": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
@@ -950,12 +938,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:    true,
 								Description: "Incoming HTTP transmissions must use a secure channel.",
 							},
-							"type": schema.StringAttribute{
-								Computed:           true,
-								Default:            stringdefault.StaticString("INBOUND"),
-								Description:        "The back channel authentication type.",
-								DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-							},
 							"verification_issuer_dn": schema.StringAttribute{
 								Optional:    true,
 								Description: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
@@ -990,12 +972,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"http_basic_credentials": httpBasicCredentialsSchema,
 							"ssl_auth_key_pair_ref":  resourcelink.SingleNestedAttribute(),
-							"type": schema.StringAttribute{
-								Computed:           true,
-								Default:            stringdefault.StaticString("OUTBOUND"),
-								Description:        "The back channel authentication type.",
-								DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-							},
 							"validate_partner_cert": schema.BoolAttribute{
 								Optional:    true,
 								Computed:    true,
@@ -1865,13 +1841,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Description: "The SAML settings used to enable secure browser-based SSO to resources at your partner's site.",
 			},
-			"type": schema.StringAttribute{
-				Optional:           false,
-				Computed:           true,
-				Default:            stringdefault.StaticString("SP"),
-				DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-				Description:        "The type of this connection.",
-			},
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
@@ -2200,7 +2169,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) error {
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
-	addRequest.Type = plan.Type.ValueStringPointer()
+	addRequest.Type = utils.Pointer("SP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
 	addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
@@ -2232,6 +2201,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		if err != nil {
 			return err
 		}
+		//TODO settings types Inbound and Outbound
 	}
 
 	if internaltypes.IsDefined(plan.ContactInfo) {
@@ -2635,23 +2605,20 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	credentialsInboundBackChannelAuthCertsElementType := types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthCertsAttrTypes}
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes := map[string]attr.Type{
-		"password":           types.StringType,
-		"encrypted_password": types.StringType,
-		"username":           types.StringType,
+		"password": types.StringType,
+		"username": types.StringType,
 	}
 	credentialsInboundBackChannelAuthAttrTypes := map[string]attr.Type{
 		"certs":                   types.SetType{ElemType: credentialsInboundBackChannelAuthCertsElementType},
 		"digital_signature":       types.BoolType,
 		"http_basic_credentials":  types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes},
 		"require_ssl":             types.BoolType,
-		"type":                    types.StringType,
 		"verification_issuer_dn":  types.StringType,
 		"verification_subject_dn": types.StringType,
 	}
 	credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes := map[string]attr.Type{
-		"password":           types.StringType,
-		"encrypted_password": types.StringType,
-		"username":           types.StringType,
+		"password": types.StringType,
+		"username": types.StringType,
 	}
 	credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
@@ -2660,7 +2627,6 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"digital_signature":      types.BoolType,
 		"http_basic_credentials": types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes},
 		"ssl_auth_key_pair_ref":  types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrTypes},
-		"type":                   types.StringType,
 		"validate_partner_cert":  types.BoolType,
 	}
 	credentialsSecondaryDecryptionKeyPairRefAttrTypes := map[string]attr.Type{
@@ -2806,9 +2772,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, diags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Password),
-					"encrypted_password": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword),
-					"username":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
+					"password": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Password),
+					"username": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
 				respDiags.Append(diags...)
 			}
@@ -2817,7 +2782,6 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"digital_signature":       types.BoolPointerValue(response.Credentials.InboundBackChannelAuth.DigitalSignature),
 				"http_basic_credentials":  credentialsInboundBackChannelAuthHttpBasicCredentialsValue,
 				"require_ssl":             types.BoolPointerValue(response.Credentials.InboundBackChannelAuth.RequireSsl),
-				"type":                    types.StringValue(response.Credentials.InboundBackChannelAuth.Type),
 				"verification_issuer_dn":  types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
 				"verification_subject_dn": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
 			})
@@ -2832,9 +2796,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, diags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Password),
-					"encrypted_password": types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword),
-					"username":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
+					"password": types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Password),
+					"username": types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
 				respDiags.Append(diags...)
 			}
@@ -2851,7 +2814,6 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"digital_signature":      types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.DigitalSignature),
 				"http_basic_credentials": credentialsOutboundBackChannelAuthHttpBasicCredentialsValue,
 				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
-				"type":                   types.StringValue(response.Credentials.OutboundBackChannelAuth.Type),
 				"validate_partner_cert":  types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
 			})
 			respDiags.Append(diags...)

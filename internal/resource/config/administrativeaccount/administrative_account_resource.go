@@ -38,6 +38,19 @@ type administrativeAccountsResource struct {
 	apiClient      *client.APIClient
 }
 
+type administrativeAccountResourceModel struct {
+	Active       types.Bool   `tfsdk:"active"`
+	Auditor      types.Bool   `tfsdk:"auditor"`
+	Department   types.String `tfsdk:"department"`
+	Description  types.String `tfsdk:"description"`
+	EmailAddress types.String `tfsdk:"email_address"`
+	Id           types.String `tfsdk:"id"`
+	Password     types.String `tfsdk:"password"`
+	PhoneNumber  types.String `tfsdk:"phone_number"`
+	Roles        types.Set    `tfsdk:"roles"`
+	Username     types.String `tfsdk:"username"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *administrativeAccountsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -84,16 +97,6 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"encrypted_password": schema.StringAttribute{
-				Description:        "Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
-				DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-				Computed:           true,
-				Optional:           false,
-				Sensitive:          true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"phone_number": schema.StringAttribute{
 				Description: "Phone number associated with the account.",
 				Optional:    true,
@@ -126,7 +129,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema
 }
 
-func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountModel, isCreate bool) error {
+func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountResourceModel, isCreate bool) error {
 	// Empty strings are treated as equivalent to null
 	if internaltypes.IsDefined(plan.Active) {
 		addRequest.Active = plan.Active.ValueBoolPointer()
@@ -150,10 +153,6 @@ func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *cli
 
 	if isCreate {
 		addRequest.Password = plan.Password.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.EncryptedPassword) {
-		addRequest.EncryptedPassword = plan.EncryptedPassword.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.PhoneNumber) {
@@ -184,8 +183,25 @@ func (r *administrativeAccountsResource) Configure(_ context.Context, req resour
 
 }
 
+// Read a AdministrativeAccountResponse object into the model struct
+func readAdministrativeAccountResourceResponse(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountResourceModel, plan *administrativeAccountResourceModel) {
+	state.Id = types.StringValue(r.Username)
+	state.Username = types.StringValue(r.Username)
+	// state.Password
+	if plan != nil {
+		state.Password = types.StringValue(plan.Password.ValueString())
+	}
+	state.Active = types.BoolPointerValue(r.Active)
+	state.Description = types.StringPointerValue(r.Description)
+	state.Auditor = types.BoolPointerValue(r.Auditor)
+	state.PhoneNumber = types.StringPointerValue(r.PhoneNumber)
+	state.EmailAddress = types.StringPointerValue(r.EmailAddress)
+	state.Department = types.StringPointerValue(r.Department)
+	state.Roles = internaltypes.GetStringSet(r.Roles)
+}
+
 func (r *administrativeAccountsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan administrativeAccountModel
+	var plan administrativeAccountResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -209,15 +225,15 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	}
 
 	// Read the response into the state
-	var state administrativeAccountModel
+	var state administrativeAccountResourceModel
 
-	readAdministrativeAccountResponse(ctx, administrativeAccountResponse, &state, &plan)
+	readAdministrativeAccountResourceResponse(ctx, administrativeAccountResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state administrativeAccountModel
+	var state administrativeAccountResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -236,7 +252,7 @@ func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.
 	}
 
 	// Read the response into the state
-	readAdministrativeAccountResponse(ctx, apiReadAdministrativeAccount, &state, &state)
+	readAdministrativeAccountResourceResponse(ctx, apiReadAdministrativeAccount, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -245,7 +261,7 @@ func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *administrativeAccountsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan administrativeAccountModel
+	var plan administrativeAccountResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -253,7 +269,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state administrativeAccountModel
+	var state administrativeAccountResourceModel
 	req.State.Get(ctx, &state)
 	updateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.UpdateAccount(config.AuthContext(ctx, r.providerConfig), plan.Username.ValueString())
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
@@ -271,7 +287,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	}
 
 	// Read the response
-	readAdministrativeAccountResponse(ctx, updateAdministrativeAccountResponse, &state, &plan)
+	readAdministrativeAccountResourceResponse(ctx, updateAdministrativeAccountResponse, &state, &plan)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -281,7 +297,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *administrativeAccountsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state administrativeAccountModel
+	var state administrativeAccountResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
