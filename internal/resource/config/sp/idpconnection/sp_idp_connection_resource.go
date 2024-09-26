@@ -3515,6 +3515,28 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		}
 	}
 
+	// Set default for additional_allowed_entities_configuration for OIDC connections
+	if plan.AdditionalAllowedEntitiesConfiguration.IsUnknown() {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) &&
+			plan.IdpBrowserSso.Attributes()["protocol"].(types.String).ValueString() == "OIDC" {
+			additionalAllowedEntities, diags := types.SetValue(entityIdAttrTypes, nil)
+			resp.Diagnostics.Append(diags...)
+			plan.AdditionalAllowedEntitiesConfiguration, diags = types.ObjectValue(additionalAllowedEntitiesConfigurationAttrTypes, map[string]attr.Value{
+				"additional_allowed_entities": additionalAllowedEntities,
+				"allow_additional_entities":   types.BoolValue(false),
+				"allow_all_entities":          types.BoolValue(false),
+			})
+			resp.Diagnostics.Append(diags...)
+		} else {
+			plan.AdditionalAllowedEntitiesConfiguration = types.ObjectNull(additionalAllowedEntitiesConfigurationAttrTypes)
+		}
+		planModified = true
+	}
+
+	if planModified {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
+	}
+
 	// If the entity_id has been changed, then mark corresponding attributes as unknown
 	var state *spIdpConnectionResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)

@@ -2064,7 +2064,46 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	var respDiags diag.Diagnostics
 
-	if plan == nil || state == nil {
+	if plan == nil {
+		return
+	}
+
+	planSpBrowserSsoAttributes := plan.SpBrowserSso.Attributes()
+	if internaltypes.IsDefined(plan.SpBrowserSso) {
+		// Get the protocol
+		spBrowserSsoPlanModified := false
+		protocol := planSpBrowserSsoAttributes["protocol"].(types.String).ValueString()
+		switch protocol {
+		case "SAML20":
+			if planSpBrowserSsoAttributes["sign_response_as_required"].IsUnknown() {
+				planSpBrowserSsoAttributes["sign_response_as_required"] = types.BoolValue(true)
+				spBrowserSsoPlanModified = true
+			}
+		case "WSFED":
+			if planSpBrowserSsoAttributes["ws_trust_version"].IsUnknown() {
+				planSpBrowserSsoAttributes["ws_trust_version"] = types.StringValue("WSTRUST12")
+				spBrowserSsoPlanModified = true
+			}
+		}
+		if planSpBrowserSsoAttributes["sign_response_as_required"].IsUnknown() {
+			planSpBrowserSsoAttributes["sign_response_as_required"] = types.BoolNull()
+			spBrowserSsoPlanModified = true
+		}
+		if planSpBrowserSsoAttributes["ws_trust_version"].IsUnknown() {
+			planSpBrowserSsoAttributes["ws_trust_version"] = types.StringNull()
+			spBrowserSsoPlanModified = true
+		}
+
+		if spBrowserSsoPlanModified {
+			// Update the plan for sp_browser_sso
+			plan.SpBrowserSso, respDiags = types.ObjectValue(plan.SpBrowserSso.AttributeTypes(ctx), planSpBrowserSsoAttributes)
+			resp.Diagnostics.Append(respDiags...)
+			// Update plan
+			resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+		}
+	}
+
+	if state == nil {
 		return
 	}
 
@@ -2109,9 +2148,8 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 
 	if internaltypes.IsDefined(plan.SpBrowserSso) && internaltypes.IsDefined(state.SpBrowserSso) && !plan.SpBrowserSso.Equal(state.SpBrowserSso) {
-		planSpBrowserSsoAttributes := plan.SpBrowserSso.Attributes()
 		stateSpBrowserSsoAttributes := state.SpBrowserSso.Attributes()
-		planModified := false
+		spBrowserSsoPlanModified := false
 		if internaltypes.IsDefined(planSpBrowserSsoAttributes["adapter_mappings"]) && internaltypes.IsDefined(stateSpBrowserSsoAttributes["adapter_mappings"]) {
 			planAdapterMappings := planSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
 			stateAdapterMappings := stateSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
@@ -2137,21 +2175,20 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 									resp.Diagnostics.Append(respDiags...)
 									planElemObj, respDiags = types.ObjectValue(planElemObj.AttributeTypes(ctx), planElemAttrs)
 									resp.Diagnostics.Append(respDiags...)
-									planModified = true
+									spBrowserSsoPlanModified = true
 									finalPlanAdapterMappingsElems = append(finalPlanAdapterMappingsElems, planElemObj)
 								}
 							}
 						}
 					}
 				}
-				if planModified {
+				if spBrowserSsoPlanModified {
 					planSpBrowserSsoAttributes["adapter_mappings"], respDiags = types.SetValue(planAdapterMappings.ElementType(ctx), finalPlanAdapterMappingsElems)
 					resp.Diagnostics.Append(respDiags...)
 				}
 			}
 		}
-
-		if planModified {
+		if spBrowserSsoPlanModified {
 			// Update the plan for sp_browser_sso
 			plan.SpBrowserSso, respDiags = types.ObjectValue(plan.SpBrowserSso.AttributeTypes(ctx), planSpBrowserSsoAttributes)
 			resp.Diagnostics.Append(respDiags...)

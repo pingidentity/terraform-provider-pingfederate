@@ -96,6 +96,10 @@ func testAccPasswordCredentialValidators(resourceName string, resourceModel simp
 			extended_attributes = []
 		}
 		`
+	} else {
+		optionalHcl = `
+		attribute_contract = {}
+		`
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validator" "%[1]s" {
