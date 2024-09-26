@@ -108,6 +108,20 @@ The unnecessary `id` computed attribute has previously been deprecated and has n
 
 The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
 
+## Resource: pingfederate_idp_adapter
+
+### `attribute_contract` has been made a required field
+
+The `attribute_contract` field was previously optional but has now been made a required field in the resource.  This is due to a Terraform limitation when calculating drift and may return back to being optional in the future.  Where an attribute contract is not needed, `attribute_contract` may be defined according to the following example:
+
+```terraform
+resource "pingfederate_idp_adapter" "my_idp_adapter" {
+  # ... other configuration parameters
+
+  attribute_contract = {}
+}
+```
+
 ## Resource: pingfederate_idp_default_urls
 
 This resource has been previously deprecated and has now been removed. Use the `pingfederate_default_urls` resource going forward.
@@ -221,6 +235,20 @@ The unnecessary `id` computed attribute has previously been deprecated and has n
 ### `session_settings` optional parameter removed
 
 The `session_settings` optional parameter has been removed.  Use the `pingfederate_session_settings` resource going forward.
+
+## Resource: pingfederate_password_credential_validator
+
+### `attribute_contract` has been made a required field
+
+The `attribute_contract` field was previously optional but has now been made a required field in the resource.  This is due to a Terraform limitation when calculating drift and may return back to being optional in the future.  Where an attribute contract is not needed, `attribute_contract` may be defined according to the following example:
+
+```terraform
+resource "pingfederate_password_credential_validator" "my_pcv" {
+  # ... other configuration parameters
+
+  attribute_contract = {}
+}
+```
 
 ## Resource: pingfederate_ping_one_connection
 
