@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -43,7 +41,6 @@ func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.
 			},
 		},
 	}
-	id.ToDataSourceSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -81,7 +78,7 @@ func (r *virtualHostNamesDataSource) Read(ctx context.Context, req datasource.Re
 	}
 
 	// Read the response into the state
-	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state, pointers.String("virtual_host_names_id"))
+	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

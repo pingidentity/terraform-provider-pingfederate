@@ -20,7 +20,6 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -54,11 +53,10 @@ var (
 )
 
 type authenticationPoliciesModel struct {
-	Id                           types.String `tfsdk:"id"`
-	AuthnSelectionTrees          types.List   `tfsdk:"authn_selection_trees"`
-	DefaultAuthenticationSources types.List   `tfsdk:"default_authentication_sources"`
-	FailIfNoSelection            types.Bool   `tfsdk:"fail_if_no_selection"`
-	TrackedHttpParameters        types.Set    `tfsdk:"tracked_http_parameters"`
+	AuthnSelectionTrees          types.List `tfsdk:"authn_selection_trees"`
+	DefaultAuthenticationSources types.List `tfsdk:"default_authentication_sources"`
+	FailIfNoSelection            types.Bool `tfsdk:"fail_if_no_selection"`
+	TrackedHttpParameters        types.Set  `tfsdk:"tracked_http_parameters"`
 }
 
 // authenticationPoliciesResource is a helper function to simplify the provider implementation.
@@ -155,7 +153,6 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -175,14 +172,8 @@ func (r *authenticationPoliciesResource) Configure(_ context.Context, req resour
 
 }
 
-func readAuthenticationPoliciesResponse(ctx context.Context, r *client.AuthenticationPolicy, state *authenticationPoliciesModel, existingId *string) diag.Diagnostics {
+func readAuthenticationPoliciesResponse(ctx context.Context, r *client.AuthenticationPolicy, state *authenticationPoliciesModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
-
 	state.FailIfNoSelection = types.BoolPointerValue(r.FailIfNoSelection)
 
 	defaultAuthenticationSourcesAttrValues := []attr.Value{}
@@ -320,7 +311,7 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state, nil)
+	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -347,12 +338,7 @@ func (r *authenticationPoliciesResource) Read(ctx context.Context, req resource.
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state, id)
+	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -385,12 +371,7 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	}
 
 	// Read the response
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readResponseDiags := readAuthenticationPoliciesResponse(ctx, updateResponse, &state, id)
+	readResponseDiags := readAuthenticationPoliciesResponse(ctx, updateResponse, &state)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
@@ -410,5 +391,6 @@ func (r *authenticationPoliciesResource) Delete(ctx context.Context, req resourc
 }
 
 func (r *authenticationPoliciesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

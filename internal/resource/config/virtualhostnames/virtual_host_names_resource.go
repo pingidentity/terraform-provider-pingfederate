@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -49,8 +48,6 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -112,7 +109,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 
 	// Read the response into the state
 	var state virtualHostNamesModel
-	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state, nil)
+	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -138,12 +135,7 @@ func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state, id)
+	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -176,13 +168,8 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	// Read the response
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	var state virtualHostNamesModel
-	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state, id)
+	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -205,5 +192,6 @@ func (r *virtualHostNamesResource) Delete(ctx context.Context, req resource.Dele
 
 func (r *virtualHostNamesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

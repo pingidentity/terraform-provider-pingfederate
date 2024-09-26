@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -250,8 +249,6 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -383,7 +380,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 
 	// Read the response into the state
 	var state redirectValidationModel
-	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state, nil)
+	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -409,12 +406,7 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, id)
+	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -449,12 +441,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 
 	// Read the response
 	var state redirectValidationModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, id)
+	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

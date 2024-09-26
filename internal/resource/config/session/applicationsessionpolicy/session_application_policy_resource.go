@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -53,7 +52,6 @@ func (r *sessionApplicationPolicyResource) Schema(ctx context.Context, req resou
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -117,7 +115,7 @@ func (r *sessionApplicationPolicyResource) Create(ctx context.Context, req resou
 
 	// Read the response into the state
 	var state sessionApplicationPolicyModel
-	readSessionApplicationPolicyResponse(ctx, sessionApplicationPolicyResponse, &state, nil)
+	readSessionApplicationPolicyResponse(ctx, sessionApplicationPolicyResponse, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -143,12 +141,7 @@ func (r *sessionApplicationPolicyResource) Read(ctx context.Context, req resourc
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readSessionApplicationPolicyResponse(ctx, apiReadSessionApplicationPolicy, &state, id)
+	readSessionApplicationPolicyResponse(ctx, apiReadSessionApplicationPolicy, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -182,12 +175,7 @@ func (r *sessionApplicationPolicyResource) Update(ctx context.Context, req resou
 
 	// Get the current state to see how any attributes are changing
 	var state sessionApplicationPolicyModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readSessionApplicationPolicyResponse(ctx, updateSessionApplicationPolicyResponse, &state, id)
+	readSessionApplicationPolicyResponse(ctx, updateSessionApplicationPolicyResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -210,5 +198,6 @@ func (r *sessionApplicationPolicyResource) Delete(ctx context.Context, req resou
 
 func (r *sessionApplicationPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

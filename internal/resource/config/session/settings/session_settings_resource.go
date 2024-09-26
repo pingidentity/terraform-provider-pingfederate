@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -58,7 +57,6 @@ func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.Schem
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -118,7 +116,7 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 
 	// Read the response into the state
 	var state sessionSettingsModel
-	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, nil)
+	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -144,12 +142,7 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state, id)
+	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -183,12 +176,7 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 
 	// Get the current state to see how any attributes are changing
 	var state sessionSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readSessionSettingsResponse(ctx, updateSessionSettingsResponse, &state, id)
+	readSessionSettingsResponse(ctx, updateSessionSettingsResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -201,5 +189,6 @@ func (r *sessionSettingsResource) Delete(ctx context.Context, req resource.Delet
 
 func (r *sessionSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

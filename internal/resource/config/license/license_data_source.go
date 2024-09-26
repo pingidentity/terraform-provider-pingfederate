@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -32,7 +31,6 @@ type licenseDataSource struct {
 }
 
 type licenseDataSourceModel struct {
-	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	MaxConnections      types.Int64  `tfsdk:"max_connections"`
 	UsedConnections     types.Int64  `tfsdk:"used_connections"`
@@ -212,8 +210,6 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -236,7 +232,6 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("license_id")
 	state.Name = types.StringPointerValue(r.Name)
 	state.MaxConnections = types.Int64PointerValue(r.MaxConnections)
 	state.UsedConnections = types.Int64PointerValue(r.UsedConnections)

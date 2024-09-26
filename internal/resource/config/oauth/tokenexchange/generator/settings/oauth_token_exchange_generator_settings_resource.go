@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -35,7 +34,6 @@ type oauthTokenExchangeGeneratorSettingsResource struct {
 }
 
 type oauthTokenExchangeGeneratorSettingsResourceModel struct {
-	Id                       types.String `tfsdk:"id"`
 	DefaultGeneratorGroupRef types.Object `tfsdk:"default_generator_group_ref"`
 }
 
@@ -53,7 +51,6 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Schema(ctx context.Context
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -73,14 +70,9 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Configure(_ context.Contex
 
 }
 
-func readOauthTokenExchangeGeneratorSettingsResponse(ctx context.Context, r *client.TokenExchangeGeneratorSettings, state *oauthTokenExchangeGeneratorSettingsResourceModel, existingId *string) diag.Diagnostics {
+func readOauthTokenExchangeGeneratorSettingsResponse(ctx context.Context, r *client.TokenExchangeGeneratorSettings, state *oauthTokenExchangeGeneratorSettingsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
 	state.DefaultGeneratorGroupRef, diags = resourcelink.ToState(ctx, r.DefaultGeneratorGroupRef)
 
 	// make sure all object type building appends diags
@@ -115,7 +107,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Create(ctx context.Context
 	// Read the response into the state
 	var state oauthTokenExchangeGeneratorSettingsResourceModel
 
-	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, oauthTokenExchangeGeneratorSettingsResponse, &state, nil)
+	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, oauthTokenExchangeGeneratorSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -142,13 +134,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Read(ctx context.Context, 
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	// Read the response into the state
-	readOauthTokenExchangeGeneratorSettingsResponse(ctx, apiReadOauthTokenExchangeGeneratorSettings, &state, id)
+	readOauthTokenExchangeGeneratorSettingsResponse(ctx, apiReadOauthTokenExchangeGeneratorSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -182,13 +168,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 
 	// Read the response
 	var state oauthTokenExchangeGeneratorSettingsResourceModel
-	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, updateOauthTokenExchangeGeneratorSettingsResponse, &state, id)
+	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, updateOauthTokenExchangeGeneratorSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -204,5 +184,6 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Delete(ctx context.Context
 
 func (r *oauthTokenExchangeGeneratorSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

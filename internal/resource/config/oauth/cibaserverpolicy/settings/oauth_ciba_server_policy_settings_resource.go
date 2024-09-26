@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -35,7 +34,6 @@ type oauthCibaServerPolicySettingsResource struct {
 }
 
 type oauthCibaServerPolicySettingsResourceModel struct {
-	Id                      types.String `tfsdk:"id"`
 	DefaultRequestPolicyRef types.Object `tfsdk:"default_request_policy_ref"`
 }
 
@@ -52,8 +50,6 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 			),
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -73,13 +69,8 @@ func (r *oauthCibaServerPolicySettingsResource) Configure(_ context.Context, req
 
 }
 
-func readOauthCibaServerPolicySettingsResponse(ctx context.Context, r *client.CibaServerPolicySettings, state *oauthCibaServerPolicySettingsResourceModel, existingId *string) diag.Diagnostics {
+func readOauthCibaServerPolicySettingsResponse(ctx context.Context, r *client.CibaServerPolicySettings, state *oauthCibaServerPolicySettingsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
 	state.DefaultRequestPolicyRef, diags = resourcelink.ToState(ctx, r.DefaultRequestPolicyRef)
 
 	// make sure all object type building appends diags
@@ -114,7 +105,7 @@ func (r *oauthCibaServerPolicySettingsResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state oauthCibaServerPolicySettingsResourceModel
 
-	diags = readOauthCibaServerPolicySettingsResponse(ctx, oauthCibaServerPolicySettingsResponse, &state, nil)
+	diags = readOauthCibaServerPolicySettingsResponse(ctx, oauthCibaServerPolicySettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -141,12 +132,7 @@ func (r *oauthCibaServerPolicySettingsResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readOauthCibaServerPolicySettingsResponse(ctx, apiReadOauthCibaServerPolicySettings, &state, id)
+	readOauthCibaServerPolicySettingsResponse(ctx, apiReadOauthCibaServerPolicySettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -180,12 +166,7 @@ func (r *oauthCibaServerPolicySettingsResource) Update(ctx context.Context, req 
 
 	// Read the response
 	var state oauthCibaServerPolicySettingsResourceModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthCibaServerPolicySettingsResponse(ctx, updateOauthCibaServerPolicySettingsResponse, &state, id)
+	diags = readOauthCibaServerPolicySettingsResponse(ctx, updateOauthCibaServerPolicySettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -201,5 +182,6 @@ func (r *oauthCibaServerPolicySettingsResource) Delete(ctx context.Context, req 
 
 func (r *oauthCibaServerPolicySettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

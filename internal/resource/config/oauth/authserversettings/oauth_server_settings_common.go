@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
@@ -32,7 +31,6 @@ var (
 )
 
 type oauthServerSettingsModel struct {
-	Id                                                 types.String `tfsdk:"id"`
 	DefaultScopeDescription                            types.String `tfsdk:"default_scope_description"`
 	Scopes                                             types.Set    `tfsdk:"scopes"`
 	ScopeGroups                                        types.Set    `tfsdk:"scope_groups"`
@@ -87,13 +85,8 @@ type oauthServerSettingsModel struct {
 	ConsentLifetimeDays                                types.Int64  `tfsdk:"consent_lifetime_days"`
 }
 
-func readOauthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthServerSettingsModel, existingId *string) diag.Diagnostics {
+func readOauthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthServerSettingsModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
 	state.DefaultScopeDescription = types.StringPointerValue(r.DefaultScopeDescription)
 	state.Scopes, respDiags = scopeentry.ToState(ctx, r.Scopes)
 	diags.Append(respDiags...)

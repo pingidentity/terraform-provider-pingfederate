@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -48,8 +47,7 @@ type extendedPropertiesResource struct {
 }
 
 type extendedPropertiesResourceModel struct {
-	Id    types.String `tfsdk:"id"`
-	Items types.Set    `tfsdk:"items"`
+	Items types.Set `tfsdk:"items"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -84,8 +82,6 @@ func (r *extendedPropertiesResource) Schema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -121,13 +117,7 @@ func (r *extendedPropertiesResource) Configure(_ context.Context, req resource.C
 
 }
 
-func readExtendedPropertiesResponse(ctx context.Context, r *client.ExtendedProperties, state *extendedPropertiesResourceModel, existingId *string) diag.Diagnostics {
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
-
+func readExtendedPropertiesResponse(ctx context.Context, r *client.ExtendedProperties, state *extendedPropertiesResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	state.Items, diags = types.SetValueFrom(ctx, extendedPropertyAttrType, r.GetItems())
@@ -163,7 +153,7 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 	// Read the response into the state
 	var state extendedPropertiesResourceModel
 
-	diags = readExtendedPropertiesResponse(ctx, extendedPropertiesResponse, &state, nil)
+	diags = readExtendedPropertiesResponse(ctx, extendedPropertiesResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -189,13 +179,8 @@ func (r *extendedPropertiesResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// Read the response into the state
-	diags = readExtendedPropertiesResponse(ctx, apiReadExtendedProperties, &state, id)
+	diags = readExtendedPropertiesResponse(ctx, apiReadExtendedProperties, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -228,14 +213,9 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// Read the response
 	var state extendedPropertiesResourceModel
-	diags = readExtendedPropertiesResponse(ctx, updateExtendedPropertiesResponse, &state, id)
+	diags = readExtendedPropertiesResponse(ctx, updateExtendedPropertiesResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -249,5 +229,6 @@ func (r *extendedPropertiesResource) Delete(ctx context.Context, req resource.De
 
 func (r *extendedPropertiesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

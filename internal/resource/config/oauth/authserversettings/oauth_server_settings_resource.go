@@ -25,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -566,8 +565,6 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -907,7 +904,7 @@ func (r *oauthServerSettingsResource) Create(ctx context.Context, req resource.C
 
 	// Read the response into the state
 	var state oauthServerSettingsModel
-	diags = readOauthServerSettingsResponse(ctx, oauthServerSettingsResponse, &state, nil)
+	diags = readOauthServerSettingsResponse(ctx, oauthServerSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -934,12 +931,7 @@ func (r *oauthServerSettingsResource) Read(ctx context.Context, req resource.Rea
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state, id)
+	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -975,12 +967,7 @@ func (r *oauthServerSettingsResource) Update(ctx context.Context, req resource.U
 
 	// Read the response
 	var state oauthServerSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthServerSettingsResponse(ctx, updateOauthServerSettingsResponse, &state, id)
+	diags = readOauthServerSettingsResponse(ctx, updateOauthServerSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -994,5 +981,6 @@ func (r *oauthServerSettingsResource) Delete(ctx context.Context, req resource.D
 
 func (r *oauthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
