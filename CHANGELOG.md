@@ -1,5 +1,6 @@
-# v0.17.0 (Unreleased)
+# v1.0.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_oauth_ciba_server_policy_request_policy` ([#285]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/285)))
 * **New Resource:** `pingfederate_sp_idp_connection` ([#342]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/342)))
 * **New Resource:** `pingfederate_keypairs_ssl_client_key` ([#337]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/337)))
 * **New Resource:** `pingfederate_identity_store_provisioner` ([#303]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/303)))
