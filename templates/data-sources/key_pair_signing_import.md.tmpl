@@ -1,0 +1,18 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+!> The pingfederate_key_pair_signing_import data source is deprecated and will be removed in a future release. Use the pingfederate_keypairs_signing_key data source instead.
+
+## Example Usage
+
+{{ tffile (printf "%s%s%s" "examples/data-sources/" .Name "/data-source.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}

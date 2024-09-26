@@ -1,4 +1,4 @@
-package certificateca
+package certificatesca
 
 import (
 	"context"
@@ -26,7 +26,7 @@ var (
 	_ resource.Resource              = &certificateCAResource{}
 	_ resource.ResourceWithConfigure = &certificateCAResource{}
 
-	customId = "ca_id"
+	caResourceCustomId = "ca_id"
 )
 
 // CertificateCAResource is a helper function to simplify the provider implementation.
@@ -66,7 +66,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 		Description: "Manages a trusted Certificate CA.",
 		Attributes: map[string]schema.Attribute{
 			"ca_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -79,7 +79,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 				},
 			},
 			"crypto_provider": schema.StringAttribute{
-				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"LOCAL", "HSM"}...),
@@ -93,7 +93,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 				Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
 			},
 			"file_data": schema.StringAttribute{
-				Description: "The certificate data in PEM format, base64-encoded. New line characters should be omitted or encoded in this value.",
+				Description: "The certificate data in PEM format, base64-encoded. New line characters should be omitted or encoded in this value. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -225,7 +225,7 @@ func (r *certificateCAResource) Create(ctx context.Context, req resource.CreateR
 	apiCreateCertificate = apiCreateCertificate.Body(*createCertificate)
 	certificateResponse, httpResp, err := r.apiClient.CertificatesCaAPI.ImportTrustedCAExecute(apiCreateCertificate)
 	if err != nil {
-		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp, &customId)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp, &caResourceCustomId)
 		return
 	}
 
@@ -251,7 +251,7 @@ func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadReque
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificate CA", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp, &customId)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp, &caResourceCustomId)
 		}
 		return
 	}
@@ -281,7 +281,7 @@ func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteR
 
 	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp, &customId)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp, &caResourceCustomId)
 	}
 }
 

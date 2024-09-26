@@ -251,12 +251,9 @@ Required:
 <a id="nestedatt--notifications--thread_pool_exhaustion_notification_settings"></a>
 ### Nested Schema for `notifications.thread_pool_exhaustion_notification_settings`
 
-Required:
-
-- `email_address` (String) Email address where notifications are sent.
-
 Optional:
 
+- `email_address` (String) Email address where notifications are sent.
 - `notification_mode` (String) The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `LOGGING_ONLY`.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--thread_pool_exhaustion_notification_settings--notification_publisher_ref))
 - `thread_dump_enabled` (Boolean) Generate a thread dump when approaching thread pool exhaustion.

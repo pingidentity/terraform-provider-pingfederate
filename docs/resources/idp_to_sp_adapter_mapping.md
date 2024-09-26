@@ -108,8 +108,8 @@ resource "pingfederate_idp_to_sp_adapter_mapping" "idpToSpAdapterMapping" {
 ### Required
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. Map value `subject` is required. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
-- `source_id` (String) The id of the IdP Adapter.
-- `target_id` (String) The id of the SP Adapter.
+- `source_id` (String) The id of the IdP Adapter. This field is immutable and will trigger a replacement plan if changed.
+- `target_id` (String) The id of the SP Adapter. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 

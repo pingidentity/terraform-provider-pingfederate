@@ -50,7 +50,7 @@ func (r *authenticationApiApplicationResource) Schema(ctx context.Context, req r
 		Description: "Manages an Authentication Api Application",
 		Attributes: map[string]schema.Attribute{
 			"application_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the Authentication API application. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the Authentication API application. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{

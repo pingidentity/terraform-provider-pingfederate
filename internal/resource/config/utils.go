@@ -132,13 +132,26 @@ func ReportHttpErrorCustomId(ctx context.Context, diagnostics *diag.Diagnostics,
 			var pfError pingFederateErrorResponse
 			internalError = json.Unmarshal(body, &pfError)
 			if internalError == nil {
+				if len(pfError.ValidationErrors) == 0 {
+					var errorDetail strings.Builder
+					errorDetail.WriteString("Error summary: ")
+					errorDetail.WriteString(errorSummary)
+					errorDetail.WriteString("\nMessage: ")
+					errorDetail.WriteString(pfError.Message)
+					errorDetail.WriteString("\nHTTP status: ")
+					errorDetail.WriteString(httpResp.Status)
+					errorDetail.WriteString("\nResult ID: ")
+					errorDetail.WriteString(pfError.ResultId)
+					diagnostics.AddError(providererror.PingFederateAPIError, errorDetail.String())
+				}
 				for _, validationError := range pfError.ValidationErrors {
 					var errorDetail strings.Builder
 					errorDetail.WriteString("Error summary: ")
 					errorDetail.WriteString(errorSummary)
 					errorDetail.WriteString("\nMessage: ")
 					errorDetail.WriteString(validationError.Message)
-					errorDetail.WriteString("\nHTTP status: " + httpResp.Status)
+					errorDetail.WriteString("\nHTTP status: ")
+					errorDetail.WriteString(httpResp.Status)
 					if validationError.FieldPath != "" {
 						errorDetail.WriteString("\nPingFederate field path: ")
 						errorDetail.WriteString(validationError.FieldPath)

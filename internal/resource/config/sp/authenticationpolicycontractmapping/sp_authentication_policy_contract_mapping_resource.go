@@ -61,7 +61,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Schema(ctx context.Conte
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 			"source_id": schema.StringAttribute{
-				Description: "The id of the Authentication Policy Contract.",
+				Description: "The id of the Authentication Policy Contract. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -78,7 +78,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Schema(ctx context.Conte
 				},
 			},
 			"target_id": schema.StringAttribute{
-				Description: "The id of the SP Adapter.",
+				Description: "The id of the SP Adapter. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

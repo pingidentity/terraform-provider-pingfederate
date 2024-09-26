@@ -53,7 +53,7 @@ func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaReq
 			"issuer_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the virtual issuer. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This property cannot be changed after initial creation.",
+				Description: "The persistent, unique ID for the virtual issuer. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),

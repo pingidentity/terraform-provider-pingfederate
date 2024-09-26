@@ -126,7 +126,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 		Description: "Resource to create and manage an OAuth access token manager plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"manager_id": schema.StringAttribute{
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be alphanumeric, contain no spaces, and be less than 33 characters.",
+				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be alphanumeric, contain no spaces, and be less than 33 characters. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -145,11 +145,11 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				},
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
+				Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
+						Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
 						Required:    true,
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
@@ -393,7 +393,7 @@ func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req re
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {

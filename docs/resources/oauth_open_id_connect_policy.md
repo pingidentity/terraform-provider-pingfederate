@@ -217,7 +217,7 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 - `attribute_contract` (Attributes) The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint. (see [below for nested schema](#nestedatt--attribute_contract))
 - `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `name` (String) The name used for display in UI screens.
-- `policy_id` (String) The policy ID used internally.
+- `policy_id` (String) The policy ID used internally. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 
@@ -265,7 +265,7 @@ Optional:
 
 - `include_in_id_token` (Boolean) Attribute is included in the ID Token.
 - `include_in_user_info` (Boolean) Attribute is included in the User Info.
-- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array. Defaults to `false`.
 
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>

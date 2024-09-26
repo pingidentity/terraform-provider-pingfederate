@@ -161,7 +161,7 @@ func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req reso
 		plan.ForwardedHostHeaderIndex = types.StringNull()
 	}
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 
 }
 

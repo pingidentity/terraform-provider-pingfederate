@@ -57,7 +57,7 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 		},
 		"plugin_descriptor_ref": schema.SingleNestedAttribute{
 			Required:    true,
-			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
+			Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed.",
 			Attributes: map[string]schema.Attribute{
 				"id": schema.StringAttribute{
 					Required:    true,

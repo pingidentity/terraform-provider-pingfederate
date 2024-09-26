@@ -35,7 +35,7 @@ resource "pingfederate_kerberos_realm" "kerberos_realm" {
 - `kerberos_username` (String) The Domain/Realm username. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.
 - `key_distribution_centers` (Set of String) The Domain Controller/Key Distribution Center Host Action Names. Only applicable when 'connection_type' is `DIRECT`.
 - `ldap_gateway_data_store_ref` (Attributes) The LDAP gateway used by PingFederate to communicate with the Active Directory. Required when `connection_type` is `LDAP_GATEWAY`. (see [below for nested schema](#nestedatt--ldap_gateway_data_store_ref))
-- `realm_id` (String) The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`.
+- `realm_id` (String) The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.
 - `retain_previous_keys_on_password_change` (Boolean) Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is `false`. Only applicable when 'connection_type' is `DIRECT`.
 - `suppress_domain_name_concatenation` (Boolean) Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated `krb5.conf` file. Only applicable when 'connection_type' is `DIRECT`.
 

@@ -62,7 +62,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 			"source_id": schema.StringAttribute{
-				Description: "The id of the Token Exchange Processor policy.",
+				Description: "The id of the Token Exchange Processor policy. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -72,7 +72,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 				},
 			},
 			"target_id": schema.StringAttribute{
-				Description: "The id of the Token Generator",
+				Description: "The id of the Token Generator. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

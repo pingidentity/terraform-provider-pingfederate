@@ -68,7 +68,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 		Description: "Manages an OAuth Access Token Mapping",
 		Attributes: map[string]schema.Attribute{
 			"context": schema.SingleNestedAttribute{
-				Description: "The context of the OAuth Access Token Mapping. This property cannot be changed after the mapping is created.",
+				Description: "The context of the OAuth Access Token Mapping. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -83,17 +83,13 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 					},
 					"context_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated Access Token Mapping Context instance.",
-						Computed:    true,
 						Optional:    true,
 						Attributes:  resourcelink.ToSchema(),
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
 			"access_token_manager_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the access token manager this mapping is associated with. This property cannot be changed after the mapping is created.",
+				Description: "Reference to the access token manager this mapping is associated with. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -152,11 +148,21 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	state.Id = types.StringPointerValue(r.Id)
 	state.MappingId = types.StringPointerValue(r.Id)
 
-	contextRefObjValue, objDiags := resourcelink.ToState(ctx, &r.Context.ContextRef)
-	diags.Append(objDiags...)
+	contextRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	var contextRefValue types.Object
+	if r.Context.ContextRef.Id == "" {
+		contextRefValue = types.ObjectNull(contextRefAttrTypes)
+	} else {
+		contextRefValue, objDiags = types.ObjectValue(contextRefAttrTypes, map[string]attr.Value{
+			"id": types.StringValue(r.Context.ContextRef.Id),
+		})
+		diags.Append(objDiags...)
+	}
 	contextAttrValue := map[string]attr.Value{
 		"type":        types.StringValue(r.Context.Type),
-		"context_ref": contextRefObjValue,
+		"context_ref": contextRefValue,
 	}
 	state.Context, objDiags = types.ObjectValue(accessTokenMappingContext, contextAttrValue)
 	diags.Append(objDiags...)

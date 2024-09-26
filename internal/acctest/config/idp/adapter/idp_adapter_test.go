@@ -269,7 +269,7 @@ func attributeContractHclBlock(attributeContract client.IdpAdapterAttributeContr
 
 func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping) string {
 	if attributeMapping == nil {
-		return ""
+		return "attribute_mapping = {}\n"
 	}
 	var builder strings.Builder
 	builder.WriteString("attribute_mapping = {\n")

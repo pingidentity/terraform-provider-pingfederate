@@ -33,7 +33,7 @@ resource "pingfederate_keypairs_signing_key_rotation_settings" "keyRotationSetti
 
 - `activation_buffer_days` (Number) Buffer days before key pair expiration for activation of the new key pair. Must be less than or equal to `creation_buffer_days`.
 - `creation_buffer_days` (Number) Buffer days before key pair expiration for creation of a new key pair. Must be greater than or equal to `activation_buffer_days`.
-- `key_pair_id` (String) ID of the key pair to retrieve its rotation settings.
+- `key_pair_id` (String) ID of the key pair to retrieve its rotation settings. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 

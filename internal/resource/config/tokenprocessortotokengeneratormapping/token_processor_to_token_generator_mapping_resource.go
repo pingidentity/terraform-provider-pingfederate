@@ -62,7 +62,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 				},
 			},
 			"target_id": schema.StringAttribute{
-				Description: "The id of the Token Generator.",
+				Description: "The id of the Token Generator. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -72,7 +72,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 				},
 			},
 			"source_id": schema.StringAttribute{
-				Description: "The id of the Token Processor.",
+				Description: "The id of the Token Processor. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

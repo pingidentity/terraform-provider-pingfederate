@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -160,8 +161,10 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 									Optional:    true,
 								},
 								"multi_valued": schema.BoolAttribute{
-									Description: "Indicates whether attribute value is always returned as an array.",
+									Description: "Indicates whether attribute value is always returned as an array. Defaults to `false`.",
 									Optional:    true,
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -193,7 +196,6 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 			"id_token_typ_header_value": schema.StringAttribute{
 				Description: "ID Token Type (typ) Header Value. Supported in PF version `11.3` or later.",
 				Optional:    true,
-				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -201,7 +203,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
+	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 
@@ -213,8 +215,11 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
-	var plan oauthOpenIdConnectPolicyModel
+	var plan *oauthOpenIdConnectPolicyModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	planModified := false
 	// If include_x5t_in_id_token or id_token_typ_header_value is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
@@ -240,7 +245,7 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 	}
 
 	if planModified {
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
@@ -452,7 +457,9 @@ func (r *openidConnectPolicyResource) Delete(ctx context.Context, req resource.D
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	// Delete API call logic
+	httpResp, err := api.ExponentialBackOffRetryDelete([]int{422},
+		r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp, &customId)
 	}

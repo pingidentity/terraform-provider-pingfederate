@@ -1,6 +1,14 @@
-# v0.17.0 (Unreleased)
+# v1.0.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_oauth_ciba_server_policy_request_policy` ([#285]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/285)))
+* **New Resource:** `pingfederate_sp_idp_connection` ([#342]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/342)))
+* **New Resource:** `pingfederate_keypairs_ssl_client_key` ([#337]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/337)))
+* **New Resource:** `pingfederate_identity_store_provisioner` ([#303]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/303)))
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr_response` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr_export` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+* **New Resource:** `pingfederate_keypairs_ssl_server_csr_response` ([#336]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/336)))
+* **New Resource:** `pingfederate_keypairs_ssl_server_csr_export` ([#336]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/336)))
+* **New Resource:** `pingfederate_certificates_group` ([#278]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/278)))
 * **New Resource:** `pingfederate_idp_token_processor` ([#277]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/277)))
 * **New Resource:** `pingfederate_protocol_metadata_signing_settings` ([#290](https://github.com/pingidentity/terraform-provider-pingfederate/pull/290))
 * **New Resource:** `pingfederate_service_authentication` ([#295](https://github.com/pingidentity/terraform-provider-pingfederate/pull/295))
@@ -13,10 +21,15 @@
 * **New Resource:** `pingfederate_keypairs_signing_key_rotation_settings` ([#334]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/334)))
 
 ### Data sources
+* **New Data Source:** `pingfederate_keypairs_ssl_client_key` ([#337]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/337)))
+* **New Data Source:** `pingfederate_keypairs_ssl_client_certificate` ([#338]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/338)))
+* **New Data Source:** `pingfederate_keypairs_ssl_server_certificate` ([#338]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/338)))
+* **New Data Source:** `pingfederate_certificates_ca_export` ([#296](https://github.com/pingidentity/terraform-provider-pingfederate/pull/296))
 * **New Data Source:** `pingfederate_keypairs_signing_certificate` ([#305](https://github.com/pingidentity/terraform-provider-pingfederate/pull/305))
 
 ### Enhancements
 * Added new `configuration.sensitive_fields` and `configuration.tables.#.rows.#.sensitive_fields` attributes to plugin configuration across the provider. Use these fields when specifying sensitive fields in plugin configuration, such as secrets and passwords. Values specified in these sets will be marked as Sensitive to Terraform and hidden in the CLI and UI output. ([#383]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/383)))
+* Added support for PingFederate patches through `11.2.10`, `11.3.8`, `12.0.5`, `12.1.3`. ([#406]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/406)))
 
 # v0.16.0 September 12, 2024
 ### Resources

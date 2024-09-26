@@ -13,11 +13,13 @@ const (
 	InvalidResourceConfiguration    = "Invalid resource configuration"
 	InvalidProductVersionAttribute  = "Invalid product_version for attribute"
 	InvalidProductVersionResource   = "Invalid product_version for resource"
+	InvalidResourceIdForImport      = "Invalid resource id for import"
 	InternalProviderError           = "Internal provider error"
 	PingFederateValidationError     = "PingFederate validation error"
 	PingFederateAPIError            = "PingFederate API error"
 	ConfigurationWarning            = "Plugin configuration warning"
 	ConfigurationCannotBeResetError = "Configuration cannot be returned to original state"
+	ConflictingValueReturnedError   = "PingFederate returned conflicting value"
 )
 
 func WarnConfigurationCannotBeReset(resourceName string, diags *diag.Diagnostics) {

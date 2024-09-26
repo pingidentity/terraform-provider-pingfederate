@@ -83,7 +83,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Required:    true,
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
+				Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed.",
 				Attributes:  resourcelink.ToSchema(),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -124,7 +124,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 	}
 	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema, "selector_id", true, true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
+		"The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 
@@ -178,7 +178,7 @@ func (r *authenticationSelectorResource) ModifyPlan(ctx context.Context, req res
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readAuthenticationSelectorsResponse(ctx context.Context, r *client.AuthenticationSelector, state *authenticationSelectorResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {

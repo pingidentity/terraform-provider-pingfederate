@@ -23,7 +23,7 @@ resource "pingfederate_license" "license" {
 
 ### Required
 
-- `file_data` (String)
+- `file_data` (String) The license file data. This field is immutable and will trigger a replacement plan if changed.
 
 ### Read-Only
 

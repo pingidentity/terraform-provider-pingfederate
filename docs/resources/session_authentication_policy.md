@@ -99,7 +99,7 @@ resource "pingfederate_session_authentication_policy" "sessionAuthenticationPoli
 - `idle_timeout_mins` (Number) The idle timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to `-1`, the idle timeout will be set to the maximum timeout. If a value is provided for this property, a value must also be provided for `max_timeout_mins`.
 - `max_timeout_mins` (Number) The maximum timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to `-1`, sessions do not expire. If a value is provided for this property, a value must also be provided for `idle_timeout_mins`.
 - `persistent` (Boolean) Determines whether sessions for the authentication source are persistent. This value overrides the `persistent_sessions` value from the global authentication session policy. This field is ignored if `enable_sessions` is `false`.
-- `policy_id` (String) The persistent, unique ID for the session policy. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
+- `policy_id` (String) The persistent, unique ID for the session policy. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 - `timeout_display_unit` (String) The display unit for session timeout periods in the PingFederate administrative console. When the display unit is `HOURS` or `DAYS`, the timeout values in minutes must correspond to a whole number value for the specified unit. Options are `MINUTES`, `HOURS`, `DAYS`. If empty, the value will default to `MINUTES`.
 - `user_device_type` (String) Determines the type of user device that the authentication session can be created on. Options are `PRIVATE`, `SHARED`, `ANY`. If empty, the value will default to `PRIVATE`.
 
@@ -112,7 +112,7 @@ resource "pingfederate_session_authentication_policy" "sessionAuthenticationPoli
 
 Required:
 
-- `source_ref` (Attributes) A reference to the authentication source. (see [below for nested schema](#nestedatt--authentication_source--source_ref))
+- `source_ref` (Attributes) A reference to the authentication source. This field is immutable and will trigger a replacement plan if changed. (see [below for nested schema](#nestedatt--authentication_source--source_ref))
 - `type` (String) The type of this authentication source. Options are `IDP_ADAPTER`, `IDP_CONNECTION`.
 
 <a id="nestedatt--authentication_source--source_ref"></a>
@@ -120,7 +120,7 @@ Required:
 
 Required:
 
-- `id` (String) The ID of the resource.
+- `id` (String) The ID of the resource. This field is immutable and will trigger a replacement plan if changed.
 
 ## Import
 

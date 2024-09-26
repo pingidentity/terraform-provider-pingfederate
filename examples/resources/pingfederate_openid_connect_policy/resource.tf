@@ -1,157 +1,66 @@
-resource "pingfederate_oauth_access_token_manager" "jwt_example" {
-  manager_id = "jsonWebTokenOatm"
-  name       = "jsonWebTokenExample"
+resource "pingfederate_oauth_access_token_manager" "internally_managed_example" {
+  manager_id = "internallyManagedReferenceOATM"
+  name       = "Internally Managed Token Manager"
+
   plugin_descriptor_ref = {
-    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
+
   configuration = {
-    tables = [
-      {
-        name = "Symmetric Keys"
-        rows = [
-          {
-            fields = [
-              {
-                name  = "Key ID"
-                value = "keyidentifier"
-              },
-              {
-                name  = "Encoding"
-                value = "b64u"
-              }
-            ]
-            sensitive_fields = [
-              {
-                name  = "Key"
-                value = var.access_token_manager_key
-              }
-            ]
-            default_row = false
-          }
-        ]
-      },
-      {
-        name = "Certificates"
-        rows = []
-      }
-    ]
     fields = [
       {
+        name  = "Token Length"
+        value = "56"
+      },
+      {
         name  = "Token Lifetime"
-        value = "120"
+        value = "240"
       },
       {
-        name  = "Use Centralized Signing Key"
-        value = "false"
+        name  = "Lifetime Extension Policy"
+        value = "NONE"
       },
       {
-        name  = "JWS Algorithm"
+        name  = "Maximum Token Lifetime"
         value = ""
       },
       {
-        name  = "Active Symmetric Key ID"
-        value = "keyidentifier"
+        name  = "Lifetime Extension Threshold Percentage"
+        value = "30"
       },
       {
-        name  = "Active Signing Certificate Key ID"
-        value = ""
+        name  = "Mode for Synchronous RPC"
+        value = "3"
       },
       {
-        name  = "JWE Algorithm"
-        value = "dir"
-      },
-      {
-        name  = "JWE Content Encryption Algorithm"
-        value = "A192CBC-HS384"
-      },
-      {
-        name  = "Active Symmetric Encryption Key ID"
-        value = "keyidentifier"
-      },
-      {
-        name  = "Asymmetric Encryption Key"
-        value = ""
-      },
-      {
-        name  = "Asymmetric Encryption JWKS URL"
-        value = ""
-      },
-      {
-        name  = "Enable Token Revocation"
-        value = "false"
-      },
-      {
-        name  = "Include Key ID Header Parameter"
-        value = "true"
-      },
-      {
-        name  = "Default JWKS URL Cache Duration"
-        value = "720"
-      },
-      {
-        name  = "Include JWE Key ID Header Parameter"
-        value = "true"
-      },
-      {
-        name  = "Client ID Claim Name"
-        value = "client_id"
-      },
-      {
-        name  = "Scope Claim Name"
-        value = "scope"
-      },
-      {
-        name  = "Space Delimit Scope Values"
-        value = "true"
-      },
-      {
-        name  = "Authorization Details Claim Name"
-        value = "authorization_details"
-      },
-      {
-        name  = "Issuer Claim Value"
-        value = ""
-      },
-      {
-        name  = "Audience Claim Value"
-        value = ""
-      },
-      {
-        name  = "JWT ID Claim Length"
-        value = "22"
-      },
-      {
-        name  = "Access Grant GUID Claim Name"
-        value = ""
-      },
-      {
-        name  = "JWKS Endpoint Path"
-        value = ""
-      },
-      {
-        name  = "JWKS Endpoint Cache Duration"
-        value = "720"
+        name  = "RPC Timeout"
+        value = "500"
       },
       {
         name  = "Expand Scope Groups"
         value = "false"
-      },
-      {
-        name  = "Type Header Value"
-        value = ""
       }
     ]
   }
   attribute_contract = {
     extended_attributes = [
       {
-        name         = "contract"
+        name         = "givenName"
         multi_valued = false
+      },
+      {
+        name         = "familyName"
+        multi_valued = false
+      },
+      {
+        name         = "email"
+        multi_valued = false
+      },
+      {
+        name         = "groups"
+        multi_valued = true
       }
     ]
-  }
-  selection_settings = {
-    resource_uris = []
   }
   access_control_settings = {
     restrict_clients = false
@@ -164,29 +73,80 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
   }
 }
 
+
 resource "pingfederate_openid_connect_policy" "OIDCPolicy" {
-  policy_id = "oidcPolicy"
-  name      = "oidcPolicy"
+  policy_id = "exampleOIDCPolicy"
+  name      = "Example OpenID Connect Policy"
+
   access_token_manager_ref = {
-    id = pingfederate_oauth_access_token_manager.jwt_example.manager_id
+    id = pingfederate_oauth_access_token_manager.internally_managed_example.id
   }
+
   attribute_contract = {
-    extended_attributes = []
+    extended_attributes = [
+      { name = "customData1" },
+      { name = "customData2", multi_valued = true },
+      { name = "email" },
+      { name = "firstName" },
+      { name = "lastName" },
+    ]
   }
+
   attribute_mapping = {
     attribute_contract_fulfillment = {
+      "customData1" = {
+        source = {
+          type = "NO_MAPPING"
+        }
+      },
+      "customData2" = {
+        source = {
+          type = "NO_MAPPING"
+        }
+      },
+      "email" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "email"
+      },
+      "firstName" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "first_name"
+      },
+      "lastName" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "last_name"
+      },
       "sub" = {
         source = {
           type = "TOKEN"
         }
-        value = "Username"
-      }
+        value = "directory_id"
+      },
     }
   }
+
+  scope_attribute_mappings = {
+    "email" = {
+      values = ["email"]
+    },
+    "my_custom_user_data" = {
+      values = ["customData1", "customData2"]
+    },
+    "profile" = {
+      values = ["firstName", "lastName"]
+    },
+  }
+
   return_id_token_on_refresh_grant = false
-  include_sri_in_id_token          = false
+  include_sri_in_id_token          = true
   include_s_hash_in_id_token       = false
-  include_user_info_in_id_token    = false
+  include_user_info_in_id_token    = true
   reissue_id_token_in_hybrid_flow  = false
   id_token_lifetime                = 5
 }

@@ -115,7 +115,7 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 			},
 			"source_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The id of the IdP Adapter.",
+				Description: "The id of the IdP Adapter. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -125,7 +125,7 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 			},
 			"target_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The id of the SP Adapter.",
+				Description: "The id of the SP Adapter. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},

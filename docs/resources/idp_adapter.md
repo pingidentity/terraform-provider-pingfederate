@@ -286,7 +286,8 @@ resource "pingfederate_idp_adapter" "idpAdapterExample" {
 
 ### Required
 
-- `adapter_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
+- `adapter_id` (String) The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.
+- `attribute_mapping` (Attributes) The attributes mapping from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
@@ -294,187 +295,12 @@ resource "pingfederate_idp_adapter" "idpAdapterExample" {
 ### Optional
 
 - `attribute_contract` (Attributes) The list of attributes that the IdP adapter provides. (see [below for nested schema](#nestedatt--attribute_contract))
-- `attribute_mapping` (Attributes) The attributes mapping from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `authn_ctx_class_ref` (String) The fixed value that indicates how the user was authenticated.
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-<a id="nestedatt--configuration"></a>
-### Nested Schema for `configuration`
-
-Optional:
-
-- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
-- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--configuration--sensitive_fields))
-- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
-
-Read-Only:
-
-- `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
-- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
-
-<a id="nestedatt--configuration--fields"></a>
-### Nested Schema for `configuration.fields`
-
-Required:
-
-- `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field.
-
-
-<a id="nestedatt--configuration--sensitive_fields"></a>
-### Nested Schema for `configuration.sensitive_fields`
-
-Required:
-
-- `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The sensitive value for the configuration field.
-
-
-<a id="nestedatt--configuration--tables"></a>
-### Nested Schema for `configuration.tables`
-
-Required:
-
-- `name` (String) The name of the table.
-
-Optional:
-
-- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
-
-<a id="nestedatt--configuration--tables--rows"></a>
-### Nested Schema for `configuration.tables.rows`
-
-Optional:
-
-- `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
-- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--sensitive_fields))
-
-<a id="nestedatt--configuration--tables--rows--fields"></a>
-### Nested Schema for `configuration.tables.rows.fields`
-
-Required:
-
-- `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field.
-
-
-<a id="nestedatt--configuration--tables--rows--sensitive_fields"></a>
-### Nested Schema for `configuration.tables.rows.sensitive_fields`
-
-Required:
-
-- `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The sensitive value for the configuration field.
-
-
-
-
-<a id="nestedatt--configuration--fields_all"></a>
-### Nested Schema for `configuration.fields_all`
-
-Required:
-
-- `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field.
-
-
-<a id="nestedatt--configuration--tables_all"></a>
-### Nested Schema for `configuration.tables_all`
-
-Required:
-
-- `name` (String) The name of the table.
-
-Optional:
-
-- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables_all--rows))
-
-<a id="nestedatt--configuration--tables_all--rows"></a>
-### Nested Schema for `configuration.tables_all.rows`
-
-Optional:
-
-- `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables_all--rows--fields))
-
-<a id="nestedatt--configuration--tables_all--rows--fields"></a>
-### Nested Schema for `configuration.tables_all.rows.fields`
-
-Required:
-
-- `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field.
-
-
-
-
-
-<a id="nestedatt--plugin_descriptor_ref"></a>
-### Nested Schema for `plugin_descriptor_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-
-<a id="nestedatt--attribute_contract"></a>
-### Nested Schema for `attribute_contract`
-
-Required:
-
-- `core_attributes` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
-
-Optional:
-
-- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-- `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to `false`.
-- `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
-
-Read-Only:
-
-- `core_attributes_all` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes_all))
-
-<a id="nestedatt--attribute_contract--core_attributes"></a>
-### Nested Schema for `attribute_contract.core_attributes`
-
-Required:
-
-- `name` (String) The name of this attribute.
-
-Optional:
-
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
-- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
-
-
-<a id="nestedatt--attribute_contract--extended_attributes"></a>
-### Nested Schema for `attribute_contract.extended_attributes`
-
-Required:
-
-- `name` (String) The name of this attribute.
-
-Optional:
-
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
-- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
-
-
-<a id="nestedatt--attribute_contract--core_attributes_all"></a>
-### Nested Schema for `attribute_contract.core_attributes_all`
-
-Read-Only:
-
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
-- `name` (String) The name of this attribute.
-- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
-
-
 
 <a id="nestedatt--attribute_mapping"></a>
 ### Nested Schema for `attribute_mapping`
@@ -737,6 +563,180 @@ Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
+
+
+
+<a id="nestedatt--configuration"></a>
+### Nested Schema for `configuration`
+
+Optional:
+
+- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--configuration--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
+
+Read-Only:
+
+- `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
+
+<a id="nestedatt--configuration--fields"></a>
+### Nested Schema for `configuration.fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--sensitive_fields"></a>
+### Nested Schema for `configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
+
+
+<a id="nestedatt--configuration--tables"></a>
+### Nested Schema for `configuration.tables`
+
+Required:
+
+- `name` (String) The name of the table.
+
+Optional:
+
+- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
+
+<a id="nestedatt--configuration--tables--rows"></a>
+### Nested Schema for `configuration.tables.rows`
+
+Optional:
+
+- `default_row` (Boolean) Whether this row is the default.
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--sensitive_fields))
+
+<a id="nestedatt--configuration--tables--rows--fields"></a>
+### Nested Schema for `configuration.tables.rows.fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String, Sensitive) The sensitive value for the configuration field.
+
+
+
+
+<a id="nestedatt--configuration--fields_all"></a>
+### Nested Schema for `configuration.fields_all`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--configuration--tables_all"></a>
+### Nested Schema for `configuration.tables_all`
+
+Required:
+
+- `name` (String) The name of the table.
+
+Optional:
+
+- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables_all--rows))
+
+<a id="nestedatt--configuration--tables_all--rows"></a>
+### Nested Schema for `configuration.tables_all.rows`
+
+Optional:
+
+- `default_row` (Boolean) Whether this row is the default.
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables_all--rows--fields))
+
+<a id="nestedatt--configuration--tables_all--rows--fields"></a>
+### Nested Schema for `configuration.tables_all.rows.fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field.
+
+
+
+
+
+<a id="nestedatt--plugin_descriptor_ref"></a>
+### Nested Schema for `plugin_descriptor_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+
+<a id="nestedatt--attribute_contract"></a>
+### Nested Schema for `attribute_contract`
+
+Required:
+
+- `core_attributes` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+
+Optional:
+
+- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to `false`.
+- `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
+
+Read-Only:
+
+- `core_attributes_all` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes_all))
+
+<a id="nestedatt--attribute_contract--core_attributes"></a>
+### Nested Schema for `attribute_contract.core_attributes`
+
+Required:
+
+- `name` (String) The name of this attribute.
+
+Optional:
+
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
+- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
+
+
+<a id="nestedatt--attribute_contract--extended_attributes"></a>
+### Nested Schema for `attribute_contract.extended_attributes`
+
+Required:
+
+- `name` (String) The name of this attribute.
+
+Optional:
+
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
+- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
+
+
+<a id="nestedatt--attribute_contract--core_attributes_all"></a>
+### Nested Schema for `attribute_contract.core_attributes_all`
+
+Read-Only:
+
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
+- `name` (String) The name of this attribute.
+- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
 
 
 
