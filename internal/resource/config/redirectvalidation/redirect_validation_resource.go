@@ -465,5 +465,6 @@ func (r *redirectValidationResource) Delete(ctx context.Context, req resource.De
 
 func (r *redirectValidationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

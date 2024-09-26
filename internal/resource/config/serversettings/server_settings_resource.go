@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -675,7 +674,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 
 	// Read the response into the state
 	var state serverSettingsModel
-	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan, nil)
+	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -703,12 +702,7 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, id)
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -743,12 +737,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 
 	// Read the response
 	var state serverSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan, id)
+	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -788,5 +777,6 @@ func (r *serverSettingsResource) Delete(ctx context.Context, req resource.Delete
 
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
+	//TODO
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

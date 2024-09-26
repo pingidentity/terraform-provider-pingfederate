@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
@@ -168,16 +167,14 @@ var (
 )
 
 type serverSettingsModel struct {
-	Id                types.String `tfsdk:"id"`
 	ContactInfo       types.Object `tfsdk:"contact_info"`
 	Notifications     types.Object `tfsdk:"notifications"`
 	RolesAndProtocols types.Object `tfsdk:"roles_and_protocols"`
 	FederationInfo    types.Object `tfsdk:"federation_info"`
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsModel, plan *serverSettingsModel, existingId *string) diag.Diagnostics {
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsModel, plan *serverSettingsModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
 	diags.Append(respDiags...)
 	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)

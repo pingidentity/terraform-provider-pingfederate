@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -502,7 +500,6 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -537,7 +534,7 @@ func (r *serverSettingsDataSource) Read(ctx context.Context, req datasource.Read
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
 	}
 
-	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, pointers.String("server_settings_id"))
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
