@@ -9,11 +9,25 @@ description: |-
 
 Resource to manage the client settings.
 
-~> This resource depends on the `pingfederate_extended_properties` resource. Use `depends_on` when configuring both resources to ensure changes to this resource occur after any changes to `pingfederate_extended_properties`. Failure to do this may result in unexpected plans.
+~> This resource depends on the `pingfederate_extended_properties` resource. Use `depends_on` when configuring both resources to ensure changes to this resource occur after any changes to `pingfederate_extended_properties`. Failure to do this may result in unexpected plans and extended properties remaining unapplied.
 
 ## Example Usage
 
 ```terraform
+resource "pingfederate_extended_properties" "example" {
+  items = [
+    {
+      name        = "Attribute 1"
+      description = "My single valued extended attribute"
+    },
+    {
+      name         = "Attribute 2"
+      description  = "My multi-valued extended attribute"
+      multi_valued = true
+    },
+  ]
+}
+
 resource "pingfederate_oauth_client_registration_policy" "registrationPolicy" {
   policy_id = "myRegistrationPolicy"
   name      = "My client registration policy"
@@ -57,6 +71,7 @@ resource "pingfederate_oauth_client_registration_policy" "registrationPolicy" {
 }
 
 resource "pingfederate_oauth_client_settings" "oauthClientSettings" {
+  depends_on = [pingfederate_extended_properties.example]
   dynamic_client_registration = {
     initial_access_token_scope = "urn:pingidentity:register-client"
     restrict_common_scopes     = false

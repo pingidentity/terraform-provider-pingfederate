@@ -1,3 +1,17 @@
+resource "pingfederate_extended_properties" "example" {
+  items = [
+    {
+      name        = "Attribute 1"
+      description = "My single valued extended attribute"
+    },
+    {
+      name         = "Attribute 2"
+      description  = "My multi-valued extended attribute"
+      multi_valued = true
+    },
+  ]
+}
+
 resource "pingfederate_oauth_client_registration_policy" "registrationPolicy" {
   policy_id = "myRegistrationPolicy"
   name      = "My client registration policy"
@@ -41,6 +55,7 @@ resource "pingfederate_oauth_client_registration_policy" "registrationPolicy" {
 }
 
 resource "pingfederate_oauth_client_settings" "oauthClientSettings" {
+  depends_on = [pingfederate_extended_properties.example]
   dynamic_client_registration = {
     initial_access_token_scope = "urn:pingidentity:register-client"
     restrict_common_scopes     = false
