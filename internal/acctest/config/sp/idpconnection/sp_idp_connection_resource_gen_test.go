@@ -325,7 +325,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     }]
 
     inbound_back_channel_auth = {
-      type = "INBOUND"
       http_basic_credentials = {
         username = "admin"
         password = "2FederateM0re!"
@@ -351,7 +350,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     key_transport_algorithm    = "RSA_OAEP"
 
     outbound_back_channel_auth = {
-      type = "OUTBOUND"
       http_basic_credentials = {
         username = "Administrator"
         password = "2FederateM0re!"
