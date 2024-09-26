@@ -26,6 +26,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -33,6 +34,8 @@ var (
 	_ resource.Resource                = &oauthCibaServerPolicyRequestPolicyResource{}
 	_ resource.ResourceWithConfigure   = &oauthCibaServerPolicyRequestPolicyResource{}
 	_ resource.ResourceWithImportState = &oauthCibaServerPolicyRequestPolicyResource{}
+
+	customId = "policy_id"
 )
 
 func OauthCibaServerPolicyRequestPolicyResource() resource.Resource {
@@ -263,15 +266,15 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 		identityHintContractFulfillmentAttrs := model.IdentityHintContractFulfillment.Attributes()
 		identityHintContractFulfillmentValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(identityHintContractFulfillmentAttrs["attribute_contract_fulfillment"].(types.Map))
 		if err != nil {
-			respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_contract_fulfillment: "+err.Error())
 		}
 		identityHintContractFulfillmentValue.AttributeSources, err = attributesources.ClientStruct(identityHintContractFulfillmentAttrs["attribute_sources"].(types.Set))
 		if err != nil {
-			respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())
 		}
 		identityHintContractFulfillmentValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(identityHintContractFulfillmentAttrs["issuance_criteria"].(types.Object))
 		if err != nil {
-			respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for issuance_criteria: "+err.Error())
 		}
 		result.IdentityHintContractFulfillment = identityHintContractFulfillmentValue
 	}
@@ -282,15 +285,15 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 		identityHintMappingAttrs := model.IdentityHintMapping.Attributes()
 		identityHintMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(identityHintMappingAttrs["attribute_contract_fulfillment"].(types.Map))
 		if err != nil {
-			respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_contract_fulfillment: "+err.Error())
 		}
 		identityHintMappingValue.AttributeSources, err = attributesources.ClientStruct(identityHintMappingAttrs["attribute_sources"].(types.Set))
 		if err != nil {
-			respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())
 		}
 		identityHintMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(identityHintMappingAttrs["issuance_criteria"].(types.Object))
 		if err != nil {
-			respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for issuance_criteria: "+err.Error())
 		}
 		result.IdentityHintMapping = identityHintMappingValue
 	}
@@ -494,7 +497,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Create(ctx context.Context,
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.exponentialBackOffRetryCreate(ctx, apiCreateRequest, data.PolicyId.ValueString())
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the oauthCibaServerPolicyRequestPolicy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the oauthCibaServerPolicyRequestPolicy", err, httpResp, &customId)
 		return
 	}
 
@@ -522,7 +525,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Read(ctx context.Context, r
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Ciba Server Policy Request Policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthCibaServerPolicyRequestPolicy", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the oauthCibaServerPolicyRequestPolicy", err, httpResp, &customId)
 		}
 		return
 	}
@@ -551,7 +554,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Update(ctx context.Context,
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicyExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the oauthCibaServerPolicyRequestPolicy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the oauthCibaServerPolicyRequestPolicy", err, httpResp, &customId)
 		return
 	}
 
@@ -576,7 +579,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Delete(ctx context.Context,
 	httpResp, err := api.ExponentialBackOffRetryDelete([]int{403, 422},
 		r.apiClient.OauthCibaServerPolicyAPI.DeleteCibaServerPolicy(config.AuthContext(ctx, r.providerConfig), data.PolicyId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthCibaServerPolicyRequestPolicy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthCibaServerPolicyRequestPolicy", err, httpResp, &customId)
 	}
 }
 

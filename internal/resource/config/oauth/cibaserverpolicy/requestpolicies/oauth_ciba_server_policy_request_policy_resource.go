@@ -90,6 +90,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) ModifyPlan(ctx context.Cont
 			"source": subjectSource,
 			"value":  types.StringValue("IDENTITY_HINT_SUBJECT"),
 		})
+		resp.Diagnostics.Append(diags...)
 		fulfillmentValues := map[string]attr.Value{
 			"IDENTITY_HINT_SUBJECT": idHintSubjectValue,
 		}
@@ -118,8 +119,9 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) ModifyPlan(ctx context.Cont
 			"attribute_sources":              attributeSourcesDefault,
 			"issuance_criteria":              issuanceCriteriaDefault,
 		})
+		resp.Diagnostics.Append(diags...)
 
-		resp.Plan.Set(ctx, plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
