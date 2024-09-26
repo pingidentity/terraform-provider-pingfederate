@@ -31,6 +31,8 @@ resource "pingfederate_password_credential_validator" "pingOnePasswordCredential
     id = "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV"
   }
 
+  attribute_contract = {}
+
   configuration = {
     tables = [
       {

@@ -6,6 +6,8 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
 
+  attribute_contract = {}
+
   configuration = {
     fields = [
       {
