@@ -8,6 +8,12 @@ description: |-
 
 The PingFederate provider manages the configuration of a PingFederate server via the management API.
 
+## PingFederate Server Support
+
+This PingFederate Terraform provider version supports versions `11.2` through `12.1` of PingFederate.
+
+Further information on PingFederate server version support and released version compatibility can be found in the [PingFederate Server Support](guides/server-support) guide.
+
 ## Getting Started
 
 ### Configure PingFederate for Terraform access
