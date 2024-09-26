@@ -18,7 +18,6 @@ resource "pingfederate_sp_idp_connection" "spIdpConnection" {
       }
     ]
     inbound_back_channel_auth = {
-      type = "INBOUND"
       http_basic_credentials = {
         username = "admin"
         password = var.sp_idp_connection_inbound_back_channel_auth_password

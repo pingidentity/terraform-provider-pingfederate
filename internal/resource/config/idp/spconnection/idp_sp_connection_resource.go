@@ -536,6 +536,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	}
 
 	schema := schema.Schema{
+		Version:     1,
 		Description: "Manages an IdP SP Connection",
 		Attributes: map[string]schema.Attribute{
 			"connection_id": schema.StringAttribute{
@@ -948,7 +949,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 				},
 				Optional:    true,
-				Description: "Extended Properties allows to store additional information for IdP/SP Connections. The names of these extended properties should be defined in /extendedProperties.",
+				Description: "Extended Properties allows to store additional information for IdP/SP Connections. The names of these extended properties should be defined in the `pingfederate_extended_properties` resource.",
 			},
 			"id": schema.StringAttribute{
 				Optional:    true,

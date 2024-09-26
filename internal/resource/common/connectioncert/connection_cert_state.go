@@ -16,7 +16,7 @@ func ObjType() types.ObjectType {
 	}
 }
 
-func CertAttrType() map[string]attr.Type {
+func CertViewAttrType() map[string]attr.Type {
 	return map[string]attr.Type{
 		"crypto_provider":           types.StringType,
 		"expires":                   types.StringType,
@@ -47,7 +47,7 @@ func X509FileAttrType() map[string]attr.Type {
 
 func AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"cert_view": types.ObjectType{AttrTypes: CertAttrType()},
+		"cert_view": types.ObjectType{AttrTypes: CertViewAttrType()},
 		"x509_file": types.ObjectType{
 			AttrTypes: X509FileAttrType(),
 		},
@@ -61,7 +61,7 @@ func AttrTypes() map[string]attr.Type {
 func ToState(ctx context.Context, planFileData types.String, clientConnectionCert client.ConnectionCert, diags *diag.Diagnostics, isImportRead bool) (types.Object, diag.Diagnostics) {
 	var certViewValue types.Object
 	if clientConnectionCert.CertView == nil {
-		certViewValue = types.ObjectNull(CertAttrType())
+		certViewValue = types.ObjectNull(CertViewAttrType())
 	} else {
 		certViewSubjectAlternativeNamesValue, objDiags := types.SetValueFrom(ctx, types.StringType, clientConnectionCert.CertView.SubjectAlternativeNames)
 		diags.Append(objDiags...)
@@ -94,7 +94,7 @@ func ToState(ctx context.Context, planFileData types.String, clientConnectionCer
 			"version":                   types.Int64PointerValue(clientConnectionCert.CertView.Version),
 		}
 
-		certViewValue, objDiags = types.ObjectValue(CertAttrType(), certViewAttrValues)
+		certViewValue, objDiags = types.ObjectValue(CertViewAttrType(), certViewAttrValues)
 		diags.Append(objDiags...)
 	}
 
