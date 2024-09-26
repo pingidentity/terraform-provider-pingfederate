@@ -10,13 +10,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 )
 
-func ObjType() types.ObjectType {
-	return types.ObjectType{
-		AttrTypes: AttrTypes(),
-	}
-}
-
-func CertViewAttrType() map[string]attr.Type {
+func certViewAttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"crypto_provider":           types.StringType,
 		"expires":                   types.StringType,
@@ -36,20 +30,17 @@ func CertViewAttrType() map[string]attr.Type {
 	}
 }
 
-func X509FileAttrType() map[string]attr.Type {
+func AttrTypesDataSource() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":                  types.StringType,
-		"file_data":           types.StringType,
-		"formatted_file_data": types.StringType,
-		"crypto_provider":     types.StringType,
-	}
-}
-
-func AttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"cert_view": types.ObjectType{AttrTypes: CertViewAttrType()},
+		"cert_view": types.ObjectType{
+			AttrTypes: certViewAttrTypes(),
+		},
 		"x509_file": types.ObjectType{
-			AttrTypes: X509FileAttrType(),
+			AttrTypes: map[string]attr.Type{
+				"id":              types.StringType,
+				"file_data":       types.StringType,
+				"crypto_provider": types.StringType,
+			},
 		},
 		"active_verification_cert":    types.BoolType,
 		"primary_verification_cert":   types.BoolType,
@@ -58,10 +49,10 @@ func AttrTypes() map[string]attr.Type {
 	}
 }
 
-func ToState(ctx context.Context, planFileData types.String, clientConnectionCert client.ConnectionCert, diags *diag.Diagnostics, isImportRead bool) (types.Object, diag.Diagnostics) {
+func ToStateDataSource(ctx context.Context, clientConnectionCert client.ConnectionCert, diags *diag.Diagnostics) (types.Object, diag.Diagnostics) {
 	var certViewValue types.Object
 	if clientConnectionCert.CertView == nil {
-		certViewValue = types.ObjectNull(CertViewAttrType())
+		certViewValue = types.ObjectNull(certViewAttrTypes())
 	} else {
 		certViewSubjectAlternativeNamesValue, objDiags := types.SetValueFrom(ctx, types.StringType, clientConnectionCert.CertView.SubjectAlternativeNames)
 		diags.Append(objDiags...)
@@ -94,28 +85,23 @@ func ToState(ctx context.Context, planFileData types.String, clientConnectionCer
 			"version":                   types.Int64PointerValue(clientConnectionCert.CertView.Version),
 		}
 
-		certViewValue, objDiags = types.ObjectValue(CertViewAttrType(), certViewAttrValues)
+		certViewValue, objDiags = types.ObjectValue(certViewAttrTypes(), certViewAttrValues)
 		diags.Append(objDiags...)
 	}
 
-	// Get the current file_data value
-	fileDataAttr := types.StringNull()
-	if isImportRead {
-		fileDataAttr = types.StringValue(clientConnectionCert.X509File.FileData)
-	} else if planFileData.ValueString() != "" {
-		fileDataAttr = planFileData
-	}
-
 	var objDiags diag.Diagnostics
-	certsX509fileValue, objDiags := types.ObjectValue(X509FileAttrType(), map[string]attr.Value{
-		"crypto_provider":     types.StringPointerValue(clientConnectionCert.X509File.CryptoProvider),
-		"formatted_file_data": types.StringValue(clientConnectionCert.X509File.FileData),
-		"file_data":           fileDataAttr,
-		"id":                  types.StringPointerValue(clientConnectionCert.X509File.Id),
+	certsX509fileValue, objDiags := types.ObjectValue(map[string]attr.Type{
+		"crypto_provider": types.StringType,
+		"file_data":       types.StringType,
+		"id":              types.StringType,
+	}, map[string]attr.Value{
+		"crypto_provider": types.StringPointerValue(clientConnectionCert.X509File.CryptoProvider),
+		"file_data":       types.StringValue(clientConnectionCert.X509File.FileData),
+		"id":              types.StringPointerValue(clientConnectionCert.X509File.Id),
 	})
 	diags.Append(objDiags...)
 
-	return types.ObjectValue(AttrTypes(), map[string]attr.Value{
+	return types.ObjectValue(AttrTypesDataSource(), map[string]attr.Value{
 		"active_verification_cert":    types.BoolPointerValue(clientConnectionCert.ActiveVerificationCert),
 		"cert_view":                   certViewValue,
 		"encryption_cert":             types.BoolPointerValue(clientConnectionCert.EncryptionCert),

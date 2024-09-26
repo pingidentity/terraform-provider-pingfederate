@@ -1,33 +1,22 @@
 package connectioncert
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/planmodifiers"
 )
 
-func ToSchema(description string) schema.ListNestedAttribute {
+func ToSchemaDataSource(description string) schema.ListNestedAttribute {
 	return schema.ListNestedAttribute{
 		Description:         description,
 		MarkdownDescription: description,
-		Optional:            true,
+		Computed:            true,
 		NestedObject: schema.NestedAttributeObject{
-			Attributes: toSchemaAttributes(),
-		},
-		Validators: []validator.List{
-			listvalidator.UniqueValues(),
+			Attributes: toSchemaDataSourceAttributes(),
 		},
 	}
 }
 
-func toSchemaAttributes() map[string]schema.Attribute {
+func toSchemaDataSourceAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"cert_view": schema.SingleNestedAttribute{
 			Description: "Certificate details.",
@@ -114,63 +103,37 @@ func toSchemaAttributes() map[string]schema.Attribute {
 		},
 		"x509_file": schema.SingleNestedAttribute{
 			Description: "Encoded certificate data.",
-			Required:    true,
+			Computed:    true,
 			Attributes: map[string]schema.Attribute{
 				"id": schema.StringAttribute{
-					Optional:    true,
 					Computed:    true,
 					Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
-					PlanModifiers: []planmodifier.String{
-						stringplanmodifier.UseStateForUnknown(),
-					},
-					Validators: []validator.String{
-						configvalidators.LowercaseId(),
-						stringvalidator.LengthAtLeast(1),
-					},
 				},
 				"file_data": schema.StringAttribute{
 					Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
-					Required:    true,
-				},
-				"formatted_file_data": schema.StringAttribute{
-					Description: "The certificate data in PEM format, formatted by PingFederate. This attribute is read-only.",
 					Computed:    true,
 				},
 				"crypto_provider": schema.StringAttribute{
 					Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.",
-					Optional:    true,
-					Validators: []validator.String{
-						stringvalidator.OneOf("HSM", "LOCAL"),
-					},
+					Computed:    true,
 				},
-			},
-			PlanModifiers: []planmodifier.Object{
-				planmodifiers.ValidateX509FileData(),
 			},
 		},
 		"active_verification_cert": schema.BoolAttribute{
 			Description: "Indicates whether this is an active signature verification certificate. Default is `false`.",
-			Optional:    true,
 			Computed:    true,
-			Default:     booldefault.StaticBool(false),
 		},
 		"primary_verification_cert": schema.BoolAttribute{
 			Description: "Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.",
-			Optional:    true,
 			Computed:    true,
-			Default:     booldefault.StaticBool(false),
 		},
 		"secondary_verification_cert": schema.BoolAttribute{
 			Description: "Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.",
-			Optional:    true,
 			Computed:    true,
-			Default:     booldefault.StaticBool(false),
 		},
 		"encryption_cert": schema.BoolAttribute{
 			Description: "Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.",
-			Optional:    true,
 			Computed:    true,
-			Default:     booldefault.StaticBool(false),
 		},
 	}
 }
