@@ -39,16 +39,17 @@ type administrativeAccountsResource struct {
 }
 
 type administrativeAccountResourceModel struct {
-	Active       types.Bool   `tfsdk:"active"`
-	Auditor      types.Bool   `tfsdk:"auditor"`
-	Department   types.String `tfsdk:"department"`
-	Description  types.String `tfsdk:"description"`
-	EmailAddress types.String `tfsdk:"email_address"`
-	Id           types.String `tfsdk:"id"`
-	Password     types.String `tfsdk:"password"`
-	PhoneNumber  types.String `tfsdk:"phone_number"`
-	Roles        types.Set    `tfsdk:"roles"`
-	Username     types.String `tfsdk:"username"`
+	Active            types.Bool   `tfsdk:"active"`
+	Auditor           types.Bool   `tfsdk:"auditor"`
+	Department        types.String `tfsdk:"department"`
+	Description       types.String `tfsdk:"description"`
+	EmailAddress      types.String `tfsdk:"email_address"`
+	Id                types.String `tfsdk:"id"`
+	Password          types.String `tfsdk:"password"`
+	EncryptedPassword types.String `tfsdk:"encrypted_password"`
+	PhoneNumber       types.String `tfsdk:"phone_number"`
+	Roles             types.Set    `tfsdk:"roles"`
+	Username          types.String `tfsdk:"username"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -95,6 +96,14 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"encrypted_password": schema.StringAttribute{
+				Description: "Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
+				Computed:    true,
+				Sensitive:   true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"phone_number": schema.StringAttribute{
@@ -155,6 +164,10 @@ func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *cli
 		addRequest.Password = plan.Password.ValueStringPointer()
 	}
 
+	if internaltypes.IsDefined(plan.EncryptedPassword) {
+		addRequest.EncryptedPassword = plan.EncryptedPassword.ValueStringPointer()
+	}
+
 	if internaltypes.IsDefined(plan.PhoneNumber) {
 		addRequest.PhoneNumber = plan.PhoneNumber.ValueStringPointer()
 	}
@@ -187,9 +200,17 @@ func (r *administrativeAccountsResource) Configure(_ context.Context, req resour
 func readAdministrativeAccountResourceResponse(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountResourceModel, plan *administrativeAccountResourceModel) {
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
-	// state.Password
+	// password
 	if plan != nil {
 		state.Password = types.StringValue(plan.Password.ValueString())
+		if internaltypes.IsDefined(plan.EncryptedPassword) {
+			state.EncryptedPassword = types.StringValue(plan.EncryptedPassword.ValueString())
+		} else {
+			state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
+		}
+	} else {
+		state.Password = types.StringValue("")
+		state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
 	}
 	state.Active = types.BoolPointerValue(r.Active)
 	state.Description = types.StringPointerValue(r.Description)

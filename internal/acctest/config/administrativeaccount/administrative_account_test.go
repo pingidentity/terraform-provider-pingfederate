@@ -202,7 +202,7 @@ func TestAccAdministrativeAccount(t *testing.T) {
 				ImportStateId:           initialResourceModel.administrativeAccount.Username,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password"},
+				ImportStateVerifyIgnore: []string{"password", "encrypted_password"},
 			},
 			{
 				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
