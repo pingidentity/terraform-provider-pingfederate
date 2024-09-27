@@ -1,1 +1,0 @@
-terraform import pingfederate_ping_one_connection.pingOneConnection connectionId

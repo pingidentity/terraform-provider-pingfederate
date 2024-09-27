@@ -234,5 +234,5 @@ Import is supported using the following syntax:
 ~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 
 ```shell
-terraform import pingfederate_oauth_auth_server_settings.oauthServerSettings id
+terraform import pingfederate_oauth_server_settings.oauthServerSettings id
 ```

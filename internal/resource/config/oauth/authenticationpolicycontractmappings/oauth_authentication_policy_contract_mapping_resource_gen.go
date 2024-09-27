@@ -65,7 +65,7 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Schema(ctx context.Co
 	resp.Schema = schema.Schema{
 		Description: "Resource to create and manage authentication policy contract to persistent grant mappings.",
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_auth_server_settings` resource), these must also be configured as map keys."),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_server_settings` resource), these must also be configured as map keys."),
 			"attribute_sources":              attributesources.ToSchema(0, false),
 			"authentication_policy_contract_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{

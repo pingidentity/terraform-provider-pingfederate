@@ -165,7 +165,7 @@ resource "pingfederate_idp_adapter" "http_basic" {
   }
 }
 
-resource "pingfederate_oauth_auth_server_settings" "example" {
+resource "pingfederate_oauth_server_settings" "example" {
   authorization_code_entropy = 20
   authorization_code_timeout = 50
   refresh_token_length       = 40
@@ -214,7 +214,7 @@ resource "pingfederate_oauth_idp_adapter_mapping" "oauthIdpAdapterMapping" {
   }
 
   depends_on = [
-    pingfederate_oauth_auth_server_settings.example
+    pingfederate_oauth_server_settings.example
   ]
 }
 ```
@@ -224,7 +224,7 @@ resource "pingfederate_oauth_idp_adapter_mapping" "oauthIdpAdapterMapping" {
 
 ### Required
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_auth_server_settings` resource), these must also be configured as map keys. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_server_settings` resource), these must also be configured as map keys. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
 - `mapping_id` (String) The ID of the adapter mapping. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional

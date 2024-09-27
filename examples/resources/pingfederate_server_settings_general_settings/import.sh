@@ -1,1 +1,0 @@
-terraform import pingfederate_server_settings_general_settings.generalSettings id

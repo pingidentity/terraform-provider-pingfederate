@@ -13,7 +13,7 @@ Describes a configured local identity profile.
 ## Example Usage
 
 ```terraform
-data "pingfederate_local_identity_identity_profile" "myLocalIdentityProfile" {
+data "pingfederate_local_identity_profile" "myLocalIdentityProfile" {
   profile_id = "example"
 }
 ```
