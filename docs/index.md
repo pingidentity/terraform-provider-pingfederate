@@ -29,7 +29,7 @@ Detailed documentation on the PingFederate server can be found in the [online do
 ### Simple Example using basic authentication with a resource
 ```terraform
 terraform {
-  required_version = ">=1.1"
+  required_version = ">=1.4"
   required_providers {
     pingfederate = {
       version = "~> 1.0"
