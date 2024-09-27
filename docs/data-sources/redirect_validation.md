@@ -22,7 +22,6 @@ data "pingfederate_redirect_validation" "myRedirectValidationExample" {
 
 ### Read-Only
 
-- `id` (String) ID of this resource.
 - `redirect_validation_local_settings` (Attributes) Settings for local redirect validation. (see [below for nested schema](#nestedatt--redirect_validation_local_settings))
 - `redirect_validation_partner_settings` (Attributes) Settings for partner redirect validation. (see [below for nested schema](#nestedatt--redirect_validation_partner_settings))
 
