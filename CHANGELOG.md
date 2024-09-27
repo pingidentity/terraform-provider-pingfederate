@@ -1,4 +1,7 @@
 # v1.0.0 (Unreleased)
+### Breaking changes
+As this is the first major release of the provider, there are breaking changes from `0.x` versions. The primary breaking changes are removal of previously deprecated attributes. For more information, see the Version 1 Upgrade Guide in the registry documentation. ([#413]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/413)))
+
 ### Resources
 * **New Resource:** `pingfederate_oauth_ciba_server_policy_request_policy` ([#285]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/285)))
 * **New Resource:** `pingfederate_sp_idp_connection` ([#342]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/342)))
@@ -30,6 +33,13 @@
 ### Enhancements
 * Added new `configuration.sensitive_fields` and `configuration.tables.#.rows.#.sensitive_fields` attributes to plugin configuration across the provider. Use these fields when specifying sensitive fields in plugin configuration, such as secrets and passwords. Values specified in these sets will be marked as Sensitive to Terraform and hidden in the CLI and UI output. ([#383]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/383)))
 * Added support for PingFederate patches through `11.2.10`, `11.3.8`, `12.0.5`, `12.1.3`. ([#406]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/406)))
+* Set defaults for many computed and optional fields that previously did not have defaults.
+
+### Bug Fixes
+* Prevent unexpected plans for `pingfederate_oauth_client_settings` when used in conjunction with `pingfederate_extended_properties`. `pingfederate_oauth_client_settings` should always be marked to `depends_on` `pingfederate_extended_properties` when these resources are used together. ([#409](https://github.com/pingidentity/terraform-provider-pingfederate/pull/409))
+* Prevent unexpected plans for `pingfederate_openid_connect_settings` when used in conjunction with `pingfederate_session_settings`. `pingfederate_openid_connect_settings` should always be marked to `depends_on` `pingfederate_session_settings` when these resources are used together. ([#413](https://github.com/pingidentity/terraform-provider-pingfederate/pull/413))
+* Prevent create failures when creating multiple key pairs simultaneously.
+* Fix various config errors when importing configuration with `-generate-config-out`.
 
 # v0.16.0 September 12, 2024
 ### Resources
