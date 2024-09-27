@@ -32,10 +32,6 @@ resource "pingfederate_server_settings_general" "generalSettings" {
 - `request_header_for_correlation_id` (String) HTTP request header for retrieving correlation ID.
 - `sp_connection_transaction_logging_override` (String) Determines the level of transaction logging for all service provider connections. The default is `DONT_OVERRIDE`, in which case the logging level will be determined by each individual SP connection. Options are `DONT_OVERRIDE`, `NONE`, `FULL`, `STANDARD`, `ENHANCED`.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

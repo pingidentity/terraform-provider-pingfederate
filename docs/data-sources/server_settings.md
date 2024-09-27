@@ -26,7 +26,6 @@ data "pingfederate_server_settings" "myServerSettingsExample" {
 - `contact_info` (Attributes) Information that identifies the server. (see [below for nested schema](#nestedatt--contact_info))
 - `email_server` (Attributes) Email Server Settings. (see [below for nested schema](#nestedatt--email_server))
 - `federation_info` (Attributes) Federation Info. (see [below for nested schema](#nestedatt--federation_info))
-- `id` (String) ID of this resource.
 - `notifications` (Attributes) Notification settings for license and certificate expiration events. (see [below for nested schema](#nestedatt--notifications))
 - `roles_and_protocols` (Attributes) Configure roles and protocols. (see [below for nested schema](#nestedatt--roles_and_protocols))
 

@@ -65,10 +65,6 @@ resource "pingfederate_redirect_validation" "redirectValidationExample" {
 - `redirect_validation_local_settings` (Attributes) Settings for local redirect validation. (see [below for nested schema](#nestedatt--redirect_validation_local_settings))
 - `redirect_validation_partner_settings` (Attributes) Settings for partner redirect validation. (see [below for nested schema](#nestedatt--redirect_validation_partner_settings))
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 <a id="nestedatt--redirect_validation_local_settings"></a>
 ### Nested Schema for `redirect_validation_local_settings`
 

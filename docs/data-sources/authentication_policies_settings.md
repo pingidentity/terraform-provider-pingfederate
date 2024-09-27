@@ -24,4 +24,3 @@ data "pingfederate_authentication_policies_settings" "myAuthenticationPoliciesSe
 
 - `enable_idp_authn_selection` (Boolean) Enable IdP authentication policies.
 - `enable_sp_authn_selection` (Boolean) Enable SP authentication policies.
-- `id` (String) ID of this resource.

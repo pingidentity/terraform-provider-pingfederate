@@ -96,10 +96,6 @@ resource "pingfederate_notification_publisher_settings" "publisherSettings" {
 
 - `default_notification_publisher_ref` (Attributes) The default notification publisher reference (see [below for nested schema](#nestedatt--default_notification_publisher_ref))
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 <a id="nestedatt--default_notification_publisher_ref"></a>
 ### Nested Schema for `default_notification_publisher_ref`
 

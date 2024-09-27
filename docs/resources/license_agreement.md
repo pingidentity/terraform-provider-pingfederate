@@ -26,7 +26,6 @@ resource "pingfederate_license_agreement" "licenseAgreement" {
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
 - `license_agreement_url` (String) URL to license agreement
 
 ## Import

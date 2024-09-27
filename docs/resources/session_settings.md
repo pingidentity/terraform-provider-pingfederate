@@ -28,10 +28,6 @@ resource "pingfederate_session_settings" "sessionSettingsExample" {
 - `session_revocation_lifetime` (Number) How long a session revocation is tracked and stored, in minutes. The default is `40`.
 - `track_adapter_sessions_for_logout` (Boolean) Determines whether adapter sessions are tracked for cleanup during single logout. The default is `false`.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

@@ -3,7 +3,6 @@ package oauthopenidconnectsettings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -21,12 +20,6 @@ var (
 	_ resource.Resource                = &openidConnectSettingsResource{}
 	_ resource.ResourceWithConfigure   = &openidConnectSettingsResource{}
 	_ resource.ResourceWithImportState = &openidConnectSettingsResource{}
-
-	openidConnectSettingsAttrTypes = map[string]attr.Type{
-		"track_user_sessions_for_logout": types.BoolType,
-		"revoke_user_session_on_logout":  types.BoolType,
-		"session_revocation_lifetime":    types.Int64Type,
-	}
 )
 
 // OpenidConnectSettingsResource is a helper function to simplify the provider implementation.

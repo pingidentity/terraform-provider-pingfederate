@@ -34,10 +34,6 @@ resource "pingfederate_extended_properties" "example" {
 
 - `items` (Attributes Set) A collection of Extended Properties definitions. (see [below for nested schema](#nestedatt--items))
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 <a id="nestedatt--items"></a>
 ### Nested Schema for `items`
 

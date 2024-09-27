@@ -368,7 +368,6 @@ resource "pingfederate_idp_sp_connection" "wsTrustExample" {
 
 - `creation_date` (String) The time at which the connection was created. This property is read only.
 - `id` (String) The ID of this resource.
-- `type` (String, Deprecated) The type of this connection.
 
 <a id="nestedatt--additional_allowed_entities_configuration"></a>
 ### Nested Schema for `additional_allowed_entities_configuration`
@@ -778,10 +777,6 @@ Optional:
 - `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
 - `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
 
-Read-Only:
-
-- `type` (String, Deprecated) The back channel authentication type.
-
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs`
 
@@ -841,7 +836,6 @@ Read-Only:
 
 Optional:
 
-- `encrypted_password` (String, Deprecated) For GET requests, this field contains the encrypted password, if one exists.
 - `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
@@ -857,16 +851,11 @@ Optional:
 - `ssl_auth_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--outbound_back_channel_auth--ssl_auth_key_pair_ref))
 - `validate_partner_cert` (Boolean) Validate the partner server certificate. Default is `true`.
 
-Read-Only:
-
-- `type` (String, Deprecated) The back channel authentication type.
-
 <a id="nestedatt--credentials--outbound_back_channel_auth--http_basic_credentials"></a>
 ### Nested Schema for `credentials.outbound_back_channel_auth.http_basic_credentials`
 
 Optional:
 
-- `encrypted_password` (String, Deprecated) For GET requests, this field contains the encrypted password, if one exists.
 - `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
