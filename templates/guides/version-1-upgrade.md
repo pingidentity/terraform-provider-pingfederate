@@ -127,6 +127,66 @@ This resource has been previously deprecated and has now been removed. Use the `
 
 ## Resource: pingfederate_idp_sp_connection
 
+### certificate `x509file` field has been renamed to `x509_file`
+
+The `x509file` field found at `credentials.certs.x509file` and `credentials.inbound_back_channel_auth.certs.x509file` has been renamed to `x509_file` for consistency with the `pingfederate_sp_idp_connection` resource.
+
+Previous configuration example:
+```terraform
+resource "pingfederate_idp_sp_connection" "example" {
+  # ... other configuration parameters
+  credentials = {
+    certs = [
+      {
+        x509file = {
+          id        = "mycertid"
+          file_data = filebase64("mycert.pem")
+        }
+      }
+    ]
+    inbound_back_channel_auth = {
+      certs = [
+        {
+          x509file = {
+            id        = "myothercertid"
+            file_data = filebase64("myothercert.pem")
+          }
+        }
+      ]
+    }
+    # ... other configuration parameters
+  }
+}
+```
+
+New configuration example:
+```terraform
+resource "pingfederate_idp_sp_connection" "example" {
+  # ... other configuration parameters
+  credentials = {
+    certs = [
+      {
+        x509_file = {
+          id        = "mycertid"
+          file_data = filebase64("mycert.pem")
+        }
+      }
+    ]
+    inbound_back_channel_auth = {
+      certs = [
+        {
+          x509_file = {
+            id        = "myothercertid"
+            file_data = filebase64("myothercert.pem")
+          }
+        }
+      ]
+    }
+    # ... other configuration parameters
+  }
+}
+```
+
 ### `type` computed attribute removed
 
 The unnecessary `type` computed attribute has been removed.
@@ -161,13 +221,13 @@ This resource has been previously deprecated and has now been removed. Use the `
 
 This resource has been previously deprecated and has now been removed. Use the `pingfederate_keypairs_ssl_server_key` resource going forward.
 
-## Resource: pingfederate_license_agreement
+## Resource: pingfederate_license
 
 ### `id` computed attribute removed
 
 The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
 
-## Resource: pingfederate_license
+## Resource: pingfederate_license_agreement
 
 ### `id` computed attribute removed
 
@@ -187,15 +247,15 @@ The unnecessary `id` computed attribute has previously been deprecated and has n
 
 This resource has been previously deprecated and has now been removed. Use the `pingfederate_notification_publisher_settings` resource going forward.
 
+## Resource: pingfederate_oauth_auth_server_settings
+
+This resource has been previously deprecated and has now been removed. Use the `pingfederate_oauth_server_settings` resource going forward.
+
 ## Resource: pingfederate_oauth_auth_server_settings_scopes_common_scope
 
 This resource has been previously deprecated and has now been removed. Use the `pingfederate_oauth_server_settings` resource going forward.
 
 ## Resource: pingfederate_oauth_auth_server_settings_scopes_exclusive_scope
-
-This resource has been previously deprecated and has now been removed. Use the `pingfederate_oauth_server_settings` resource going forward.
-
-## Resource: pingfederate_oauth_auth_server_settings
 
 This resource has been previously deprecated and has now been removed. Use the `pingfederate_oauth_server_settings` resource going forward.
 
@@ -265,30 +325,6 @@ The unnecessary `id` computed attribute has previously been deprecated and has n
 
 The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
 
-## Resource: pingfederate_server_settings_general_settings
-
-This resource has been previously deprecated and has now been removed. Use the `pingfederate_server_settings_general` resource going forward.
-
-## Resource: pingfederate_server_settings_general
-
-### `id` computed attribute removed
-
-The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
-
-## Resource: pingfederate_server_settings_log_settings
-
-This resource has been previously deprecated and has now been removed. Use the `pingfederate_server_settings_logging` resource going forward.
-
-## Resource: pingfederate_server_settings_logging
-
-### `id` computed attribute removed
-
-The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
-
-## Resource: pingfederate_server_settings_system_keys
-
-This resource has been previously deprecated and has now been removed. Use the `pingfederate_server_settings_system_keys_rotate` resource going forward.
-
 ## Resource: pingfederate_server_settings
 
 ### `id` computed attribute removed
@@ -314,6 +350,30 @@ The `roles_and_protocols.idp_role.saml_2_0_profile.enable_auto_connect` computed
 ### `roles_and_protocols.sp_role.saml_2_0_profile.enable_auto_connect` computed attribute removed
 
 The `roles_and_protocols.sp_role.saml_2_0_profile.enable_auto_connect` computed attribute parameter has been removed as it is no longer used.
+
+## Resource: pingfederate_server_settings_general_settings
+
+This resource has been previously deprecated and has now been removed. Use the `pingfederate_server_settings_general` resource going forward.
+
+## Resource: pingfederate_server_settings_general
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
+
+## Resource: pingfederate_server_settings_log_settings
+
+This resource has been previously deprecated and has now been removed. Use the `pingfederate_server_settings_logging` resource going forward.
+
+## Resource: pingfederate_server_settings_logging
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
+
+## Resource: pingfederate_server_settings_system_keys
+
+This resource has been previously deprecated and has now been removed. Use the `pingfederate_server_settings_system_keys_rotate` resource going forward.
 
 ## Resource: pingfederate_session_application_policy
 
