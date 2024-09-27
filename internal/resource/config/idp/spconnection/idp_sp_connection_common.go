@@ -8,7 +8,6 @@ import (
 
 type idpSpConnectionModel struct {
 	SpBrowserSso                           types.Object `tfsdk:"sp_browser_sso"`
-	Type                                   types.String `tfsdk:"type"`
 	ConnectionId                           types.String `tfsdk:"connection_id"`
 	Id                                     types.String `tfsdk:"id"`
 	EntityId                               types.String `tfsdk:"entity_id"`

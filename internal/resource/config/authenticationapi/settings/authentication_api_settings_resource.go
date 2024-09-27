@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -235,5 +236,6 @@ func (r *authenticationApiSettingsResource) Delete(ctx context.Context, req reso
 func (r *authenticationApiSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
 	var emptyState authenticationApiSettingsModel
+	emptyState.DefaultApplicationRef = types.ObjectNull(resourcelink.AttrType())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

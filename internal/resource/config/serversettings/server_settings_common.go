@@ -182,7 +182,9 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// ROLES AND PROTOCOLS
 	//////////////////////////////////////////////
-	idpSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, idpSaml20ProfileAttrType, r.RolesAndProtocols.IdpRole.Saml20Profile)
+	idpSaml20ProfileVal, respDiags := types.ObjectValue(idpSaml20ProfileAttrType, map[string]attr.Value{
+		"enable": types.BoolPointerValue(r.RolesAndProtocols.IdpRole.Saml20Profile.Enable),
+	})
 	diags.Append(respDiags...)
 	idpRoleAttrValue := map[string]attr.Value{
 		"enable":                       types.BoolPointerValue(r.RolesAndProtocols.IdpRole.Enable),
@@ -196,7 +198,10 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	idpRoleVal, respDiags := types.ObjectValue(idpRoleAttrType, idpRoleAttrValue)
 	diags.Append(respDiags...)
 
-	spSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
+	spSaml20ProfileVal, respDiags := types.ObjectValue(spSaml20ProfileAttrType, map[string]attr.Value{
+		"enable":      types.BoolPointerValue(r.RolesAndProtocols.SpRole.Saml20Profile.Enable),
+		"enable_xasp": types.BoolPointerValue(r.RolesAndProtocols.SpRole.Saml20Profile.EnableXASP),
+	})
 	diags.Append(respDiags...)
 
 	spRoleAttrValue := map[string]attr.Value{

@@ -3394,8 +3394,6 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 
 	state.SpBrowserSso = spBrowserSsoValue
-	// type
-	state.Type = types.StringPointerValue(response.Type)
 	// virtual_entity_ids
 	state.VirtualEntityIds, diags = types.SetValueFrom(context.Background(), types.StringType, response.VirtualEntityIds)
 	respDiags.Append(diags...)

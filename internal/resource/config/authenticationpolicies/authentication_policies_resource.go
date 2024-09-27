@@ -394,5 +394,6 @@ func (r *authenticationPoliciesResource) ImportState(ctx context.Context, req re
 	var emptyState authenticationPoliciesModel
 	emptyState.AuthnSelectionTrees = types.ListNull(types.ObjectType{AttrTypes: authnSelectionTreesAttrTypes})
 	emptyState.DefaultAuthenticationSources = types.ListNull(types.ObjectType{AttrTypes: defaultAuthenticationSourcesAttrTypes})
+	emptyState.TrackedHttpParameters = types.SetNull(types.StringType)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

@@ -42,11 +42,12 @@ var (
 
 	scopesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: scopeentry.AttrTypes()}, nil)
 
-	scopeGroupsDefault, _ = types.SetValue(types.ObjectType{AttrTypes: map[string]attr.Type{
+	scopeGroupsAttrTypes = map[string]attr.Type{
 		"name":        types.StringType,
 		"description": types.StringType,
 		"scopes":      types.SetType{ElemType: types.StringType},
-	}}, nil)
+	}
+	scopeGroupsDefault, _                    = types.SetValue(types.ObjectType{AttrTypes: scopeGroupsAttrTypes}, nil)
 	persistentGrantReuseGrantTypesDefault, _ = types.SetValue(types.StringType, nil)
 	allowedOriginsDefault, _                 = types.SetValue(types.StringType, nil)
 	defaultCoreAttribute1, _                 = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
@@ -983,11 +984,12 @@ func (r *oauthServerSettingsResource) ImportState(ctx context.Context, req resou
 	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
 	var emptyState oauthServerSettingsModel
 	emptyState.Scopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
-	emptyState.ScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeGroupsAttrTypes})
 	emptyState.ExclusiveScopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
-	emptyState.ExclusiveScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ExclusiveScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeGroupsAttrTypes})
 	emptyState.PersistentGrantReuseGrantTypes = types.SetNull(types.StringType)
 	emptyState.AllowedOrigins = types.SetNull(types.StringType)
 	emptyState.PersistentGrantContract = types.ObjectNull(persistentGrantObjContractTypes)
+	emptyState.AdminWebServicePcvRef = types.ObjectNull(resourcelink.AttrType())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }
