@@ -27,10 +27,11 @@ func TestAccOpenIdConnectSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccOpenIdConnectSettings(resourceName),
-				ResourceName:      "pingfederate_openid_connect_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccOpenIdConnectSettings(resourceName),
+				ResourceName:                         "pingfederate_openid_connect_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "default_policy_ref.id",
 			},
 		},
 	})
