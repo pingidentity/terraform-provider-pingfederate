@@ -43,10 +43,11 @@ func TestAccNotificationPublisherSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccNotificationPublisherSettings(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_notification_publisher_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccNotificationPublisherSettings(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_notification_publisher_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "default_notification_publisher_ref.id",
 			},
 			// Test putting back the original values
 			{

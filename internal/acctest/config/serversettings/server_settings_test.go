@@ -110,10 +110,11 @@ func TestAccServerSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettingsComplete(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_server_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccServerSettingsComplete(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_server_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "federation_info.base_url",
 			},
 			{
 				// Back to minimal model

@@ -37,10 +37,11 @@ func TestAccAuthenticationPoliciesSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccAuthenticationPoliciesSettings(resourceName, true),
-				ResourceName:      "pingfederate_authentication_policies_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccAuthenticationPoliciesSettings(resourceName, true),
+				ResourceName:                         "pingfederate_authentication_policies_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "enable_idp_authn_selection",
 			},
 			{
 				// Back to minimal model

@@ -341,4 +341,5 @@ func (r *serverSettingsLoggingResource) ImportState(ctx context.Context, req res
 	emptyState.LogCategories = types.SetNull(types.ObjectType{AttrTypes: logCategoriesAttrTypes})
 	emptyState.LogCategoriesAll = types.SetNull(types.ObjectType{AttrTypes: logCategoriesAttrTypes})
 	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

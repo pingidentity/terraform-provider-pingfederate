@@ -49,10 +49,11 @@ func TestAccSessionSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionSettings(resourceName, &updatedResourceModel),
-				ResourceName:      "pingfederate_session_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccSessionSettings(resourceName, &updatedResourceModel),
+				ResourceName:                         "pingfederate_session_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "track_adapter_sessions_for_logout",
 			},
 			{
 				// Back to minimal model

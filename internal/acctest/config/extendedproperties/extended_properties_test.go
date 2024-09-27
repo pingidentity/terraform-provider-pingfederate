@@ -66,10 +66,11 @@ func TestAccExtendedProperties(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccExtendedProperties(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_extended_properties." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccExtendedProperties(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_extended_properties." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "items.0.name",
 			},
 			// Test empty object sent
 			{

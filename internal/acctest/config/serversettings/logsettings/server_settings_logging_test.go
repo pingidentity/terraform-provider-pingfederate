@@ -39,10 +39,11 @@ func TestAccServerSettingsLogging(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettingsLogging(resourceName, logCategoriesEnabled, true),
-				ResourceName:      "pingfederate_server_settings_logging." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccServerSettingsLogging(resourceName, logCategoriesEnabled, true),
+				ResourceName:                         "pingfederate_server_settings_logging." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "log_categories.#",
 			},
 			{
 				// Back to minimal model
