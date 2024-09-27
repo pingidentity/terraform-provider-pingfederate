@@ -83,10 +83,11 @@ func TestAccIdpSpConnection(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// These attributes have many extra values not being set in the test used in this HCL, so those extra values
-				// will change these attributes on import.
+				// will change these attributes on import. file_data also gets formatted by PF so it won't exactly match.
 				ImportStateVerifyIgnore: []string{
 					"outbound_provision.channels.0.attribute_mapping",
 					"outbound_provision.target_settings",
+					"credentials.certs.0.x509_file.file_data",
 				},
 				// Ensure that the both versions of the attributes have values set
 				Check: resource.ComposeTestCheckFunc(
@@ -120,22 +121,56 @@ func TestAccIdpSpConnection(t *testing.T) {
 	})
 }
 
+func baseCredentials() string {
+	return `
+credentials = {
+	certs = []
+	signing_settings = {
+	  signing_key_pair_ref = {
+		id = "419x9yg43rlawqwq9v6az997k"
+	  }
+	  include_raw_key_in_signature = false
+	  include_cert_in_signature    = false
+	  algorithm                    = "SHA256withRSA"
+	}
+  }
+`
+}
+
+func fullCredentials() string {
+	return `
+	credentials = {
+    certs = [{
+      x509_file = {
+        id        = "4qrossmq1vxa4p836kyqzp48h"
+        file_data = "MIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYDVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q87p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8poasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9b9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7gOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQADggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4JZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31hSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+WQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg="
+      }
+      active_verification_cert    = true
+      encryption_cert             = true
+      primary_verification_cert   = true
+      secondary_verification_cert = false
+    }]
+
+    signing_settings = {
+      signing_key_pair_ref = {
+        id = "419x9yg43rlawqwq9v6az997k"
+      }
+      algorithm                    = "SHA256withRSA"
+      include_cert_in_signature    = false
+      include_raw_key_in_signature = false
+    }
+
+    block_encryption_algorithm = "AES_128"
+    key_transport_algorithm    = "RSA_OAEP"
+  }
+	`
+}
+
 func baseHcl(resourceName string) string {
 	return fmt.Sprintf(`
 	connection_id = "%s"
 	entity_id     = "myEntity"
 	name          = "mySpConn"
-	credentials = {
-		certs = []
-		signing_settings = {
-		  signing_key_pair_ref = {
-			id = "419x9yg43rlawqwq9v6az997k"
-		  }
-		  include_raw_key_in_signature = false
-		  include_cert_in_signature    = false
-		  algorithm                    = "SHA256withRSA"
-		}
-	  }
 	active                 = false
 	contact_info           = {
 	  company = "Example Corp"
@@ -240,7 +275,7 @@ func wsTrustHcl() string {
 		oauth_assertion_profiles = true
 		default_token_type       = "SAML20"
 		generate_key             = false
-		encrypt_saml2_assertion  = false
+		encrypt_saml2_assertion  = true
 		minutes_before           = 5
 		minutes_after            = 30
 		attribute_contract = {
@@ -396,12 +431,14 @@ func testAccSpConnectionOutboundProvision(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_sp_connection" "%[1]s" {
 	%s
+	%s
   %s
 }
 data "pingfederate_idp_sp_connection" "%[1]s" {
   connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
+		baseCredentials(),
 		outboundProvisionHcl(),
 	)
 }
@@ -418,11 +455,13 @@ func testAccSpConnectionBrowserSso(resourceName string, useWsFed bool) string {
 resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
+  %s
 }
 data "pingfederate_idp_sp_connection" "%[1]s" {
   connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
+		baseCredentials(),
 		browserHcl,
 	)
 }
@@ -430,6 +469,7 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 func testAccSpConnectionBrowserSsoInconsistentResult(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_sp_connection" "%[1]s" {
+  %s
   %s
   sp_browser_sso = {
     protocol                      = "SAML20"
@@ -500,6 +540,7 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
   connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
+		baseCredentials(),
 	)
 }
 
@@ -508,11 +549,13 @@ func testAccSpConnectionWsTrust(resourceName string) string {
 resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
+  %s
 }
 data "pingfederate_idp_sp_connection" "%[1]s" {
   connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
+		fullCredentials(),
 		wsTrustHcl(),
 	)
 }
@@ -524,11 +567,13 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
 		%s
 		%s
 		%s
+		%s
 }
 data "pingfederate_idp_sp_connection" "%[1]s" {
   connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
+		fullCredentials(),
 		outboundProvisionHcl(),
 		spBrowserSSOHcl(resourceName),
 		wsTrustHcl(),

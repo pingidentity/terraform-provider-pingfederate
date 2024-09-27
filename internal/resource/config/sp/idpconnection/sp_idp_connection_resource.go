@@ -68,7 +68,6 @@ var (
 		"digital_signature":       types.BoolType,
 		"http_basic_credentials":  types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes},
 		"require_ssl":             types.BoolType,
-		"type":                    types.StringType,
 		"verification_issuer_dn":  types.StringType,
 		"verification_subject_dn": types.StringType,
 	}
@@ -81,7 +80,6 @@ var (
 		"digital_signature":      types.BoolType,
 		"http_basic_credentials": types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes},
 		"ssl_auth_key_pair_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"type":                   types.StringType,
 		"validate_partner_cert":  types.BoolType,
 	}
 
@@ -860,25 +858,21 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Attributes: map[string]schema.Attribute{
 					"verification_issuer_dn": schema.StringAttribute{
 						Optional:            true,
-						Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
-						MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
+						Description:         "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+						MarkdownDescription: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"verification_subject_dn": schema.StringAttribute{
 						Optional:            true,
-						Description:         "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
-						MarkdownDescription: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+						Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
+						MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"certs": connectioncert.ToSchema(
-						"The certificates used for signature verification and XML encryption.",
-						false,
-						false,
-					),
+					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
 					"block_encryption_algorithm": schema.StringAttribute{
 						Optional:            true,
 						Description:         "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
@@ -903,29 +897,31 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description:         "A reference to a signing key pair.",
 								MarkdownDescription: "A reference to a signing key pair.",
 							},
-							"alternative_signing_key_pair_refs": schema.SetAttribute{
-								ElementType:         types.ObjectType{AttrTypes: resourcelink.AttrType()},
+							"alternative_signing_key_pair_refs": schema.SetNestedAttribute{
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: resourcelink.ToSchema(),
+								},
 								Optional:            true,
 								Description:         "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
 								MarkdownDescription: "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
 							},
 							"algorithm": schema.StringAttribute{
 								Optional:            true,
-								Description:         "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
-								MarkdownDescription: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								Description:         "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								MarkdownDescription: "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
 							"include_cert_in_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Determines whether the signing certificate is included in the signature element.",
-								MarkdownDescription: "Determines whether the signing certificate is included in the signature element.",
+								Description:         "Determines whether the signing certificate is included in the signature <KeyInfo> element. The default value is `false`.",
+								MarkdownDescription: "Determines whether the signing certificate is included in the signature <KeyInfo> element. The default value is `false`.",
 							},
 							"include_raw_key_in_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Determines whether the element with the raw public key is included in the signature element.",
-								MarkdownDescription: "Determines whether the element with the raw public key is included in the signature element.",
+								Description:         "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
+								MarkdownDescription: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
 							},
 						},
 						Optional:            true,
@@ -946,14 +942,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"outbound_back_channel_auth": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"type": schema.StringAttribute{
-								Required:            true,
-								Description:         "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
-								MarkdownDescription: "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
-								Validators: []validator.String{
-									stringvalidator.OneOf("INBOUND", "OUTBOUND"),
-								},
-							},
 							"http_basic_credentials": schema.SingleNestedAttribute{
 								Attributes: map[string]schema.Attribute{
 									"username": schema.StringAttribute{
@@ -1003,14 +991,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"inbound_back_channel_auth": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"type": schema.StringAttribute{
-								Required:            true,
-								Description:         "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
-								MarkdownDescription: "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
-								Validators: []validator.String{
-									stringvalidator.OneOf("INBOUND", "OUTBOUND"),
-								},
-							},
 							"http_basic_credentials": schema.SingleNestedAttribute{
 								Attributes: map[string]schema.Attribute{
 									"username": schema.StringAttribute{
@@ -1042,25 +1022,21 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"verification_subject_dn": schema.StringAttribute{
 								Optional:            true,
-								Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
-								MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
+								Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
+								MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
 							"verification_issuer_dn": schema.StringAttribute{
 								Optional:            true,
-								Description:         "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
-								MarkdownDescription: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								Description:         "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								MarkdownDescription: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
-							"certs": connectioncert.ToSchema(
-								"The certificates used for signature verification and XML encryption.",
-								false,
-								false,
-							),
+							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
 							"require_ssl": schema.BoolAttribute{
 								Optional:            true,
 								Description:         "Incoming HTTP transmissions must use a secure channel.",
@@ -3611,6 +3587,12 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		if err != nil {
 			return err
 		}
+		if addRequest.Credentials.InboundBackChannelAuth != nil {
+			addRequest.Credentials.InboundBackChannelAuth.Type = "INBOUND"
+		}
+		if addRequest.Credentials.OutboundBackChannelAuth != nil {
+			addRequest.Credentials.OutboundBackChannelAuth.Type = "OUTBOUND"
+		}
 	}
 
 	if internaltypes.IsDefined(plan.ContactInfo) {
@@ -3859,9 +3841,9 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				for _, certInPlan := range plan.Credentials.Attributes()["certs"].(types.List).Elements() {
 					x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
-					if *cert.X509File.Id == x509FileIdPlan {
+					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
-						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags)
+						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags, isImportRead)
 						diags.Append(objDiags...)
 						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 						certMatchFound = true
@@ -3869,12 +3851,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					}
 				}
 				if !certMatchFound {
-					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags)
+					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
 					diags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
 			} else {
-				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags)
+				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
 				diags.Append(objDiags...)
 				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
@@ -3901,9 +3883,9 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						for _, ibcaCertInPlan := range plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
 							ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
-							if *ibcaCert.X509File.Id == ibcax509FileIdPlan {
+							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
-								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags)
+								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
 								diags.Append(objDiags...)
 								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 								ibaCertMatch = true
@@ -3911,12 +3893,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 							}
 						}
 						if !ibaCertMatch {
-							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags)
+							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
 							diags.Append(objDiags...)
 							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 						}
 					} else {
-						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags)
+						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
 						diags.Append(objDiags...)
 						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 					}
@@ -3952,7 +3934,6 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"digital_signature":       types.BoolPointerValue(r.Credentials.InboundBackChannelAuth.DigitalSignature),
 				"http_basic_credentials":  credentialsInboundBackChannelAuthHttpBasicCredentialsValue,
 				"require_ssl":             types.BoolPointerValue(r.Credentials.InboundBackChannelAuth.RequireSsl),
-				"type":                    types.StringValue(r.Credentials.InboundBackChannelAuth.Type),
 				"verification_issuer_dn":  types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
 				"verification_subject_dn": types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
 			})
@@ -3994,7 +3975,6 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"digital_signature":      types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.DigitalSignature),
 				"http_basic_credentials": credentialsOutboundBackChannelAuthHttpBasicCredentialsValue,
 				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
-				"type":                   types.StringValue(r.Credentials.OutboundBackChannelAuth.Type),
 				"validate_partner_cert":  types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
 			})
 			diags.Append(objDiags...)

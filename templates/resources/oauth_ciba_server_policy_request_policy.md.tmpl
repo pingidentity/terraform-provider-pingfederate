@@ -9,8 +9,6 @@ description: |-
 
 {{ .Description | trimspace }}
 
-~> This resource depends on the `pingfederate_extended_properties` resource. Use `depends_on` when configuring both resources to ensure changes to this resource occur after any changes to `pingfederate_extended_properties`. Failure to do this may result in unexpected plans and extended properties remaining unapplied.
-
 ## Example Usage
 
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
@@ -21,6 +19,6 @@ description: |-
 
 Import is supported using the following syntax:
 
-~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
+~> "policyId" should be the id of the Request Policy to be imported
 
 {{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}

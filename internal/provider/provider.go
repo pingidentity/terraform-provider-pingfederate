@@ -77,6 +77,7 @@ import (
 	oauthaccesstokenmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmapping"
 	oauthauthenticationpolicycontractmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authenticationpolicycontractmappings"
 	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
+	oauthcibaserverpolicyrequestpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/cibaserverpolicy/requestpolicies"
 	oauthcibaserverpolicysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/cibaserverpolicy/settings"
 	oauthclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/client"
 	oauthclientregistrationpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/clientregistrationpolicies"
@@ -790,6 +791,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthaccesstokenmapping.OauthAccessTokenMappingResource,
 		oauthauthenticationpolicycontractmappings.OauthAuthenticationPolicyContractMappingResource,
 		oauthauthserversettings.OauthServerSettingsResource,
+		oauthcibaserverpolicyrequestpolicies.OauthCibaServerPolicyRequestPolicyResource,
 		oauthcibaserverpolicysettings.OauthCibaServerPolicySettingsResource,
 		oauthclient.OauthClientResource,
 		oauthclientregistrationpolicies.OauthClientRegistrationPolicyResource,

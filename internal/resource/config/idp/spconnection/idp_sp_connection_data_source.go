@@ -2,6 +2,7 @@ package idpspconnection
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -11,6 +12,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourceattributecontractfulfillment "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	datasourceattributesources "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/connectioncert"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	datasourceissuancecriteria "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/issuancecriteria"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -48,6 +50,45 @@ var (
 		"custom_schema":   types.ObjectType{AttrTypes: customSchemaAttrTypes},
 		"channels":        types.ListType{ElemType: channelsElemDataSourceAttrType},
 	}
+
+	credentialsInboundBackChannelAuthHttpBasicCredentialsDataSourceAttrTypes = map[string]attr.Type{
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
+	}
+	credentialsInboundBackChannelAuthDataSourceAttrTypes = map[string]attr.Type{
+		"certs":                   types.ListType{ElemType: types.ObjectType{AttrTypes: connectioncert.AttrTypesDataSource()}},
+		"digital_signature":       types.BoolType,
+		"http_basic_credentials":  types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthHttpBasicCredentialsDataSourceAttrTypes},
+		"require_ssl":             types.BoolType,
+		"type":                    types.StringType,
+		"verification_issuer_dn":  types.StringType,
+		"verification_subject_dn": types.StringType,
+	}
+	credentialsOutboundBackChannelAuthHttpBasicCredentialsDataSourceAttrTypes = map[string]attr.Type{
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
+	}
+
+	credentialsOutboundBackChannelAuthDataSourceAttrTypes = map[string]attr.Type{
+		"digital_signature":      types.BoolType,
+		"http_basic_credentials": types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthHttpBasicCredentialsDataSourceAttrTypes},
+		"ssl_auth_key_pair_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"type":                   types.StringType,
+		"validate_partner_cert":  types.BoolType,
+	}
+
+	credentialsDataSourceAttrTypes = map[string]attr.Type{
+		"block_encryption_algorithm":        types.StringType,
+		"certs":                             types.ListType{ElemType: types.ObjectType{AttrTypes: connectioncert.AttrTypesDataSource()}},
+		"decryption_key_pair_ref":           types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"inbound_back_channel_auth":         types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthDataSourceAttrTypes},
+		"key_transport_algorithm":           types.StringType,
+		"outbound_back_channel_auth":        types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthDataSourceAttrTypes},
+		"secondary_decryption_key_pair_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"signing_settings":                  types.ObjectType{AttrTypes: credentialsSigningSettingsAttrTypes},
+		"verification_issuer_dn":            types.StringType,
+		"verification_subject_dn":           types.StringType,
+	}
 )
 
 // IdpSpConnectionDataSource is a helper function to simplify the provider implementation.
@@ -63,151 +104,12 @@ type idpSpConnectionDataSource struct {
 
 // GetSchema defines the schema for the datasource.
 func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	certsSchema := schema.SetNestedAttribute{
-		NestedObject: schema.NestedAttributeObject{
-			Attributes: map[string]schema.Attribute{
-				"active_verification_cert": schema.BoolAttribute{
-					Computed:    true,
-					Optional:    false,
-					Description: "Indicates whether this is an active signature verification certificate.",
-				},
-				"cert_view": schema.SingleNestedAttribute{
-					Attributes: map[string]schema.Attribute{
-						"crypto_provider": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
-						},
-						"expires": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
-						},
-						"id": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The persistent, unique ID for the certificate.",
-						},
-						"issuer_dn": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The issuer's distinguished name.",
-						},
-						"key_algorithm": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The public key algorithm.",
-						},
-						"key_size": schema.Int64Attribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The public key size.",
-						},
-						"serial_number": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The serial number assigned by the CA.",
-						},
-						"sha1fingerprint": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "SHA-1 fingerprint in Hex encoding.",
-						},
-						"sha256fingerprint": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "SHA-256 fingerprint in Hex encoding.",
-						},
-						"signature_algorithm": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The signature algorithm.",
-						},
-						"status": schema.StringAttribute{
-							Computed: true,
-							Optional: false,
-						},
-						"subject_alternative_names": schema.SetAttribute{
-							ElementType: types.StringType,
-							Computed:    true,
-							Optional:    false,
-							Description: "The subject alternative names (SAN).",
-						},
-						"subject_dn": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The subject's distinguished name.",
-						},
-						"valid_from": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
-						},
-						"version": schema.Int64Attribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The X.509 version to which the item conforms.",
-						},
-					},
-					Computed:    true,
-					Optional:    false,
-					Description: "Certificate details.",
-				},
-				"encryption_cert": schema.BoolAttribute{
-					Computed:    true,
-					Optional:    false,
-					Description: "Indicates whether to use this cert to encrypt outgoing assertions.",
-				},
-				"primary_verification_cert": schema.BoolAttribute{
-					Computed:    true,
-					Optional:    false,
-					Description: "Indicates whether this is the primary signature verification certificate.",
-				},
-				"secondary_verification_cert": schema.BoolAttribute{
-					Computed:    true,
-					Optional:    false,
-					Description: "Indicates whether this is the secondary signature verification certificate.",
-				},
-				"x509file": schema.SingleNestedAttribute{
-					Attributes: map[string]schema.Attribute{
-						"crypto_provider": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "Cryptographic Provider.",
-						},
-						"file_data": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The certificate data in PEM format.",
-						},
-						"id": schema.StringAttribute{
-							Computed:    true,
-							Optional:    false,
-							Description: "The persistent, unique ID for the certificate.",
-						},
-					},
-					Computed:    true,
-					Optional:    false,
-					Description: "Encoded certificate data.",
-				},
-			},
-		},
-		Computed:    true,
-		Optional:    false,
-		Description: "The certificates used for signature verification and XML encryption.",
-	}
-
 	httpBasicCredentialsSchema := schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"encrypted_password": schema.StringAttribute{
 				Computed:    true,
 				Optional:    false,
 				Description: "For GET requests, this field contains the encrypted password, if one exists.",
-			},
-			"password": schema.StringAttribute{
-				Computed:    true,
-				Optional:    false,
-				Description: "User password.  To update the password, specify the plaintext value in this field.",
 			},
 			"username": schema.StringAttribute{
 				Computed:    true,
@@ -519,11 +421,11 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "The algorithm used to encrypt assertions sent to this partner.",
 					},
-					"certs":                   certsSchema,
+					"certs":                   connectioncert.ToSchemaDataSource("The certificates used for signature verification and XML encryption."),
 					"decryption_key_pair_ref": resourcelink.SingleNestedAttribute(),
 					"inbound_back_channel_auth": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"certs": certsSchema,
+							"certs": connectioncert.ToSchemaDataSource("The certificates used for signature verification and XML encryption."),
 							"digital_signature": schema.BoolAttribute{
 								Computed:    true,
 								Optional:    false,
@@ -543,7 +445,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 							"verification_issuer_dn": schema.StringAttribute{
 								Computed:    true,
 								Optional:    false,
-								Description: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								Description: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 							},
 							"verification_subject_dn": schema.StringAttribute{
 								Computed:    true,
@@ -616,7 +518,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 					"verification_issuer_dn": schema.StringAttribute{
 						Computed:    true,
 						Optional:    false,
-						Description: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+						Description: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 					},
 					"verification_subject_dn": schema.StringAttribute{
 						Computed:    true,
@@ -1443,7 +1345,112 @@ func (r *idpSpConnectionDataSource) Configure(_ context.Context, req datasource.
 
 func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags.Append(readIdpSpconnectionResponseCommon(ctx, r, state)...)
+	state.ConnectionId = types.StringPointerValue(r.Id)
+	state.Id = types.StringPointerValue(r.Id)
+	state.Type = types.StringPointerValue(r.Type)
+	state.EntityId = types.StringValue(r.EntityId)
+	state.Name = types.StringValue(r.Name)
+	state.Active = types.BoolPointerValue(r.Active)
+	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
+	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
+	state.LicenseConnectionGroup = types.StringPointerValue(r.LicenseConnectionGroup)
+	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
+	state.ApplicationName = types.StringPointerValue(r.ApplicationName)
+	state.ApplicationIconUrl = types.StringPointerValue(r.ApplicationIconUrl)
+	state.ConnectionTargetType = types.StringPointerValue(r.ConnectionTargetType)
+
+	if r.CreationDate != nil {
+		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
+	} else {
+		state.CreationDate = types.StringNull()
+	}
+
+	state.VirtualEntityIds, respDiags = types.SetValueFrom(ctx, types.StringType, r.VirtualEntityIds)
+	diags.Append(respDiags...)
+
+	state.MetadataReloadSettings, respDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
+	diags.Append(respDiags...)
+
+	var credentialsCertsValues []attr.Value
+	for _, cert := range r.Credentials.Certs {
+		credentailsCert, respDiags := connectioncert.ToStateDataSource(ctx, cert, &diags)
+		diags.Append(respDiags...)
+		credentialsCertsValues = append(credentialsCertsValues, credentailsCert)
+	}
+	credentialsCerts, respDiags := types.ListValue(types.ObjectType{AttrTypes: connectioncert.AttrTypesDataSource()}, credentialsCertsValues)
+	diags.Append(respDiags...)
+	var decryptionKeyPairRef types.Object
+	if r.Credentials.DecryptionKeyPairRef == nil {
+		decryptionKeyPairRef = types.ObjectNull(resourcelink.AttrType())
+	} else {
+		decryptionKeyPairRef, respDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), r.Credentials.DecryptionKeyPairRef)
+		diags.Append(respDiags...)
+	}
+	var inboundBackChannelAuth types.Object
+	if r.Credentials.InboundBackChannelAuth == nil {
+		inboundBackChannelAuth = types.ObjectNull(credentialsInboundBackChannelAuthDataSourceAttrTypes)
+	} else {
+		inboundBackChannelAuth, respDiags = types.ObjectValueFrom(ctx, credentialsInboundBackChannelAuthDataSourceAttrTypes, r.Credentials.InboundBackChannelAuth)
+		diags.Append(respDiags...)
+	}
+	var outboundBackChannelAuth types.Object
+	if r.Credentials.OutboundBackChannelAuth == nil {
+		outboundBackChannelAuth = types.ObjectNull(credentialsOutboundBackChannelAuthDataSourceAttrTypes)
+	} else {
+		outboundBackChannelAuth, respDiags = types.ObjectValueFrom(ctx, credentialsOutboundBackChannelAuthDataSourceAttrTypes, r.Credentials.OutboundBackChannelAuth)
+		diags.Append(respDiags...)
+	}
+	var secondaryDecryptionKeyPairRef types.Object
+	if r.Credentials.SecondaryDecryptionKeyPairRef == nil {
+		secondaryDecryptionKeyPairRef = types.ObjectNull(resourcelink.AttrType())
+	} else {
+		secondaryDecryptionKeyPairRef, respDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), r.Credentials.SecondaryDecryptionKeyPairRef)
+		diags.Append(respDiags...)
+	}
+	var signingSettings types.Object
+	if r.Credentials.SigningSettings == nil {
+		signingSettings = types.ObjectNull(credentialsSigningSettingsAttrTypes)
+	} else {
+		signingSettings, respDiags = types.ObjectValueFrom(ctx, credentialsSigningSettingsAttrTypes, r.Credentials.SigningSettings)
+		diags.Append(respDiags...)
+	}
+
+	if r.Credentials != nil && r.Credentials.SigningSettings != nil && r.Credentials.SigningSettings.IncludeCertInSignature == nil {
+		// PF returns false for include_cert_in_signature as nil. If nil is returned, just set it to false
+		signingSettingsAttrs := signingSettings.Attributes()
+		signingSettingsAttrs["include_cert_in_signature"] = types.BoolValue(false)
+		signingSettings, respDiags = types.ObjectValue(credentialsSigningSettingsAttrTypes, signingSettingsAttrs)
+		diags.Append(respDiags...)
+	}
+
+	state.Credentials, respDiags = types.ObjectValue(credentialsDataSourceAttrTypes, map[string]attr.Value{
+		"block_encryption_algorithm":        types.StringPointerValue(r.Credentials.BlockEncryptionAlgorithm),
+		"certs":                             credentialsCerts,
+		"decryption_key_pair_ref":           decryptionKeyPairRef,
+		"inbound_back_channel_auth":         inboundBackChannelAuth,
+		"key_transport_algorithm":           types.StringPointerValue(r.Credentials.KeyTransportAlgorithm),
+		"outbound_back_channel_auth":        outboundBackChannelAuth,
+		"secondary_decryption_key_pair_ref": secondaryDecryptionKeyPairRef,
+		"signing_settings":                  signingSettings,
+		"verification_issuer_dn":            types.StringPointerValue(r.Credentials.VerificationIssuerDN),
+		"verification_subject_dn":           types.StringPointerValue(r.Credentials.VerificationSubjectDN),
+	})
+	diags.Append(respDiags...)
+
+	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
+	diags.Append(respDiags...)
+
+	state.AdditionalAllowedEntitiesConfiguration, respDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
+	diags.Append(respDiags...)
+
+	state.ExtendedProperties, respDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
+	diags.Append(respDiags...)
+
+	state.SpBrowserSso, respDiags = types.ObjectValueFrom(ctx, spBrowserSSOAttrTypes, r.SpBrowserSso)
+	diags.Append(respDiags...)
+
+	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
+	diags.Append(respDiags...)
 
 	state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
 	diags.Append(respDiags...)

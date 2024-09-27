@@ -80,6 +80,7 @@ func TestAccSpIdpConnection_MinimalMaximal(t *testing.T) {
 				ImportStateId:     spIdpConnectionConnectionId,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// file_data gets formatted by PF so it won't match, and passwords won't be returned by the API
 				ImportStateVerifyIgnore: []string{
 					"credentials.certs.0.x509_file.file_data",
 					"credentials.inbound_back_channel_auth.http_basic_credentials.password",
@@ -324,7 +325,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     }]
 
     inbound_back_channel_auth = {
-      type = "INBOUND"
       http_basic_credentials = {
         username = "admin"
         password = "2FederateM0re!"
@@ -350,7 +350,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     key_transport_algorithm    = "RSA_OAEP"
 
     outbound_back_channel_auth = {
-      type = "OUTBOUND"
       http_basic_credentials = {
         username = "Administrator"
         password = "2FederateM0re!"
