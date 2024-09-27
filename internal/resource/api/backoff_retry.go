@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-const maxRetries = 5
+const maxRetries = 4
 
 func ExponentialBackOffRetryDelete(retryableCodes []int, f func() (*http.Response, error)) (*http.Response, error) {
 	var resp *http.Response

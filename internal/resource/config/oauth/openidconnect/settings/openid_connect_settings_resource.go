@@ -52,13 +52,21 @@ func (r *openidConnectSettingsResource) Schema(ctx context.Context, req resource
 	resp.Schema = schema
 }
 
-func addOptionalOpenidConnectSettingsFields(ctx context.Context, addRequest *client.OpenIdConnectSettings, plan openidConnectSettingsResourceModel) error {
+func addOptionalOpenidConnectSettingsFields(ctx context.Context, addRequest *client.OpenIdConnectSettings, plan openidConnectSettingsResourceModel, existingSessionSettings *client.SessionSettings) error {
 	var err error
 
 	if internaltypes.IsDefined(plan.DefaultPolicyRef) {
 		addRequest.DefaultPolicyRef, err = resourcelink.ClientStruct(plan.DefaultPolicyRef)
 		if err != nil {
 			return err
+		}
+	}
+
+	if existingSessionSettings != nil {
+		addRequest.SessionSettings = &client.OIDCSessionSettings{
+			TrackUserSessionsForLogout: existingSessionSettings.TrackAdapterSessionsForLogout,
+			RevokeUserSessionOnLogout:  existingSessionSettings.RevokeUserSessionOnLogout,
+			SessionRevocationLifetime:  existingSessionSettings.SessionRevocationLifetime,
 		}
 	}
 
@@ -101,8 +109,15 @@ func (r *openidConnectSettingsResource) Create(ctx context.Context, req resource
 		return
 	}
 
+	// This resource depends on the values in the /session/settings endpoint, so pass those in to build the client struct
+	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
+		return
+	}
+
 	createOpenidConnectSettings := client.NewOpenIdConnectSettings()
-	err := addOptionalOpenidConnectSettingsFields(ctx, createOpenidConnectSettings, plan)
+	err = addOptionalOpenidConnectSettingsFields(ctx, createOpenidConnectSettings, plan, apiReadSessionSettings)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OpenID Connect settings: "+err.Error())
 		return
@@ -162,9 +177,16 @@ func (r *openidConnectSettingsResource) Update(ctx context.Context, req resource
 		return
 	}
 
+	// This resource depends on the values in the /session/settings endpoint, so pass those in to build the client struct
+	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
+		return
+	}
+
 	updateOpenidConnectSettings := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewOpenIdConnectSettings()
-	err := addOptionalOpenidConnectSettingsFields(ctx, createUpdateRequest, plan)
+	err = addOptionalOpenidConnectSettingsFields(ctx, createUpdateRequest, plan, apiReadSessionSettings)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OpenID Connect settings: "+err.Error())
 		return

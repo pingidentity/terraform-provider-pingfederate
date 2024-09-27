@@ -9,10 +9,18 @@ description: |-
 
 Manages OpenID Connect configuration settings
 
+~> This resource depends on the `pingfederate_session_settings` resource. Use `depends_on` when configuring both resources to ensure changes to this resource occur after any changes to `pingfederate_session_settings`. Failure to do this may result in unexpected plans and session settings remaining unapplied.
+
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
+resource "pingfederate_session_settings" "sessionSettingsExample" {
+  track_adapter_sessions_for_logout = false
+  revoke_user_session_on_logout     = true
+  session_revocation_lifetime       = 490
+}
+
+resource "pingfederate_openid_connect_policy" "oauthOIDCPolicyExample" {
   policy_id = "oidcPolicy"
   name      = "oidcPolicy"
   access_token_manager_ref = {
@@ -40,8 +48,9 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 }
 
 resource "pingfederate_openid_connect_settings" "openIdConnectSettingsExample" {
+  depends_on = [pingfederate_session_settings.sessionSettingsExample]
   default_policy_ref = {
-    id = pingfederate_oauth_open_id_connect_policy.oauthOIDCPolicyExample.policy_id
+    id = pingfederate_openid_connect_policy.oauthOIDCPolicyExample.policy_id
   }
 }
 ```
