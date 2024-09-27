@@ -63,20 +63,7 @@ func hcl(aa *client.AdministrativeAccount) string {
 		%[7]s
 		%[8]s
 		%[9]s
-		%[10]s
 		`
-		passwords := func() (string, string) {
-			if aa.EncryptedPassword != nil {
-				encryptedPasswordVal := aa.GetEncryptedPassword()
-				passwordVal := ""
-				return encryptedPasswordVal, passwordVal
-			} else {
-				encryptedPasswordVal := ""
-				passwordVal := password
-				return encryptedPasswordVal, passwordVal
-			}
-		}
-		encryptedPasswordTfVal, passwordTfVal := passwords()
 		auditor := ""
 		if aa.Auditor != nil {
 			auditor = strconv.FormatBool(*aa.Auditor)
@@ -87,9 +74,8 @@ func hcl(aa *client.AdministrativeAccount) string {
 				acctest.TfKeyValuePairToString("description", aa.GetDescription(), true),
 				acctest.TfKeyValuePairToString("department", aa.GetDepartment(), true),
 				acctest.TfKeyValuePairToString("email_address", aa.GetEmailAddress(), true),
-				acctest.TfKeyValuePairToString("encrypted_password", encryptedPasswordTfVal, true),
 				acctest.TfKeyValuePairToString("roles", acctest.StringSliceToTerraformString(aa.Roles), false),
-				acctest.TfKeyValuePairToString("password", passwordTfVal, true),
+				acctest.TfKeyValuePairToString("password", password, true),
 				acctest.TfKeyValuePairToString("phone_number", aa.GetPhoneNumber(), true),
 				acctest.TfKeyValuePairToString("username", aa.Username, true),
 				acctest.TfKeyValuePairToString("auditor", auditor, false),
@@ -216,7 +202,7 @@ func TestAccAdministrativeAccount(t *testing.T) {
 				ImportStateId:           initialResourceModel.administrativeAccount.Username,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encrypted_password", "password"},
+				ImportStateVerifyIgnore: []string{"password"},
 			},
 			{
 				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
