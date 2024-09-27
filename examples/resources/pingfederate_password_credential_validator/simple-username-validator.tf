@@ -6,6 +6,8 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
 
+  attribute_contract = {}
+
   configuration = {
     tables = [
       {

@@ -6,6 +6,8 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
     id = "com.pingidentity.plugins.pcvs.pingid.PingIdPCV"
   }
 
+  attribute_contract = {}
+
   configuration = {
     tables = [
       {

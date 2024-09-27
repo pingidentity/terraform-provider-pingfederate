@@ -36,6 +36,8 @@ resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCrede
     id = "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator"
   }
 
+  attribute_contract = {}
+
   configuration = {
     tables = [
       {
@@ -99,6 +101,8 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
   plugin_descriptor_ref = {
     id = "com.pingidentity.plugins.pcvs.pingid.PingIdPCV"
   }
+
+  attribute_contract = {}
 
   configuration = {
     tables = [
@@ -329,6 +333,8 @@ resource "pingfederate_password_credential_validator" "pingOnePasswordCredential
     id = "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV"
   }
 
+  attribute_contract = {}
+
   configuration = {
     tables = [
       {
@@ -360,6 +366,8 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
   plugin_descriptor_ref = {
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
+
+  attribute_contract = {}
 
   configuration = {
     fields = [
@@ -483,6 +491,8 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
+
+  attribute_contract = {}
 
   configuration = {
     tables = [
