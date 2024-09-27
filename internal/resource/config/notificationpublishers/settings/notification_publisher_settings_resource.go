@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -181,7 +180,8 @@ func (r *notificationPublisherSettingsResource) Delete(ctx context.Context, req 
 }
 
 func (r *notificationPublisherSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	//TODO
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState notificationPublisherSettingsResourceModel
+	emptyState.DefaultNotificationPublisherRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

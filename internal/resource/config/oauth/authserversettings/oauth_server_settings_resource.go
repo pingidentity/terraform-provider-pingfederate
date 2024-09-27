@@ -980,7 +980,14 @@ func (r *oauthServerSettingsResource) Delete(ctx context.Context, req resource.D
 }
 
 func (r *oauthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	//TODO
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState oauthServerSettingsModel
+	emptyState.Scopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ExclusiveScopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ExclusiveScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.PersistentGrantReuseGrantTypes = types.SetNull(types.StringType)
+	emptyState.AllowedOrigins = types.SetNull(types.StringType)
+	emptyState.PersistentGrantContract = types.ObjectNull(persistentGrantObjContractTypes)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

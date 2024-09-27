@@ -267,7 +267,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Delete(ctx context.Context
 }
 
 func (r *sessionAuthenticationPoliciesGlobalResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	//TODO
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState sessionAuthenticationPoliciesGlobalModel
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

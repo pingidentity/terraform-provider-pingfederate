@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -183,7 +182,8 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Delete(ctx context.Context
 }
 
 func (r *oauthTokenExchangeGeneratorSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	//TODO
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState oauthTokenExchangeGeneratorSettingsResourceModel
+	emptyState.DefaultGeneratorGroupRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

@@ -3,7 +3,6 @@ package virtualhostnames
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -191,7 +190,8 @@ func (r *virtualHostNamesResource) Delete(ctx context.Context, req resource.Dele
 }
 
 func (r *virtualHostNamesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	//TODO
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState virtualHostNamesModel
+	emptyState.VirtualHostNames = types.SetNull(types.StringType)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

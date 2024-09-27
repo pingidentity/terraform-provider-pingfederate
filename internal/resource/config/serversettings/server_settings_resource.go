@@ -776,7 +776,11 @@ func (r *serverSettingsResource) Delete(ctx context.Context, req resource.Delete
 }
 
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	//TODO
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState serverSettingsModel
+	emptyState.ContactInfo = types.ObjectNull(contactInfoAttrType)
+	emptyState.FederationInfo = types.ObjectNull(federationInfoAttrType)
+	emptyState.Notifications = types.ObjectNull(notificationsAttrType)
+	emptyState.RolesAndProtocols = types.ObjectNull(rolesAndProtocolsAttrType)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }
