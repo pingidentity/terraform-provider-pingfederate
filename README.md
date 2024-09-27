@@ -1,8 +1,15 @@
 # PingFederate Terraform Provider
-The PingFederate Terraform provider is a plugin for [Terraform](https://www.terraform.io/) that supports the management of PingFederate configuration. This provider is maintained internally by the Ping Identity team.
+The PingFederate Terraform provider is a plugin for [Terraform](https://www.terraform.io/) that supports the management of PingFederate configuration via the management API. This provider is maintained internally by the Ping Identity team.
 
-# Disclaimer - Provider in Development
-The PingFederate Terraform provider is under active development. As such, consumers must have flexibility for breaking changes until the `1.0.0` release. When using the PingFederate Terraform Provider within an automated pipeline prior to `1.0.0`, it is recommended to pin the provider version similar to `version = "~> 0.5.0"` to avoid experiencing an unexpected pipeline failure as the result of a provider change. Enhancements, bug fixes, notes and breaking changes can be found on the [Changelog](CHANGELOG.md). If issues are found, please raise a [github issue](https://github.com/pingidentity/terraform-provider-pingfederate/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=) on this project.
+## PingFederate Server Support
+
+This PingFederate Terraform provider version supports versions `11.2` through `12.1` of PingFederate.
+
+Further information on PingFederate server version support and released version compatibility can be found in the [PingFederate Server Support](guides/server-support) guide.
+
+## Getting Started
+
+See the [PingFederate getting started guide](https://terraform.pingidentity.com/getting-started/pingfederate/) at [terraform.pingidentity.com](https://terraform.pingidentity.com).
 
 ## Requirements
 * Terraform 1.4+
@@ -16,7 +23,7 @@ See the [examples](examples/) directory for more examples using the provider.
 * [Ping Identity Home](https://www.pingidentity.com/en.html)
 
 Extended documentation can be found at:
-* [PingFederate Documentation](https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_pingfederate_landing_page)
+* [PingFederate Documentation](https://docs.pingidentity.com/r/en-us/pingfederate-121/pf_pingfederate_landing_page)
 * [Ping Identity Developer Portal](https://developer.pingidentity.com/en.html)
 
 # Contributing
