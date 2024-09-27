@@ -17,6 +17,7 @@ The schemas may have changed in the following ways in this release:
 
 * Removal of previously deprecated fields
 * Removal of previously deprecated resources/data sources
+* Renaming of fields for consistency
 
 The following sections detail the rationale for the above changes, and whether the changes are routine for a major version upgrade or one off changes that aren't expected in future major version changes.
 
@@ -27,6 +28,10 @@ Removal of deprecated fields are expected on each major release going forward.  
 ### Removal of previously deprecated resources/data sources
 
 Removal of deprecated resources / data sources are expected on each major release going forward.  Ping maintains a deprecation and release strategy according to [Terraform provider creation best practices](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning) and support of PingFederate product versions aligns with the [Ping Identity End of Life Policy](https://www.pingidentity.com/en/legal/end-of-life-policy.html).
+
+### Renaming of fields for consistency
+
+Renaming of fields is not expected for future releases. Any renaming will occur only in major releases.  Ping maintains a release strategy according to [Terraform provider creation best practices](https://developer.hashicorp.com/terraform/plugin/best-practices/versioning)
 
 ### Removal of support for previous PingFederate versions
 
@@ -83,12 +88,6 @@ provider "pingfederate" {
 ```
 
 Ping recommends using [Provider version control](https://terraform.pingidentity.com/best-practices/#use-provider-version-control), detailed in the [Terraform best practices guide](https://terraform.pingidentity.com/best-practices/).
-
-## Resource: pingfederate_administrative_account
-
-### `encrypted_password` computed attribute removed
-
-The `encrypted_password` computed attribute has been removed as it is no longer used.
 
 ## Resource: pingfederate_authentication_api_settings
 
@@ -348,6 +347,30 @@ The unnecessary `id` computed attribute has previously been deprecated and has n
 
 The unnecessary `id` computed attribute has previously been deprecated and has now been removed.
 
+## Data Source: pingfederate_administrative_account
+
+### `password` computed attribute removed
+
+The `password` computed attribute has been removed as it was always empty.
+
+## Data Source: pingfederate_authentication_api_settings
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_authentication_policies_settings
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_idp_sp_connection
+
+### `type` computed attribute removed
+
+The unnecessary `type` computed attribute has been removed.
+
 ## Data Source: pingfederate_key_pair_signing_import
 
 This data source has been previously deprecated and has now been removed. Use the `pingfederate_keypairs_signing_key` data source going forward.
@@ -355,6 +378,26 @@ This data source has been previously deprecated and has now been removed. Use th
 ## Data Source: pingfederate_key_pair_ssl_server_import
 
 This data source has been previously deprecated and has now been removed. Use the `pingfederate_keypairs_ssl_server_key` data source going forward.
+
+## Data Source: pingfederate_license
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_license_agreement
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_local_identity_identity_profile
+
+This data source has been removed. Use the `pingfederate_local_identity_profile` data source going forward.
+
+## Data Source: pingfederate_oauth_auth_server_settings
+
+This data source has been removed. Use the `pingfederate_oauth_server_settings` data source going forward.
 
 ## Data Source: pingfederate_oauth_auth_server_settings_scopes_common_scope
 
@@ -364,6 +407,28 @@ This data source has been previously deprecated and has now been removed. Use th
 
 This data source has been previously deprecated and has now been removed. Use the `pingfederate_oauth_server_settings` data source going forward.
 
+## Data Source: pingfederate_oauth_open_id_connect_policy
+
+This data source has been removed. Use the `pingfederate_openid_connect_policy` data source going forward.
+
+## Data Source: pingfederate_oauth_server_settings
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_protocol_metadata_lifetime_settings
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_redirect_validation
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
 ## Data Source: pingfederate_server_settings_system_keys
 
 ### `id` computed attribute removed
@@ -372,9 +437,21 @@ The unnecessary `id` computed attribute has previously been deprecated and has n
 
 ## Data Source: pingfederate_server_settings
 
+### `captcha_settings` computed attribute removed
+
+The `captcha_settings` computed attribute has been removed as it is no longer used.
+
+### `email_server` computed attribute removed
+
+The `email_server` computed attribute has been removed as it is no longer used.
+
 ### `federation_info.auto_connect_entity_id` computed attribute removed
 
 The `federation_info.auto_connect_entity_id` computed attribute has been removed as it is no longer used.
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
 
 ### `roles_and_protocols.idp_role.saml_2_0_profile.enable_auto_connect` computed attribute removed
 
@@ -383,6 +460,46 @@ The `roles_and_protocols.idp_role.saml_2_0_profile.enable_auto_connect` computed
 ### `roles_and_protocols.sp_role.saml_2_0_profile.enable_auto_connect` computed attribute removed
 
 The `roles_and_protocols.sp_role.saml_2_0_profile.enable_auto_connect` computed attribute has been removed as it is no longer used.
+
+## Data Source: pingfederate_server_settings_general
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_server_settings_general_settings
+
+This data source has been removed. Use the `pingfederate_server_settings_general` data source going forward.
+
+## Data Source: pingfederate_server_settings_log_settings
+
+This data source has been removed. Use the `pingfederate_server_settings_logging` data source going forward.
+
+## Data Source: pingfederate_server_settings_system_keys
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_session_application_policy
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_session_application_session_policy
+
+This data source has been removed. Use the `pingfederate_session_application_policy` data source going forward.
+
+## Data Source: pingfederate_session_authentication_policies_global
+
+### `id` computed attribute removed
+
+The unnecessary `id` computed attribute has been removed.
+
+## Data Source: pingfederate_session_authentication_session_policies_global
+
+This data source has been removed. Use the `pingfederate_session_authentication_policies_global` data source going forward.
 
 ## Data Source: pingfederate_session_settings
 
