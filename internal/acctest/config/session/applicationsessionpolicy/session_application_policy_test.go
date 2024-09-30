@@ -46,10 +46,11 @@ func TestAccSessionApplicationPolicy(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionApplicationPolicy(resourceName, &updatedResourceModel),
-				ResourceName:      "pingfederate_session_application_policy." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccSessionApplicationPolicy(resourceName, &updatedResourceModel),
+				ResourceName:                         "pingfederate_session_application_policy." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "idle_timeout_mins",
 			},
 			{
 				// Back to minimal model

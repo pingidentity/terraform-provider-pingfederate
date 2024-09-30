@@ -328,7 +328,7 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 		return
 	}
 
-	response, httpResp, err := updateDataStore(updatePingOneLdapGatewayDataStore, dsr, con, resp, plan.Id.ValueString())
+	response, httpResp, err := updateDataStore(updatePingOneLdapGatewayDataStore, dsr, con, resp, plan.DataStoreId.ValueString())
 	if err != nil {
 		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResp, &customId)
 		return

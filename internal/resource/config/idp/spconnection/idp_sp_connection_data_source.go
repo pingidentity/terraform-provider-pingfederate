@@ -1213,11 +1213,6 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 				Optional:    false,
 				Description: "The SAML settings used to enable secure browser-based SSO to resources at your partner's site.",
 			},
-			"type": schema.StringAttribute{
-				Optional:    false,
-				Computed:    true,
-				Description: "The type of this connection.",
-			},
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
@@ -1347,7 +1342,6 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	var diags, respDiags diag.Diagnostics
 	state.ConnectionId = types.StringPointerValue(r.Id)
 	state.Id = types.StringPointerValue(r.Id)
-	state.Type = types.StringPointerValue(r.Type)
 	state.EntityId = types.StringValue(r.EntityId)
 	state.Name = types.StringValue(r.Name)
 	state.Active = types.BoolPointerValue(r.Active)

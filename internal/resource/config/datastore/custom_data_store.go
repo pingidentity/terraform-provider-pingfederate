@@ -270,7 +270,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 		return
 	}
 
-	response, httpResponse, err := updateDataStore(updateCustomDataStore, dsr, con, resp, plan.Id.ValueString())
+	response, httpResponse, err := updateDataStore(updateCustomDataStore, dsr, con, resp, plan.DataStoreId.ValueString())
 	if err != nil {
 		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse, &customId)
 		return

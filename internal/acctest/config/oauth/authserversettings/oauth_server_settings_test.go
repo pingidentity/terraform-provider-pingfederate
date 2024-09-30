@@ -140,10 +140,11 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccOauthAuthServerSettings(resourceName, updatedResourceModel, true),
-				ResourceName:      "pingfederate_oauth_server_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccOauthAuthServerSettings(resourceName, updatedResourceModel, true),
+				ResourceName:                         "pingfederate_oauth_server_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "refresh_token_length",
 			},
 			{
 				// Back to minimal model

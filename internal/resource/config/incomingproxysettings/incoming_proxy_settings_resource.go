@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -35,7 +34,6 @@ type incomingProxySettingsResource struct {
 }
 
 type incomingProxySettingsResourceModel struct {
-	Id                            types.String `tfsdk:"id"`
 	ForwardedIpAddressHeaderName  types.String `tfsdk:"forwarded_ip_address_header_name"`
 	ForwardedIpAddressHeaderIndex types.String `tfsdk:"forwarded_ip_address_header_index"`
 	ForwardedHostHeaderName       types.String `tfsdk:"forwarded_host_header_name"`
@@ -103,7 +101,6 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -165,13 +162,7 @@ func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req reso
 
 }
 
-func readIncomingProxySettingsResponse(ctx context.Context, r *client.IncomingProxySettings, state *incomingProxySettingsResourceModel, existingId *string) {
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
-
+func readIncomingProxySettingsResponse(ctx context.Context, r *client.IncomingProxySettings, state *incomingProxySettingsResourceModel) {
 	state.ForwardedIpAddressHeaderName = types.StringPointerValue(r.ForwardedIpAddressHeaderName)
 	state.ForwardedIpAddressHeaderIndex = types.StringPointerValue(r.ForwardedIpAddressHeaderIndex)
 	state.ForwardedHostHeaderName = types.StringPointerValue(r.ForwardedHostHeaderName)
@@ -205,7 +196,7 @@ func (r *incomingProxySettingsResource) Create(ctx context.Context, req resource
 	// Read the response into the state
 	var state incomingProxySettingsResourceModel
 
-	readIncomingProxySettingsResponse(ctx, incomingProxySettingsResponse, &state, nil)
+	readIncomingProxySettingsResponse(ctx, incomingProxySettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -231,14 +222,8 @@ func (r *incomingProxySettingsResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	// Read the response into the state
-	readIncomingProxySettingsResponse(ctx, apiReadIncomingProxySettings, &state, id)
+	readIncomingProxySettingsResponse(ctx, apiReadIncomingProxySettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -266,14 +251,9 @@ func (r *incomingProxySettingsResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// Read the response
 	var state incomingProxySettingsResourceModel
-	readIncomingProxySettingsResponse(ctx, updateIncomingProxySettingsResponse, &state, id)
+	readIncomingProxySettingsResponse(ctx, updateIncomingProxySettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -286,6 +266,7 @@ func (r *incomingProxySettingsResource) Delete(ctx context.Context, req resource
 }
 
 func (r *incomingProxySettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState incomingProxySettingsResourceModel
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

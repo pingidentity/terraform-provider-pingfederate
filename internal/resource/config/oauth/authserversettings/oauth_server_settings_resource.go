@@ -25,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -43,11 +42,12 @@ var (
 
 	scopesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: scopeentry.AttrTypes()}, nil)
 
-	scopeGroupsDefault, _ = types.SetValue(types.ObjectType{AttrTypes: map[string]attr.Type{
+	scopeGroupsAttrTypes = map[string]attr.Type{
 		"name":        types.StringType,
 		"description": types.StringType,
 		"scopes":      types.SetType{ElemType: types.StringType},
-	}}, nil)
+	}
+	scopeGroupsDefault, _                    = types.SetValue(types.ObjectType{AttrTypes: scopeGroupsAttrTypes}, nil)
 	persistentGrantReuseGrantTypesDefault, _ = types.SetValue(types.StringType, nil)
 	allowedOriginsDefault, _                 = types.SetValue(types.StringType, nil)
 	defaultCoreAttribute1, _                 = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
@@ -566,8 +566,6 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -907,7 +905,7 @@ func (r *oauthServerSettingsResource) Create(ctx context.Context, req resource.C
 
 	// Read the response into the state
 	var state oauthServerSettingsModel
-	diags = readOauthServerSettingsResponse(ctx, oauthServerSettingsResponse, &state, nil)
+	diags = readOauthServerSettingsResponse(ctx, oauthServerSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -934,12 +932,7 @@ func (r *oauthServerSettingsResource) Read(ctx context.Context, req resource.Rea
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state, id)
+	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -975,12 +968,7 @@ func (r *oauthServerSettingsResource) Update(ctx context.Context, req resource.U
 
 	// Read the response
 	var state oauthServerSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthServerSettingsResponse(ctx, updateOauthServerSettingsResponse, &state, id)
+	diags = readOauthServerSettingsResponse(ctx, updateOauthServerSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -993,6 +981,15 @@ func (r *oauthServerSettingsResource) Delete(ctx context.Context, req resource.D
 }
 
 func (r *oauthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState oauthServerSettingsModel
+	emptyState.Scopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeGroupsAttrTypes})
+	emptyState.ExclusiveScopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ExclusiveScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeGroupsAttrTypes})
+	emptyState.PersistentGrantReuseGrantTypes = types.SetNull(types.StringType)
+	emptyState.AllowedOrigins = types.SetNull(types.StringType)
+	emptyState.PersistentGrantContract = types.ObjectNull(persistentGrantObjContractTypes)
+	emptyState.AdminWebServicePcvRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

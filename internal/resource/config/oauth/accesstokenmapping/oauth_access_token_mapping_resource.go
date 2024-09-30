@@ -282,7 +282,7 @@ func (r *oauthAccessTokenMappingResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -347,7 +347,7 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 		return
 	}
 
-	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString())
 	apiUpdateOauthAccessTokenMappings = apiUpdateOauthAccessTokenMappings.Body(*updateOauthAccessTokenMappings)
 	updateOauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMappingExecute(apiUpdateOauthAccessTokenMappings)
 	if err != nil {
@@ -373,7 +373,7 @@ func (r *oauthAccessTokenMappingResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.DeleteMapping(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.DeleteMapping(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Mapping", err, httpResp)
 	}
@@ -381,5 +381,5 @@ func (r *oauthAccessTokenMappingResource) Delete(ctx context.Context, req resour
 
 func (r *oauthAccessTokenMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("mapping_id"), req, resp)
 }

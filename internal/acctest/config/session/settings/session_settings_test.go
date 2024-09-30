@@ -49,10 +49,11 @@ func TestAccSessionSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionSettings(resourceName, &updatedResourceModel),
-				ResourceName:      "pingfederate_session_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccSessionSettings(resourceName, &updatedResourceModel),
+				ResourceName:                         "pingfederate_session_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "track_adapter_sessions_for_logout",
 			},
 			{
 				// Back to minimal model
@@ -81,7 +82,7 @@ resource "pingfederate_session_settings" "%s" {
   %s
 }
 
-data "pingfederate_server_settings_general_settings" "myServerSettings" {
+data "pingfederate_server_settings_general" "myServerSettings" {
   depends_on = [pingfederate_session_settings.%[1]s]
 }`, resourceName,
 		optionalHcl,

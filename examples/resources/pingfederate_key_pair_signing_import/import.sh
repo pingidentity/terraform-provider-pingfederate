@@ -1,1 +1,0 @@
-terraform import pingfederate_key_pair_signing_import.keyPairsSigningImport keyPairsSigningImportId

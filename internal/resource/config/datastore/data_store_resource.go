@@ -429,7 +429,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.AuthContext(ctx, r.providerConfig), state.DataStoreId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Data Store", httpResp)
@@ -516,6 +516,6 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 
 func (r *dataStoreResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("data_store_id"), req, resp)
 	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

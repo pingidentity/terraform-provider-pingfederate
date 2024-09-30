@@ -228,7 +228,7 @@ func (r *pingoneConnectionResource) Read(ctx context.Context, req resource.ReadR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadPingOneConnection, httpResp, err := r.apiClient.PingOneConnectionsAPI.GetPingOneConnection(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadPingOneConnection, httpResp, err := r.apiClient.PingOneConnectionsAPI.GetPingOneConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -258,7 +258,7 @@ func (r *pingoneConnectionResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	updatePingOneConnection := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnection(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updatePingOneConnection := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -290,7 +290,7 @@ func (r *pingoneConnectionResource) Delete(ctx context.Context, req resource.Del
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.PingOneConnectionsAPI.DeletePingOneConnection(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.PingOneConnectionsAPI.DeletePingOneConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the PingOne Connection", err, httpResp, &customId)
 	}
@@ -298,5 +298,5 @@ func (r *pingoneConnectionResource) Delete(ctx context.Context, req resource.Del
 
 func (r *pingoneConnectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("connection_id"), req, resp)
 }

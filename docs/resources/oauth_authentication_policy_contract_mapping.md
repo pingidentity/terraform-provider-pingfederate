@@ -65,7 +65,7 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "oauthAuthe
 
 ### Required
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_auth_server_settings` resource), these must also be configured as map keys. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_server_settings` resource), these must also be configured as map keys. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
 - `authentication_policy_contract_ref` (Attributes) Reference to the associated authentication policy contract. This field is immutable and will trigger a replacement plan if changed. (see [below for nested schema](#nestedatt--authentication_policy_contract_ref))
 
 ### Optional

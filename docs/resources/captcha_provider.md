@@ -38,7 +38,7 @@ resource "pingfederate_captcha_provider" "reCAPTCHAv2ProviderExample" {
 ## Example Usage - PingOne Protect
 
 ```terraform
-resource "pingfederate_ping_one_connection" "example" {
+resource "pingfederate_pingone_connection" "example" {
   name        = "My PingOne Environment"
   description = "My environment"
   credential  = var.pingone_gateway_credential
@@ -51,7 +51,7 @@ resource "pingfederate_captcha_provider" "riskProviderExample" {
     fields = [
       {
         "name" : "PingOne Environment",
-        "value" : format("%s|%s", pingfederate_ping_one_connection.example.id, var.pingone_environment_id)
+        "value" : format("%s|%s", pingfederate_pingone_connection.example.id, var.pingone_environment_id)
       },
       {
         "name" : "PingOne Risk Policy",

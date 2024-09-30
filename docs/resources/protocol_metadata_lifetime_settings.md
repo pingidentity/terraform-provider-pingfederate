@@ -26,10 +26,6 @@ resource "pingfederate_protocol_metadata_lifetime_settings" "protocolMetadataLif
 - `cache_duration` (Number) This field adjusts the validity of your metadata in minutes. The default value is `1440` (1 day).
 - `reload_delay` (Number) This field adjusts the frequency of automatic reloading of SAML metadata in minutes. The default value is `1440` (1 day).
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

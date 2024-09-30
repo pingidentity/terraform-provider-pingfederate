@@ -40,6 +40,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -1728,13 +1729,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Description: "The SAML settings used to enable secure browser-based SSO to resources at your partner's site.",
 			},
-			"type": schema.StringAttribute{
-				Optional:           false,
-				Computed:           true,
-				Default:            stringdefault.StaticString("SP"),
-				DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-				Description:        "The type of this connection.",
-			},
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
@@ -2063,7 +2057,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) error {
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
-	addRequest.Type = plan.Type.ValueStringPointer()
+	addRequest.Type = utils.Pointer("SP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
 	addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
@@ -3400,8 +3394,6 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 
 	state.SpBrowserSso = spBrowserSsoValue
-	// type
-	state.Type = types.StringPointerValue(response.Type)
 	// virtual_entity_ids
 	state.VirtualEntityIds, diags = types.SetValueFrom(context.Background(), types.StringType, response.VirtualEntityIds)
 	respDiags.Append(diags...)

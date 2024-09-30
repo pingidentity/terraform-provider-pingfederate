@@ -26,10 +26,6 @@ resource "pingfederate_virtual_host_names" "virtualHostNames" {
 
 - `virtual_host_names` (Set of String) List of virtual host names.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

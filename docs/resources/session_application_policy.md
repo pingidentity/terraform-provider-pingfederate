@@ -26,10 +26,6 @@ resource "pingfederate_session_application_policy" "sessionApplicationPolicy" {
 - `idle_timeout_mins` (Number) The idle timeout period, in minutes. If set to `-1`, the idle timeout will be set to the maximum timeout. The default is `60`.
 - `max_timeout_mins` (Number) The maximum timeout period, in minutes. If set to `-1`, sessions do not expire. The default is `480`.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

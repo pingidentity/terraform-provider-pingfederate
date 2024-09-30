@@ -47,7 +47,6 @@ data "pingfederate_idp_sp_connection" "myIdpSpConnection" {
 - `name` (String) The connection name.
 - `outbound_provision` (Attributes) Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled. (see [below for nested schema](#nestedatt--outbound_provision))
 - `sp_browser_sso` (Attributes) The SAML settings used to enable secure browser-based SSO to resources at your partner's site. (see [below for nested schema](#nestedatt--sp_browser_sso))
-- `type` (String) The type of this connection.
 - `virtual_entity_ids` (Set of String) List of alternate entity IDs that identifies the local server to this partner.
 - `ws_trust` (Attributes) Ws-Trust STS provides security-token validation and creation to extend SSO access to identity-enabled Web Services (see [below for nested schema](#nestedatt--ws_trust))
 

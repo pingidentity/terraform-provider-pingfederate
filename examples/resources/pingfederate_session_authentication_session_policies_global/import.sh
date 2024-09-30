@@ -1,1 +1,0 @@
-terraform import pingfederate_session_authentication_session_policies_global.globalPolicy id

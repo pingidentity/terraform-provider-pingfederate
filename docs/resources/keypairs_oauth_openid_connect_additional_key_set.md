@@ -12,15 +12,15 @@ Resource to create and manage OAuth/OpenID Connect additional signing key sets.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_key_pair_signing_import" "rsa_oidc_signing_1" {
-  import_id = "oidcsigningkey1"
+resource "pingfederate_keypairs_signing_key" "rsa_oidc_signing_1" {
+  key_id    = "oidcsigningkey1"
   file_data = filebase64("./assets/oidc_signing_1.p12")
   format    = "PKCS12"
   password  = var.oidc_signing_pkcs12_password1
 }
 
-resource "pingfederate_key_pair_signing_import" "rsa_oidc_signing_2" {
-  import_id = "oidcsigningkey2"
+resource "pingfederate_keypairs_signing_key" "rsa_oidc_signing_2" {
+  key_id    = "oidcsigningkey2"
   file_data = filebase64("./assets/oidc_signing_2.p12")
   format    = "PKCS12"
   password  = var.oidc_signing_pkcs12_password2
@@ -55,10 +55,10 @@ resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "keypai
   ]
   signing_keys = {
     rsa_active_cert_ref = {
-      id = pingfederate_key_pair_signing_import.rsa_oidc_signing_2.id
+      id = pingfederate_keypairs_signing_key.rsa_oidc_signing_2.id
     }
     rsa_previous_cert_ref = {
-      id = pingfederate_key_pair_signing_import.rsa_oidc_signing_1.id
+      id = pingfederate_keypairs_signing_key.rsa_oidc_signing_1.id
     }
     rsa_publish_x5c_parameter = true
   }

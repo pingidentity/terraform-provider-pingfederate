@@ -1,1 +1,0 @@
-terraform import pingfederate_key_pair_ssl_server_import.keyPairsSslServerImport keyPairsSslServerImportId

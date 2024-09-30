@@ -118,10 +118,11 @@ func TestAccIncomingProxySettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccIncomingProxySettings(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_incoming_proxy_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccIncomingProxySettings(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_incoming_proxy_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "forwarded_ip_address_header_name",
 			},
 			// Test empty object sent
 			{
