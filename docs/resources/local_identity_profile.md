@@ -52,10 +52,6 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
         value = var.email_smtp_server_username
       },
       {
-        name  = "Password"
-        value = var.email_smtp_server_password
-      },
-      {
         name  = "Verify Hostname"
         value = "true"
       },
@@ -78,6 +74,12 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
       {
         name  = "Enable SMTP Debugging Messages"
         value = "true"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
       }
     ]
   }
@@ -220,7 +222,6 @@ resource "pingfederate_local_identity_profile" "identityProfileExample" {
 
 - `apc_id` (Attributes) The reference to the authentication policy contract to use for this local identity profile. (see [below for nested schema](#nestedatt--apc_id))
 - `name` (String) The local identity profile name. Name is unique.
-- `profile_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of `[a-zA-Z0-9._-]`.
 
 ### Optional
 
@@ -231,6 +232,7 @@ resource "pingfederate_local_identity_profile" "identityProfileExample" {
 - `field_config` (Attributes) The local identity profile field configuration. (see [below for nested schema](#nestedatt--field_config))
 - `profile_config` (Attributes) The local identity profile management configuration. (see [below for nested schema](#nestedatt--profile_config))
 - `profile_enabled` (Boolean) Whether the profile configuration is enabled or not. The default value is `false`.
+- `profile_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 - `registration_config` (Attributes) The local identity profile registration configuration. (see [below for nested schema](#nestedatt--registration_config))
 - `registration_enabled` (Boolean) Whether the registration configuration is enabled or not. The default value is `false`.
 

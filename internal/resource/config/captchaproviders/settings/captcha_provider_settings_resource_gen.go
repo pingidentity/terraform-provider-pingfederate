@@ -198,7 +198,7 @@ func (r *captchaProviderSettingsResource) Update(ctx context.Context, req resour
 
 func (r *captchaProviderSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	providererror.WarnConfigurationCannotBeReset("pingfederate_capthca_provider_settings", &resp.Diagnostics)
+	providererror.WarnConfigurationCannotBeReset("pingfederate_captcha_provider_settings", &resp.Diagnostics)
 }
 
 func (r *captchaProviderSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

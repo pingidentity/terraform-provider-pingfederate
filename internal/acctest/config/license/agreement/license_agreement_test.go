@@ -30,10 +30,11 @@ func TestAccLicenseAgreement(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccLicenseAgreement(resourceName, true),
-				ResourceName:      "pingfederate_license_agreement." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccLicenseAgreement(resourceName, true),
+				ResourceName:                         "pingfederate_license_agreement." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "accepted",
 			},
 		},
 	})

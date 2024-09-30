@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
@@ -71,7 +70,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 		Description: "Manages an Oauth Client",
 		Attributes: map[string]schema.Attribute{
 			"client_id": schema.StringAttribute{
-				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes.",
+				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -289,20 +288,14 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 			},
 			"bypass_approval_page": schema.BoolAttribute{
-				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection.",
+				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"restrict_scopes": schema.BoolAttribute{
-				Description: "Restricts this client's access to specific scopes.",
+				Description: "Restricts this client's access to specific scopes. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"restricted_scopes": schema.SetAttribute{
 				Description: "The scopes available for this client.",
@@ -509,7 +502,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     objectdefault.StaticValue(clientAuthDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "Client authentication type. The required field for type `SECRET` is secret.	The required fields for type `CERTIFICATE` are client_cert_issuer_dn and client_cert_subject_dn. The required field for type `PRIVATE_KEY_JWT` is: either jwks or jwks_url.",
+						Description: "Client authentication type. The required field for type `SECRET` is `secret`.	The required fields for type `CERTIFICATE` are `client_cert_issuer_dn` and `client_cert_subject_dn`. The required field for type `PRIVATE_KEY_JWT` is: either `jwks` or `jwks_url`.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -974,17 +967,40 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
 			switch clientAuthType {
 			case "PRIVATE_KEY_JWT":
-				if !internaltypes.IsNonEmptyObj(model.JwksSettings) {
+				errorMsg := "jwks_settings.jwks or jwks_settings.jwks_url must be defined when client_auth is configured to \"PRIVATE_KEY_JWT\"."
+				if model.JwksSettings.IsNull() {
 					resp.Diagnostics.AddAttributeError(
 						path.Root("jwks_settings"),
 						providererror.InvalidAttributeConfiguration,
-						"jwks_settings must be defined when client_auth is configured to \"PRIVATE_KEY_JWT\".")
+						errorMsg)
+				} else if !model.JwksSettings.IsUnknown() {
+					jwksSettingsAttributes := model.JwksSettings.Attributes()
+					if jwksSettingsAttributes["jwks"].IsNull() && jwksSettingsAttributes["jwks_url"].IsNull() {
+						resp.Diagnostics.AddAttributeError(
+							path.Root("jwks_settings"),
+							providererror.InvalidAttributeConfiguration,
+							errorMsg)
+					}
 				}
 			case "CERTIFICATE":
-				if !internaltypes.IsDefined(clientAuthAttributes["client_cert_subject_dn"]) || !internaltypes.IsDefined(clientAuthAttributes["client_cert_issuer_dn"]) {
-					resp.Diagnostics.AddError(
+				if clientAuthAttributes["client_cert_subject_dn"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
 						providererror.InvalidAttributeConfiguration,
-						"client_cert_subject_dn and client_cert_issuer_dn must be defined when client_auth is configured to \"CERTIFICATE\".")
+						"client_cert_subject_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
+				}
+				if clientAuthAttributes["client_cert_issuer_dn"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
+						providererror.InvalidAttributeConfiguration,
+						"client_cert_issuer_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
+				}
+			case "SECRET":
+				if clientAuthAttributes["secret"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
+						providererror.InvalidAttributeConfiguration,
+						"client_auth.secret must be defined when client_auth.type is configured to \"SECRET\".")
 				}
 			}
 		}
@@ -996,22 +1012,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	for _, grantType := range model.GrantTypes.Elements() {
 		grantTypeVal := grantType.(types.String).ValueString()
 		if grantTypeVal == "CLIENT_CREDENTIALS" {
-			if clientAuthDefined {
-				clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
-				clientAuthSecret := clientAuthAttributes["secret"].(types.String)
-				if clientAuthType != "NONE" && clientAuthType != "SECRET" {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("client_auth").AtMapKey("type"),
-						providererror.InvalidAttributeConfiguration,
-						"client_auth.type must be set to \"SECRET\" when \"CLIENT_CREDENTIALS\" is included in grant_types.")
-				}
-				if clientAuthSecret.IsNull() || (!clientAuthSecret.IsUnknown() && clientAuthSecret.ValueString() == "") {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("client_auth").AtMapKey("secret"),
-						providererror.InvalidAttributeConfiguration,
-						"client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.")
-				}
-			} else if !clientAuthDefined {
+			if !clientAuthDefined {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("client_auth"),
 					providererror.InvalidAttributeConfiguration,
@@ -1125,6 +1126,14 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			"offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to \"YES\".\n"+
 				fmt.Sprintf("require_offline_access_scope_to_issue_refresh_tokens: %s\noffline_access_require_consent_prompt: %s", model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString(), model.OfflineAccessRequireConsentPrompt.ValueString()))
 	}
+
+	// bypass_approval_page Validation
+	if internaltypes.IsDefined(model.BypassApprovalPage) && !model.BypassApprovalPage.ValueBool() && model.AllowAuthenticationApiInit.ValueBool() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("bypass_approval_page"),
+			providererror.InvalidAttributeConfiguration,
+			"bypass_approval_page cannot be configured to false when allow_authentication_api_init is set to true.")
+	}
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -1147,10 +1156,13 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan, state oauthClientModel
+	var plan *oauthClientModel
 	var diags diag.Diagnostics
-	req.Plan.Get(ctx, &plan)
-	req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil {
+		return
+	}
+
 	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
@@ -1252,8 +1264,12 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
-	if plan.AllowAuthenticationApiInit.ValueBool() && plan.RestrictScopes.IsUnknown() {
-		plan.RestrictScopes = types.BoolValue(true)
+	if plan.RestrictScopes.IsUnknown() {
+		plan.RestrictScopes = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())
+		planModified = true
+	}
+	if plan.BypassApprovalPage.IsUnknown() {
+		plan.BypassApprovalPage = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())
 		planModified = true
 	}
 
@@ -1267,7 +1283,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	if planModified {
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 

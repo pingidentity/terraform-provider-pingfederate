@@ -2,7 +2,6 @@ package oauthopenidconnectpolicy
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,11 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -141,6 +141,8 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes.",
 						Optional:    true,
+						Computed:    true,
+						Default:     setdefault.StaticValue(emptyExtendedAttributesDefault),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -159,8 +161,10 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 									Optional:    true,
 								},
 								"multi_valued": schema.BoolAttribute{
-									Description: "Indicates whether attribute value is always returned as an array.",
+									Description: "Indicates whether attribute value is always returned as an array. Defaults to `false`.",
 									Optional:    true,
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -175,7 +179,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 				Default:     mapdefault.StaticValue(scopeAttributeMappingsDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"values": schema.ListAttribute{
+						"values": schema.SetAttribute{
 							Description: "A List of values.",
 							Optional:    true,
 							ElementType: types.StringType,
@@ -192,7 +196,6 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 			"id_token_typ_header_value": schema.StringAttribute{
 				Description: "ID Token Type (typ) Header Value. Supported in PF version `11.3` or later.",
 				Optional:    true,
-				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -200,7 +203,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
+	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 
@@ -212,8 +215,11 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
-	var plan oauthOpenIdConnectPolicyModel
+	var plan *oauthOpenIdConnectPolicyModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	planModified := false
 	// If include_x5t_in_id_token or id_token_typ_header_value is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
@@ -239,28 +245,8 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 	}
 
 	if planModified {
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
-}
-
-func addOptionalOauthOpenIdConnectPolicyFields(policy *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyModel) error {
-	policy.IdTokenLifetime = plan.IdTokenLifetime.ValueInt64Pointer()
-	policy.IncludeSriInIdToken = plan.IncludeSriInIdToken.ValueBoolPointer()
-	policy.IncludeUserInfoInIdToken = plan.IncludeUserInfoInIdToken.ValueBoolPointer()
-	policy.IncludeSHashInIdToken = plan.IncludeSHashInIdToken.ValueBoolPointer()
-	policy.ReturnIdTokenOnRefreshGrant = plan.ReturnIdTokenOnRefreshGrant.ValueBoolPointer()
-	policy.ReissueIdTokenInHybridFlow = plan.ReissueIdTokenInHybridFlow.ValueBoolPointer()
-	policy.IncludeX5tInIdToken = plan.IncludeX5tInIdToken.ValueBoolPointer()
-	policy.IdTokenTypHeaderValue = plan.IdTokenTypHeaderValue.ValueStringPointer()
-	if internaltypes.IsDefined(plan.ScopeAttributeMappings) {
-		scopeAttributeMappings := map[string]client.ParameterValues{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeAttributeMappings, false)), &scopeAttributeMappings)
-		if err != nil {
-			return err
-		}
-		policy.ScopeAttributeMappings = &scopeAttributeMappings
-	}
-	return nil
 }
 
 // Metadata returns the resource type name.
@@ -278,50 +264,95 @@ func (r *openidConnectPolicyResource) Configure(_ context.Context, req resource.
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Get fields required for client as client structs
-func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyModel, diags *diag.Diagnostics) (*client.ResourceLink, *client.OpenIdConnectAttributeContract, *client.AttributeMapping) {
-	var accessTokenManagerRef client.ResourceLink
-	err := json.Unmarshal([]byte(internaljson.FromValue(plan.AccessTokenManagerRef, false)), &accessTokenManagerRef)
+func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdConnectPolicy, diag.Diagnostics) {
+	result := &client.OpenIdConnectPolicy{}
+	var respDiags diag.Diagnostics
+	var err error
+	// access_token_manager_ref
+	accessTokenManagerRefValue := client.ResourceLink{}
+	accessTokenManagerRefAttrs := model.AccessTokenManagerRef.Attributes()
+	accessTokenManagerRefValue.Id = accessTokenManagerRefAttrs["id"].(types.String).ValueString()
+	result.AccessTokenManagerRef = accessTokenManagerRefValue
+
+	// attribute_contract
+	attributeContractValue := client.OpenIdConnectAttributeContract{}
+	attributeContractAttrs := model.AttributeContract.Attributes()
+	attributeContractValue.CoreAttributes = []client.OpenIdConnectAttribute{}
+	for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
+		coreAttributesValue := client.OpenIdConnectAttribute{}
+		coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+		coreAttributesValue.IncludeInIdToken = coreAttributesAttrs["include_in_id_token"].(types.Bool).ValueBoolPointer()
+		coreAttributesValue.IncludeInUserInfo = coreAttributesAttrs["include_in_user_info"].(types.Bool).ValueBoolPointer()
+		coreAttributesValue.MultiValued = coreAttributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+		coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+		attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
+	}
+	attributeContractValue.ExtendedAttributes = []client.OpenIdConnectAttribute{}
+	for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+		extendedAttributesValue := client.OpenIdConnectAttribute{}
+		extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+		extendedAttributesValue.IncludeInIdToken = extendedAttributesAttrs["include_in_id_token"].(types.Bool).ValueBoolPointer()
+		extendedAttributesValue.IncludeInUserInfo = extendedAttributesAttrs["include_in_user_info"].(types.Bool).ValueBoolPointer()
+		extendedAttributesValue.MultiValued = extendedAttributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+		extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+		attributeContractValue.ExtendedAttributes = append(attributeContractValue.ExtendedAttributes, extendedAttributesValue)
+	}
+	result.AttributeContract = attributeContractValue
+
+	// attribute_mapping
+	attributeMappingValue := client.AttributeMapping{}
+	attributeMappingAttrs := model.AttributeMapping.Attributes()
+	attributeMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
 	if err != nil {
-		diags.AddError(providererror.InternalProviderError, "Failed to read access_token_manager_ref from plan: "+err.Error())
-		return nil, nil, nil
+		respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+	}
+	attributeMappingValue.AttributeSources, err = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.Set))
+	if err != nil {
+		respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+	}
+	attributeMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(attributeMappingAttrs["issuance_criteria"].(types.Object))
+	if err != nil {
+		respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+	}
+	result.AttributeMapping = attributeMappingValue
+
+	// id_token_lifetime
+	result.IdTokenLifetime = model.IdTokenLifetime.ValueInt64Pointer()
+	// id_token_typ_header_value
+	result.IdTokenTypHeaderValue = model.IdTokenTypHeaderValue.ValueStringPointer()
+	// include_shash_in_id_token
+	result.IncludeSHashInIdToken = model.IncludeSHashInIdToken.ValueBoolPointer()
+	// include_sri_in_id_token
+	result.IncludeSriInIdToken = model.IncludeSriInIdToken.ValueBoolPointer()
+	// include_user_info_in_id_token
+	result.IncludeUserInfoInIdToken = model.IncludeUserInfoInIdToken.ValueBoolPointer()
+	// include_x5t_in_id_token
+	result.IncludeX5tInIdToken = model.IncludeX5tInIdToken.ValueBoolPointer()
+	// name
+	result.Name = model.Name.ValueString()
+	// oidcthing_id
+	result.Id = model.PolicyId.ValueString()
+	// reissue_id_token_in_hybrid_flow
+	result.ReissueIdTokenInHybridFlow = model.ReissueIdTokenInHybridFlow.ValueBoolPointer()
+	// return_id_token_on_refresh_grant
+	result.ReturnIdTokenOnRefreshGrant = model.ReturnIdTokenOnRefreshGrant.ValueBoolPointer()
+	// scope_attribute_mappings
+	if !model.ScopeAttributeMappings.IsNull() {
+		result.ScopeAttributeMappings = &map[string]client.ParameterValues{}
+		for key, scopeAttributeMappingsElement := range model.ScopeAttributeMappings.Elements() {
+			scopeAttributeMappingsValue := client.ParameterValues{}
+			scopeAttributeMappingsAttrs := scopeAttributeMappingsElement.(types.Object).Attributes()
+			if !scopeAttributeMappingsAttrs["values"].IsNull() {
+				scopeAttributeMappingsValue.Values = []string{}
+				for _, valuesElement := range scopeAttributeMappingsAttrs["values"].(types.Set).Elements() {
+					scopeAttributeMappingsValue.Values = append(scopeAttributeMappingsValue.Values, valuesElement.(types.String).ValueString())
+				}
+			}
+			(*result.ScopeAttributeMappings)[key] = scopeAttributeMappingsValue
+		}
 	}
 
-	// attribute contract
-	var attributeContract client.OpenIdConnectAttributeContract
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), &attributeContract)
-	if err != nil {
-		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_contract from plan: "+err.Error())
-		return nil, nil, nil
-	}
-
-	// attribute mapping
-	attributeMapping := client.AttributeMapping{}
-	planAttrs := plan.AttributeMapping.Attributes()
-
-	attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
-	attributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
-	if err != nil {
-		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.attribute_contract_fulfillment from plan: "+err.Error())
-		return nil, nil, nil
-	}
-
-	issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
-	attributeMapping.IssuanceCriteria, err = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
-	if err != nil {
-		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.issuance_criteria from plan: "+err.Error())
-		return nil, nil, nil
-	}
-
-	attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
-	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
-	attributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
-	if err != nil {
-		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.attribute_sources from plan: "+err.Error())
-		return nil, nil, nil
-	}
-
-	return &accessTokenManagerRef, &attributeContract, &attributeMapping
+	return result, respDiags
 }
 
 func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -333,16 +364,9 @@ func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	accessTokenManagerRef, attributeContract, attributeMapping := getRequiredOauthOpenIDConnectPolicyFields(plan, &resp.Diagnostics)
-	if accessTokenManagerRef == nil || attributeContract == nil || attributeMapping == nil {
-		// Diagnostics are already added to the response in the above method, just return here
-		return
-	}
-
-	newOIDCPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(), *accessTokenManagerRef, *attributeContract, *attributeMapping)
-	err := addOptionalOauthOpenIdConnectPolicyFields(newOIDCPolicy, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OIDC Policy: "+err.Error())
+	newOIDCPolicy, diags := plan.buildClientStruct()
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -401,18 +425,9 @@ func (r *openidConnectPolicyResource) Update(ctx context.Context, req resource.U
 
 	updateOIDCPolicyRequest := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicy(config.AuthContext(ctx, r.providerConfig), plan.PolicyId.ValueString())
 
-	accessTokenManagerRef, attributeContract, attributeMapping := getRequiredOauthOpenIDConnectPolicyFields(plan, &resp.Diagnostics)
-	if accessTokenManagerRef == nil || attributeContract == nil || attributeMapping == nil {
-		// Diagnostics are already added to the response in the above method, just return here
-		return
-	}
-
-	updatedPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(),
-		*accessTokenManagerRef, *attributeContract, *attributeMapping)
-
-	err := addOptionalOauthOpenIdConnectPolicyFields(updatedPolicy, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the OIDC Policy: "+err.Error())
+	updatedPolicy, diags := plan.buildClientStruct()
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -442,7 +457,9 @@ func (r *openidConnectPolicyResource) Delete(ctx context.Context, req resource.D
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	// Delete API call logic
+	httpResp, err := api.ExponentialBackOffRetryDelete([]int{422},
+		r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp, &customId)
 	}

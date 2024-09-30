@@ -53,10 +53,11 @@ func TestAccAuthenticationApiSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccAuthenticationApiSettings(resourceName, &updatedResourceModel),
-				ResourceName:      "pingfederate_authentication_api_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccAuthenticationApiSettings(resourceName, &updatedResourceModel),
+				ResourceName:                         "pingfederate_authentication_api_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "api_enabled",
 			},
 			{
 				Config: testAccAuthenticationApiSettings(resourceName, nil),

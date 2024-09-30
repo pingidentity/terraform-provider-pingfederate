@@ -27,7 +27,6 @@ data "pingfederate_license" "myLicense" {
 - `expiration_date` (String) The expiration date value from the license file (if applicable).
 - `features` (Attributes List) Other licence features, if applicable. (see [below for nested schema](#nestedatt--features))
 - `grace_period` (Number) Number of days provided as grace period, past the expiration date (if applicable).
-- `id` (String) ID of this resource.
 - `issue_date` (String) The issue date value from the license file.
 - `license_groups` (Attributes List) License connection groups, if applicable. (see [below for nested schema](#nestedatt--license_groups))
 - `max_connections` (Number) Maximum number of connections that can be created under this license (if applicable).

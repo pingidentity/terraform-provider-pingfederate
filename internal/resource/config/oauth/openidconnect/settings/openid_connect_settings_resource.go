@@ -2,22 +2,12 @@ package oauthopenidconnectsettings
 
 import (
 	"context"
-	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -29,12 +19,6 @@ var (
 	_ resource.Resource                = &openidConnectSettingsResource{}
 	_ resource.ResourceWithConfigure   = &openidConnectSettingsResource{}
 	_ resource.ResourceWithImportState = &openidConnectSettingsResource{}
-
-	openidConnectSettingsAttrTypes = map[string]attr.Type{
-		"track_user_sessions_for_logout": types.BoolType,
-		"revoke_user_session_on_logout":  types.BoolType,
-		"session_revocation_lifetime":    types.Int64Type,
-	}
 )
 
 // OpenidConnectSettingsResource is a helper function to simplify the provider implementation.
@@ -49,9 +33,7 @@ type openidConnectSettingsResource struct {
 }
 
 type openidConnectSettingsResourceModel struct {
-	Id               types.String `tfsdk:"id"`
 	DefaultPolicyRef types.Object `tfsdk:"default_policy_ref"`
-	SessionSettings  types.Object `tfsdk:"session_settings"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -61,58 +43,16 @@ func (r *openidConnectSettingsResource) Schema(ctx context.Context, req resource
 		Attributes: map[string]schema.Attribute{
 			"default_policy_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the default policy.",
-				Required:    true,
+				Optional:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
-			"session_settings": schema.SingleNestedAttribute{
-				Description: "The session settings",
-				Computed:    true,
-				Optional:    true,
-				Default: objectdefault.StaticValue(
-					types.ObjectValueMust(
-						openidConnectSettingsAttrTypes,
-						map[string]attr.Value{
-							"track_user_sessions_for_logout": types.BoolValue(false),
-							"revoke_user_session_on_logout":  types.BoolValue(true),
-							"session_revocation_lifetime":    types.Int64Value(490),
-						},
-					),
-				),
-				Attributes: map[string]schema.Attribute{
-					"track_user_sessions_for_logout": schema.BoolAttribute{
-						Description:        "Determines whether user sessions are tracked for logout. The default is `false`.",
-						DeprecationMessage: "This property is now available under `pingfederate_oauth_server_settings` and should be accessed through that resource.",
-						Computed:           true,
-						Optional:           true,
-						Default:            booldefault.StaticBool(false),
-					},
-					"revoke_user_session_on_logout": schema.BoolAttribute{
-						Description:        "Determines whether the user's session is revoked on logout. The default is `true`.",
-						DeprecationMessage: "This property is now available under `pingfederate_session_settings` and should be accessed through that resource.",
-						Computed:           true,
-						Optional:           true,
-						Default:            booldefault.StaticBool(true),
-					},
-					"session_revocation_lifetime": schema.Int64Attribute{
-						Description:        "How long a session revocation is tracked and stored, in minutes. The default is `490`. Value must be between `1` and `432001`, inclusive.",
-						DeprecationMessage: "This property is now available under `pingfederate_session_settings` and should be accessed through that resource.",
-						Computed:           true,
-						Optional:           true,
-						Default:            int64default.StaticInt64(490),
-						Validators: []validator.Int64{
-							// session_revocation_lifetime must be between 1 and 43200 minutes, inclusive
-							int64validator.Between(1, 43200),
-						},
-					},
-				},
-			},
+			//TODO verify that missing session_settings from this reosurce doesn't conflict with the session settings resource
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
-func addOptionalOpenidConnectSettingsFields(ctx context.Context, addRequest *client.OpenIdConnectSettings, plan openidConnectSettingsResourceModel) error {
+func addOptionalOpenidConnectSettingsFields(ctx context.Context, addRequest *client.OpenIdConnectSettings, plan openidConnectSettingsResourceModel, existingSessionSettings *client.SessionSettings) error {
 	var err error
 
 	if internaltypes.IsDefined(plan.DefaultPolicyRef) {
@@ -122,11 +62,11 @@ func addOptionalOpenidConnectSettingsFields(ctx context.Context, addRequest *cli
 		}
 	}
 
-	if internaltypes.IsDefined(plan.SessionSettings) {
-		addRequest.SessionSettings = &client.OIDCSessionSettings{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SessionSettings, false)), addRequest.SessionSettings)
-		if err != nil {
-			return err
+	if existingSessionSettings != nil {
+		addRequest.SessionSettings = &client.OIDCSessionSettings{
+			TrackUserSessionsForLogout: existingSessionSettings.TrackAdapterSessionsForLogout,
+			RevokeUserSessionOnLogout:  existingSessionSettings.RevokeUserSessionOnLogout,
+			SessionRevocationLifetime:  existingSessionSettings.SessionRevocationLifetime,
 		}
 	}
 
@@ -150,21 +90,11 @@ func (r *openidConnectSettingsResource) Configure(_ context.Context, req resourc
 
 }
 
-func readOpenidConnectSettingsResponse(ctx context.Context, r *client.OpenIdConnectSettings, state *openidConnectSettingsResourceModel, existingId *string) diag.Diagnostics {
-
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
-
+func readOpenidConnectSettingsResponse(ctx context.Context, r *client.OpenIdConnectSettings, state *openidConnectSettingsResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.DefaultPolicyRef, respDiags = resourcelink.ToState(ctx, r.DefaultPolicyRef)
 	diags = append(diags, respDiags...)
-	sessionSettings, respDiags := types.ObjectValueFrom(ctx, openidConnectSettingsAttrTypes, r.SessionSettings)
-	diags = append(diags, respDiags...)
-	state.SessionSettings = sessionSettings
 
 	// make sure all object type building appends diags
 	return diags
@@ -179,8 +109,15 @@ func (r *openidConnectSettingsResource) Create(ctx context.Context, req resource
 		return
 	}
 
+	// This resource depends on the values in the /session/settings endpoint, so pass those in to build the client struct
+	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
+		return
+	}
+
 	createOpenidConnectSettings := client.NewOpenIdConnectSettings()
-	err := addOptionalOpenidConnectSettingsFields(ctx, createOpenidConnectSettings, plan)
+	err = addOptionalOpenidConnectSettingsFields(ctx, createOpenidConnectSettings, plan, apiReadSessionSettings)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OpenID Connect settings: "+err.Error())
 		return
@@ -196,7 +133,7 @@ func (r *openidConnectSettingsResource) Create(ctx context.Context, req resource
 	// Read the response into the state
 	var state openidConnectSettingsResourceModel
 
-	diags = readOpenidConnectSettingsResponse(ctx, openidConnectSettingsResponse, &state, nil)
+	diags = readOpenidConnectSettingsResponse(ctx, openidConnectSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -222,14 +159,8 @@ func (r *openidConnectSettingsResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	// Read the response into the state
-	readOpenidConnectSettingsResponse(ctx, apiReadOpenidConnectSettings, &state, id)
+	readOpenidConnectSettingsResponse(ctx, apiReadOpenidConnectSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -246,9 +177,16 @@ func (r *openidConnectSettingsResource) Update(ctx context.Context, req resource
 		return
 	}
 
+	// This resource depends on the values in the /session/settings endpoint, so pass those in to build the client struct
+	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
+		return
+	}
+
 	updateOpenidConnectSettings := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewOpenIdConnectSettings()
-	err := addOptionalOpenidConnectSettingsFields(ctx, createUpdateRequest, plan)
+	err = addOptionalOpenidConnectSettingsFields(ctx, createUpdateRequest, plan, apiReadSessionSettings)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OpenID Connect settings: "+err.Error())
 		return
@@ -261,15 +199,9 @@ func (r *openidConnectSettingsResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	// Read the response
 	var state openidConnectSettingsResourceModel
-	diags = readOpenidConnectSettingsResponse(ctx, updateOpenidConnectSettingsResponse, &state, id)
+	diags = readOpenidConnectSettingsResponse(ctx, updateOpenidConnectSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -284,6 +216,8 @@ func (r *openidConnectSettingsResource) Delete(ctx context.Context, req resource
 }
 
 func (r *openidConnectSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState openidConnectSettingsResourceModel
+	emptyState.DefaultPolicyRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

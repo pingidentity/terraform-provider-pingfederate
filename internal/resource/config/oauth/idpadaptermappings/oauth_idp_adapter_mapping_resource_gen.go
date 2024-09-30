@@ -67,7 +67,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema.Schema{
 		Description: "Resource to create and manage IdP adapter mappings.",
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_auth_server_settings` resource), these must also be configured as map keys."),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_server_settings` resource), these must also be configured as map keys."),
 			"attribute_sources":              attributesources.ToSchema(0, false),
 			"idp_adapter_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -86,7 +86,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 			"issuance_criteria": issuancecriteria.ToSchema(),
 			"mapping_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the adapter mapping.",
+				Description: "The ID of the adapter mapping. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),

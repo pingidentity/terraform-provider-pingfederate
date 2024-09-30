@@ -98,7 +98,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefau
 	plan.SigningKeys, diags = types.ObjectValue(signingKeysAttrTypes, signingKeysAttrs)
 	resp.Diagnostics.Append(diags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (m *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) validateActivePreviousCertRefs() diag.Diagnostics {

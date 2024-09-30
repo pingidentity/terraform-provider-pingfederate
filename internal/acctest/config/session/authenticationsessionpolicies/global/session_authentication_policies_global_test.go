@@ -65,10 +65,11 @@ func TestAccSessionAuthenticationPoliciesGlobal(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionAuthenticationPoliciesGlobal(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_session_authentication_policies_global." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccSessionAuthenticationPoliciesGlobal(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_session_authentication_policies_global." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "enable_sessions",
 			},
 			{
 				// Back to minimal model

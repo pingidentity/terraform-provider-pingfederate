@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -17,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -70,9 +68,8 @@ type serverSettingsLoggingResource struct {
 }
 
 type serverSettingsLoggingResourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	LogCategories    types.Set    `tfsdk:"log_categories"`
-	LogCategoriesAll types.Set    `tfsdk:"log_categories_all"`
+	LogCategories    types.Set `tfsdk:"log_categories"`
+	LogCategoriesAll types.Set `tfsdk:"log_categories_all"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -153,8 +150,6 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -190,13 +185,8 @@ func (r *serverSettingsLoggingResource) Configure(_ context.Context, req resourc
 
 }
 
-func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.LogSettings, plan *serverSettingsLoggingResourceModel, state *serverSettingsLoggingResourceModel, existingId *string, isImport bool) diag.Diagnostics {
+func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.LogSettings, plan *serverSettingsLoggingResourceModel, state *serverSettingsLoggingResourceModel, isImport bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
 
 	// Build a list of log categories specified in the plan
 	plannedIds := map[string]bool{}
@@ -260,7 +250,7 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 
 	// Read the response into the state
 	var state serverSettingsLoggingResourceModel
-	diags = readServerSettingsLoggingResourceResponse(ctx, serverSettingsLoggingResponse, &plan, &state, nil, false)
+	diags = readServerSettingsLoggingResourceResponse(ctx, serverSettingsLoggingResponse, &plan, &state, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -290,12 +280,7 @@ func (r *serverSettingsLoggingResource) Read(ctx context.Context, req resource.R
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsLoggingResourceResponse(ctx, apiReadServerSettingsLogging, &state, &state, id, isImportRead)
+	diags = readServerSettingsLoggingResourceResponse(ctx, apiReadServerSettingsLogging, &state, &state, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -330,12 +315,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 
 	// Read the response
 	var state serverSettingsLoggingResourceModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsLoggingResourceResponse(ctx, updateServerSettingsLoggingResponse, &plan, &state, id, false)
+	diags = readServerSettingsLoggingResourceResponse(ctx, updateServerSettingsLoggingResponse, &plan, &state, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -356,7 +336,10 @@ func (r *serverSettingsLoggingResource) Delete(ctx context.Context, req resource
 }
 
 func (r *serverSettingsLoggingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState serverSettingsLoggingResourceModel
+	emptyState.LogCategories = types.SetNull(types.ObjectType{AttrTypes: logCategoriesAttrTypes})
+	emptyState.LogCategoriesAll = types.SetNull(types.ObjectType{AttrTypes: logCategoriesAttrTypes})
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

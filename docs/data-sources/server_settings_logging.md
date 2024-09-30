@@ -17,7 +17,6 @@ Describes the settings related to server logging.
 
 ### Read-Only
 
-- `id` (String) ID of this resource.
 - `log_categories` (Attributes Set) The log categories defined for the system and whether they are enabled. (see [below for nested schema](#nestedatt--log_categories))
 
 <a id="nestedatt--log_categories"></a>

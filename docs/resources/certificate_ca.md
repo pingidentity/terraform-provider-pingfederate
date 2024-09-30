@@ -22,12 +22,12 @@ resource "pingfederate_certificate_ca" "example" {
 
 ### Required
 
-- `file_data` (String) The certificate data in PEM format, base64-encoded. New line characters should be omitted or encoded in this value.
+- `file_data` (String) The certificate data in PEM format, base64-encoded. New line characters should be omitted or encoded in this value. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 
-- `ca_id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
+- `ca_id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. This field is immutable and will trigger a replacement plan if changed.
 
 ### Read-Only
 

@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -477,7 +475,6 @@ func (r *oauthServerSettingsDataSource) Schema(ctx context.Context, req datasour
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -515,7 +512,7 @@ func (r *oauthServerSettingsDataSource) Read(ctx context.Context, req datasource
 	}
 
 	// Read the response into the state
-	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state, pointers.String("oauth_auth_server_settings_id"))
+	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

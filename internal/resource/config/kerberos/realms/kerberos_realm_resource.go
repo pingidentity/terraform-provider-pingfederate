@@ -64,7 +64,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 		Description: "Resource to create and manage a Kerberos Realm",
 		Attributes: map[string]schema.Attribute{
 			"realm_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`.",
+				Description: "The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -220,7 +220,7 @@ func (r *kerberosRealmsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		}
 	}
 	resp.Diagnostics.Append(r.validatePlan(ctx, plan)...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readKerberosRealmsResponse(ctx context.Context, r *client.KerberosRealm, state *kerberosRealmsResourceModel, plan *kerberosRealmsResourceModel) diag.Diagnostics {

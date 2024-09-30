@@ -26,10 +26,6 @@ resource "pingfederate_authentication_policies_settings" "authenticationPolicies
 - `enable_idp_authn_selection` (Boolean) Enable IdP authentication policies. Default value is `false`.
 - `enable_sp_authn_selection` (Boolean) Enable SP authentication policies. Default value is `false`.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

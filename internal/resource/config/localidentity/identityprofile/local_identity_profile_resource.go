@@ -93,10 +93,12 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 		Description: "Manages a configured local identity profile",
 		Attributes: map[string]schema.Attribute{
 			"profile_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the local identity profile. It can be any combination of `[a-zA-Z0-9._-]`.",
-				Required:    true,
+				Description: "The persistent, unique ID for the local identity profile. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.String{
 					configvalidators.PingFederateId(),
@@ -836,7 +838,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		}
 	}
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -958,9 +960,6 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 			if fieldStoringVerificationStatus.IsNull() || (internaltypes.IsDefined(fieldStoringVerificationStatus) && fieldStoringVerificationStatus.ValueString() == "") {
 				resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("field_storing_verification_status is required when email_verification_enabled is set to true"))
 			}
-			if emailVerificationConfig["notification_publisher_ref"].IsNull() {
-				resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("notification_publisher_ref is required when email_verification_enabled is set to true"))
-			}
 		}
 	}
 	if !model.ProfileEnabled.ValueBool() && !model.RegistrationEnabled.ValueBool() {
@@ -1051,16 +1050,6 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 					providererror.InvalidAttributeConfiguration,
 					fmt.Sprintln("profile_config is not allowed when profile is not enabled."))
 			}
-		}
-	}
-	if internaltypes.IsDefined(model.RegistrationConfig) {
-		captchaEnabled := model.RegistrationConfig.Attributes()["captcha_enabled"].(types.Bool)
-		captchaProviderRef := model.RegistrationConfig.Attributes()["captcha_provider_ref"].(types.Object)
-		if (captchaEnabled.ValueBool() && captchaProviderRef.IsNull()) || (internaltypes.IsDefined(captchaEnabled) && !captchaEnabled.ValueBool() && internaltypes.IsDefined(captchaProviderRef)) {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("registration_config"),
-				providererror.InvalidAttributeConfiguration,
-				"If registration_config.captcha_enabled is set to true, then registration_config.captcha_provider_ref must be configured. If registration_config.captcha_enabled is false, then registration_config.captcha_provider_ref must not be configured.")
 		}
 	}
 

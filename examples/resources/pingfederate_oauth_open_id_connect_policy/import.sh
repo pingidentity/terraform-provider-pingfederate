@@ -1,1 +1,0 @@
-terraform import pingfederate_oauth_open_id_connect_policy.openIdConnectPolicy policyId

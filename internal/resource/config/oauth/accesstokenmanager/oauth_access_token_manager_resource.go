@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,17 +17,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -51,7 +55,7 @@ var (
 	}
 
 	selectionSettingsAttrType = map[string]attr.Type{
-		"resource_uris": types.ListType{ElemType: types.StringType},
+		"resource_uris": types.SetType{ElemType: types.StringType},
 	}
 
 	accessControlSettingsAttrType = map[string]attr.Type{
@@ -66,7 +70,7 @@ var (
 		"update_authn_session_activity":   types.BoolType,
 	}
 
-	resourceUrisDefault, _      = types.ListValue(types.StringType, nil)
+	resourceUrisDefault, _      = types.SetValue(types.StringType, nil)
 	selectionSettingsDefault, _ = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
 		"resource_uris": resourceUrisDefault,
 	})
@@ -119,19 +123,42 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 
 func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
-		Description: "Manages an OAuth access token manager plugin instance.",
+		Description: "Resource to create and manage an OAuth access token manager plugin instance.",
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "The plugin instance name. The name can be modified once the instance is created.",
+			"manager_id": schema.StringAttribute{
+				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be alphanumeric, contain no spaces, and be less than 33 characters. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(32),
+					configvalidators.IsAlphanumeric(),
+				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"plugin_descriptor_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
+			"name": schema.StringAttribute{
+				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Required:    true,
-				Attributes:  resourcelink.ToSchema(),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"plugin_descriptor_ref": schema.SingleNestedAttribute{
+				Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed.",
+				Required:    true,
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+				},
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -144,9 +171,8 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.SetNestedAttribute{
-						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT.",
+						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only.",
 						Computed:    true,
-						Optional:    false,
 						PlanModifiers: []planmodifier.Set{
 							setplanmodifier.UseStateForUnknown(),
 						},
@@ -155,14 +181,12 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
 									Computed:    true,
-									Optional:    false,
 									PlanModifiers: []planmodifier.String{
 										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
-									Optional:    false,
 									Computed:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
@@ -182,9 +206,12 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"multi_valued": schema.BoolAttribute{
-									Description: "Indicates whether attribute value is always returned as an array.",
+									Description: "Indicates whether attribute value is always returned as an array. The default is `false`.",
 									Computed:    true,
 									Optional:    true,
 									Default:     booldefault.StaticBool(false),
@@ -193,8 +220,11 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						},
 					},
 					"default_subject_attribute": schema.StringAttribute{
-						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
+						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use `USER_KEY` attribute value after grant lookup.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 			},
@@ -204,11 +234,11 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Optional:    true,
 				Default:     objectdefault.StaticValue(selectionSettingsDefault),
 				Attributes: map[string]schema.Attribute{
-					"resource_uris": schema.ListAttribute{
+					"resource_uris": schema.SetAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(resourceUrisDefault),
+						Default:     setdefault.StaticValue(resourceUrisDefault),
 						ElementType: types.StringType,
 					},
 				},
@@ -220,13 +250,13 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Default:     objectdefault.StaticValue(accessControlSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"restrict_clients": schema.BoolAttribute{
-						Description: "Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.",
+						Description: "Determines whether access to this token manager is restricted to specific OAuth clients. If `false`, the `allowed_clients` field is ignored. The default value is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"allowed_clients": schema.ListNestedAttribute{
-						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
+						Description: "If 'restrict_clients' is `true`, this field defines the list of OAuth clients that are allowed to access the token manager.",
 						Computed:    true,
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
@@ -243,25 +273,25 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Default:     objectdefault.StaticValue(sessionValidationSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"include_session_id": schema.BoolAttribute{
-						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
+						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"check_valid_authn_session": schema.BoolAttribute{
-						Description: "Check for a valid authentication session when validating the access token.",
+						Description: "Check for a valid authentication session when validating the access token. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"check_session_revocation_status": schema.BoolAttribute{
-						Description: "Check the session revocation status when validating the access token.",
+						Description: "Check the session revocation status when validating the access token. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"update_authn_session_activity": schema.BoolAttribute{
-						Description: "Update authentication session activity when validating the access token.",
+						Description: "Update authentication session activity when validating the access token. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -271,7 +301,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			"sequence_number": schema.Int64Attribute{
 				Description: "Number added to an access token to identify which Access Token Manager issued the token.",
 				Computed:    true,
-				Optional:    false,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -280,11 +309,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema,
-		"manager_id",
-		true,
-		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
 	resp.Schema = schema
 }
 
@@ -369,7 +393,7 @@ func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req re
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {
@@ -428,7 +452,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	if r.SelectionSettings == nil {
 		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
 	} else {
-		resourceUris, respDiags := types.ListValueFrom(ctx, types.StringType, r.SelectionSettings.ResourceUris)
+		resourceUris, respDiags := types.SetValueFrom(ctx, types.StringType, r.SelectionSettings.ResourceUris)
 		diags.Append(respDiags...)
 
 		state.SelectionSettings, respDiags = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
@@ -490,15 +514,14 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfigurationWithDefaults()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 
 	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.ManagerId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
+	err = addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Manager: "+err.Error())
 		return
@@ -577,17 +600,16 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfiguration()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(state.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
+	configuration, err := pluginconfiguration.ClientStruct(state.Configuration)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 
 	// Get the current state to see how any attributes are changing
 	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString())
 	createUpdateRequest := client.NewAccessTokenManager(state.ManagerId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
+	err = addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth access token manager: "+err.Error())
 		return
@@ -619,7 +641,8 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString()).Execute()
+	httpResp, err := api.ExponentialBackOffRetryDelete([]int{403},
+		r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp, &customId)
 	}

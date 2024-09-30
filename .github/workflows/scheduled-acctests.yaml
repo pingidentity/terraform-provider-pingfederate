@@ -21,8 +21,8 @@ jobs:
           - "11.2.7"
           - "11.3.1"
           - "11.3.7"
-          - "12.0.3"
-          - "12.1.0"
+          - "12.0.5"
+          - "12.1.3"
       max-parallel: 1
     steps:
       - uses: actions/checkout@v4
@@ -56,3 +56,6 @@ jobs:
           PF_TF_ACC_TEST_LICENSE_12: ${{ secrets.PF_TF_ACC_TEST_LICENSE_12 }}
           PF_TF_P1_POPULATION_ID: ${{ secrets.PF_TF_P1_POPULATION_ID }}
           PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA: ${{ secrets.PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA }}
+          PF_TF_ACC_TEST_CSR_RESPONSE_1: ${{ secrets.PF_TF_ACC_TEST_CSR_RESPONSE_1 }}
+          PF_TF_ACC_TEST_CSR_RESPONSE_2: ${{ secrets.PF_TF_ACC_TEST_CSR_RESPONSE_2 }}
+          PF_TF_ACC_TEST_CA_CERTIFICATE: ${{ secrets.PF_TF_ACC_TEST_CA_CERTIFICATE }}

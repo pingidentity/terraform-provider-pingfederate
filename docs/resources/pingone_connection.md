@@ -29,7 +29,7 @@ resource "pingfederate_pingone_connection" "example" {
 ### Optional
 
 - `active` (Boolean) Whether the PingOne Connection is active. Defaults to `true`.
-- `connection_id` (String) The persistent, unique ID of the connection.
+- `connection_id` (String) The persistent, unique ID of the connection. This field is immutable and will trigger a replacement plan if changed.
 - `description` (String) The description of the PingOne Connection
 
 ### Read-Only

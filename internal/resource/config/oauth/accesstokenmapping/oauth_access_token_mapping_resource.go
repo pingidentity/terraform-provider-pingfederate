@@ -68,7 +68,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 		Description: "Manages an OAuth Access Token Mapping",
 		Attributes: map[string]schema.Attribute{
 			"context": schema.SingleNestedAttribute{
-				Description: "The context of the OAuth Access Token Mapping. This property cannot be changed after the mapping is created.",
+				Description: "The context of the OAuth Access Token Mapping. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -83,17 +83,13 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 					},
 					"context_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated Access Token Mapping Context instance.",
-						Computed:    true,
 						Optional:    true,
 						Attributes:  resourcelink.ToSchema(),
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
 			"access_token_manager_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the access token manager this mapping is associated with. This property cannot be changed after the mapping is created.",
+				Description: "Reference to the access token manager this mapping is associated with. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -152,11 +148,21 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	state.Id = types.StringPointerValue(r.Id)
 	state.MappingId = types.StringPointerValue(r.Id)
 
-	contextRefObjValue, objDiags := resourcelink.ToState(ctx, &r.Context.ContextRef)
-	diags.Append(objDiags...)
+	contextRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	var contextRefValue types.Object
+	if r.Context.ContextRef.Id == "" {
+		contextRefValue = types.ObjectNull(contextRefAttrTypes)
+	} else {
+		contextRefValue, objDiags = types.ObjectValue(contextRefAttrTypes, map[string]attr.Value{
+			"id": types.StringValue(r.Context.ContextRef.Id),
+		})
+		diags.Append(objDiags...)
+	}
 	contextAttrValue := map[string]attr.Value{
 		"type":        types.StringValue(r.Context.Type),
-		"context_ref": contextRefObjValue,
+		"context_ref": contextRefValue,
 	}
 	state.Context, objDiags = types.ObjectValue(accessTokenMappingContext, contextAttrValue)
 	diags.Append(objDiags...)
@@ -276,7 +282,7 @@ func (r *oauthAccessTokenMappingResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -341,7 +347,7 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 		return
 	}
 
-	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString())
 	apiUpdateOauthAccessTokenMappings = apiUpdateOauthAccessTokenMappings.Body(*updateOauthAccessTokenMappings)
 	updateOauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMappingExecute(apiUpdateOauthAccessTokenMappings)
 	if err != nil {
@@ -367,7 +373,7 @@ func (r *oauthAccessTokenMappingResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.DeleteMapping(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.DeleteMapping(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Mapping", err, httpResp)
 	}
@@ -375,5 +381,5 @@ func (r *oauthAccessTokenMappingResource) Delete(ctx context.Context, req resour
 
 func (r *oauthAccessTokenMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("mapping_id"), req, resp)
 }

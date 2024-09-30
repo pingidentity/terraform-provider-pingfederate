@@ -41,10 +41,11 @@ func TestAccAuthenticationPolicies(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccAuthenticationPoliciesComplex(resourceName, complexDescription),
-				ResourceName:      "pingfederate_authentication_policies." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccAuthenticationPoliciesComplex(resourceName, complexDescription),
+				ResourceName:                         "pingfederate_authentication_policies." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "fail_if_no_selection",
 			},
 			{
 				// Back to minimal model

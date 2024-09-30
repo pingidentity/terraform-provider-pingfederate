@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -90,8 +89,6 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Schema(ctx context.Context
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -103,8 +100,8 @@ func (r *sessionAuthenticationPoliciesGlobalResource) ValidateConfig(ctx context
 		return
 	}
 
-	if internaltypes.IsDefined(config.PersistentSessions) && !config.EnableSessions.ValueBool() {
-		resp.Diagnostics.AddAttributeError(path.Root("persistent_sessions"), providererror.InvalidAttributeConfiguration, "persistent_sessions cannot be set when enable_sessions is set to \"false\"")
+	if config.PersistentSessions.ValueBool() && !config.EnableSessions.ValueBool() {
+		resp.Diagnostics.AddAttributeError(path.Root("persistent_sessions"), providererror.InvalidAttributeConfiguration, "persistent_sessions cannot be set to `true` when enable_sessions is set to \"false\"")
 	}
 }
 
@@ -188,7 +185,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Create(ctx context.Context
 
 	// Read the response into the state
 	var state sessionAuthenticationPoliciesGlobalModel
-	readSessionAuthenticationPoliciesGlobalResponse(ctx, sessionAuthenticationPoliciesGlobalResponse, &state, nil)
+	readSessionAuthenticationPoliciesGlobalResponse(ctx, sessionAuthenticationPoliciesGlobalResponse, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -214,12 +211,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Read(ctx context.Context, 
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readSessionAuthenticationPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationPoliciesGlobal, &state, id)
+	readSessionAuthenticationPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationPoliciesGlobal, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -253,12 +245,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Update(ctx context.Context
 
 	// Read the response
 	var state sessionAuthenticationPoliciesGlobalModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readSessionAuthenticationPoliciesGlobalResponse(ctx, updateSessionAuthenticationPoliciesGlobalResponse, &state, id)
+	readSessionAuthenticationPoliciesGlobalResponse(ctx, updateSessionAuthenticationPoliciesGlobalResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -280,6 +267,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Delete(ctx context.Context
 }
 
 func (r *sessionAuthenticationPoliciesGlobalResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState sessionAuthenticationPoliciesGlobalModel
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

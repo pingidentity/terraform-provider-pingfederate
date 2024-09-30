@@ -181,8 +181,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			"attribute_mapping": schema.SingleNestedAttribute{
 				Description: "The attributes mapping from attribute sources to attribute targets.",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"attribute_sources": attributesources.ToSchema(0, false),
 					"attribute_contract_fulfillment": schema.MapNestedAttribute{
@@ -214,7 +213,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 		"adapter_id",
 		true,
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
+		"The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 
@@ -288,14 +287,48 @@ func (r *idpAdapterResource) ModifyPlan(ctx context.Context, req resource.Modify
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	var respDiags diag.Diagnostics
 
-	if plan == nil || state == nil {
+	if plan == nil {
+		return
+	}
+
+	// Check that any defined core and extended attributes are included in the contract fulfillment
+	if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeMapping) {
+		attributeContractAttrs := plan.AttributeContract.Attributes()
+		attributeMappingAttrs := plan.AttributeMapping.Attributes()
+		if internaltypes.IsDefined(attributeMappingAttrs["attribute_contract_fulfillment"]) {
+			attributeContractFulfillmentKeys := map[string]bool{}
+			for key := range attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map).Elements() {
+				attributeContractFulfillmentKeys[key] = true
+			}
+
+			definedAttrs := []string{}
+			for _, attr := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
+				attrName := attr.(types.Object).Attributes()["name"].(types.String).ValueString()
+				definedAttrs = append(definedAttrs, attrName)
+			}
+			for _, attr := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				attrName := attr.(types.Object).Attributes()["name"].(types.String).ValueString()
+				definedAttrs = append(definedAttrs, attrName)
+			}
+			for _, attrName := range definedAttrs {
+				if !attributeContractFulfillmentKeys[attrName] {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("attribute_mapping").AtMapKey("attribute_contract_fulfillment"),
+						providererror.InvalidAttributeConfiguration,
+						"attribute_contract_fulfillment must include all core and extended attributes. Missing attribute: "+attrName)
+				}
+			}
+		}
+	}
+
+	if state == nil {
 		return
 	}
 
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -314,14 +347,13 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
-	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
@@ -339,7 +371,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterModel
 
-	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan, false)
+	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan, false, true)
 	resp.Diagnostics.Append(readResponseDiags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -369,7 +401,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state, isImportRead)
+	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state, isImportRead, false)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
@@ -397,14 +429,13 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
-	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 
 	err = addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -421,7 +452,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Read the response
 	var state idpAdapterModel
-	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan, false)
+	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan, false, true)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Update computed values

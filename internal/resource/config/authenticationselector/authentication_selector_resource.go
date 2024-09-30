@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -31,11 +32,13 @@ var (
 	_ resource.ResourceWithConfigure   = &authenticationSelectorResource{}
 	_ resource.ResourceWithImportState = &authenticationSelectorResource{}
 
+	extendedAttributesElemType = types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"name": types.StringType,
+		},
+	}
 	attributeContractAttrType = map[string]attr.Type{
-		"extended_attributes": types.SetType{ElemType: types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"name": types.StringType,
-			}}},
+		"extended_attributes": types.SetType{ElemType: extendedAttributesElemType},
 	}
 
 	customId = "selector_id"
@@ -64,6 +67,10 @@ type authenticationSelectorResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *authenticationSelectorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	attributeContractDefault, diags := types.ObjectValue(attributeContractAttrType, map[string]attr.Value{
+		"extended_attributes": types.SetNull(extendedAttributesElemType),
+	})
+	resp.Diagnostics.Append(diags...)
 	schema := schema.Schema{
 		Description: "Manages Authentication Selectors",
 		Attributes: map[string]schema.Attribute{
@@ -76,7 +83,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Required:    true,
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
+				Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed.",
 				Attributes:  resourcelink.ToSchema(),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -96,6 +103,8 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the Authentication Selector provides.",
 				Optional:    true,
+				Computed:    true,
+				Default:     objectdefault.StaticValue(attributeContractDefault),
 				Attributes: map[string]schema.Attribute{
 					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A set of additional attributes that can be returned by the Authentication Selector. The extended attributes are only used if the Authentication Selector supports them.",
@@ -115,7 +124,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 	}
 	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema, "selector_id", true, true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
+		"The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 
@@ -169,7 +178,7 @@ func (r *authenticationSelectorResource) ModifyPlan(ctx context.Context, req res
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readAuthenticationSelectorsResponse(ctx context.Context, r *client.AuthenticationSelector, state *authenticationSelectorResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {
@@ -206,8 +215,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}
@@ -222,7 +230,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
+	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
 	err = addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
@@ -294,8 +302,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	var configuration client.PluginConfiguration
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}
@@ -311,7 +318,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 	}
 
 	updateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), plan.SelectorId.ValueString())
-	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
+	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
 	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())

@@ -32,7 +32,7 @@ resource "pingfederate_oauth_issuer" "oauthIssuer" {
 ### Optional
 
 - `description` (String) The description of this virtual issuer.
-- `issuer_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This property cannot be changed after initial creation.
+- `issuer_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 - `path` (String) The path of this virtual issuer. Path must start with a `/`, but cannot end with `/`.
 
 ### Read-Only

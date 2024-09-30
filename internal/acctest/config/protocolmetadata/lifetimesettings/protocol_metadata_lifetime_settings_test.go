@@ -46,10 +46,11 @@ func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccProtocolMetadataLifetimeSettings(resourceName, &updatedResourceModel),
-				ResourceName:      "pingfederate_protocol_metadata_lifetime_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccProtocolMetadataLifetimeSettings(resourceName, &updatedResourceModel),
+				ResourceName:                         "pingfederate_protocol_metadata_lifetime_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "cache_duration",
 			},
 			{
 				// Back to minimal model

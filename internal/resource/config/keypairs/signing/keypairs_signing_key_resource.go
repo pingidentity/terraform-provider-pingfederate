@@ -3,6 +3,7 @@ package keypairsigning
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -30,7 +31,8 @@ var (
 	_ resource.Resource              = &keypairsSigningKeyResource{}
 	_ resource.ResourceWithConfigure = &keypairsSigningKeyResource{}
 
-	customId = "key_id"
+	customId    = "key_id"
+	createMutex sync.Mutex
 )
 
 // KeypairsSigningKeyResource is a helper function to simplify the provider implementation.
@@ -604,7 +606,9 @@ func (r *keypairsSigningKeyResource) Create(ctx context.Context, req resource.Cr
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSigningAPI.CreateSigningKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
+		createMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSigningAPI.CreateSigningKeyPairExecute(apiCreateRequest)
+		createMutex.Unlock()
 		if err != nil {
 			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while generating the signing key", err, httpResp, &customId)
 			return
@@ -614,7 +618,9 @@ func (r *keypairsSigningKeyResource) Create(ctx context.Context, req resource.Cr
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
+		createMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPairExecute(apiCreateRequest)
+		createMutex.Unlock()
 		if err != nil {
 			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the signing key", err, httpResp, &customId)
 			return

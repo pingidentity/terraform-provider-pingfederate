@@ -71,8 +71,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the password credential validator provides.",
-				Computed:    true,
-				Optional:    true,
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",
@@ -116,7 +115,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 		"validator_id",
 		true,
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be less than 33 characters, contain no spaces, and be alphanumeric.")
+		"The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed. Must be less than 33 characters, contain no spaces, and be alphanumeric.")
 	resp.Schema = schema
 }
 
@@ -146,7 +145,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	var isRadiusServerTableFound bool
 	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" || pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
 		if configuration["tables"] != nil {
-			tables := configuration["tables"].(types.Set).Elements()
+			tables := configuration["tables"].(types.List).Elements()
 			for _, table := range tables {
 				tableAttrs := table.(types.Object).Attributes()
 				tableName := tableAttrs["name"].(types.String).ValueString()
@@ -156,10 +155,24 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 					for tableRowIndex, row := range tableRow {
 						rowAttrs := row.(types.Object).Attributes()
 						fields := rowAttrs["fields"].(types.Set).Elements()
+						sensitiveFields := rowAttrs["sensitive_fields"].(types.Set).Elements()
 						usernameFound := false
 						passwordFound := false
 						confirmPasswordFound := false
 						for _, field := range fields {
+							fieldRow := field.(types.Object).Attributes()
+							nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
+							if nestedTableFieldName == "Username" {
+								usernameFound = true
+							}
+							if nestedTableFieldName == "Password" {
+								passwordFound = true
+							}
+							if nestedTableFieldName == "Confirm Password" {
+								confirmPasswordFound = true
+							}
+						}
+						for _, field := range sensitiveFields {
 							fieldRow := field.(types.Object).Attributes()
 							nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
 							if nestedTableFieldName == "Username" {
@@ -211,7 +224,13 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	fieldNameMap := map[string]bool{}
 	if configuration["fields"] != nil {
 		fields := configuration["fields"].(types.Set).Elements()
+		sensitiveFields := configuration["sensitive_fields"].(types.Set).Elements()
 		for _, field := range fields {
+			field := field.(types.Object).Attributes()
+			fieldName := field["name"].(types.String).ValueString()
+			fieldNameMap[fieldName] = true
+		}
+		for _, field := range sensitiveFields {
 			field := field.(types.Object).Attributes()
 			fieldName := field["name"].(types.String).ValueString()
 			fieldNameMap[fieldName] = true
@@ -291,7 +310,7 @@ func (r *passwordCredentialValidatorResource) ModifyPlan(ctx context.Context, re
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorModel) error {
@@ -337,8 +356,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfigurationWithDefaults()
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
@@ -416,8 +434,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	}
 
 	// Configuration
-	configuration := client.NewPluginConfiguration()
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
+	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return

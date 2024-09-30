@@ -43,10 +43,11 @@ func TestAccVirtualHostNames(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccVirtualHostNames(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_virtual_host_names." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccVirtualHostNames(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_virtual_host_names." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "virtual_host_names.#",
 			},
 			{
 				// Back to minimal model

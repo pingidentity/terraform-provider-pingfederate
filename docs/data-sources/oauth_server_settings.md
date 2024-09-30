@@ -46,7 +46,6 @@ data "pingfederate_oauth_server_settings" "myOauthAuthServerSettings" {
 - `enable_cookieless_user_authorization_authentication_api` (Boolean) Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode
 - `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
 - `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
-- `id` (String) ID of this resource.
 - `include_issuer_in_authorization_response` (Boolean) Determines whether the authorization server's issuer value is added to the authorization response or not.
 - `jwt_secured_authorization_response_mode_lifetime` (Number) The lifetime, in seconds, of the JWT Secured authorization response.
 - `offline_access_require_consent_prompt` (Boolean) Determines whether offline_access requires the prompt parameter value be 'consent' or not.

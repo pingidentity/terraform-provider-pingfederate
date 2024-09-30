@@ -47,10 +47,6 @@ resource "pingfederate_authentication_api_settings" "apiSettings" {
 - `include_request_context` (Boolean) Includes request context in API responses. The default is `false`.
 - `restrict_access_to_redirectless_mode` (Boolean) Enable restrict access to redirectless mode. The default is `false`.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 <a id="nestedatt--default_application_ref"></a>
 ### Nested Schema for `default_application_ref`
 

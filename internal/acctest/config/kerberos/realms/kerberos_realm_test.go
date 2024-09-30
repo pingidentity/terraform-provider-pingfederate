@@ -83,7 +83,7 @@ func TestAccKerberosRealms(t *testing.T) {
 				ResourceName:            "pingfederate_kerberos_realm." + resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"kerberos_password", "kerberos_encrypted_password"},
+				ImportStateVerifyIgnore: []string{"kerberos_password"},
 			},
 			{
 				Config: testAccKerberosRealms(resourceName, initialResourceModel),
