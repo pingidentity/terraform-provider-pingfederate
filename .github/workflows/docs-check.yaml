@@ -1,0 +1,113 @@
+name: Docs Check
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/docs-check.yaml"
+      - ".golangci.yml"
+      - "docs/**"
+      - "templates/**"
+      - "schema-docs/**"
+      - "examples/**"
+  push:
+    branches:
+      - "main"
+
+permissions:
+  contents: read
+
+jobs:
+  # Ensure the project can build first
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - name: Get dependencies
+        run: |
+          go mod tidy
+          git diff --compact-summary --exit-code || \
+            (echo; echo "Unexpected difference after 'go mod tidy'. Run 'go mod tidy' command and commit."; exit 1)
+      - name: Build
+        run: |
+          make install
+  fmt:
+    name: go fmt
+    needs: [build]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: |
+          if [ "$(go fmt ./... | wc -l)" -gt 0 ]; then
+            echo "::error::'go fmt' found required formatting changes. Run 'make fmt' on your branch."
+            exit 1;
+          fi
+  vet:
+    name: go vet
+    needs: [build]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: go vet ./...
+  lint:
+    name: golangcli-lint
+    needs: [build]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: make golangcilint
+  generate:
+    name: go generate
+    needs: [build]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      # Use git add -N . to ensure that new files are listed in the git diff check
+      - run: |
+          go generate ./...
+          git add -N .
+          git diff --exit-code || \
+            (echo; echo "Unexpected difference after code generation. Run 'make generate' command and commit."; exit 1)
+  tfproviderlint:
+    name: tfproviderlintx
+    needs: [fmt, vet, lint, generate]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: make tfproviderlint
+  tflint:
+    name: tflint
+    needs: [fmt, vet, lint, generate]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - run: make tflint
