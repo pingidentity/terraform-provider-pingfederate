@@ -91,7 +91,7 @@ jobs:
             (echo; echo "Unexpected difference after code generation. Run 'make generate' command and commit."; exit 1)
   tfproviderlint:
     name: tfproviderlintx
-    needs: [fmt, vet, lint, generate, importfmt]
+    needs: [fmt, vet, lint, generate]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -102,7 +102,7 @@ jobs:
       - run: make tfproviderlint
   tflint:
     name: tflint
-    needs: [fmt, vet, lint, generate, importfmt]
+    needs: [fmt, vet, lint, generate]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
