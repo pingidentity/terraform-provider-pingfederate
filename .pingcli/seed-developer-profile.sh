@@ -16,7 +16,7 @@ if [ "$profile_exists" = "true" ]; then
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Removing existing profile..."
-    pingcli config delete-profile --profile $profile_name
+    pingcli config delete-profile -y $profile_name
   else
     echo "Exiting..."
     exit 0
