@@ -60,8 +60,9 @@ var (
 	}
 
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
-		"password": types.StringType,
-		"username": types.StringType,
+		"password":           types.StringType,
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
 	}
 	credentialsInboundBackChannelAuthAttrTypes = map[string]attr.Type{
 		"certs":                   types.ListType{ElemType: connectioncert.ObjType()},
@@ -72,8 +73,9 @@ var (
 		"verification_subject_dn": types.StringType,
 	}
 	credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
-		"password": types.StringType,
-		"username": types.StringType,
+		"password":           types.StringType,
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
 	}
 
 	credentialsOutboundBackChannelAuthAttrTypes = map[string]attr.Type{
@@ -961,6 +963,15 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											stringvalidator.LengthAtLeast(1),
 										},
 									},
+									"encrypted_password": schema.StringAttribute{
+										Description:         "Encrypted user password.",
+										MarkdownDescription: "Encrypted user password.",
+										Optional:            true,
+										Computed:            true,
+										Validators: []validator.String{
+											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
+										},
+									},
 								},
 								Optional:            true,
 								Description:         "Username and password credentials.",
@@ -1008,6 +1019,15 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										MarkdownDescription: "User password.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
+										},
+									},
+									"encrypted_password": schema.StringAttribute{
+										Description:         "Encrypted user password.",
+										MarkdownDescription: "Encrypted user password.",
+										Optional:            true,
+										Computed:            true,
+										Validators: []validator.String{
+											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 										},
 									},
 								},
@@ -3923,9 +3943,17 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
 					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
 				}
+				encryptedPassword := types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
+				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					encryptedPasswordFromPlan := plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["encrypted_password"].(types.String)
+					if internaltypes.IsDefined(encryptedPasswordFromPlan) {
+						encryptedPassword = types.StringValue(encryptedPasswordFromPlan.ValueString())
+					}
+				}
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password": types.StringValue(password),
-					"username": types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
+					"password":           types.StringValue(password),
+					"encrypted_password": encryptedPassword,
+					"username":           types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
 				diags.Append(objDiags...)
 			}
@@ -3958,9 +3986,17 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
 					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
 				}
+				encryptedPassword := types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
+				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					encryptedPasswordFromPlan := plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["encrypted_password"].(types.String)
+					if internaltypes.IsDefined(encryptedPasswordFromPlan) {
+						encryptedPassword = types.StringValue(encryptedPasswordFromPlan.ValueString())
+					}
+				}
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password": types.StringPointerValue(&password),
-					"username": types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
+					"password":           types.StringPointerValue(&password),
+					"encrypted_password": encryptedPassword,
+					"username":           types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
 				diags.Append(objDiags...)
 			}
