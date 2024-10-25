@@ -32,7 +32,7 @@ var (
 	clientAuthDataSourceAttrType = map[string]attr.Type{
 		"type":                                  types.StringType,
 		"encrypted_secret":                      types.StringType,
-		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}},
+		"secondary_secrets":                     types.ListType{ElemType: types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}},
 		"client_cert_issuer_dn":                 types.StringType,
 		"client_cert_subject_dn":                types.StringType,
 		"enforce_replay_prevention":             types.BoolType,
@@ -337,7 +337,7 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Optional:    false,
 						Computed:    true,
 					},
-					"secondary_secrets": schema.SetNestedAttribute{
+					"secondary_secrets": schema.ListNestedAttribute{
 						Description: "The list of secondary client secrets that are temporarily retained.",
 						Optional:    false,
 						Computed:    true,
@@ -589,8 +589,8 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 	diags = readOauthClientResponseCommon(ctx, r, state, nil, productVersion, false)
 
 	// state.ClientAuth
-	var secondarySecretsSetSlice []attr.Value
-	var secondarySecretsObjToState types.Set
+	var secondarySecretsListSlice []attr.Value
+	var secondarySecretsObjToState types.List
 	secondarySecretsFromClient := r.ClientAuth.GetSecondarySecrets()
 	for _, secondarySecretFromClient := range secondarySecretsFromClient {
 		secondarySecretAttrVal := map[string]attr.Value{}
@@ -598,9 +598,9 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 		secondarySecretAttrVal["expiry_time"] = types.StringValue(secondarySecretFromClient.ExpiryTime.Format(time.RFC3339Nano))
 		secondarySecretsAttrValObj, respDiags := types.ObjectValue(secondarySecretsDataSourceAttrType, secondarySecretAttrVal)
 		diags.Append(respDiags...)
-		secondarySecretsSetSlice = append(secondarySecretsSetSlice, secondarySecretsAttrValObj)
+		secondarySecretsListSlice = append(secondarySecretsListSlice, secondarySecretsAttrValObj)
 	}
-	secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}, secondarySecretsSetSlice)
+	secondarySecretsObjToState, respDiags = types.ListValue(types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}, secondarySecretsListSlice)
 	diags.Append(respDiags...)
 
 	clientAuthAttrValue := map[string]attr.Value{}
