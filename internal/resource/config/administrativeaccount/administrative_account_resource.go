@@ -92,18 +92,22 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 			},
 			"password": schema.StringAttribute{
 				Description: "Password for the Account. This field is immutable and will trigger a replacement plan if changed.",
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"encrypted_password": schema.StringAttribute{
-				Description: "Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
+				Description: "Encrypted password for the account. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
 				Computed:    true,
-				Sensitive:   true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 				},
 			},
 			"phone_number": schema.StringAttribute{
@@ -202,14 +206,18 @@ func readAdministrativeAccountResourceResponse(ctx context.Context, r *client.Ad
 	state.Username = types.StringValue(r.Username)
 	// password
 	if plan != nil {
-		state.Password = types.StringValue(plan.Password.ValueString())
+		if internaltypes.IsDefined(plan.Password) {
+			state.Password = types.StringValue(plan.Password.ValueString())
+		} else {
+			state.Password = types.StringNull()
+		}
 		if internaltypes.IsDefined(plan.EncryptedPassword) {
 			state.EncryptedPassword = types.StringValue(plan.EncryptedPassword.ValueString())
 		} else {
 			state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
 		}
 	} else {
-		state.Password = types.StringValue("")
+		state.Password = types.StringNull()
 		state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
 	}
 	state.Active = types.BoolPointerValue(r.Active)
