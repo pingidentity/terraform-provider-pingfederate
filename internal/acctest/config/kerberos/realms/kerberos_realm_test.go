@@ -79,11 +79,12 @@ func TestAccKerberosRealms(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccKerberosRealms(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_kerberos_realm." + resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"kerberos_password"},
+				Config:            testAccKerberosRealms(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_kerberos_realm." + resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Password can't be imported and encrypted_password changes every GET
+				ImportStateVerifyIgnore: []string{"kerberos_password", "kerberos_encrypted_password"},
 			},
 			{
 				Config: testAccKerberosRealms(resourceName, initialResourceModel),
