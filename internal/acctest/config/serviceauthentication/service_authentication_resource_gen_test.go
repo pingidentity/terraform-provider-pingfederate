@@ -35,10 +35,12 @@ func TestAccServiceAuthentication_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "attribute_query.%",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// The PF API won't return the shared secret values
+				// The PF API won't return the shared secret values, and encrypted shared secrets change on each GET
 				ImportStateVerifyIgnore: []string{
 					"attribute_query.shared_secret",
+					"attribute_query.encrypted_shared_secret",
 					"jmx.shared_secret",
+					"jmx.encrypted_shared_secret",
 				},
 			},
 			{

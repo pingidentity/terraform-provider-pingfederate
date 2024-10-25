@@ -24,6 +24,21 @@ func (state *serviceAuthenticationResourceModel) readClientResponseSharedSecret(
 	return types.StringValue(sharedSecret.(types.String).ValueString())
 }
 
+func (state *serviceAuthenticationResourceModel) readClientResponseEncryptedSharedSecret(existingParentValue types.Object, responseEncryptedSecret *string) types.String {
+	if existingParentValue.IsNull() || existingParentValue.IsUnknown() {
+		return types.StringPointerValue(responseEncryptedSecret)
+	}
+
+	// Get the existing encryptedSharedSecret value
+	attrs := existingParentValue.Attributes()
+	encryptedSharedSecret, ok := attrs["encrypted_shared_secret"]
+	if !ok {
+		return types.StringNull()
+	}
+
+	return types.StringValue(encryptedSharedSecret.(types.String).ValueString())
+}
+
 func (r *serviceAuthenticationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
 	// Instead this resource will be reset to the PingFederate default values.
