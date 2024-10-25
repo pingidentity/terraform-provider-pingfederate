@@ -231,6 +231,14 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			jdbcDataStore["name"] = types.StringValue(nameStr.String())
 		}
 
+		// If password value has changed, mark encrypted_password value as unknown
+		if state != nil {
+			stateJdbcDataStore := state.JdbcDataStore.Attributes()
+			if !jdbcDataStore["password"].Equal(stateJdbcDataStore["password"]) {
+				jdbcDataStore["encrypted_password"] = types.StringUnknown()
+			}
+		}
+
 		plan.JdbcDataStore, respDiags = types.ObjectValue(jdbcDataStoreAttrType, jdbcDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}
@@ -302,6 +310,14 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			}
 		}
 
+		// If password value has changed, mark encrypted_password value as unknown
+		if state != nil {
+			stateLdapDataStore := state.LdapDataStore.Attributes()
+			if !ldapDataStore["password"].Equal(stateLdapDataStore["password"]) {
+				ldapDataStore["encrypted_password"] = types.StringUnknown()
+			}
+		}
+
 		plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
 		resp.Diagnostics.Append(respDiags...)
 
@@ -336,13 +352,13 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 					"Attribute 'user_dn' requires 'bind_anonymously' to be false")
 			}
 		}
-		// If password is set, then user_dn must be set
-		if (internaltypes.IsDefined(ldapDataStore["password"]) && !internaltypes.IsDefined(ldapDataStore["user_dn"])) ||
-			(!internaltypes.IsDefined(ldapDataStore["password"]) && internaltypes.IsDefined(ldapDataStore["user_dn"])) {
+		// If password or encrypted_password is set, then user_dn must be set
+		if ((internaltypes.IsDefined(ldapDataStore["password"]) || internaltypes.IsDefined(ldapDataStore["encrypted_password"])) && !internaltypes.IsDefined(ldapDataStore["user_dn"])) ||
+			(!(internaltypes.IsDefined(ldapDataStore["password"]) || internaltypes.IsDefined(ldapDataStore["encrypted_password"])) && internaltypes.IsDefined(ldapDataStore["user_dn"])) {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("ldap_data_store"),
 				providererror.InvalidAttributeConfiguration,
-				"'password' and 'user_dn' must be set together")
+				"'password' (or 'encrypted_password') and 'user_dn' must be set together")
 		}
 	}
 
