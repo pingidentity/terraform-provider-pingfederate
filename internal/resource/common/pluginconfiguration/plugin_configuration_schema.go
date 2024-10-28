@@ -1,6 +1,8 @@
 package pluginconfiguration
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -15,7 +17,7 @@ import (
 
 func ToSchema() schema.SingleNestedAttribute {
 	fieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
-	sensitiveFieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
+	sensitiveFieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: sensitiveFieldAttrTypes}, nil)
 	tablesSetDefault, _ := types.ListValue(types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}, nil)
 	fieldsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
@@ -36,9 +38,17 @@ func ToSchema() schema.SingleNestedAttribute {
 				Required:    true,
 			},
 			"value": schema.StringAttribute{
-				Description: "The sensitive value for the configuration field.",
-				Required:    true,
+				Description: "The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.",
+				Optional:    true,
 				Sensitive:   true,
+			},
+			"encrypted_value": schema.StringAttribute{
+				Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("value")),
+				},
 			},
 		},
 	}

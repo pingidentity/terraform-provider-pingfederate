@@ -111,12 +111,13 @@ func TestAccLdapDataStore(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccLdapDataStore(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_data_store." + resourceName,
-				ImportStateId:           ldapDataStoreId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ldap_data_store.password"},
+				Config:            testAccLdapDataStore(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_data_store." + resourceName,
+				ImportStateId:     ldapDataStoreId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// password can't be imported, and encrypted_password will change each time it is read
+				ImportStateVerifyIgnore: []string{"ldap_data_store.password", "ldap_data_store.encrypted_password"},
 			},
 			{
 				// Back to the initial minimal model

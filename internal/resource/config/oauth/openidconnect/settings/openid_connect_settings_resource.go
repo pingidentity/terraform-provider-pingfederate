@@ -46,7 +46,6 @@ func (r *openidConnectSettingsResource) Schema(ctx context.Context, req resource
 				Optional:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
-			//TODO verify that missing session_settings from this reosurce doesn't conflict with the session settings resource
 		},
 	}
 	resp.Schema = schema

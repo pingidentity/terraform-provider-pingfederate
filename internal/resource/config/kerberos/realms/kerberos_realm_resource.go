@@ -53,6 +53,7 @@ type kerberosRealmsResourceModel struct {
 	KeyDistributionCenters             types.Set    `tfsdk:"key_distribution_centers"`
 	KerberosUsername                   types.String `tfsdk:"kerberos_username"`
 	KerberosPassword                   types.String `tfsdk:"kerberos_password"`
+	KerberosEncryptedPassword          types.String `tfsdk:"kerberos_encrypted_password"`
 	RetainPreviousKeysOnPasswordChange types.Bool   `tfsdk:"retain_previous_keys_on_password_change"`
 	SuppressDomainNameConcatenation    types.Bool   `tfsdk:"suppress_domain_name_concatenation"`
 	LdapGatewayDataStoreRef            types.Object `tfsdk:"ldap_gateway_data_store_ref"`
@@ -106,11 +107,19 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"kerberos_password": schema.StringAttribute{
-				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.",
+				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_encrypted_password' should be specified.",
 				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"kerberos_encrypted_password": schema.StringAttribute{
+				Description: "The encrypted Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_password' should be specified.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("kerberos_password")),
 				},
 			},
 			// Computed due to dependency on connection_type, this value is not present when connection_type is LDAP_GATEWAY, default set in ModifyPlan
@@ -165,6 +174,10 @@ func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerbero
 			diags.AddAttributeError(path.Root("kerberos_password"),
 				providererror.InvalidAttributeConfiguration, "kerberos_password "+errorMsg)
 		}
+		if internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
+			diags.AddAttributeError(path.Root("kerberos_encrypted_password"),
+				providererror.InvalidAttributeConfiguration, "kerberos_encrypted_password "+errorMsg)
+		}
 		if internaltypes.IsDefined(plan.RetainPreviousKeysOnPasswordChange) {
 			diags.AddAttributeError(path.Root("retain_previous_keys_on_password_change"),
 				providererror.InvalidAttributeConfiguration, "retain_previous_keys_on_password_change "+errorMsg)
@@ -185,11 +198,11 @@ func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerbero
 				providererror.InvalidAttributeConfiguration,
 				"kerberos_username is required when connection_type is set to \"DIRECT\".")
 		}
-		if plan.KerberosPassword.IsNull() {
+		if plan.KerberosPassword.IsNull() && !internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
 			diags.AddAttributeError(
 				path.Root("kerberos_password"),
 				providererror.InvalidAttributeConfiguration,
-				"kerberos_password is required when connection_type is set to \"DIRECT\".")
+				"kerberos_password or kerberos_encrypted_password is required when connection_type is set to \"DIRECT\".")
 		}
 	}
 
@@ -233,6 +246,11 @@ func readKerberosRealmsResponse(ctx context.Context, r *client.KerberosRealm, st
 	state.KeyDistributionCenters = internaltypes.GetStringSet(r.KeyDistributionCenters)
 	state.KerberosUsername = types.StringPointerValue(r.KerberosUsername)
 	state.KerberosPassword = types.StringValue(plan.KerberosPassword.ValueString())
+	if internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
+		state.KerberosEncryptedPassword = types.StringValue(plan.KerberosEncryptedPassword.ValueString())
+	} else {
+		state.KerberosEncryptedPassword = types.StringPointerValue(r.KerberosEncryptedPassword)
+	}
 	state.RetainPreviousKeysOnPasswordChange = types.BoolPointerValue(r.RetainPreviousKeysOnPasswordChange)
 	state.SuppressDomainNameConcatenation = types.BoolPointerValue(r.SuppressDomainNameConcatenation)
 	state.LdapGatewayDataStoreRef, diags = resourcelink.ToState(ctx, r.LdapGatewayDataStoreRef)
@@ -248,6 +266,7 @@ func addOptionalKerberosRealmsFields(ctx context.Context, addRequest *client.Ker
 	addRequest.ConnectionType = plan.ConnectionType.ValueStringPointer()
 	addRequest.KerberosUsername = plan.KerberosUsername.ValueStringPointer()
 	addRequest.KerberosPassword = plan.KerberosPassword.ValueStringPointer()
+	addRequest.KerberosEncryptedPassword = plan.KerberosEncryptedPassword.ValueStringPointer()
 
 	var slice []string
 	plan.KeyDistributionCenters.ElementsAs(ctx, &slice, false)

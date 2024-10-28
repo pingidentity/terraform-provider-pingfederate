@@ -17,10 +17,15 @@ var (
 		"name":  types.StringType,
 		"value": types.StringType,
 	}
+	sensitiveFieldAttrTypes = map[string]attr.Type{
+		"name":            types.StringType,
+		"value":           types.StringType,
+		"encrypted_value": types.StringType,
+	}
 
 	rowsSensitiveFieldsSplitAttrTypes = map[string]attr.Type{
 		"fields":           types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"sensitive_fields": types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"sensitive_fields": types.SetType{ElemType: types.ObjectType{AttrTypes: sensitiveFieldAttrTypes}},
 		"default_row":      types.BoolType,
 	}
 	rowsMergedFieldsAttrTypes = map[string]attr.Type{
@@ -39,7 +44,7 @@ var (
 
 	configurationAttrTypes = map[string]attr.Type{
 		"fields":           types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"sensitive_fields": types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"sensitive_fields": types.SetType{ElemType: types.ObjectType{AttrTypes: sensitiveFieldAttrTypes}},
 		"fields_all":       types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"tables":           types.ListType{ElemType: types.ObjectType{AttrTypes: tablesSensitiveFieldsSplitAttrTypes}},
 		"tables_all":       types.ListType{ElemType: types.ObjectType{AttrTypes: tablesMergedFieldsAttrTypes}},
@@ -77,6 +82,7 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 	allFields := []attr.Value{}
 	plannedFieldsValues := map[string]*string{}
 	plannedSensitiveFieldsValues := map[string]*string{}
+	plannedSensitiveFieldsEncryptedValues := map[string]*string{}
 	// Build up a map of all the values from the plan
 	if planFields != nil {
 		for _, planField := range planFields.Elements() {
@@ -90,6 +96,8 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 			planFieldObj := planField.(types.Object)
 			plannedSensitiveFieldsValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
 				planFieldObj.Attributes()["value"].(types.String).ValueStringPointer()
+			plannedSensitiveFieldsEncryptedValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
+				planFieldObj.Attributes()["encrypted_value"].(types.String).ValueStringPointer()
 		}
 	}
 
@@ -128,6 +136,7 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 		if planSensitiveFields != nil && !fieldAdded {
 			planValue, ok := plannedSensitiveFieldsValues[field.Name]
 			if ok {
+				planEncryptedValue := plannedSensitiveFieldsEncryptedValues[field.Name]
 				planAttrValues := map[string]attr.Value{}
 				planAttrValues["name"] = types.StringValue(field.Name)
 				if field.EncryptedValue == nil && field.Value != nil && *field.Value != "" {
@@ -142,7 +151,12 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 				} else {
 					planAttrValues["value"] = types.StringPointerValue(field.Value)
 				}
-				objVal, respDiags := types.ObjectValue(fieldAttrTypes, planAttrValues)
+				if planEncryptedValue != nil {
+					planAttrValues["encrypted_value"] = types.StringPointerValue(planEncryptedValue)
+				} else {
+					planAttrValues["encrypted_value"] = types.StringPointerValue(field.EncryptedValue)
+				}
+				objVal, respDiags := types.ObjectValue(sensitiveFieldAttrTypes, planAttrValues)
 				diags.Append(respDiags...)
 				plannedSensitiveFields = append(plannedSensitiveFields, objVal)
 			}
@@ -152,7 +166,13 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 		diags.Append(respDiags...)
 		allFields = append(allFields, objVal)
 		if field.EncryptedValue != nil && *field.EncryptedValue != "" {
-			allSensitiveFields = append(allSensitiveFields, objVal)
+			sensitiveAttrValues := map[string]attr.Value{}
+			sensitiveAttrValues["name"] = types.StringValue(field.Name)
+			sensitiveAttrValues["value"] = types.StringPointerValue(field.Value)
+			sensitiveAttrValues["encrypted_value"] = types.StringPointerValue(field.EncryptedValue)
+			sensitiveObjVal, respDiags := types.ObjectValue(sensitiveFieldAttrTypes, sensitiveAttrValues)
+			diags.Append(respDiags...)
+			allSensitiveFields = append(allSensitiveFields, sensitiveObjVal)
 		} else {
 			allCleartextFields = append(allCleartextFields, objVal)
 		}
@@ -163,7 +183,7 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 	}, plannedCleartextFields)
 	diags.Append(respDiags...)
 	plannedSensitiveFieldsSet, respDiags := types.SetValue(types.ObjectType{
-		AttrTypes: fieldAttrTypes,
+		AttrTypes: sensitiveFieldAttrTypes,
 	}, plannedSensitiveFields)
 	diags.Append(respDiags...)
 
@@ -172,7 +192,7 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 	}, allCleartextFields)
 	diags.Append(respDiags...)
 	allSensitiveFieldsSet, respDiags := types.SetValue(types.ObjectType{
-		AttrTypes: fieldAttrTypes,
+		AttrTypes: sensitiveFieldAttrTypes,
 	}, allSensitiveFields)
 	diags.Append(respDiags...)
 

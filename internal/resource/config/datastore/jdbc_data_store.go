@@ -15,12 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -36,7 +36,7 @@ var (
 		},
 	}
 
-	jdbcDataStoreCommonAttrType = map[string]attr.Type{
+	jdbcDataStoreDataSourceAttrType = map[string]attr.Type{
 		"max_pool_size":                types.Int64Type,
 		"connection_url_tags":          types.SetType{ElemType: jdbcTagConfigAttrType},
 		"type":                         types.StringType,
@@ -49,11 +49,11 @@ var (
 		"user_name":                    types.StringType,
 		"allow_multi_value_attributes": types.BoolType,
 		"validate_connection_sql":      types.StringType,
+		"encrypted_password":           types.StringType,
 	}
 
-	jdbcDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(jdbcDataStoreCommonAttrType, "password", types.StringType)
+	jdbcDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(jdbcDataStoreDataSourceAttrType, "password", types.StringType)
 	jdbcDataStoreEmptyStateObj           = types.ObjectNull(jdbcDataStoreAttrType)
-	jdbcDataStoreDataSourceAttrType      = internaltypes.AddKeyValToMapStringAttrType(jdbcDataStoreCommonAttrType, "encrypted_password", types.StringType)
 	jdbcDataStoreEmptyDataSourceStateObj = types.ObjectNull(jdbcDataStoreDataSourceAttrType)
 )
 
@@ -69,11 +69,22 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Default:     stringdefault.StaticString("JDBC"),
 		},
 		"password": schema.StringAttribute{
-			Description: "The password needed to access the database.",
+			Description: "The password needed to access the database. Either this attribute or `encrypted_password` must be specified.",
 			Optional:    true,
 			Sensitive:   true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
+			},
+		},
+		"encrypted_password": schema.StringAttribute{
+			Description: "The encrypted password needed to access the database. Either this attribute or `password` must be specified.",
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+			Validators: []validator.String{
+				stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 			},
 		},
 		"name": schema.StringAttribute{
@@ -311,12 +322,14 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 	connectionUrlSetVal, diags := connectionUrlTags()
 	allDiags = append(allDiags, diags...)
 
-	var password basetypes.StringValue
-	passwordVal, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
-	if ok {
-		password = passwordVal
-	} else {
-		password = types.StringPointerValue(pointers.String(""))
+	password, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
+	if !ok {
+		password = types.StringNull()
+	}
+
+	encryptedPassword := types.StringPointerValue(jdbcDataStore.EncryptedPassword)
+	if internaltypes.IsDefined(plan.JdbcDataStore.Attributes()["encrypted_password"]) {
+		encryptedPassword = types.StringValue(plan.JdbcDataStore.Attributes()["encrypted_password"].(types.String).ValueString())
 	}
 
 	jdbcAttrValue := map[string]attr.Value{
@@ -332,6 +345,7 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		"user_name":                    types.StringPointerValue(jdbcDataStore.UserName),
 		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
 		"validate_connection_sql":      types.StringPointerValue(jdbcDataStore.ValidateConnectionSql),
+		"encrypted_password":           encryptedPassword,
 	}
 
 	var toStateObjVal types.Object
@@ -340,7 +354,6 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		toStateObjVal, diags = types.ObjectValue(jdbcDataStoreAttrType, jdbcAttrValue)
 		allDiags = append(allDiags, diags...)
 	} else {
-		jdbcAttrValue["encrypted_password"] = types.StringPointerValue(jdbcDataStore.EncryptedPassword)
 		toStateObjVal, diags = types.ObjectValue(jdbcDataStoreDataSourceAttrType, jdbcAttrValue)
 		allDiags = append(allDiags, diags...)
 	}
@@ -433,6 +446,11 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 	password, ok := jdbcDataStorePlan["password"]
 	if ok {
 		addRequest.JdbcDataStore.Password = password.(types.String).ValueStringPointer()
+	}
+
+	encryptedPassword, ok := jdbcDataStorePlan["encrypted_password"]
+	if ok {
+		addRequest.JdbcDataStore.EncryptedPassword = encryptedPassword.(types.String).ValueStringPointer()
 	}
 	return nil
 }

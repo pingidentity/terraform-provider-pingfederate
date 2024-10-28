@@ -23,8 +23,9 @@ var (
 	}, nil)
 	usersSetDefault, _ = types.SetValue(types.ObjectType{
 		AttrTypes: map[string]attr.Type{
-			"username": types.StringType,
-			"password": types.StringType,
+			"username":           types.StringType,
+			"password":           types.StringType,
+			"encrypted_password": types.StringType,
 		},
 	}, nil)
 )
@@ -69,28 +70,40 @@ func (r *serverSettingsWsTrustStsSettingsResource) ValidateConfig(ctx context.Co
 func (state *serverSettingsWsTrustStsSettingsResourceModel) readClientResponseUsers(response *client.WsTrustStsSettings) diag.Diagnostics {
 	var respDiags diag.Diagnostics
 	usersAttrTypes := map[string]attr.Type{
-		"password": types.StringType,
-		"username": types.StringType,
+		"password":           types.StringType,
+		"username":           types.StringType,
+		"encrypted_password": types.StringType,
 	}
 	usersElementType := types.ObjectType{AttrTypes: usersAttrTypes}
 	var usersValues []attr.Value
 	for _, usersResponseValue := range response.Users {
-		var userPassword *string
-		// Get password value from state, if it is set, since the PF API won't return the password
+		var userPassword, userEncryptedPassword *string
+		// Get password values from state, if it is set, since the PF API won't return the password
+		// and the encrypted password changes with every get
 		if !state.Users.IsNull() && !state.Users.IsUnknown() {
 			// Find the corresponding user in state, if it exists
 			for _, user := range state.Users.Elements() {
 				userAttrs := user.(types.Object).Attributes()
-				password, ok := userAttrs["password"]
-				if ok {
-					userPassword = password.(types.String).ValueStringPointer()
+				if usersResponseValue.Username != nil && *usersResponseValue.Username == userAttrs["username"].(types.String).ValueString() {
+					password, ok := userAttrs["password"]
+					if ok {
+						userPassword = password.(types.String).ValueStringPointer()
+					}
+					encryptedPassword, ok := userAttrs["encrypted_password"]
+					if ok && internaltypes.IsDefined(encryptedPassword) {
+						userEncryptedPassword = encryptedPassword.(types.String).ValueStringPointer()
+					}
 					break
 				}
 			}
 		}
+		if userEncryptedPassword == nil {
+			userEncryptedPassword = usersResponseValue.EncryptedPassword
+		}
 		usersValue, diags := types.ObjectValue(usersAttrTypes, map[string]attr.Value{
-			"password": types.StringPointerValue(userPassword),
-			"username": types.StringPointerValue(usersResponseValue.Username),
+			"password":           types.StringPointerValue(userPassword),
+			"username":           types.StringPointerValue(usersResponseValue.Username),
+			"encrypted_password": types.StringPointerValue(userEncryptedPassword),
 		})
 		respDiags.Append(diags...)
 		usersValues = append(usersValues, usersValue)

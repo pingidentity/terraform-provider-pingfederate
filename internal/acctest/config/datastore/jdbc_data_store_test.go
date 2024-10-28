@@ -159,12 +159,13 @@ func TestAccJdbcDataStore(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccJdbcDataStore(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_data_store." + resourceName,
-				ImportStateId:           jdbcDataStoreId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"jdbc_data_store.password"},
+				Config:            testAccJdbcDataStore(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_data_store." + resourceName,
+				ImportStateId:     jdbcDataStoreId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// password can't be imported, and encrypted_password will change each time it is read
+				ImportStateVerifyIgnore: []string{"jdbc_data_store.password", "jdbc_data_store.encrypted_password"},
 			},
 			{
 				// Back to the initial minimal model

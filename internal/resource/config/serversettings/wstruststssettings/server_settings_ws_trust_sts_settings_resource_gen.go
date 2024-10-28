@@ -5,12 +5,15 @@ package serversettingswstruststssettings
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -111,7 +114,15 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 						"password": schema.StringAttribute{
 							Optional:    true,
 							Sensitive:   true,
-							Description: "User password.",
+							Description: "User password. Either `password` or `encrypted_password` is required.",
+						},
+						"encrypted_password": schema.StringAttribute{
+							Description: "Encrypted user password. Either `password` or `encrypted_password` is required.",
+							Optional:    true,
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
+							},
 						},
 						"username": schema.StringAttribute{
 							Optional:    true,
@@ -161,6 +172,7 @@ func (model *serverSettingsWsTrustStsSettingsResourceModel) buildClientStruct() 
 		usersValue := client.UsernamePasswordCredentials{}
 		usersAttrs := usersElement.(types.Object).Attributes()
 		usersValue.Password = usersAttrs["password"].(types.String).ValueStringPointer()
+		usersValue.EncryptedPassword = usersAttrs["encrypted_password"].(types.String).ValueStringPointer()
 		usersValue.Username = usersAttrs["username"].(types.String).ValueStringPointer()
 		result.Users = append(result.Users, usersValue)
 	}
@@ -214,8 +226,9 @@ func (r *serverSettingsWsTrustStsSettingsResource) emptyModel() serverSettingsWs
 	model.IssuerCerts = types.SetNull(issuerCertsElementType)
 	// users
 	usersAttrTypes := map[string]attr.Type{
-		"password": types.StringType,
-		"username": types.StringType,
+		"password":           types.StringType,
+		"username":           types.StringType,
+		"encrypted_password": types.StringType,
 	}
 	usersElementType := types.ObjectType{AttrTypes: usersAttrTypes}
 	model.Users = types.SetNull(usersElementType)

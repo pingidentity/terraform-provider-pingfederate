@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -45,10 +47,10 @@ var (
 )
 
 var (
-	emptyStringSet, _           = types.SetValue(types.StringType, []attr.Value{})
-	oidcPolicyDefaultObj, _     = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
-	secondarySecretsEmptySet, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
-	clientAuthDefaultObj, _     = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
+	emptyStringSet, _            = types.SetValue(types.StringType, []attr.Value{})
+	oidcPolicyDefaultObj, _      = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
+	secondarySecretsEmptyList, _ = types.ListValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
+	clientAuthDefaultObj, _      = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
 
 	customId = "client_id"
 )
@@ -513,26 +515,48 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"secret": schema.StringAttribute{
-						Description: "Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
+						Description: "Client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.",
 						Optional:    true,
 						Sensitive:   true,
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"secondary_secrets": schema.SetNestedAttribute{
+					"encrypted_secret": schema.StringAttribute{
+						Description: "Encrypted client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.",
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("secret")),
+						},
+					},
+					"secondary_secrets": schema.ListNestedAttribute{
 						Description: "The list of secondary client secrets that are temporarily retained.",
 						Computed:    true,
 						Optional:    true,
-						Default:     setdefault.StaticValue(secondarySecretsEmptySet),
+						Default:     listdefault.StaticValue(secondarySecretsEmptyList),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"secret": schema.StringAttribute{
-									Description: "Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
-									Required:    true,
+									Description: "Secondary client secret for Basic Authentication. Either this attribute or `encrypted_secret` must be provided.",
+									Optional:    true,
 									Sensitive:   true,
 									Validators: []validator.String{
 										stringvalidator.LengthAtLeast(1),
+									},
+								},
+								"encrypted_secret": schema.StringAttribute{
+									Description: "Encrypted secondary client secret for Basic Authentication. Either this attribute or `secret` must be provided.",
+									Optional:    true,
+									Computed:    true,
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.UseStateForUnknown(),
+									},
+									Validators: []validator.String{
+										stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("secret")),
 									},
 								},
 								"expiry_time": schema.StringAttribute{
@@ -996,11 +1020,11 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 						"client_cert_issuer_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
 				}
 			case "SECRET":
-				if clientAuthAttributes["secret"].IsNull() {
+				if clientAuthAttributes["secret"].IsNull() && !internaltypes.IsDefined(clientAuthAttributes["encrypted_secret"]) {
 					resp.Diagnostics.AddAttributeError(
 						path.Root("client_auth"),
 						providererror.InvalidAttributeConfiguration,
-						"client_auth.secret must be defined when client_auth.type is configured to \"SECRET\".")
+						"client_auth.secret or client_auth.encrypted_secret must be defined when client_auth.type is configured to \"SECRET\".")
 				}
 			}
 		}
@@ -1157,8 +1181,10 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 	pfVersionAtLeast121 := compare >= 0
 	var plan *oauthClientModel
+	var state *oauthClientModel
 	var diags diag.Diagnostics
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if plan == nil {
 		return
 	}
@@ -1273,9 +1299,37 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		planModified = true
 	}
 
+	// Set encrypted values as neessary
+	if internaltypes.IsDefined(plan.ClientAuth) && state != nil {
+		clientAuthAttrs := plan.ClientAuth.Attributes()
+		stateClientAuthAttrs := state.ClientAuth.Attributes()
+		if !internaltypes.IsDefined(clientAuthAttrs["secret"]) && clientAuthAttrs["encrypted_secret"].IsUnknown() {
+			clientAuthAttrs["encrypted_secret"] = types.StringNull()
+		} else if !stateClientAuthAttrs["secret"].Equal(clientAuthAttrs["secret"]) {
+			clientAuthAttrs["encrypted_secret"] = types.StringUnknown()
+		}
+		if internaltypes.IsDefined(clientAuthAttrs["secondary_secrets"]) && internaltypes.IsDefined(stateClientAuthAttrs["secondary_secrets"]) &&
+			!clientAuthAttrs["secondary_secrets"].Equal(stateClientAuthAttrs["secondary_secrets"]) {
+			secondarySecrets := clientAuthAttrs["secondary_secrets"].(types.List).Elements()
+			updatedSecondarySecrets := []attr.Value{}
+			for _, secondarySecret := range secondarySecrets {
+				secondarySecretAttrs := secondarySecret.(types.Object).Attributes()
+				secondarySecretAttrs["encrypted_secret"] = types.StringUnknown()
+				updatedSecondarySecret, diags := types.ObjectValue(secondarySecretsAttrType, secondarySecretAttrs)
+				resp.Diagnostics.Append(diags...)
+				updatedSecondarySecrets = append(updatedSecondarySecrets, updatedSecondarySecret)
+			}
+			finalSecondarySecrets, diags := types.ListValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, updatedSecondarySecrets)
+			resp.Diagnostics.Append(diags...)
+			clientAuthAttrs["secondary_secrets"] = finalSecondarySecrets
+		}
+		plan.ClientAuth, diags = types.ObjectValue(clientAuthAttrType, clientAuthAttrs)
+		resp.Diagnostics.Append(diags...)
+	}
+
 	// If the new plan doesn't match the state, invalidate any last-changed time values
 	// See https://github.com/hashicorp/terraform-plugin-framework/issues/898 for some info on why this is needed
-	req.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(req.Plan.Set(ctx, plan)...)
 	if !req.Plan.Raw.Equal(req.State.Raw) {
 		plan.ModificationDate = types.StringUnknown()
 		plan.ClientSecretChangedTime = types.StringUnknown()
@@ -1294,7 +1348,7 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	// state.ClientAuth
 	var clientAuthToState types.Object
 	clientAuthFromPlan := plan.ClientAuth.Attributes()
-	var secretToState basetypes.StringValue
+	var secretToState, encryptedSecretToState basetypes.StringValue
 
 	// state.ClientAuth.Secret
 	secretVal := clientAuthFromPlan["secret"]
@@ -1304,24 +1358,69 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 		secretToState = types.StringNull()
 	}
 
-	// state.ClientAuth.Secret
-	var secondarySecretsObjToState types.Set
-	var secondarySecretsSetSlice []attr.Value
+	// state.ClientAuth.EncryptedSecret
+	encryptedSecretVal := clientAuthFromPlan["encrypted_secret"]
+	if encryptedSecretVal != nil && internaltypes.IsDefined(encryptedSecretVal) {
+		encryptedSecretToState = types.StringValue(encryptedSecretVal.(types.String).ValueString())
+	} else {
+		encryptedSecretToState = types.StringPointerValue(r.ClientAuth.EncryptedSecret)
+	}
+
+	// state.ClientAuth.SecondarySecrets
+	var secondarySecretsObjToState types.List
+	var secondarySecretsListSlice []attr.Value
 	secondarySecretsFromPlan := clientAuthFromPlan["secondary_secrets"]
-	if secondarySecretsFromPlan != nil && len(secondarySecretsFromPlan.(types.Set).Elements()) > 0 {
-		for _, secondarySecretsFromPlan := range clientAuthFromPlan["secondary_secrets"].(types.Set).Elements() {
-			secondarySecretsAttrVal, respDiags := types.ObjectValueFrom(ctx, secondarySecretsAttrType, secondarySecretsFromPlan)
+	if secondarySecretsFromPlan != nil && len(secondarySecretsFromPlan.(types.List).Elements()) > 0 {
+		// Copy secret values from plan
+		for i, secondarySecretsFromPlan := range clientAuthFromPlan["secondary_secrets"].(types.List).Elements() {
+			if i < len(r.ClientAuth.SecondarySecrets) {
+				planAttrs := secondarySecretsFromPlan.(types.Object).Attributes()
+				expiryTime := types.StringNull()
+				if r.ClientAuth.SecondarySecrets[i].ExpiryTime != nil {
+					expiryTime = types.StringValue(r.ClientAuth.SecondarySecrets[i].ExpiryTime.Format(time.RFC3339Nano))
+				}
+				// Maintain encrypted secret from plan if included
+				encryptedSecret := types.StringPointerValue(r.ClientAuth.SecondarySecrets[i].EncryptedSecret)
+				if internaltypes.IsDefined(planAttrs["encrypted_secret"]) {
+					encryptedSecret = types.StringValue(planAttrs["encrypted_secret"].(types.String).ValueString())
+				}
+				secret := types.StringNull()
+				if internaltypes.IsDefined(planAttrs["secret"]) {
+					secret = types.StringValue(planAttrs["secret"].(types.String).ValueString())
+				}
+				secondarySecretsAttrVal, respDiags := types.ObjectValue(secondarySecretsAttrType, map[string]attr.Value{
+					"secret":           secret,
+					"encrypted_secret": encryptedSecret,
+					"expiry_time":      expiryTime,
+				})
+				diags.Append(respDiags...)
+				secondarySecretsListSlice = append(secondarySecretsListSlice, secondarySecretsAttrVal)
+			}
+		}
+	} else {
+		// Read values directly from response
+		for _, secondarySecretsFromResponse := range r.ClientAuth.SecondarySecrets {
+			expiryTime := types.StringNull()
+			if secondarySecretsFromResponse.ExpiryTime != nil {
+				expiryTime = types.StringValue(secondarySecretsFromResponse.ExpiryTime.Format(time.RFC3339Nano))
+			}
+			secondarySecretsAttrVal, respDiags := types.ObjectValue(secondarySecretsAttrType, map[string]attr.Value{
+				"secret":           types.StringPointerValue(secondarySecretsFromResponse.Secret),
+				"encrypted_secret": types.StringPointerValue(secondarySecretsFromResponse.EncryptedSecret),
+				"expiry_time":      expiryTime,
+			})
 			diags.Append(respDiags...)
-			secondarySecretsSetSlice = append(secondarySecretsSetSlice, secondarySecretsAttrVal)
+			secondarySecretsListSlice = append(secondarySecretsListSlice, secondarySecretsAttrVal)
 		}
 	}
-	secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsSetSlice)
+	secondarySecretsObjToState, respDiags = types.ListValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsListSlice)
 	diags.Append(respDiags...)
 
 	// state.ClientAuth to state
 	clientAuthAttrValue := map[string]attr.Value{}
 	clientAuthAttrValue["type"] = types.StringPointerValue(r.ClientAuth.Type)
 	clientAuthAttrValue["secret"] = secretToState
+	clientAuthAttrValue["encrypted_secret"] = encryptedSecretToState
 	clientAuthAttrValue["secondary_secrets"] = secondarySecretsObjToState
 	clientAuthAttrValue["client_cert_issuer_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertIssuerDn)
 	clientAuthAttrValue["client_cert_subject_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertSubjectDn)

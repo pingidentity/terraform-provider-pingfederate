@@ -41,6 +41,7 @@ func fieldsFromObject(fieldsObj types.Set, sensitiveFieldsObj types.Set) []clien
 		fieldsAttrs := fieldsElement.(types.Object).Attributes()
 		fieldsValue.Name = fieldsAttrs["name"].(types.String).ValueString()
 		fieldsValue.Value = fieldsAttrs["value"].(types.String).ValueStringPointer()
+		fieldsValue.EncryptedValue = fieldsAttrs["encrypted_value"].(types.String).ValueStringPointer()
 		fields = append(fields, fieldsValue)
 	}
 	return fields

@@ -191,11 +191,15 @@ func TestAccOauthClient(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// Sensitive fields can't be imported.
+				// encrypted_secret changes on every GET.
 				// When persistent_grant_expiration_type is set to "SERVER_DEFAULT", the
 				// persistent_grant_expiration_time and persistent_grant_expiration_time_unit fields
 				// are imported as null, since they can only be configured when overriding the server default.
 				ImportStateVerifyIgnore: []string{
 					"client_auth.secret",
+					"client_auth.encrypted_secret",
+					"client_auth.secondary_secrets.0.secret",
+					"client_auth.secondary_secrets.0.encrypted_secret",
 					"client_secret_changed_time",
 					"modification_date",
 					"persistent_grant_expiration_time",
@@ -285,6 +289,10 @@ func clientAuthHcl(clientAuth *client.ClientAuth) string {
   client_auth = {
 		type   = "%s"
 		secret = "%s"
+		secondary_secrets = [ {
+          secret = "examplesecondary"
+          expiry_time = "2036-12-31T23:59:59Z"
+        } ]
   }
 	`, *clientAuth.Type,
 		*clientAuth.Secret)

@@ -844,7 +844,8 @@ Read-Only:
 
 Optional:
 
-- `password` (String, Sensitive) User password.
+- `encrypted_password` (String) Encrypted user password. Either this attribute or `password` must be specified.
+- `password` (String, Sensitive) User password. Either this attribute or `encrypted_password` must be specified.
 - `username` (String) The username.
 
 
@@ -864,7 +865,8 @@ Optional:
 
 Optional:
 
-- `password` (String, Sensitive) User password.
+- `encrypted_password` (String) Encrypted user password. Either this attribute or `password` must be specified.
+- `password` (String, Sensitive) User password. Either this attribute or `encrypted_password` must be specified.
 - `username` (String) The username.
 
 
@@ -1119,7 +1121,8 @@ Required:
 
 Optional:
 
-- `value` (String, Sensitive) The value for the configuration field.
+- `encrypted_value` (String) The encrypted value for the configuration field. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The value for the configuration field. Either this attribute or `encrypted_value` must be specified.
 
 
 <a id="nestedatt--outbound_provision--custom_schema"></a>
@@ -1151,7 +1154,8 @@ Required:
 
 Optional:
 
-- `value` (String, Sensitive) The value for the configuration field.
+- `encrypted_value` (String) The encrypted value for the configuration field. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The value for the configuration field. Either this attribute or `encrypted_value` must be specified.
 
 
 
@@ -1277,7 +1281,11 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The sensitive value for the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables"></a>
@@ -1315,7 +1323,11 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The sensitive value for the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 

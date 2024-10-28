@@ -303,9 +303,10 @@ Optional:
 
 - `client_cert_issuer_dn` (String) Client TLS Certificate Issuer DN.
 - `client_cert_subject_dn` (String) Client TLS Certificate Subject DN.
+- `encrypted_secret` (String) Encrypted client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.
 - `enforce_replay_prevention` (Boolean) Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client and Client Secret JWT Authentication.
-- `secondary_secrets` (Attributes Set) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
-- `secret` (String, Sensitive) Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
+- `secondary_secrets` (Attributes List) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
+- `secret` (String, Sensitive) Client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.
 - `token_endpoint_auth_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present
 `RS256` - RSA using SHA-256
 `RS384` - RSA using SHA-384
@@ -328,7 +329,11 @@ Optional:
 Required:
 
 - `expiry_time` (String) The expiry time of the secondary secret.
-- `secret` (String, Sensitive) Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
+
+Optional:
+
+- `encrypted_secret` (String) Encrypted secondary client secret for Basic Authentication. Either this attribute or `secret` must be provided.
+- `secret` (String, Sensitive) Secondary client secret for Basic Authentication. Either this attribute or `encrypted_secret` must be provided.
 
 
 

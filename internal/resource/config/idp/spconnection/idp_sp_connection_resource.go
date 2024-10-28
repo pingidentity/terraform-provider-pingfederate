@@ -61,8 +61,9 @@ var (
 	}
 
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
-		"password": types.StringType,
-		"username": types.StringType,
+		"password":           types.StringType,
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
 	}
 	credentialsInboundBackChannelAuthAttrTypes = map[string]attr.Type{
 		"certs":                   types.ListType{ElemType: connectioncert.ObjType()},
@@ -73,8 +74,9 @@ var (
 		"verification_subject_dn": types.StringType,
 	}
 	credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
-		"password": types.StringType,
-		"username": types.StringType,
+		"password":           types.StringType,
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
 	}
 
 	credentialsOutboundBackChannelAuthAttrTypes = map[string]attr.Type{
@@ -301,8 +303,9 @@ var (
 		},
 	}
 	targetSettingsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"name":  types.StringType,
-		"value": types.StringType,
+		"name":            types.StringType,
+		"value":           types.StringType,
+		"encrypted_value": types.StringType,
 	}}
 
 	channelsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
@@ -528,9 +531,17 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"value": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: "The value for the configuration field.",
+				Description: "The value for the configuration field. Either this attribute or `encrypted_value` must be specified.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"encrypted_value": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The encrypted value for the configuration field. Either this attribute or `value` must be specified.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("value")),
 				},
 			},
 		},
@@ -826,10 +837,19 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password.",
-										MarkdownDescription: "User password.",
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
+										},
+									},
+									"encrypted_password": schema.StringAttribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
+										Validators: []validator.String{
+											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 										},
 									},
 								},
@@ -875,10 +895,19 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password.",
-										MarkdownDescription: "User password.",
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
+										},
+									},
+									"encrypted_password": schema.StringAttribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
+										Validators: []validator.String{
+											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 										},
 									},
 								},
@@ -2261,10 +2290,12 @@ func (state *idpSpConnectionModel) buildAttributeMappingAttrs(channelName string
 func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettings []client.ConfigField, isImportRead bool) (types.Set, types.Set, diag.Diagnostics) {
 	// Get a list of target_setting names that were expected based on the state
 	expectedTargetSettingsValues := map[string]string{}
+	expectedTargetSettingsEncryptedValues := map[string]types.String{}
 	if internaltypes.IsDefined(state.OutboundProvision) {
 		for _, targetSetting := range state.OutboundProvision.Attributes()["target_settings"].(types.Set).Elements() {
 			targetSettingsAttrs := targetSetting.(types.Object).Attributes()
 			expectedTargetSettingsValues[targetSettingsAttrs["name"].(types.String).ValueString()] = targetSettingsAttrs["value"].(types.String).ValueString()
+			expectedTargetSettingsEncryptedValues[targetSettingsAttrs["name"].(types.String).ValueString()] = targetSettingsAttrs["encrypted_value"].(types.String)
 		}
 	}
 
@@ -2276,9 +2307,14 @@ func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettin
 		if settingInPlan && outboundProvisionTargetSettingsResponseValue.Value == nil {
 			responseValue = types.StringValue(expectedValue)
 		}
+		encryptedValue := types.StringPointerValue(outboundProvisionTargetSettingsResponseValue.EncryptedValue)
+		if !expectedTargetSettingsEncryptedValues[outboundProvisionTargetSettingsResponseValue.Name].IsUnknown() {
+			encryptedValue = types.StringValue(expectedTargetSettingsEncryptedValues[outboundProvisionTargetSettingsResponseValue.Name].ValueString())
+		}
 		outboundProvisionTargetSettingsValue, diags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
-			"name":  types.StringValue(outboundProvisionTargetSettingsResponseValue.Name),
-			"value": responseValue,
+			"name":            types.StringValue(outboundProvisionTargetSettingsResponseValue.Name),
+			"value":           responseValue,
+			"encrypted_value": encryptedValue,
 		})
 		respDiags.Append(diags...)
 		allTargetSettings = append(allTargetSettings, outboundProvisionTargetSettingsValue)
@@ -2523,9 +2559,17 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
 					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
 				}
+				encryptedPassword := types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
+				if state != nil && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					encryptedPasswordFromPlan := state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["encrypted_password"].(types.String)
+					if internaltypes.IsDefined(encryptedPasswordFromPlan) {
+						encryptedPassword = types.StringValue(encryptedPasswordFromPlan.ValueString())
+					}
+				}
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password": types.StringValue(password),
-					"username": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
+					"password":           types.StringValue(password),
+					"encrypted_password": encryptedPassword,
+					"username":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
 				diags.Append(objDiags...)
 			}
@@ -2558,9 +2602,17 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
 					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
 				}
+				encryptedPassword := types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
+				if state != nil && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					encryptedPasswordFromPlan := state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["encrypted_password"].(types.String)
+					if internaltypes.IsDefined(encryptedPasswordFromPlan) {
+						encryptedPassword = types.StringValue(encryptedPasswordFromPlan.ValueString())
+					}
+				}
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password": types.StringPointerValue(&password),
-					"username": types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
+					"password":           types.StringPointerValue(&password),
+					"encrypted_password": encryptedPassword,
+					"username":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
 				diags.Append(objDiags...)
 			}
@@ -2785,8 +2837,9 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"namespace":  types.StringType,
 	}
 	outboundProvisionTargetSettingsAttrTypes := map[string]attr.Type{
-		"name":  types.StringType,
-		"value": types.StringType,
+		"name":            types.StringType,
+		"value":           types.StringType,
+		"encrypted_value": types.StringType,
 	}
 	outboundProvisionTargetSettingsElementType := types.ObjectType{AttrTypes: outboundProvisionTargetSettingsAttrTypes}
 	outboundProvisionAttrTypes := map[string]attr.Type{

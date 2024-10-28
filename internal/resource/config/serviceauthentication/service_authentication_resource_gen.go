@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -65,11 +66,19 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 						},
 					},
 					"shared_secret": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Sensitive:   true,
-						Description: "Shared secret for the service.",
+						Description: "Shared secret for the service. Either this attribute or `encrypted_shared_secret` must be specified.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"encrypted_shared_secret": schema.StringAttribute{
+						Description: "Encrypted shared secret for the service. Either this attribute or `shared_secret` must be specified.",
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("shared_secret")),
 						},
 					},
 				},
@@ -86,11 +95,19 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 						},
 					},
 					"shared_secret": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Sensitive:   true,
-						Description: "Shared secret for the service.",
+						Description: "Shared secret for the service. Either this attribute or `encrypted_shared_secret` must be specified.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"encrypted_shared_secret": schema.StringAttribute{
+						Description: "Encrypted shared secret for the service. Either this attribute or `shared_secret` must be specified.",
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("shared_secret")),
 						},
 					},
 				},
@@ -109,6 +126,7 @@ func (model *serviceAuthenticationResourceModel) buildClientStruct() (*client.Se
 		attributeQueryAttrs := model.AttributeQuery.Attributes()
 		attributeQueryValue.Id = attributeQueryAttrs["id"].(types.String).ValueStringPointer()
 		attributeQueryValue.SharedSecret = attributeQueryAttrs["shared_secret"].(types.String).ValueStringPointer()
+		attributeQueryValue.EncryptedSharedSecret = attributeQueryAttrs["encrypted_shared_secret"].(types.String).ValueStringPointer()
 		result.AttributeQuery = attributeQueryValue
 	}
 
@@ -118,6 +136,7 @@ func (model *serviceAuthenticationResourceModel) buildClientStruct() (*client.Se
 		jmxAttrs := model.Jmx.Attributes()
 		jmxValue.Id = jmxAttrs["id"].(types.String).ValueStringPointer()
 		jmxValue.SharedSecret = jmxAttrs["shared_secret"].(types.String).ValueStringPointer()
+		jmxValue.EncryptedSharedSecret = jmxAttrs["encrypted_shared_secret"].(types.String).ValueStringPointer()
 		result.Jmx = jmxValue
 	}
 
@@ -128,16 +147,18 @@ func (state *serviceAuthenticationResourceModel) readClientResponse(response *cl
 	var respDiags, diags diag.Diagnostics
 	// attribute_query
 	attributeQueryAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
+		"id":                      types.StringType,
+		"shared_secret":           types.StringType,
+		"encrypted_shared_secret": types.StringType,
 	}
 	var attributeQueryValue types.Object
 	if response.AttributeQuery == nil {
 		attributeQueryValue = types.ObjectNull(attributeQueryAttrTypes)
 	} else {
 		attributeQueryValue, diags = types.ObjectValue(attributeQueryAttrTypes, map[string]attr.Value{
-			"id":            types.StringPointerValue(response.AttributeQuery.Id),
-			"shared_secret": state.readClientResponseSharedSecret(state.AttributeQuery),
+			"id":                      types.StringPointerValue(response.AttributeQuery.Id),
+			"shared_secret":           state.readClientResponseSharedSecret(state.AttributeQuery),
+			"encrypted_shared_secret": state.readClientResponseEncryptedSharedSecret(state.AttributeQuery, response.AttributeQuery.EncryptedSharedSecret),
 		})
 		respDiags.Append(diags...)
 	}
@@ -145,16 +166,18 @@ func (state *serviceAuthenticationResourceModel) readClientResponse(response *cl
 	state.AttributeQuery = attributeQueryValue
 	// jmx
 	jmxAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
+		"id":                      types.StringType,
+		"shared_secret":           types.StringType,
+		"encrypted_shared_secret": types.StringType,
 	}
 	var jmxValue types.Object
 	if response.Jmx == nil {
 		jmxValue = types.ObjectNull(jmxAttrTypes)
 	} else {
 		jmxValue, diags = types.ObjectValue(jmxAttrTypes, map[string]attr.Value{
-			"id":            types.StringPointerValue(response.Jmx.Id),
-			"shared_secret": state.readClientResponseSharedSecret(state.Jmx),
+			"id":                      types.StringPointerValue(response.Jmx.Id),
+			"shared_secret":           state.readClientResponseSharedSecret(state.Jmx),
+			"encrypted_shared_secret": state.readClientResponseEncryptedSharedSecret(state.Jmx, response.Jmx.EncryptedSharedSecret),
 		})
 		respDiags.Append(diags...)
 	}
@@ -168,14 +191,16 @@ func (r *serviceAuthenticationResource) emptyModel() serviceAuthenticationResour
 	var model serviceAuthenticationResourceModel
 	// attribute_query
 	attributeQueryAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
+		"id":                      types.StringType,
+		"shared_secret":           types.StringType,
+		"encrypted_shared_secret": types.StringType,
 	}
 	model.AttributeQuery = types.ObjectNull(attributeQueryAttrTypes)
 	// jmx
 	jmxAttrTypes := map[string]attr.Type{
-		"id":            types.StringType,
-		"shared_secret": types.StringType,
+		"id":                      types.StringType,
+		"shared_secret":           types.StringType,
+		"encrypted_shared_secret": types.StringType,
 	}
 	model.Jmx = types.ObjectNull(jmxAttrTypes)
 	return model

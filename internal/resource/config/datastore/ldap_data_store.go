@@ -16,8 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -39,7 +41,7 @@ var (
 		},
 	}
 
-	ldapDataStoreCommonAttrType = map[string]attr.Type{
+	ldapDataStoreEncryptedPassAttrType = map[string]attr.Type{
 		"hostnames":                  types.ListType{ElemType: types.StringType},
 		"use_start_tls":              types.BoolType,
 		"verify_host":                types.BoolType,
@@ -66,11 +68,11 @@ var (
 		"follow_ldap_referrals":      types.BoolType,
 		"client_tls_certificate_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"retry_failed_operations":    types.BoolType,
+		"encrypted_password":         types.StringType,
 	}
 
-	ldapDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "password", types.StringType)
+	ldapDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreEncryptedPassAttrType, "password", types.StringType)
 	ldapDataStoreEmptyStateObj           = types.ObjectNull(ldapDataStoreAttrType)
-	ldapDataStoreEncryptedPassAttrType   = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "encrypted_password", types.StringType)
 	ldapDataStoreEmptyDataSourceStateObj = types.ObjectNull(ldapDataStoreEncryptedPassAttrType)
 )
 
@@ -246,18 +248,29 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"user_dn": schema.StringAttribute{
-			Description: "The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` must also be set to use this attribute.",
+			Description: "The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` or `encrypted_password` must also be set to use this attribute.",
 			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
 			},
 		},
 		"password": schema.StringAttribute{
-			Description: "The password credential required to access the data store. Requires `user_dn` to be set.",
+			Description: "The password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `encrypted_password` can be set.",
 			Optional:    true,
 			Sensitive:   true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
+			},
+		},
+		"encrypted_password": schema.StringAttribute{
+			Description: "The encrypted password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `password` can be set.",
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+			Validators: []validator.String{
+				stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 			},
 		},
 		"bind_anonymously": schema.BoolAttribute{
@@ -511,6 +524,13 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		password = types.StringNull()
 	}
 
+	var encryptedPassword types.String
+	if internaltypes.IsDefined(plan.Attributes()["encrypted_password"]) {
+		encryptedPassword = plan.Attributes()["encrypted_password"].(types.String)
+	} else {
+		encryptedPassword = types.StringPointerValue(ldapDataStore.EncryptedPassword)
+	}
+
 	var binaryAttributes basetypes.SetValue
 	if len(ldapDataStore.BinaryAttributes) > 0 {
 		binaryAttributes = internaltypes.GetStringSet(ldapDataStore.BinaryAttributes)
@@ -549,6 +569,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		"time_between_evictions":     types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
 		"type":                       types.StringValue("LDAP"),
 		"password":                   password,
+		"encrypted_password":         encryptedPassword,
 		"bind_anonymously":           types.BoolPointerValue(ldapDataStore.BindAnonymously),
 		"follow_ldap_referrals":      followLdapReferrals,
 		"client_tls_certificate_ref": clientTlsCertificateRef,
@@ -653,6 +674,11 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 	password, ok := ldapDataStorePlan["password"]
 	if ok {
 		addRequest.LdapDataStore.Password = password.(types.String).ValueStringPointer()
+	}
+
+	encryptedPassword, ok := ldapDataStorePlan["encrypted_password"]
+	if ok {
+		addRequest.LdapDataStore.EncryptedPassword = encryptedPassword.(types.String).ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.DataStoreId) {

@@ -45,6 +45,7 @@ type pingOneConnectionResourceModel struct {
 	Description                      types.String `tfsdk:"description"`
 	Active                           types.Bool   `tfsdk:"active"`
 	Credential                       types.String `tfsdk:"credential"`
+	EncryptedCredential              types.String `tfsdk:"encrypted_credential"`
 	CredentialId                     types.String `tfsdk:"credential_id"`
 	PingOneConnectionId              types.String `tfsdk:"ping_one_connection_id"`
 	EnvironmentId                    types.String `tfsdk:"environment_id"`
@@ -81,11 +82,19 @@ func (r *pingoneConnectionResource) Schema(ctx context.Context, req resource.Sch
 				Default:     booldefault.StaticBool(true),
 			},
 			"credential": schema.StringAttribute{
-				Description: "The credential for the PingOne connection.",
-				Required:    true,
+				Description: "The credential for the PingOne connection. Either this attribute or `encrypted_credential` must be specified.",
+				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"encrypted_credential": schema.StringAttribute{
+				Description: "The encrypted credential for the PingOne connection. Either this attribute or `credential` must be specified.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("credential")),
 				},
 			},
 			"credential_id": schema.StringAttribute{
@@ -136,6 +145,7 @@ func addOptionalPingOneConnectionFields(ctx context.Context, addRequest *client.
 	addRequest.Description = plan.Description.ValueStringPointer()
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.Credential = plan.Credential.ValueStringPointer()
+	addRequest.EncryptedCredential = plan.EncryptedCredential.ValueStringPointer()
 	addRequest.CredentialId = plan.CredentialId.ValueStringPointer()
 	addRequest.PingOneConnectionId = plan.PingOneConnectionId.ValueStringPointer()
 	addRequest.EnvironmentId = plan.EnvironmentId.ValueStringPointer()
@@ -171,7 +181,12 @@ func readPingOneConnectionResponse(ctx context.Context, r *client.PingOneConnect
 	if plan != nil && plan.Credential.ValueString() != "" {
 		state.Credential = types.StringValue(plan.Credential.ValueString())
 	} else {
-		state.Credential = types.StringValue("")
+		state.Credential = types.StringNull()
+	}
+	if plan != nil && internaltypes.IsDefined(plan.EncryptedCredential) {
+		state.EncryptedCredential = types.StringValue(plan.EncryptedCredential.ValueString())
+	} else {
+		state.EncryptedCredential = types.StringPointerValue(r.EncryptedCredential)
 	}
 	state.CredentialId = types.StringPointerValue(r.CredentialId)
 	state.PingOneConnectionId = types.StringPointerValue(r.PingOneConnectionId)
@@ -179,7 +194,7 @@ func readPingOneConnectionResponse(ctx context.Context, r *client.PingOneConnect
 	if r.CreationDate != nil {
 		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
 	} else {
-		state.CreationDate = types.StringValue("")
+		state.CreationDate = types.StringNull()
 	}
 	state.OrganizationName = types.StringPointerValue(r.OrganizationName)
 	state.Region = types.StringPointerValue(r.Region)

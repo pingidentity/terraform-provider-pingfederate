@@ -54,14 +54,16 @@ var (
 	}
 
 	secondarySecretsAttrType = map[string]attr.Type{
-		"secret":      types.StringType,
-		"expiry_time": types.StringType,
+		"secret":           types.StringType,
+		"encrypted_secret": types.StringType,
+		"expiry_time":      types.StringType,
 	}
 
 	clientAuthAttrType = map[string]attr.Type{
 		"type":                                  types.StringType,
 		"secret":                                types.StringType,
-		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsAttrType}},
+		"encrypted_secret":                      types.StringType,
+		"secondary_secrets":                     types.ListType{ElemType: types.ObjectType{AttrTypes: secondarySecretsAttrType}},
 		"client_cert_issuer_dn":                 types.StringType,
 		"client_cert_subject_dn":                types.StringType,
 		"enforce_replay_prevention":             types.BoolType,
@@ -71,7 +73,8 @@ var (
 	clientAuthDefaultAttrValue = map[string]attr.Value{
 		"type":                                  types.StringValue("NONE"),
 		"secret":                                types.StringNull(),
-		"secondary_secrets":                     secondarySecretsEmptySet,
+		"encrypted_secret":                      types.StringNull(),
+		"secondary_secrets":                     secondarySecretsEmptyList,
 		"client_cert_issuer_dn":                 types.StringNull(),
 		"client_cert_subject_dn":                types.StringNull(),
 		"enforce_replay_prevention":             types.BoolNull(),
