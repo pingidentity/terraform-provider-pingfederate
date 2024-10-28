@@ -181,7 +181,7 @@ func readPingOneConnectionResponse(ctx context.Context, r *client.PingOneConnect
 	if plan != nil && plan.Credential.ValueString() != "" {
 		state.Credential = types.StringValue(plan.Credential.ValueString())
 	} else {
-		state.Credential = types.StringValue("")
+		state.Credential = types.StringNull()
 	}
 	if plan != nil && internaltypes.IsDefined(plan.EncryptedCredential) {
 		state.EncryptedCredential = types.StringValue(plan.EncryptedCredential.ValueString())
@@ -194,7 +194,7 @@ func readPingOneConnectionResponse(ctx context.Context, r *client.PingOneConnect
 	if r.CreationDate != nil {
 		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
 	} else {
-		state.CreationDate = types.StringValue("")
+		state.CreationDate = types.StringNull()
 	}
 	state.OrganizationName = types.StringPointerValue(r.OrganizationName)
 	state.Region = types.StringPointerValue(r.Region)

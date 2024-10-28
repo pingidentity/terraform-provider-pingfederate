@@ -21,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -325,7 +324,7 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 
 	password, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
 	if !ok {
-		password = types.StringPointerValue(pointers.String(""))
+		password = types.StringNull()
 	}
 
 	encryptedPassword := types.StringPointerValue(jdbcDataStore.EncryptedPassword)
