@@ -50,7 +50,7 @@ type configStoreDataSourceModel struct {
 
 func (r *configStoreDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Data source to retrieve a config_store.",
+		Description: "Data source to retrieve a bundle of settings.",
 		Attributes: map[string]schema.Attribute{
 			"bundle": schema.StringAttribute{
 				Required:    true,

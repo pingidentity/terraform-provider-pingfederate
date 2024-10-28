@@ -62,7 +62,7 @@ type configStoreResourceModel struct {
 
 func (r *configStoreResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage a config store.",
+		Description: "Resource to create and manage bundle settings.",
 		Attributes: map[string]schema.Attribute{
 			"bundle": schema.StringAttribute{
 				Required:    true,

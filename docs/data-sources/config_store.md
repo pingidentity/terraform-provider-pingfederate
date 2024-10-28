@@ -3,12 +3,12 @@
 page_title: "pingfederate_config_store Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Data source to retrieve a config_store.
+  Data source to retrieve a bundle of settings.
 ---
 
 # pingfederate_config_store (Data Source)
 
-Data source to retrieve a config_store.
+Data source to retrieve a bundle of settings.
 
 ## Example Usage
 

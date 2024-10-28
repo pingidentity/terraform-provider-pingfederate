@@ -2,12 +2,12 @@
 page_title: "pingfederate_config_store Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Resource to create and manage a config store.
+  Resource to create and manage bundle settings.
 ---
 
 # pingfederate_config_store (Resource)
 
-Resource to create and manage a config store.
+Resource to create and manage bundle settings.
 
 ## Example Usage
 
