@@ -66,7 +66,7 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 				ImportStateId:           pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"configuration.sensitive_fields.0.value"},
+				ImportStateVerifyIgnore: []string{"configuration.sensitive_fields.0.value", "configuration.sensitive_fields.0.encrypted_value"},
 			},
 			{
 				// Back to minimal model
