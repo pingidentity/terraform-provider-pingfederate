@@ -101,6 +101,9 @@ resource "pingfederate_config_store" "example" {
   setting_id   = "%s"
   string_value = "stringval"
 }
+data "pingfederate_config_store" "dataexample" {
+  bundle = pingfederate_config_store.example.bundle
+}
 `, configStoreBundle, configStoreSettingId)
 }
 
@@ -134,6 +137,12 @@ func configStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_config_store.example", "list_value.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_config_store.example", "id", configStoreSettingId),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.#", "1"),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.id", configStoreSettingId),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.type", "STRING"),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.string_value", "stringval"),
+		resource.TestCheckNoResourceAttr("data.pingfederate_config_store.dataexample", "items.0.map_value"),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.list_value.#", "0"),
 	)
 }
 

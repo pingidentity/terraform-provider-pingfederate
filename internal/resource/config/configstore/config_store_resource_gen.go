@@ -145,6 +145,8 @@ func (state *configStoreResourceModel) readClientResponse(response *client.Confi
 	if len(response.ListValue) > 0 || !state.ListValue.IsNull() {
 		state.ListValue, diags = types.ListValueFrom(context.Background(), types.StringType, response.ListValue)
 		respDiags.Append(diags...)
+	} else {
+		state.ListValue = types.ListNull(types.StringType)
 	}
 	// map_value
 	if response.MapValue == nil {

@@ -5,6 +5,9 @@
 ### Resources
 * **New Resource:** `pingfederate_config_store` ([#420](https://github.com/pingidentity/terraform-provider-pingfederate/pull/420))
 
+### Data Sources
+* **New Data Source:** `pingfederate_config_store` ([#420](https://github.com/pingidentity/terraform-provider-pingfederate/pull/420))
+
 # v1.0.0 October 1, 2024
 ### Breaking changes
 As this is the first major release of the provider, there are breaking changes from `0.x` versions. The primary breaking changes are removal of previously deprecated attributes. For more information, see the Version 1 Upgrade Guide in the registry documentation. ([#413]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/413)))

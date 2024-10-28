@@ -703,6 +703,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		certificate.CertificatesCAExportDataSource,
 		certificate.CertificateDataSource,
 		clusterstatus.ClusterStatusDataSource,
+		configstore.ConfigStoreDataSource,
 		datastore.DataStoreDataSource,
 		idpadapter.IdpAdapterDataSource,
 		idpdefaulturls.IdpDefaultUrlsDataSource,
