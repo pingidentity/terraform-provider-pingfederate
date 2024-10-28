@@ -69,7 +69,8 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) User password.
+- `encrypted_password` (String) Encrypted user password. Either `password` or `encrypted_password` is required.
+- `password` (String, Sensitive) User password. Either `password` or `encrypted_password` is required.
 - `username` (String) The username.
 
 ## Import

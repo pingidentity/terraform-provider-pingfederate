@@ -531,7 +531,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"value": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: "The value for the configuration field.",
+				Description: "The value for the configuration field. Either this attribute or `encrypted_value` must be specified.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -539,7 +539,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"encrypted_value": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The encrypted value for the configuration field.",
+				Description: "The encrypted value for the configuration field. Either this attribute or `value` must be specified.",
 				Validators: []validator.String{
 					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("value")),
 				},
@@ -837,8 +837,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password.",
-										MarkdownDescription: "User password.",
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
 										},
@@ -846,8 +846,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"encrypted_password": schema.StringAttribute{
 										Optional:            true,
 										Computed:            true,
-										Description:         "Encrypted user password.",
-										MarkdownDescription: "Encrypted user password.",
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 										},
@@ -895,8 +895,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password.",
-										MarkdownDescription: "User password.",
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
 										},
@@ -904,8 +904,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"encrypted_password": schema.StringAttribute{
 										Optional:            true,
 										Computed:            true,
-										Description:         "Encrypted user password.",
-										MarkdownDescription: "Encrypted user password.",
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 										},

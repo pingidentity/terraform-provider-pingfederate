@@ -114,10 +114,10 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 						"password": schema.StringAttribute{
 							Optional:    true,
 							Sensitive:   true,
-							Description: "User password.",
+							Description: "User password. Either `password` or `encrypted_password` is required.",
 						},
 						"encrypted_password": schema.StringAttribute{
-							Description: "Encrypted user password.",
+							Description: "Encrypted user password. Either `password` or `encrypted_password` is required.",
 							Optional:    true,
 							Computed:    true,
 							Validators: []validator.String{

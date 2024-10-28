@@ -91,7 +91,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"password": schema.StringAttribute{
-				Description: "Password for the Account. This field is immutable and will trigger a replacement plan if changed.",
+				Description: "Password for the Account. This field is immutable and will trigger a replacement plan if changed. Either this attribute or `encrypted_password` must be specified.",
 				Optional:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
@@ -99,7 +99,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"encrypted_password": schema.StringAttribute{
-				Description: "Encrypted password for the account. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
+				Description: "Encrypted password for the account. This field holds the value returned from PingFederate and used for updating an existing Administrative Account. Either this attribute or `password` must be specified.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{

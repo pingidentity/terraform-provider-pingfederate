@@ -515,7 +515,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"secret": schema.StringAttribute{
-						Description: "Client secret for Basic Authentication.",
+						Description: "Client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.",
 						Optional:    true,
 						Sensitive:   true,
 						Validators: []validator.String{
@@ -523,7 +523,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"encrypted_secret": schema.StringAttribute{
-						Description: "Encrypted client secret for Basic Authentication.",
+						Description: "Encrypted client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.",
 						Optional:    true,
 						Computed:    true,
 						PlanModifiers: []planmodifier.String{
@@ -541,7 +541,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"secret": schema.StringAttribute{
-									Description: "Secondary client secret for Basic Authentication.",
+									Description: "Secondary client secret for Basic Authentication. Either this attribute or `encrypted_secret` must be provided.",
 									Optional:    true,
 									Sensitive:   true,
 									Validators: []validator.String{
@@ -549,7 +549,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 									},
 								},
 								"encrypted_secret": schema.StringAttribute{
-									Description: "Encrypted secondary client secret for Basic Authentication.",
+									Description: "Encrypted secondary client secret for Basic Authentication. Either this attribute or `secret` must be provided.",
 									Optional:    true,
 									Computed:    true,
 									PlanModifiers: []planmodifier.String{

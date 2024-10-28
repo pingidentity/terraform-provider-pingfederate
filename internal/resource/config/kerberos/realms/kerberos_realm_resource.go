@@ -107,7 +107,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"kerberos_password": schema.StringAttribute{
-				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.",
+				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_encrypted_password' should be specified.",
 				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
@@ -115,11 +115,11 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"kerberos_encrypted_password": schema.StringAttribute{
-				Description: "The encrypted Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.",
+				Description: "The encrypted Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_password' should be specified.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
-					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("kerberos_password")),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("kerberos_password")),
 				},
 			},
 			// Computed due to dependency on connection_type, this value is not present when connection_type is LDAP_GATEWAY, default set in ModifyPlan

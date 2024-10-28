@@ -255,7 +255,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"password": schema.StringAttribute{
-			Description: "The password credential required to access the data store. Requires `user_dn` to be set.",
+			Description: "The password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `encrypted_password` can be set.",
 			Optional:    true,
 			Sensitive:   true,
 			Validators: []validator.String{
@@ -263,7 +263,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"encrypted_password": schema.StringAttribute{
-			Description: "The encrypted password credential required to access the data store. Requires `user_dn` to be set.",
+			Description: "The encrypted password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `password` can be set.",
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{

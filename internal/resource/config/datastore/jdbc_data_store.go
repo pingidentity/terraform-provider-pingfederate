@@ -69,7 +69,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Default:     stringdefault.StaticString("JDBC"),
 		},
 		"password": schema.StringAttribute{
-			Description: "The password needed to access the database.",
+			Description: "The password needed to access the database. Either this attribute or `encrypted_password` must be specified.",
 			Optional:    true,
 			Sensitive:   true,
 			Validators: []validator.String{
@@ -77,7 +77,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"encrypted_password": schema.StringAttribute{
-			Description: "The encrypted password needed to access the database.",
+			Description: "The encrypted password needed to access the database. Either this attribute or `password` must be specified.",
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{

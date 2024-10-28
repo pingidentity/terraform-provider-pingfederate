@@ -68,13 +68,13 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 					"shared_secret": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Shared secret for the service.",
+						Description: "Shared secret for the service. Either this attribute or `encrypted_shared_secret` must be specified.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"encrypted_shared_secret": schema.StringAttribute{
-						Description: "Encrypted shared secret for the service.",
+						Description: "Encrypted shared secret for the service. Either this attribute or `shared_secret` must be specified.",
 						Optional:    true,
 						Computed:    true,
 						Validators: []validator.String{
@@ -97,13 +97,13 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 					"shared_secret": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Shared secret for the service.",
+						Description: "Shared secret for the service. Either this attribute or `encrypted_shared_secret` must be specified.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"encrypted_shared_secret": schema.StringAttribute{
-						Description: "Encrypted shared secret for the service.",
+						Description: "Encrypted shared secret for the service. Either this attribute or `shared_secret` must be specified.",
 						Optional:    true,
 						Computed:    true,
 						Validators: []validator.String{

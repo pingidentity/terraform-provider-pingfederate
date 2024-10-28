@@ -38,12 +38,12 @@ func ToSchema() schema.SingleNestedAttribute {
 				Required:    true,
 			},
 			"value": schema.StringAttribute{
-				Description: "The sensitive value for the configuration field.",
+				Description: "The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.",
 				Optional:    true,
 				Sensitive:   true,
 			},
 			"encrypted_value": schema.StringAttribute{
-				Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined",
+				Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{

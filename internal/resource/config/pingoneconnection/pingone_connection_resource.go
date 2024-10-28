@@ -82,7 +82,7 @@ func (r *pingoneConnectionResource) Schema(ctx context.Context, req resource.Sch
 				Default:     booldefault.StaticBool(true),
 			},
 			"credential": schema.StringAttribute{
-				Description: "The credential for the PingOne connection.",
+				Description: "The credential for the PingOne connection. Either this attribute or `encrypted_credential` must be specified.",
 				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
@@ -90,7 +90,7 @@ func (r *pingoneConnectionResource) Schema(ctx context.Context, req resource.Sch
 				},
 			},
 			"encrypted_credential": schema.StringAttribute{
-				Description: "The encrypted credential for the PingOne connection.",
+				Description: "The encrypted credential for the PingOne connection. Either this attribute or `credential` must be specified.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{

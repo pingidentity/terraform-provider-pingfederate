@@ -439,7 +439,11 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The sensitive value for the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 <a id="nestedatt--custom_data_store--configuration--tables"></a>
@@ -477,7 +481,11 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String, Sensitive) The sensitive value for the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 
@@ -552,11 +560,12 @@ Optional:
 - `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. The default value is `5000` milliseconds.
 - `connection_url` (String) The default location of the JDBC database. This field is required if `connection_url_tags` is not specified.
 - `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. This is required if 'connection_url' is not provided. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
+- `encrypted_password` (String) The encrypted password needed to access the database. Either this attribute or `password` must be specified.
 - `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed. The default value is `5` minutes.
 - `max_pool_size` (Number) The largest number of database connections in the connection pool for the given data store. The default value is `100`.
 - `min_pool_size` (Number) The smallest number of database connections in the connection pool for the given data store. The default value is `10`.
 - `name` (String) The data store name with a unique value across all data sources. Defaults to a combination of the `connection_url` and `username`.
-- `password` (String, Sensitive) The password needed to access the database.
+- `password` (String, Sensitive) The password needed to access the database. Either this attribute or `encrypted_password` must be specified.
 - `user_name` (String) The name that identifies the user when connecting to the database.
 - `validate_connection_sql` (String) A simple SQL statement used by PingFederate at runtime to verify that the database connection is still active and to reconnect if needed.
 
@@ -593,6 +602,7 @@ Optional:
 - `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of `-1` causes the pool to wait indefinitely. Defaults to `0`.
 - `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached. Default value is `false`.
 - `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached. Defaults to `0`.
+- `encrypted_password` (String) The encrypted password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `password` can be set.
 - `follow_ldap_referrals` (Boolean) Follow LDAP Referrals in the domain tree. The default value is `false`. This property does not apply to PingDirectory as this functionality is configured in PingDirectory.
 - `hostnames` (List of String) The default LDAP host names. This field is required if `hostnames_tags` is not specified. Failover can be configured by providing multiple host names.
 - `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. This is required if 'hostnames' is not provided. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
@@ -601,7 +611,7 @@ Optional:
 - `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Setting a value of `-1` causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available). Defaults to `-1`.
 - `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones. Defaults to `10`.
 - `name` (String) The data store name with a unique value across all data sources. Defaults to a combination of the values of `hostnames` and `user_dn`.
-- `password` (String, Sensitive) The password credential required to access the data store. Requires `user_dn` to be set.
+- `password` (String, Sensitive) The password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `encrypted_password` can be set.
 - `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of `-1` causes the connection to wait indefinitely. Defaults to `0`.
 - `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is `false`. Supported in PF version `11.3` or later.
 - `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool. Default value is `false`.
@@ -610,7 +620,7 @@ Optional:
 - `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information. The default value is `false`.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`.
 - `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is `false`.
-- `user_dn` (String) The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` must also be set to use this attribute.
+- `user_dn` (String) The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` or `encrypted_password` must also be set to use this attribute.
 - `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Defaults to `true`.
 
 Read-Only:

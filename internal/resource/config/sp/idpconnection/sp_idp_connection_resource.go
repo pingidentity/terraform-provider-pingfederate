@@ -957,15 +957,15 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password.",
-										MarkdownDescription: "User password.",
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
 										},
 									},
 									"encrypted_password": schema.StringAttribute{
-										Description:         "Encrypted user password.",
-										MarkdownDescription: "Encrypted user password.",
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
 										Optional:            true,
 										Computed:            true,
 										Validators: []validator.String{
@@ -1015,15 +1015,15 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password.",
-										MarkdownDescription: "User password.",
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
 										},
 									},
 									"encrypted_password": schema.StringAttribute{
-										Description:         "Encrypted user password.",
-										MarkdownDescription: "Encrypted user password.",
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
 										Optional:            true,
 										Computed:            true,
 										Validators: []validator.String{
