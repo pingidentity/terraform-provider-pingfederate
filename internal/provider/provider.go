@@ -40,6 +40,7 @@ import (
 	certificatesrevocationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/settings"
 	clustersettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/settings"
 	clusterstatus "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/status"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/configstore"
 	configurationencryptionkeysrotate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/configurationencryptionkeys/rotate"
 	connectionmetadataexport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/connectionmetadata/export"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
@@ -755,6 +756,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		certificatesrevocationocspcertificates.CertificatesRevocationOcspCertificateResource,
 		certificatesrevocationsettings.CertificatesRevocationSettingsResource,
 		clustersettings.ClusterSettingsResource,
+		configstore.ConfigStoreResource,
 		configurationencryptionkeysrotate.ConfigurationEncryptionKeysRotateResource,
 		connectionmetadataexport.ConnectionMetadataExportResource,
 		defaulturls.DefaultUrlsResource,
