@@ -1,0 +1,1 @@
+terraform import pingfederate_config_store.example bundle/settingId
