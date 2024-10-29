@@ -97,7 +97,10 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				// Sensitive values aren't returned by PF, so they can't be verified
-				ImportStateVerifyIgnore: []string{"configuration.sensitive_fields.0.value"},
+				ImportStateVerifyIgnore: []string{
+					"configuration.sensitive_fields.0.value",
+					"configuration.sensitive_fields.0.encrypted_value",
+				},
 			},
 		},
 	})
