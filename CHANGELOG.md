@@ -1,4 +1,4 @@
-# v1.1.0 (Unreleased)
+# v1.1.0 October 31, 2024
 ### Enhancements
 * Added `encrypted_` attributes for sensitive attributes. The `encrypted_` versions of these attributes can be used as an alternative to the original attribute when importing configuration into Terraform from an existing PingFederate. ([#419](https://github.com/pingidentity/terraform-provider-pingfederate/pull/419))
 
