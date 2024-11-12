@@ -14,8 +14,12 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const configStoreBundle = "configStoreBundle"
-const configStoreSettingId = "configStoreSettingId"
+const configStoreMinimalBundle = "org.sourceid.common.ExpressionManager"
+const configStoreMinimalId = "evaluateExpressions"
+const configStoreBundle = "org.sourceid.oauth20.handlers.process.exchange.execution.SecurityTokenCreator"
+const configStoreSettingId = "base64-required-plugins"
+const configStoreMapBundle = "com.pingidentity.crypto.SignatureAlgorithms"
+const configStoreMapSettingId = "signature-algorithms"
 
 func TestAccConfigStore_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -23,7 +27,7 @@ func TestAccConfigStore_RemovalDrift(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: configStore_CheckDestroy,
+		CheckDestroy: configStore_CheckDestroyMinimal,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -32,7 +36,7 @@ func TestAccConfigStore_RemovalDrift(t *testing.T) {
 			{
 				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
 				PreConfig: func() {
-					configStore_Delete(t)
+					configStore_DeleteMinimal(t)
 				},
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
@@ -47,7 +51,7 @@ func TestAccConfigStore_MinimalMaximal(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: configStore_CheckDestroy,
+		CheckDestroy: configStore_CheckDestroyMap,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -99,12 +103,12 @@ func configStore_MinimalHCL() string {
 resource "pingfederate_config_store" "example" {
   bundle       = "%s"
   setting_id   = "%s"
-  string_value = "stringval"
+  string_value = "true"
 }
 data "pingfederate_config_store" "dataexample" {
   bundle = pingfederate_config_store.example.bundle
 }
-`, configStoreBundle, configStoreSettingId)
+`, configStoreMinimalBundle, configStoreMinimalId)
 }
 
 // Maximal HCL with all values set where possible
@@ -113,50 +117,67 @@ func configStore_CompleteHCL() string {
 resource "pingfederate_config_store" "example" {
   bundle     = "%s"
   setting_id = "%s"
-  list_value = ["val1", "val2", "val3"]
+  list_value = ["org.sourceid.wstrust.processor.oauth.BearerAccessTokenTokenProcessor"]
 }
 `, configStoreBundle, configStoreSettingId)
 }
 
 // HCL to configure map value
-func configStore_MapValueHCL(firstKeyValue string) string {
+func configStore_MapValueHCL(testKeyValue string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_config_store" "example" {
   bundle     = "%s"
   setting_id = "%s"
   map_value = {
-    key1 = "%s"
-    key2 = "anotherone"
+    "DSA_SHA1" : "http://www.w3.org/2000/09/xmldsig#dsa-sha1"
+    "RSA_SHA1" : "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
+    "RSA_SHA256" : "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+    "RSA_SHA384" : "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384"
+    "RSA_SHA512" : "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512"
+    "ECDSA_SHA256" : "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"
+    "ECDSA_SHA384" : "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384"
+    "ECDSA_SHA512" : "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512"
+    "TEST" : "%s"
   }
 }
-`, configStoreBundle, configStoreSettingId, firstKeyValue)
+`, configStoreMapBundle, configStoreMapSettingId, testKeyValue)
 }
 
 // Validate any computed values when applying minimal HCL
 func configStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_config_store.example", "list_value.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_config_store.example", "id", configStoreSettingId),
+		resource.TestCheckResourceAttr("pingfederate_config_store.example", "id", configStoreMinimalId),
 		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.#", "1"),
-		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.id", configStoreSettingId),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.id", configStoreMinimalId),
 		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.type", "STRING"),
-		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.string_value", "stringval"),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.string_value", "true"),
 		resource.TestCheckNoResourceAttr("data.pingfederate_config_store.dataexample", "items.0.map_value"),
 		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.list_value.#", "0"),
 	)
 }
 
 // Delete the resource
-func configStore_Delete(t *testing.T) {
+func configStore_DeleteMinimal(t *testing.T) {
 	testClient := acctest.TestClient()
-	_, err := testClient.ConfigStoreAPI.DeleteConfigStoreSetting(acctest.TestBasicAuthContext(), configStoreBundle, configStoreSettingId).Execute()
+	_, err := testClient.ConfigStoreAPI.DeleteConfigStoreSetting(acctest.TestBasicAuthContext(), configStoreMinimalBundle, configStoreMinimalId).Execute()
 	if err != nil {
 		t.Fatalf("Failed to delete config: %v", err)
 	}
 }
 
 // Test that any objects created by the test are destroyed
-func configStore_CheckDestroy(s *terraform.State) error {
+func configStore_CheckDestroyMinimal(s *terraform.State) error {
+	testClient := acctest.TestClient()
+	_, err := testClient.ConfigStoreAPI.DeleteConfigStoreSetting(acctest.TestBasicAuthContext(), configStoreMinimalBundle, configStoreMinimalId).Execute()
+	if err == nil {
+		return fmt.Errorf("config_store still exists after tests. Expected it to be destroyed")
+	}
+	return nil
+}
+
+// Test that any objects created by the test are destroyed
+func configStore_CheckDestroyMap(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	_, err := testClient.ConfigStoreAPI.DeleteConfigStoreSetting(acctest.TestBasicAuthContext(), configStoreBundle, configStoreSettingId).Execute()
 	if err == nil {
