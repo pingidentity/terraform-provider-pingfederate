@@ -9,9 +9,17 @@ description: |-
 
 {{ .Description | trimspace }}
 
-## Example Usage
+## Example Usage - String
 
-{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-string.tf") }}
+
+## Example Usage - List
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-list.tf") }}
+
+## Example Usage - Map
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-map.tf") }}
 
 {{ .SchemaMarkdown | trimspace }}
 
