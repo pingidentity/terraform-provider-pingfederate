@@ -3895,7 +3895,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			credentialsInboundBackChannelAuthValue = types.ObjectNull(credentialsInboundBackChannelAuthAttrTypes)
 		} else {
 			var credentialsInboundBackChannelAuthCertsValue types.List
-			if r.Credentials.InboundBackChannelAuth.Certs != nil && len(r.Credentials.InboundBackChannelAuth.Certs) > 0 {
+			if len(r.Credentials.InboundBackChannelAuth.Certs) > 0 {
 				var credentialsInboundBackChannelAuthCertsValues []attr.Value
 				for _, ibcaCert := range r.Credentials.InboundBackChannelAuth.Certs {
 					if plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
@@ -3932,16 +3932,16 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+						password = passwordFromPlan.ValueStringPointer()
+					} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -3951,7 +3951,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					}
 				}
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringValue(password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
@@ -3975,16 +3975,16 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+						password = passwordFromPlan.ValueStringPointer()
+					} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+						password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -3994,7 +3994,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					}
 				}
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(&password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
@@ -4096,7 +4096,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	} else {
 		var idpBrowserSsoAdapterMappingsValues []attr.Value
 		idpBrowserSsoAdapterMappingsValue := types.SetNull(idpBrowserSsoAdapterMappingsElementType)
-		if r.IdpBrowserSso.AdapterMappings != nil && len(r.IdpBrowserSso.AdapterMappings) > 0 {
+		if len(r.IdpBrowserSso.AdapterMappings) > 0 {
 			for i, idpBrowserSsoAdapterMappingsResponseValue := range r.IdpBrowserSso.AdapterMappings {
 				var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue types.Object
 				if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings == nil {
@@ -4270,7 +4270,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 		// IdpBrowserSSO SSO Service Endpoints
 		idpBrowserSsoSsoServiceEndpointsValue := types.SetNull(idpBrowserSsoSsoServiceEndpointsElementType)
-		if r.IdpBrowserSso.SsoServiceEndpoints != nil && len(r.IdpBrowserSso.SsoServiceEndpoints) > 0 {
+		if len(r.IdpBrowserSso.SsoServiceEndpoints) > 0 {
 			idpBrowserSsoSsoServiceEndpointsValue, objDiags = types.SetValueFrom(ctx, idpBrowserSsoSsoServiceEndpointsElementType, r.IdpBrowserSso.SsoServiceEndpoints)
 			diags.Append(objDiags...)
 		}

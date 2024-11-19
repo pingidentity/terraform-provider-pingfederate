@@ -9,14 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const spIdpConnectionConnectionId = "sp_idp_connection_connection_id"
-
-func TestAccSpIdpConnection_RemovalDrift(t *testing.T) {
+func TestAccSpIdpConnection_SamlMinimalMaximal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -26,56 +23,32 @@ func TestAccSpIdpConnection_RemovalDrift(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: spIdpConnection_MinimalHCL(),
-			},
-			{
-				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
-				PreConfig: func() {
-					spIdpConnection_Delete(t)
-				},
-				RefreshState:       true,
-				ExpectNonEmptyPlan: true,
-			},
-		},
-	})
-}
-
-func TestAccSpIdpConnection_MinimalMaximal(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
-		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
-		},
-		CheckDestroy: spIdpConnection_CheckDestroy,
-		Steps: []resource.TestStep{
-			{
-				// Create the resource with a minimal model
-				Config: spIdpConnection_MinimalHCL(),
-				Check:  spIdpConnection_CheckComputedValuesMinimal(),
+				Config: spIdpConnection_SamlMinimalHCL(),
+				Check:  spIdpConnection_CheckComputedValuesSamlMinimal(),
 			},
 			{
 				// Delete the minimal model
-				Config:  spIdpConnection_MinimalHCL(),
+				Config:  spIdpConnection_SamlMinimalHCL(),
 				Destroy: true,
 			},
 			{
 				// Re-create with a complete model
-				Config: spIdpConnection_CompleteHCL(),
-				Check:  spIdpConnection_CheckComputedValuesComplete(),
+				Config: spIdpConnection_SamlCompleteHCL(),
+				Check:  spIdpConnection_CheckComputedValuesSamlComplete(),
 			},
 			{
 				// Back to minimal model
-				Config: spIdpConnection_MinimalHCL(),
-				Check:  spIdpConnection_CheckComputedValuesMinimal(),
+				Config: spIdpConnection_SamlMinimalHCL(),
+				Check:  spIdpConnection_CheckComputedValuesSamlMinimal(),
 			},
 			{
 				// Back to complete model
-				Config: spIdpConnection_CompleteHCL(),
-				Check:  spIdpConnection_CheckComputedValuesComplete(),
+				Config: spIdpConnection_SamlCompleteHCL(),
+				Check:  spIdpConnection_CheckComputedValuesSamlComplete(),
 			},
 			{
 				// Test importing the resource
-				Config:            spIdpConnection_CompleteHCL(),
+				Config:            spIdpConnection_SamlCompleteHCL(),
 				ResourceName:      "pingfederate_sp_idp_connection.example",
 				ImportStateId:     spIdpConnectionConnectionId,
 				ImportState:       true,
@@ -95,7 +68,7 @@ func TestAccSpIdpConnection_MinimalMaximal(t *testing.T) {
 }
 
 // Minimal HCL with only required values set
-func spIdpConnection_MinimalHCL() string {
+func spIdpConnection_SamlMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_idp_connection" "example" {
   connection_id      = "%s"
@@ -147,7 +120,7 @@ resource "pingfederate_sp_idp_connection" "example" {
 }
 
 // Maximal HCL with all values set where possible
-func spIdpConnection_CompleteHCL() string {
+func spIdpConnection_SamlCompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_idp_connection" "example" {
   connection_id             = "%s"
@@ -476,7 +449,7 @@ resource "pingfederate_sp_idp_connection" "example" {
 }
 
 // Validate any computed values when applying minimal HCL
-func spIdpConnection_CheckComputedValuesMinimal() resource.TestCheckFunc {
+func spIdpConnection_CheckComputedValuesSamlMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "active", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.active_verification_cert", "false"),
@@ -506,7 +479,7 @@ func spIdpConnection_CheckComputedValuesMinimal() resource.TestCheckFunc {
 }
 
 // Validate any computed values when applying complete HCL
-func spIdpConnection_CheckComputedValuesComplete() resource.TestCheckFunc {
+func spIdpConnection_CheckComputedValuesSamlComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.expires", "2024-07-13T02:54:53Z"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.id", "4qrossmq1vxa4p836kyqzp48h"),
@@ -527,23 +500,4 @@ func spIdpConnection_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "ws_trust.attribute_contract.core_attributes.0.name", "TOKEN_SUBJECT"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "ws_trust.attribute_contract.core_attributes.0.masked", "false"),
 	)
-}
-
-// Delete the resource
-func spIdpConnection_Delete(t *testing.T) {
-	testClient := acctest.TestClient()
-	_, err := testClient.SpIdpConnectionsAPI.DeleteConnection(acctest.TestBasicAuthContext(), spIdpConnectionConnectionId).Execute()
-	if err != nil {
-		t.Fatalf("Failed to delete config: %v", err)
-	}
-}
-
-// Test that any objects created by the test are destroyed
-func spIdpConnection_CheckDestroy(s *terraform.State) error {
-	testClient := acctest.TestClient()
-	_, err := testClient.SpIdpConnectionsAPI.DeleteConnection(acctest.TestBasicAuthContext(), spIdpConnectionConnectionId).Execute()
-	if err == nil {
-		return fmt.Errorf("sp_idp_connection still exists after tests. Expected it to be destroyed")
-	}
-	return nil
 }
