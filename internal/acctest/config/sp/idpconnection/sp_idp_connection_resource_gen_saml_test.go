@@ -71,50 +71,47 @@ func TestAccSpIdpConnection_SamlMinimalMaximal(t *testing.T) {
 func spIdpConnection_SamlMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_idp_connection" "example" {
-  connection_id      = "%s"
-  name               = "connection name"
-  entity_id          = "entity_id"
-  virtual_entity_ids = []
+  connection_id                             = "%s"
   credentials = {
-    certs = [{
-      x509_file = {
-        id        = "4qrossmq1vxa4p836kyqzp48h"
-        file_data = "MIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYDVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q87p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8poasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9b9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7gOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQADggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4JZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31hSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+WQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg="
+    outbound_back_channel_auth = {
+      http_basic_credentials = {
+        password = "2FederateM0re"
+        username           = "user"
       }
-    }]
+    }
   }
-  ws_trust = {
-    attribute_contract = {
-      core_attributes = [
+  entity_id                 = "partnersec:entity:id"
+  error_page_msg_id         = "errorDetail.spSsoFailure"
+  idp_browser_sso = {
+    artifact = {
+      resolver_locations = [
         {
-          name   = "TOKEN_SUBJECT"
-          masked = false
-        }
-      ]
-      extended_attributes = [
-        {
-          name   = "test"
-          masked = false
-        }
+          index = 1
+          url   = "https://example.com/endpoint"
+        },
       ]
     }
-    token_generator_mappings = [
+    authentication_policy_contract_mappings = [
       {
         attribute_contract_fulfillment = {
-          "SAML_SUBJECT" = {
+          subject = {
             source = {
-              type = "NO_MAPPING"
+              type = "CONTEXT"
             }
+            value = "ClientIp"
           }
         }
-        sp_token_generator_ref = {
-          id = "tokengenerator"
+        authentication_policy_contract_ref = {
+          id = "QGxlec5CX693lBQL"
         }
-        default_mapping = true
-      }
+      },
     ]
-    generate_local_token = true
+    enabled_profiles                         = ["IDP_INITIATED_SSO"]
+    idp_identity_mapping                     = "ACCOUNT_MAPPING"
+    incoming_bindings                        = ["ARTIFACT"]
+    protocol                                 = "SAML20"
   }
+  name                              = "minimalSaml2"
 }
 `, spIdpConnectionConnectionId)
 }

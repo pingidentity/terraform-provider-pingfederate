@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -979,8 +980,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"digital_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "If incoming or outgoing messages must be signed.",
-								MarkdownDescription: "If incoming or outgoing messages must be signed.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "If incoming or outgoing messages must be signed. The default value is `false`.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed. The default value is `false`.",
 							},
 							"ssl_auth_key_pair_ref": schema.SingleNestedAttribute{
 								Attributes:          resourcelink.ToSchema(),
@@ -1343,8 +1346,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"assertions_signed": schema.BoolAttribute{
 						Optional:            true,
-						Description:         "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed.",
-						MarkdownDescription: "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed.",
+						Computed:            true,
+						Default:             booldefault.StaticBool(false),
+						Description:         "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed. The default value is `false`.",
+						MarkdownDescription: "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed. The default value is `false`.",
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -1471,31 +1476,49 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"assertion_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Specify whether the incoming SAML assertion is encrypted for an IdP connection.",
-								MarkdownDescription: "Specify whether the incoming SAML assertion is encrypted for an IdP connection.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Specify whether the incoming SAML assertion is encrypted for an IdP connection. The default value is `false`.",
+								MarkdownDescription: "Specify whether the incoming SAML assertion is encrypted for an IdP connection. The default value is `false`.",
 							},
 							"attributes_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection.",
-								MarkdownDescription: "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection. The default value is `false`.",
+								MarkdownDescription: "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection. The default value is `false`.",
 							},
 							"slo_encrypt_subject_name_id": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Encrypt the Subject Name ID in SLO messages to the IdP.",
-								MarkdownDescription: "Encrypt the Subject Name ID in SLO messages to the IdP.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Encrypt the Subject Name ID in SLO messages to the IdP. The default value is `false`.",
+								MarkdownDescription: "Encrypt the Subject Name ID in SLO messages to the IdP. The default value is `false`.",
 							},
 							"slo_subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Allow encrypted Subject Name ID in SLO messages from the IdP.",
-								MarkdownDescription: "Allow encrypted Subject Name ID in SLO messages from the IdP.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Allow encrypted Subject Name ID in SLO messages from the IdP. The default value is `false`.",
+								MarkdownDescription: "Allow encrypted Subject Name ID in SLO messages from the IdP. The default value is `false`.",
 							},
 							"subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Specify whether the incoming Subject Name ID is encrypted for an IdP connection.",
-								MarkdownDescription: "Specify whether the incoming Subject Name ID is encrypted for an IdP connection.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Specify whether the incoming Subject Name ID is encrypted for an IdP connection. The default value is `false`.",
+								MarkdownDescription: "Specify whether the incoming Subject Name ID is encrypted for an IdP connection. The default value is `false`.",
 							},
 						},
-						Optional:            true,
+						Optional: true,
+						Computed: true,
+						Default: objectdefault.StaticValue(types.ObjectValueMust(idpBrowserSsoDecryptionPolicyAttrTypes, map[string]attr.Value{
+							"assertion_encrypted":           types.BoolValue(false),
+							"attributes_encrypted":          types.BoolValue(false),
+							"slo_encrypt_subject_name_id":   types.BoolValue(false),
+							"slo_subject_name_id_encrypted": types.BoolValue(false),
+							"subject_name_id_encrypted":     types.BoolValue(false),
+						})),
 						Description:         "Defines what to decrypt in the browser-based SSO profile.",
 						MarkdownDescription: "Defines what to decrypt in the browser-based SSO profile.",
 					},
@@ -2192,6 +2215,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"sign_authn_requests": schema.BoolAttribute{
 						Optional:            true,
+						Computed:            true,
+						Default:             booldefault.StaticBool(false),
 						Description:         "Determines whether SAML authentication requests should be signed.",
 						MarkdownDescription: "Determines whether SAML authentication requests should be signed.",
 					},
@@ -3250,6 +3275,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
+				Computed:            true,
+				Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, nil)),
 				Description:         "List of alternate entity IDs that identifies the local server to this partner.",
 				MarkdownDescription: "List of alternate entity IDs that identifies the local server to this partner.",
 			},

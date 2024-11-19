@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -18,6 +19,8 @@ func ToSchema(description string) schema.ListNestedAttribute {
 		Description:         description,
 		MarkdownDescription: description,
 		Optional:            true,
+		Computed:            true,
+		Default:             listdefault.StaticValue(types.ListValueMust(ObjType(), nil)),
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: toSchemaAttributes(),
 		},
