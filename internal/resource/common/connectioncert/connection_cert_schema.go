@@ -14,13 +14,11 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/planmodifiers"
 )
 
-func ToSchema(description string) schema.ListNestedAttribute {
-	return schema.ListNestedAttribute{
+func ToSchema(description string, includeDefault bool) schema.ListNestedAttribute {
+	result := schema.ListNestedAttribute{
 		Description:         description,
 		MarkdownDescription: description,
 		Optional:            true,
-		Computed:            true,
-		Default:             listdefault.StaticValue(types.ListValueMust(ObjType(), nil)),
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: toSchemaAttributes(),
 		},
@@ -28,6 +26,11 @@ func ToSchema(description string) schema.ListNestedAttribute {
 			listvalidator.UniqueValues(),
 		},
 	}
+	if includeDefault {
+		result.Computed = true
+		result.Default = listdefault.StaticValue(types.ListValueMust(ObjType(), nil))
+	}
+	return result
 }
 
 func toSchemaAttributes() map[string]schema.Attribute {

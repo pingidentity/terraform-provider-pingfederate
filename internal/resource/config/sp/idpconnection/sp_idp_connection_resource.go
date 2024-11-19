@@ -875,7 +875,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", true),
 					"block_encryption_algorithm": schema.StringAttribute{
 						Optional:            true,
 						Description:         "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
@@ -956,8 +956,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 									"password": schema.StringAttribute{
-										Optional:            true,
-										Sensitive:           true,
+										Optional: true,
+										//Sensitive:           true,
 										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
 										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
@@ -1016,8 +1016,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 									"password": schema.StringAttribute{
-										Optional:            true,
-										Sensitive:           true,
+										Optional: true,
+										//Sensitive:           true,
 										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
 										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
@@ -1059,7 +1059,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
-							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", false),
 							"require_ssl": schema.BoolAttribute{
 								Optional:            true,
 								Description:         "Incoming HTTP transmissions must use a secure channel.",
