@@ -4178,7 +4178,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				diags.Append(objDiags...)
 
 				var idpBrowserSsoAdapterMappingsIssuanceCriteriaValue types.Object
-				if idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria != nil && (len(idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria.ConditionalCriteria) > 0 || len(idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria.ExpressionCriteria) > 0) {
+				if idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria != nil {
 					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue, objDiags = issuancecriteria.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
 					diags.Append(objDiags...)
 				} else {
