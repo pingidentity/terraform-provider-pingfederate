@@ -9,9 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
+
+const wsTrustStsConnId = "testwstruststsconn"
 
 func TestAccSpIdpConnection_WsTrustStsMinimalMaximal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -19,7 +22,7 @@ func TestAccSpIdpConnection_WsTrustStsMinimalMaximal(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: spIdpConnection_CheckDestroy,
+		CheckDestroy: spIdpConnection_WsTrustStsCheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -50,7 +53,7 @@ func TestAccSpIdpConnection_WsTrustStsMinimalMaximal(t *testing.T) {
 				// Test importing the resource
 				Config:            spIdpConnection_WsTrustStsCompleteHCL(),
 				ResourceName:      "pingfederate_sp_idp_connection.example",
-				ImportStateId:     spIdpConnectionConnectionId,
+				ImportStateId:     wsTrustStsConnId,
 				ImportState:       true,
 				ImportStateVerify: true,
 				// file_data gets formatted by PF so it won't match, and passwords won't be returned by the API
@@ -116,7 +119,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     generate_local_token = true
   }
 }
-`, spIdpConnectionConnectionId)
+`, wsTrustStsConnId)
 }
 
 // Maximal HCL with all values set where possible
@@ -445,7 +448,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     }
   }
 }
-`, spIdpConnectionConnectionId)
+`, wsTrustStsConnId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -500,4 +503,14 @@ func spIdpConnection_CheckComputedValuesWsTrustStsComplete() resource.TestCheckF
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "ws_trust.attribute_contract.core_attributes.0.name", "TOKEN_SUBJECT"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "ws_trust.attribute_contract.core_attributes.0.masked", "false"),
 	)
+}
+
+// Test that any objects created by the test are destroyed
+func spIdpConnection_WsTrustStsCheckDestroy(s *terraform.State) error {
+	testClient := acctest.TestClient()
+	_, err := testClient.SpIdpConnectionsAPI.DeleteConnection(acctest.TestBasicAuthContext(), wsTrustStsConnId).Execute()
+	if err == nil {
+		return fmt.Errorf("sp_idp_connection still exists after tests. Expected it to be destroyed")
+	}
+	return nil
 }

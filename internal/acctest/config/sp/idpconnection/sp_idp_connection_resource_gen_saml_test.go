@@ -9,9 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
+
+const idpConnSamlId = "samlidpconn"
 
 func TestAccSpIdpConnection_SamlMinimalMaximal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -19,7 +22,7 @@ func TestAccSpIdpConnection_SamlMinimalMaximal(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: spIdpConnection_CheckDestroy,
+		CheckDestroy: spIdpConnection_SamlCheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -50,7 +53,7 @@ func TestAccSpIdpConnection_SamlMinimalMaximal(t *testing.T) {
 				// Test importing the resource
 				Config:            spIdpConnection_SamlCompleteHCL(),
 				ResourceName:      "pingfederate_sp_idp_connection.example",
-				ImportStateId:     spIdpConnectionConnectionId,
+				ImportStateId:     idpConnSamlId,
 				ImportState:       true,
 				ImportStateVerify: true,
 				// file_data gets formatted by PF so it won't match, and passwords won't be returned by the API
@@ -163,7 +166,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   }
   name                              = "minimalSaml2"
 }
-`, spIdpConnection_SamlDependencyHCL(), spIdpConnectionConnectionId)
+`, spIdpConnection_SamlDependencyHCL(), idpConnSamlId)
 }
 
 // Maximal HCL with all values set where possible
@@ -599,7 +602,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   virtual_entity_ids                = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
   ws_trust                          = null
 }
-`, spIdpConnection_SamlDependencyHCL(), spIdpConnectionConnectionId)
+`, spIdpConnection_SamlDependencyHCL(), idpConnSamlId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -650,4 +653,14 @@ func spIdpConnection_CheckComputedValuesSamlComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.jit_provisioning.user_attributes.attribute_contract.#", "3"),
 	)
+}
+
+// Test that any objects created by the test are destroyed
+func spIdpConnection_SamlCheckDestroy(s *terraform.State) error {
+	testClient := acctest.TestClient()
+	_, err := testClient.SpIdpConnectionsAPI.DeleteConnection(acctest.TestBasicAuthContext(), idpConnSamlId).Execute()
+	if err == nil {
+		return fmt.Errorf("sp_idp_connection still exists after tests. Expected it to be destroyed")
+	}
+	return nil
 }
