@@ -1132,16 +1132,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											},
 										},
 										"name": schema.StringAttribute{
-											Required:            true,
+											Optional:            true,
 											Description:         "The plugin instance name.",
 											MarkdownDescription: "The plugin instance name.",
-											Validators: []validator.String{
-												stringvalidator.LengthAtLeast(1),
-											},
 										},
 										"plugin_descriptor_ref": schema.SingleNestedAttribute{
-											Attributes:          resourcelink.ToSchema(),
-											Required:            true,
+											Attributes:          resourcelink.ToSchemaNoLengthValidator(),
+											Optional:            true,
 											Description:         "Reference to the plugin descriptor for this instance.",
 											MarkdownDescription: "Reference to the plugin descriptor for this instance.",
 										},
@@ -1231,8 +1228,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									MarkdownDescription: "The list of virtual server IDs that this mapping is restricted to.",
 								},
 								"sp_adapter_ref": schema.SingleNestedAttribute{
-									Attributes:          resourcelink.ToSchema(),
-									Required:            true,
+									Attributes:          resourcelink.ToSchemaNoLengthValidator(),
+									Optional:            true,
 									Description:         "A reference to a resource.",
 									MarkdownDescription: "A reference to a resource.",
 								},
@@ -4122,9 +4119,21 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						})
 						diags.Append(objDiags...)
 					}
-					adapterMapping := plan.IdpBrowserSso.Attributes()["adapter_mappings"].(types.List).Elements()[i].(types.Object).Attributes()
+					var planAdapterMappingOverrideConfiguration types.Object
+					if internaltypes.IsDefined(plan.IdpBrowserSso) && internaltypes.IsDefined(plan.IdpBrowserSso.Attributes()["adapter_mappings"]) {
+						adapterMappingsList, ok := plan.IdpBrowserSso.Attributes()["adapter_mappings"]
+						if ok && len(adapterMappingsList.(types.List).Elements()) > i {
+							overrideSettings, ok := adapterMappingsList.(types.List).Elements()[i].(types.Object).Attributes()["adapter_override_settings"]
+							if ok {
+								configValue, ok := overrideSettings.(types.Object).Attributes()["configuration"]
+								if ok {
+									planAdapterMappingOverrideConfiguration = configValue.(types.Object)
+								}
+							}
+						}
+					}
 					adapterOverrideSettingsConfiguration := idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(adapterMapping["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object), &adapterOverrideSettingsConfiguration, isImportRead)
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(planAdapterMappingOverrideConfiguration, &adapterOverrideSettingsConfiguration, isImportRead)
 					diags.Append(objDiags...)
 					var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
@@ -4177,10 +4186,15 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 				idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(ctx, types.StringType, idpBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
 				diags.Append(objDiags...)
-				idpBrowserSsoAdapterMappingsSpAdapterRefValue, diags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
-					"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef.Id),
-				})
-				diags.Append(objDiags...)
+				var idpBrowserSsoAdapterMappingsSpAdapterRefValue types.Object
+				if idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef == nil {
+					idpBrowserSsoAdapterMappingsSpAdapterRefValue = types.ObjectNull(resourcelink.AttrType())
+				} else {
+					idpBrowserSsoAdapterMappingsSpAdapterRefValue, diags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+						"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef.Id),
+					})
+					diags.Append(objDiags...)
+				}
 				idpBrowserSsoAdapterMappingsValue, diags := types.ObjectValue(idpBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
 					"adapter_override_settings":      idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue,
 					"attribute_contract_fulfillment": idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue,
