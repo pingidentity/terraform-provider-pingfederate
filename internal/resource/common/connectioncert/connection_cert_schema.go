@@ -25,6 +25,9 @@ func ToSchema(description string, includeDefault bool) schema.ListNestedAttribut
 		Validators: []validator.List{
 			listvalidator.UniqueValues(),
 		},
+		PlanModifiers: []planmodifier.List{
+			planmodifiers.ValidateX509FileData(),
+		},
 	}
 	if includeDefault {
 		result.Computed = true
@@ -149,9 +152,6 @@ func toSchemaAttributes() map[string]schema.Attribute {
 						stringvalidator.OneOf("HSM", "LOCAL"),
 					},
 				},
-			},
-			PlanModifiers: []planmodifier.Object{
-				planmodifiers.ValidateX509FileData(),
 			},
 		},
 		"active_verification_cert": schema.BoolAttribute{

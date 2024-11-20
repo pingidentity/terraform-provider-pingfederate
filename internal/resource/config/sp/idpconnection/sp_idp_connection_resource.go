@@ -2353,7 +2353,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
-									Required:            true,
+									Optional:            true,
 									Description:         "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
 									MarkdownDescription: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
 									Validators: []validator.String{
@@ -2405,11 +2405,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 								"valid_path": schema.StringAttribute{
 									Optional:            true,
+									Computed:            true,
+									Default:             stringdefault.StaticString(""),
 									Description:         "Valid Path (leave blank to allow any path)",
 									MarkdownDescription: "Valid Path (leave blank to allow any path)",
-									Validators: []validator.String{
-										stringvalidator.LengthAtLeast(1),
-									},
 								},
 							},
 						},
@@ -4475,6 +4474,14 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			diags.Append(objDiags...)
 		}
 
+		signAuthnRequest := r.IdpBrowserSso.SignAuthnRequests
+		if signAuthnRequest == nil && plan != nil && internaltypes.IsDefined(plan.IdpBrowserSso) {
+			planSignAuthnRequest := plan.IdpBrowserSso.Attributes()["sign_authn_requests"].(types.Bool)
+			if internaltypes.IsDefined(planSignAuthnRequest) && !planSignAuthnRequest.ValueBool() {
+				signAuthnRequest = utils.Pointer(false)
+			}
+		}
+
 		idpBrowserSsoValue, objDiags = types.ObjectValue(idpBrowserSsoAttrTypes, map[string]attr.Value{
 			"adapter_mappings":                         idpBrowserSsoAdapterMappingsValue,
 			"always_sign_artifact_response":            idpBrowserSsoAlwaysSignArtifactResponse,
@@ -4493,7 +4500,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"oauth_authentication_policy_contract_ref": idpBrowserSsoOauthAuthenticationPolicyContractRefValue,
 			"oidc_provider_settings":                   idpBrowserSsoOidcProviderSettingsValue,
 			"protocol":                                 types.StringValue(r.IdpBrowserSso.Protocol),
-			"sign_authn_requests":                      types.BoolPointerValue(r.IdpBrowserSso.SignAuthnRequests),
+			"sign_authn_requests":                      types.BoolPointerValue(signAuthnRequest),
 			"slo_service_endpoints":                    idpBrowserSsoSloServiceEndpointsValue,
 			"sso_application_endpoint":                 types.StringPointerValue(r.IdpBrowserSso.SsoApplicationEndpoint),
 			"sso_oauth_mapping":                        idpBrowserSsoSsoOauthMappingValue,
