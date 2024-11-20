@@ -1195,6 +1195,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 										"target_application_info": schema.SingleNestedAttribute{
 											Optional: true,
+											Computed: true,
+											Default: objectdefault.StaticValue(types.ObjectValueMust(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes, map[string]attr.Value{
+												"application_name":     types.StringNull(),
+												"application_icon_url": types.StringNull(),
+											})),
 											Attributes: map[string]schema.Attribute{
 												"application_name": schema.StringAttribute{
 													Optional:            true,
