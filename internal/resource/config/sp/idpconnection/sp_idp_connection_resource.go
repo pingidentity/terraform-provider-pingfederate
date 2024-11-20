@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -379,7 +380,7 @@ var (
 
 	idpBrowserSsoUrlWhitelistEntriesElementType = types.ObjectType{AttrTypes: idpBrowserSsoUrlWhitelistEntriesAttrTypes}
 	idpBrowserSsoAttrTypes                      = map[string]attr.Type{
-		"adapter_mappings":                         types.SetType{ElemType: idpBrowserSsoAdapterMappingsElementType},
+		"adapter_mappings":                         types.ListType{ElemType: idpBrowserSsoAdapterMappingsElementType},
 		"always_sign_artifact_response":            types.BoolType,
 		"artifact":                                 types.ObjectType{AttrTypes: idpBrowserSsoArtifactAttrTypes},
 		"assertions_signed":                        types.BoolType,
@@ -956,8 +957,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 									"password": schema.StringAttribute{
-										Optional: true,
-										//Sensitive:           true,
+										Optional:            true,
+										Sensitive:           true,
 										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
 										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
@@ -1016,8 +1017,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 									"password": schema.StringAttribute{
-										Optional: true,
-										//Sensitive:           true,
+										Optional:            true,
+										Sensitive:           true,
 										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
 										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
 										Validators: []validator.String{
@@ -1114,7 +1115,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"idp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.SetNestedAttribute{
+					"adapter_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"adapter_override_settings": schema.SingleNestedAttribute{
@@ -1217,58 +1218,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 								"attribute_sources":              attributesources.ToSchema(0, false),
-								"issuance_criteria": schema.SingleNestedAttribute{
-									Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
-									Optional:    true,
-									Attributes: map[string]schema.Attribute{
-										"conditional_criteria": schema.SetNestedAttribute{
-											Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-											Computed:    true,
-											Optional:    true,
-											Default:     setdefault.StaticValue(conditionalCriteriaDefault),
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"source": sourcetypeidkey.ToSchema(false),
-													"attribute_name": schema.StringAttribute{
-														Description: "The name of the attribute to use in this issuance criterion.",
-														Required:    true,
-													},
-													"condition": schema.StringAttribute{
-														Description: "The condition that will be applied to the source attribute's value and the expected value. Options are `EQUALS`, `EQUALS_CASE_INSENSITIVE`, `EQUALS_DN`, `NOT_EQUAL`, `NOT_EQUAL_CASE_INSENSITIVE`, `NOT_EQUAL_DN`, `MULTIVALUE_CONTAINS`, `MULTIVALUE_CONTAINS_CASE_INSENSITIVE`, `MULTIVALUE_CONTAINS_DN`, `MULTIVALUE_DOES_NOT_CONTAIN`, `MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE`, `MULTIVALUE_DOES_NOT_CONTAIN_DN`.",
-														Required:    true,
-														Validators: []validator.String{
-															stringvalidator.OneOf([]string{"EQUALS", "EQUALS_CASE_INSENSITIVE", "EQUALS_DN", "NOT_EQUAL", "NOT_EQUAL_CASE_INSENSITIVE", "NOT_EQUAL_DN", "MULTIVALUE_CONTAINS", "MULTIVALUE_CONTAINS_CASE_INSENSITIVE", "MULTIVALUE_CONTAINS_DN", "MULTIVALUE_DOES_NOT_CONTAIN", "MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE", "MULTIVALUE_DOES_NOT_CONTAIN_DN"}...),
-														},
-													},
-													"value": schema.StringAttribute{
-														Required:    true,
-														Description: "The expected value of this issuance criterion.",
-													},
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-												},
-											},
-										},
-										"expression_criteria": schema.SetNestedAttribute{
-											Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria.",
-											Optional:    true,
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"expression": schema.StringAttribute{
-														Required:    true,
-														Description: "The OGNL expression to evaluate.",
-													},
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-												},
-											},
-										},
-									},
-								},
+								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:            true,
 									Description:         "Restricts this mapping to specific virtual entity IDs.",
@@ -1291,8 +1241,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "A list of adapters that map to incoming assertions.",
 						MarkdownDescription: "A list of adapters that map to incoming assertions.",
-						Validators: []validator.Set{
-							setvalidator.SizeAtLeast(1),
+						Validators: []validator.List{
+							listvalidator.SizeAtLeast(1),
 						},
 					},
 					"always_sign_artifact_response": schema.BoolAttribute{
@@ -4125,7 +4075,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		idpBrowserSsoValue = types.ObjectNull(idpBrowserSsoAttrTypes)
 	} else {
 		var idpBrowserSsoAdapterMappingsValues []attr.Value
-		idpBrowserSsoAdapterMappingsValue := types.SetNull(idpBrowserSsoAdapterMappingsElementType)
+		idpBrowserSsoAdapterMappingsValue := types.ListNull(idpBrowserSsoAdapterMappingsElementType)
 		if len(r.IdpBrowserSso.AdapterMappings) > 0 {
 			for i, idpBrowserSsoAdapterMappingsResponseValue := range r.IdpBrowserSso.AdapterMappings {
 				var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue types.Object
@@ -4162,7 +4112,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						})
 						diags.Append(objDiags...)
 					}
-					adapterMapping := plan.IdpBrowserSso.Attributes()["adapter_mappings"].(types.Set).Elements()[i].(types.Object).Attributes()
+					adapterMapping := plan.IdpBrowserSso.Attributes()["adapter_mappings"].(types.List).Elements()[i].(types.Object).Attributes()
 					adapterOverrideSettingsConfiguration := idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
 					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(adapterMapping["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object), &adapterOverrideSettingsConfiguration, isImportRead)
 					diags.Append(objDiags...)
@@ -4233,7 +4183,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				diags.Append(objDiags...)
 				idpBrowserSsoAdapterMappingsValues = append(idpBrowserSsoAdapterMappingsValues, idpBrowserSsoAdapterMappingsValue)
 			}
-			idpBrowserSsoAdapterMappingsValue, objDiags = types.SetValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
+			idpBrowserSsoAdapterMappingsValue, objDiags = types.ListValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
 			diags.Append(objDiags...)
 		}
 

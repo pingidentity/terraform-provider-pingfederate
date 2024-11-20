@@ -17,7 +17,6 @@ import (
 const spIdpConnectionConnectionId = "sp_idp_connection_connection_id"
 
 func TestAccSpIdpConnection_RemovalDrift(t *testing.T) {
-	t.SkipNow()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -27,7 +26,7 @@ func TestAccSpIdpConnection_RemovalDrift(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: spIdpConnection_WsTrustStsMinimalHCL(),
+				Config: spIdpConnection_WsTrustStsMinimalHCL(spIdpConnectionConnectionId),
 			},
 			{
 				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated

@@ -26,12 +26,12 @@ func TestAccSpIdpConnection_WsTrustStsMinimalMaximal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: spIdpConnection_WsTrustStsMinimalHCL(),
+				Config: spIdpConnection_WsTrustStsMinimalHCL(wsTrustStsConnId),
 				Check:  spIdpConnection_CheckComputedValuesWsTrustStsMinimal(),
 			},
 			{
 				// Delete the minimal model
-				Config:  spIdpConnection_WsTrustStsMinimalHCL(),
+				Config:  spIdpConnection_WsTrustStsMinimalHCL(wsTrustStsConnId),
 				Destroy: true,
 			},
 			{
@@ -41,7 +41,7 @@ func TestAccSpIdpConnection_WsTrustStsMinimalMaximal(t *testing.T) {
 			},
 			{
 				// Back to minimal model
-				Config: spIdpConnection_WsTrustStsMinimalHCL(),
+				Config: spIdpConnection_WsTrustStsMinimalHCL(wsTrustStsConnId),
 				Check:  spIdpConnection_CheckComputedValuesWsTrustStsMinimal(),
 			},
 			{
@@ -71,7 +71,7 @@ func TestAccSpIdpConnection_WsTrustStsMinimalMaximal(t *testing.T) {
 }
 
 // Minimal HCL with only required values set
-func spIdpConnection_WsTrustStsMinimalHCL() string {
+func spIdpConnection_WsTrustStsMinimalHCL(id string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_idp_connection" "example" {
   connection_id      = "%s"
@@ -119,7 +119,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     generate_local_token = true
   }
 }
-`, wsTrustStsConnId)
+`, id)
 }
 
 // Maximal HCL with all values set where possible
@@ -296,7 +296,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     certs = [{
       x509_file = {
         id        = "4qrossmq1vxa4p836kyqzp48h"
-        file_data = "MIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYDVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q87p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8poasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9b9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7gOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQADggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4JZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31hSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+WQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg="
+        file_data = "-----BEGIN CERTIFICATE-----\nMIIDUTCCAjugAwIBAgIQPEkZGqCnSpsZf0jWCWxJ5jALBgkqhkiG9w0BAQswRzEL\nMAkGA1UEBgwCVVMxHDAaBgNVBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNV\nBAMMEUV4YW1wbGUgQXV0aG9yaXR5MB4XDTI0MDEwMTAwMDAwMFoXDTQzMTIyNzAw\nMDAwMFowRzELMAkGA1UEBgwCVVMxHDAaBgNVBAoME0V4YW1wbGUgQ29ycG9yYXRp\nb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9yaXR5MIIBIjANBgkqhkiG9w0BAQEF\nAAOCAQ8AMIIBCgKCAQEAzdxT13IA0xJ8rB1hkqxa/JTTrmLnNjTRnVJdwagGKThQ\nxpWqh0DchNMqXTaFNGgxia3hPB53ew7nEMuIf+Qfq4meexKL3yRg86Ng56BrGbsu\nK6z4ptRpdnmsxgkpEfGytdmUFkPXAGE6j4Td/UrAWByz7C9yl7qzFYeorWq5nABc\nIiOlLxBYXX3fOu3a44SNexNgl5dDJAtn8mosQ19wJcjm08fKRqHeWYvBV99kQlhW\na7WiTxdrbUZOrUMHYRuKO/JD732dcpnsar9HfjQi+PH3gCgw4NJNuBKzLv6t8DzZ\nnNxaiKgZ+5cxdhhRAe98MF0QeTbymjVLyoFBpMrRDQIDAQABoz0wOzAdBgNVHQ4E\nFgQUGNJsUqA63OVS8ouwVUkzaEP5vawwDAYDVR0TBAUwAwEB/zAMBgNVHQ8EBQMD\nBwYAMAsGCSqGSIb3DQEBCwOCAQEAGFvsWv35ipg0NNnq0x+e7Gtugn9OBhxkeTWo\nQ1IUR7CL9zMRdlErIx5waptJhlPZFZANVpuvYa+yRz7oz2txH8yf/0N+F0bTeNU/\nqZHenvp9RXzimxTFDoCkx7ESpW9b7IKSSZA6Zut6w7XzJeXRrNKfCSSrUGPfkCq4\nhOtAm9QzUVE7eJ5a7T3+O50gZdoxjdojPhh9h5E1b+bmexrfQKlVl/gL+KPacBJD\nbSxbiKECt5QGRdDGFFfoInhK1RiW7a/hQBhMWRsMiOFtu0YpfxfwIyIaK5QfHZBC\nCC7JaJKg19njrnkjfmiBGoev7XiYWYt/WvYAiZR4nJn/cFrW1A==\n-----END CERTIFICATE-----"
       }
       active_verification_cert    = true
       encryption_cert             = true
@@ -484,19 +484,19 @@ func spIdpConnection_CheckComputedValuesWsTrustStsMinimal() resource.TestCheckFu
 // Validate any computed values when applying complete HCL
 func spIdpConnection_CheckComputedValuesWsTrustStsComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.expires", "2024-07-13T02:54:53Z"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.expires", "2043-12-27T00:00:00Z"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.id", "4qrossmq1vxa4p836kyqzp48h"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.issuer_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.issuer_dn", "CN=Example Authority, O=Example Corporation, C=US"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_algorithm", "RSA"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_size", "2048"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.serial_number", "11775821034523537675"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha1_fingerprint", "3CFE421ED628F7CEFE08B02DEB3EB4FB5DE9B92D"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha256_fingerprint", "633FF42A14E808AEEE5810D78F2C68358AD27787CDDADA302A7E201BA7F2A046"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.serial_number", "80133226587660155953237711066254559718"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha1_fingerprint", "D2B4B2033511D50BABE289E0AF2C17B8DA15FCC3"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha256_fingerprint", "6E61905D5223D6667B68D8E600E779B1F13DA404041A8BA7CDF07DB01179A897"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.signature_algorithm", "SHA256withRSA"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.status", "EXPIRED"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.subject_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.valid_from", "2023-07-14T02:54:53Z"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.version", "1"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.status", "VALID"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.subject_dn", "CN=Example Authority, O=Example Corporation, C=US"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.valid_from", "2024-01-01T00:00:00Z"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.version", "3"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "error_page_msg_id", "errorDetail.spSsoFailure"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "logging_mode", "STANDARD"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "virtual_entity_ids.0", "virtual_server_id"),
