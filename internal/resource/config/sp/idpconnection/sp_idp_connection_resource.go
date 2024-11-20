@@ -4024,10 +4024,20 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 			credentialsSigningSettingsSigningKeyPairRefValue, objDiags := resourcelink.ToState(ctx, &r.Credentials.SigningSettings.SigningKeyPairRef)
 			diags.Append(objDiags...)
+
+			includeCertInSignature := r.Credentials.SigningSettings.IncludeCertInSignature
+			planSigningSettings := plan.Credentials.Attributes()["signing_settings"]
+			if includeCertInSignature == nil && plan != nil && internaltypes.IsDefined(planSigningSettings) {
+				planIncludeCertInSignature := planSigningSettings.(types.Object).Attributes()["include_cert_in_signature"]
+				if internaltypes.IsDefined(planIncludeCertInSignature) && !planIncludeCertInSignature.(types.Bool).ValueBool() {
+					includeCertInSignature = utils.Pointer(false)
+				}
+			}
+
 			credentialsSigningSettingsValue, objDiags = types.ObjectValue(credentialsSigningSettingsAttrTypes, map[string]attr.Value{
 				"algorithm":                         types.StringPointerValue(r.Credentials.SigningSettings.Algorithm),
 				"alternative_signing_key_pair_refs": credentialsSigningSettingsAlternativeSigningKeyPairRefsValue,
-				"include_cert_in_signature":         types.BoolPointerValue(r.Credentials.SigningSettings.IncludeCertInSignature),
+				"include_cert_in_signature":         types.BoolPointerValue(includeCertInSignature),
 				"include_raw_key_in_signature":      types.BoolPointerValue(r.Credentials.SigningSettings.IncludeRawKeyInSignature),
 				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
 			})
