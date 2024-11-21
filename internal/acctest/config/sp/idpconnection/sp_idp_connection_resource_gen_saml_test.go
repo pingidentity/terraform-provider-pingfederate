@@ -457,7 +457,6 @@ resource "pingfederate_sp_idp_connection" "example" {
       error_handling = "ABORT_SSO"
       event_trigger = "NEW_USER_ONLY"
       user_attributes = {
-      //TODO attribute_contract default here SAML_SUBJECT, another, anotherone
         do_attribute_query = false
       }
       user_repository = {

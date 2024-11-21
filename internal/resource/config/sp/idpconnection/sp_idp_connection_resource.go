@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -1396,6 +1397,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 						},
 						Optional:            true,
+						Computed:            true,
+						Default:             listdefault.StaticValue(types.ListValueMust(idpBrowserSsoAuthenticationPolicyContractMappingsElementType, nil)),
 						Description:         "A list of Authentication Policy Contracts that map to incoming assertions.",
 						MarkdownDescription: "A list of Authentication Policy Contracts that map to incoming assertions.",
 					},
@@ -1553,7 +1556,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												},
 											},
 										},
-										Computed:            true,
+										Computed: true,
+										PlanModifiers: []planmodifier.Set{
+											setplanmodifier.UseStateForUnknown(),
+										},
 										Description:         "A list of user attributes that the IdP sends in the SAML assertion.",
 										MarkdownDescription: "A list of user attributes that the IdP sends in the SAML assertion.",
 									},
@@ -3534,6 +3540,40 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
 		resp.Diagnostics.Append(diags...)
 		planModified = true
+	}
+
+	// If the attribute_contract changes, mark the jit_provisioning.user_attributes.attribute_contract as unknown
+	var planAttributeContract, stateAttributeContract attr.Value
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
+		planBrowserSsoAttributes := plan.IdpBrowserSso.Attributes()
+		planAttributeContract = planBrowserSsoAttributes["attribute_contract"]
+		if internaltypes.IsDefined(state.IdpBrowserSso) {
+			stateAttributeContract = state.IdpBrowserSso.Attributes()["attribute_contract"]
+		}
+
+		if (planAttributeContract != nil && !planAttributeContract.Equal(stateAttributeContract)) || (stateAttributeContract != nil && !stateAttributeContract.Equal(planAttributeContract)) {
+			planJitProvisioning := planBrowserSsoAttributes["jit_provisioning"]
+			if internaltypes.IsDefined(planJitProvisioning) {
+				userAttrs := planJitProvisioning.(types.Object).Attributes()["user_attributes"]
+				if internaltypes.IsDefined(userAttrs) {
+					userAttrsAttrs := userAttrs.(types.Object).Attributes()
+					userAttrsAttrs["attribute_contract"] = types.SetUnknown(idpBrowserSsoJitProvisioningUserAttributesAttributeContractElementType)
+					userAttrsUpdated, diags := types.ObjectValue(userAttrs.(types.Object).AttributeTypes(ctx), userAttrsAttrs)
+					resp.Diagnostics.Append(diags...)
+
+					jitProvisioningAttrs := planJitProvisioning.(types.Object).Attributes()
+					jitProvisioningAttrs["user_attributes"] = userAttrsUpdated
+					jitProvisioningUpdated, diags := types.ObjectValue(planJitProvisioning.(types.Object).AttributeTypes(ctx), jitProvisioningAttrs)
+					resp.Diagnostics.Append(diags...)
+
+					planBrowserSsoAttributes["jit_provisioning"] = jitProvisioningUpdated
+					plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), planBrowserSsoAttributes)
+					resp.Diagnostics.Append(diags...)
+
+					planModified = true
+				}
+			}
+		}
 	}
 
 	if planModified {
