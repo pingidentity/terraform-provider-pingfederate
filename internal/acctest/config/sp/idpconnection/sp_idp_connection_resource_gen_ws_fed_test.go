@@ -258,8 +258,8 @@ resource "pingfederate_sp_idp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIICRzCCAbCgAwIBAgIGAUIOacSJMA0GCSqGSIb3DQEBBQUAMGYxCzAJBgNVBAYTAlVTMQswCQYD\nVQQIEwJDTzEPMA0GA1UEBxMGRGVudmVyMQwwCgYDVQQKEwNEZXYxDTALBgNVBAsTBFBpbmcxHDAa\nBgNVBAMTE0NvbmZpZyBTaWduaW5nIENlcnQwIBcNMTMxMDMxMTIwODAxWhgPMjExMzEwMDcxMjA4\nMDFaMGYxCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDTzEPMA0GA1UEBxMGRGVudmVyMQwwCgYDVQQK\nEwNEZXYxDTALBgNVBAsTBFBpbmcxHDAaBgNVBAMTE0NvbmZpZyBTaWduaW5nIENlcnQwgZ8wDQYJ\nKoZIhvcNAQEBBQADgY0AMIGJAoGBALD4NA4uYzAxWBih6BXwyPSFlw94dolpigT1FrTeT/SGAlAg\nteWp2Fy2LB0mVm2tSmRyYOi85c8M9jRjaB8SB688C1Q6TqNUvhfhje46GqDuUPxguCXHZsNS9XwM\ntrWwGzm7IenVL1WJ4LHPJI0OYt8qH7nZ6FFUDW0fbuIMMLo/AgMBAAEwDQYJKoZIhvcNAQEFBQAD\ngYEAkzykqYJasH8Tms2QlFa5HNWL1q8dpbp6ksEOi4E1mL1SZGs7iWM8ltYfMro1mGF/SWWxfStJ\nEEWiA01AigehJn2w5VPysYZxODBO1jYzRSyZo8hU8ioMcSZTpwgokzUZmMlwDhrbzDQmdh//sbri\n1QB59uqG0CwU2/AJV3KU2KM=\n-----END CERTIFICATE-----\n"
-          id              = "ysznoiqxpzo6z0eybp33vpkz8"
+          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
+          id              = "4qrossmq1vxa4p836kyqzp48h"
         }
       },
     ]
@@ -323,8 +323,8 @@ resource "pingfederate_sp_idp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIICRzCCAbCgAwIBAgIGAUIOacSJMA0GCSqGSIb3DQEBBQUAMGYxCzAJBgNVBAYTAlVTMQswCQYD\nVQQIEwJDTzEPMA0GA1UEBxMGRGVudmVyMQwwCgYDVQQKEwNEZXYxDTALBgNVBAsTBFBpbmcxHDAa\nBgNVBAMTE0NvbmZpZyBTaWduaW5nIENlcnQwIBcNMTMxMDMxMTIwODAxWhgPMjExMzEwMDcxMjA4\nMDFaMGYxCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDTzEPMA0GA1UEBxMGRGVudmVyMQwwCgYDVQQK\nEwNEZXYxDTALBgNVBAsTBFBpbmcxHDAaBgNVBAMTE0NvbmZpZyBTaWduaW5nIENlcnQwgZ8wDQYJ\nKoZIhvcNAQEBBQADgY0AMIGJAoGBALD4NA4uYzAxWBih6BXwyPSFlw94dolpigT1FrTeT/SGAlAg\nteWp2Fy2LB0mVm2tSmRyYOi85c8M9jRjaB8SB688C1Q6TqNUvhfhje46GqDuUPxguCXHZsNS9XwM\ntrWwGzm7IenVL1WJ4LHPJI0OYt8qH7nZ6FFUDW0fbuIMMLo/AgMBAAEwDQYJKoZIhvcNAQEFBQAD\ngYEAkzykqYJasH8Tms2QlFa5HNWL1q8dpbp6ksEOi4E1mL1SZGs7iWM8ltYfMro1mGF/SWWxfStJ\nEEWiA01AigehJn2w5VPysYZxODBO1jYzRSyZo8hU8ioMcSZTpwgokzUZmMlwDhrbzDQmdh//sbri\n1QB59uqG0CwU2/AJV3KU2KM=\n-----END CERTIFICATE-----\n"
-          id              = "ysznoiqxpzo6z0eybp33vpkz8"
+          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
+          id              = "4qrossmq1vxa4p836kyqzp48h"
         }
       },
     ]
@@ -816,24 +816,29 @@ func spIdpConnection_CheckComputedValuesWsFedMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func spIdpConnection_CheckComputedValuesWsFedComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-	//TODO
-	/*resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.expires", "2024-07-13T02:54:53Z"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.id", "4qrossmq1vxa4p836kyqzp48h"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.issuer_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_algorithm", "RSA"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_size", "2048"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.serial_number", "11775821034523537675"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha1_fingerprint", "3CFE421ED628F7CEFE08B02DEB3EB4FB5DE9B92D"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha256_fingerprint", "633FF42A14E808AEEE5810D78F2C68358AD27787CDDADA302A7E201BA7F2A046"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.signature_algorithm", "SHA256withRSA"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.status", "EXPIRED"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.subject_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.valid_from", "2023-07-14T02:54:53Z"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.version", "1"),
-	resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "credentials.inbound_back_channel_auth.http_basic_credentials.encrypted_password"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "SAML_SUBJECT"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.masked", "false"),
-	resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.jit_provisioning.user_attributes.attribute_contract.#", "3"),*/
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.expires", "2024-07-13T02:54:53Z"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.id", "4qrossmq1vxa4p836kyqzp48h"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.issuer_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_algorithm", "RSA"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_size", "2048"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.serial_number", "11775821034523537675"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha1_fingerprint", "3CFE421ED628F7CEFE08B02DEB3EB4FB5DE9B92D"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha256_fingerprint", "633FF42A14E808AEEE5810D78F2C68358AD27787CDDADA302A7E201BA7F2A046"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.signature_algorithm", "SHA256withRSA"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.status", "EXPIRED"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.subject_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.valid_from", "2023-07-14T02:54:53Z"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.version", "1"),
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "credentials.certs.0.x509_file.formatted_file_data"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnWsFedId),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.adapter_override_settings.attribute_contract.core_attributes.0.name", "subject"),
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.adapter_override_settings.configuration.fields_all.#"),
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.adapter_override_settings.configuration.tables_all.#"),
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.adapter_override_settings.target_application_info.%"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "SAML_SUBJECT"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.jit_provisioning.user_attributes.attribute_contract.#", "2"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint", "https://localhost:9031/sp/startSSO.ping?PartnerIdpId=wsfed"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.0.name", "TOKEN_SUBJECT"),
 	)
 }
 
