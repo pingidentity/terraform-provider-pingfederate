@@ -1224,12 +1224,16 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:            true,
-									Description:         "Restricts this mapping to specific virtual entity IDs.",
-									MarkdownDescription: "Restricts this mapping to specific virtual entity IDs.",
+									Computed:            true,
+									Default:             booldefault.StaticBool(false),
+									Description:         "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
+									MarkdownDescription: "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
 								},
 								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType:         types.StringType,
 									Optional:            true,
+									Computed:            true,
+									Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, nil)),
 									Description:         "The list of virtual server IDs that this mapping is restricted to.",
 									MarkdownDescription: "The list of virtual server IDs that this mapping is restricted to.",
 								},
