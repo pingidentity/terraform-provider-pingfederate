@@ -57,8 +57,9 @@ var (
 	}
 
 	oidcClientCredentialsAttrTypes = map[string]attr.Type{
-		"client_id":     types.StringType,
-		"client_secret": types.StringType,
+		"client_id":        types.StringType,
+		"client_secret":    types.StringType,
+		"encrypted_secret": types.StringType,
 	}
 
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
@@ -3202,10 +3203,22 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"client_secret": schema.StringAttribute{
 						Optional:            true,
-						Description:         "The OpenID Connect client secret.",
-						MarkdownDescription: "The OpenID Connect client secret.",
+						Sensitive:           true,
+						Description:         "The OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.",
+						MarkdownDescription: "The OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"encrypted_secret": schema.StringAttribute{
+						Description: "Encrypted OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.",
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("client_secret")),
 						},
 					},
 				},
@@ -3589,6 +3602,23 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 					planModified = true
 				}
 			}
+		}
+	}
+
+	// Handle the encrypted OIDC client secret
+	if internaltypes.IsDefined(plan.OidcClientCredentials) {
+		planOidcClientCredentials := plan.OidcClientCredentials.Attributes()
+		stateOidcClientCredentials := state.OidcClientCredentials.Attributes()
+		if !internaltypes.IsDefined(planOidcClientCredentials["client_secret"]) && planOidcClientCredentials["encrypted_secret"].IsUnknown() {
+			planOidcClientCredentials["encrypted_secret"] = types.StringNull()
+			plan.OidcClientCredentials, diags = types.ObjectValue(plan.OidcClientCredentials.AttributeTypes(ctx), planOidcClientCredentials)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		} else if !planOidcClientCredentials["client_secret"].Equal(stateOidcClientCredentials["client_secret"]) {
+			planOidcClientCredentials["encrypted_secret"] = types.StringUnknown()
+			plan.OidcClientCredentials, diags = types.ObjectValue(plan.OidcClientCredentials.AttributeTypes(ctx), planOidcClientCredentials)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
 		}
 	}
 
@@ -4123,12 +4153,23 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	if r.OidcClientCredentials != nil {
 		var oidcClientCredentialsAttrValues map[string]attr.Value
 		var clientSecret *string
-		if len(plan.OidcClientCredentials.Attributes()) > 0 && plan.OidcClientCredentials.Attributes()["client_secret"] != nil {
+		planOidcCredentialsAttrs := plan.OidcClientCredentials.Attributes()
+		if planOidcCredentialsAttrs["client_secret"] != nil {
 			clientSecret = plan.OidcClientCredentials.Attributes()["client_secret"].(types.String).ValueStringPointer()
 		}
+
+		encryptedSecretVal := planOidcCredentialsAttrs["encrypted_secret"]
+		var encryptedSecretToState *string
+		if encryptedSecretVal != nil && internaltypes.IsDefined(encryptedSecretVal) {
+			encryptedSecretToState = encryptedSecretVal.(types.String).ValueStringPointer()
+		} else {
+			encryptedSecretToState = r.OidcClientCredentials.EncryptedSecret
+		}
+
 		oidcClientCredentialsAttrValues = map[string]attr.Value{
-			"client_id":     types.StringValue(r.OidcClientCredentials.ClientId),
-			"client_secret": types.StringPointerValue(clientSecret),
+			"client_id":        types.StringValue(r.OidcClientCredentials.ClientId),
+			"client_secret":    types.StringPointerValue(clientSecret),
+			"encrypted_secret": types.StringPointerValue(encryptedSecretToState),
 		}
 
 		state.OidcClientCredentials, objDiags = types.ObjectValue(oidcClientCredentialsAttrTypes, oidcClientCredentialsAttrValues)
