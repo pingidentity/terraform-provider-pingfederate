@@ -37,7 +37,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -366,18 +365,6 @@ var (
 		"valid_domain":             types.StringType,
 		"valid_path":               types.StringType,
 	}
-
-	conditionalCriteriaDefault, _ = types.SetValue(types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"source": types.ObjectType{
-				AttrTypes: sourcetypeidkey.AttrTypes(),
-			},
-			"attribute_name": types.StringType,
-			"condition":      types.StringType,
-			"value":          types.StringType,
-			"error_result":   types.StringType,
-		},
-	}, nil)
 
 	idpBrowserSsoUrlWhitelistEntriesElementType = types.ObjectType{AttrTypes: idpBrowserSsoUrlWhitelistEntriesAttrTypes}
 	idpBrowserSsoAttrTypes                      = map[string]attr.Type{
@@ -1469,15 +1456,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								MarkdownDescription: "Specify whether the incoming Subject Name ID is encrypted for an IdP connection. The default value is `false`.",
 							},
 						},
-						Optional: true,
-						Computed: true,
-						Default: objectdefault.StaticValue(types.ObjectValueMust(idpBrowserSsoDecryptionPolicyAttrTypes, map[string]attr.Value{
-							"assertion_encrypted":           types.BoolValue(false),
-							"attributes_encrypted":          types.BoolValue(false),
-							"slo_encrypt_subject_name_id":   types.BoolValue(false),
-							"slo_subject_name_id_encrypted": types.BoolValue(false),
-							"subject_name_id_encrypted":     types.BoolValue(false),
-						})),
+						Optional:            true,
+						Computed:            true,
 						Description:         "Defines what to decrypt in the browser-based SSO profile.",
 						MarkdownDescription: "Defines what to decrypt in the browser-based SSO profile.",
 					},
@@ -3237,7 +3217,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				ElementType:         types.StringType,
 				Optional:            true,
 				Computed:            true,
-				Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, nil)),
 				Description:         "List of alternate entity IDs that identifies the local server to this partner.",
 				MarkdownDescription: "List of alternate entity IDs that identifies the local server to this partner.",
 			},
@@ -3511,6 +3490,39 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			resp.Diagnostics.Append(diags...)
 		} else {
 			plan.AdditionalAllowedEntitiesConfiguration = types.ObjectNull(additionalAllowedEntitiesConfigurationAttrTypes)
+		}
+		planModified = true
+	}
+
+	// Set default for decryption_policy for non-OIDC connections
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
+		browserSsoAttrs := plan.IdpBrowserSso.Attributes()
+		if browserSsoAttrs["decryption_policy"].IsUnknown() {
+			if browserSsoAttrs["protocol"].(types.String).ValueString() != "OIDC" {
+				browserSsoAttrs["decryption_policy"], diags = types.ObjectValue(idpBrowserSsoDecryptionPolicyAttrTypes, map[string]attr.Value{
+					"assertion_encrypted":           types.BoolValue(false),
+					"attributes_encrypted":          types.BoolValue(false),
+					"slo_encrypt_subject_name_id":   types.BoolValue(false),
+					"slo_subject_name_id_encrypted": types.BoolValue(false),
+					"subject_name_id_encrypted":     types.BoolValue(false),
+				})
+				resp.Diagnostics.Append(diags...)
+			} else {
+				browserSsoAttrs["decryption_policy"] = types.ObjectNull(idpBrowserSsoDecryptionPolicyAttrTypes)
+			}
+			plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttrs)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		}
+	}
+
+	// Similar logic for virtual_entity_ids for non-OIDC connections
+	if plan.VirtualEntityIds.IsUnknown() {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) && plan.IdpBrowserSso.Attributes()["protocol"].(types.String).ValueString() == "OIDC" {
+			plan.VirtualEntityIds = types.SetNull(types.StringType)
+		} else {
+			plan.VirtualEntityIds, diags = types.SetValue(types.StringType, nil)
+			resp.Diagnostics.Append(diags...)
 		}
 		planModified = true
 	}
@@ -4505,11 +4517,19 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			}
 		}
 
+		assertionsSigned := r.IdpBrowserSso.AssertionsSigned
+		if assertionsSigned == nil && plan != nil && internaltypes.IsDefined(plan.IdpBrowserSso) {
+			planAssertionsSigned := plan.IdpBrowserSso.Attributes()["assertions_signed"].(types.Bool)
+			if internaltypes.IsDefined(planAssertionsSigned) && !planAssertionsSigned.ValueBool() {
+				assertionsSigned = utils.Pointer(false)
+			}
+		}
+
 		idpBrowserSsoValue, objDiags = types.ObjectValue(idpBrowserSsoAttrTypes, map[string]attr.Value{
 			"adapter_mappings":                         idpBrowserSsoAdapterMappingsValue,
 			"always_sign_artifact_response":            idpBrowserSsoAlwaysSignArtifactResponse,
 			"artifact":                                 idpBrowserSsoArtifactValue,
-			"assertions_signed":                        types.BoolPointerValue(r.IdpBrowserSso.AssertionsSigned),
+			"assertions_signed":                        types.BoolPointerValue(assertionsSigned),
 			"attribute_contract":                       idpBrowserSsoAttributeContractValue,
 			"authentication_policy_contract_mappings":  idpBrowserSsoAuthenticationPolicyContractMappingsValue,
 			"authn_context_mappings":                   idpBrowserSsoAuthnContextMappingsValue,
