@@ -1899,24 +1899,20 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"back_channel_logout_uri": schema.StringAttribute{
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Computed:            true,
 								Description:         "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 								MarkdownDescription: "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 							},
 							"enable_pkce": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.",
-								MarkdownDescription: "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow. The default value is `false`.",
+								MarkdownDescription: "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow. The default value is `false`.",
 							},
 							"front_channel_logout_uri": schema.StringAttribute{
-								Optional: false,
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Optional:            false,
+								Computed:            true,
 								Description:         "The Front-Channel Logout URI. This is a read-only parameter.",
 								MarkdownDescription: "The Front-Channel Logout URI. This is a read-only parameter.",
 							},
@@ -1930,6 +1926,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"jwt_secured_authorization_response_mode_type": schema.StringAttribute{
 								Optional:    true,
+								Computed:    true,
 								Description: "The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL. Supported in PingFederate `12.1` and later.",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
@@ -1957,11 +1954,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"post_logout_redirect_uri": schema.StringAttribute{
-								Optional: false,
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Computed:            true,
 								Description:         "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 								MarkdownDescription: "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 							},
@@ -1974,11 +1967,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"redirect_uri": schema.StringAttribute{
-								Optional: false,
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Computed:            true,
 								Description:         "The redirect URI. This is a read-only parameter.",
 								MarkdownDescription: "The redirect URI. This is a read-only parameter.",
 							},
@@ -2125,8 +2114,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"track_user_sessions_for_logout": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO.",
-								MarkdownDescription: "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.",
+								MarkdownDescription: "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.",
 							},
 							"user_info_endpoint": schema.StringAttribute{
 								Optional:            true,
@@ -3471,14 +3462,18 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+
 	planModified := false
 	var diags diag.Diagnostics
-	if pfVersionAtLeast1210 && internaltypes.IsDefined(plan.IdpBrowserSso) {
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
 		browserSsoAttributes := plan.IdpBrowserSso.Attributes()
 		oidcProviderSettings := browserSsoAttributes["oidc_provider_settings"].(types.Object)
 		if internaltypes.IsDefined(oidcProviderSettings) {
 			oidcProviderSettingsAttributes := oidcProviderSettings.Attributes()
 			jwtSecuredAuthorizationResponseModeType := oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"]
 			if jwtSecuredAuthorizationResponseModeType.IsUnknown() {
-				oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringValue("DISABLED")
+				if pfVersionAtLeast1210 {
+					oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringValue("DISABLED")
+				} else {
+					oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringNull()
+				}
 				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
 				resp.Diagnostics.Append(diags...)
 				browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
@@ -3619,6 +3614,48 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			plan.OidcClientCredentials, diags = types.ObjectValue(plan.OidcClientCredentials.AttributeTypes(ctx), planOidcClientCredentials)
 			resp.Diagnostics.Append(diags...)
 			planModified = true
+		}
+	}
+
+	// Handle the computed attributes within oidc_provider_settings
+	if internaltypes.IsDefined(plan.IdpBrowserSso) && internaltypes.IsDefined(state.IdpBrowserSso) {
+		planSsoAttrs := plan.IdpBrowserSso.Attributes()
+		stateSsoAttrs := state.IdpBrowserSso.Attributes()
+		if internaltypes.IsDefined(planSsoAttrs["oidc_provider_settings"]) && internaltypes.IsDefined(stateSsoAttrs["oidc_provider_settings"]) {
+			planOidcProviderSettings := planSsoAttrs["oidc_provider_settings"].(types.Object)
+			stateOidcProviderSettings := stateSsoAttrs["oidc_provider_settings"].(types.Object)
+			planOidcProviderSettingsAttrs := planOidcProviderSettings.Attributes()
+			stateOidcProviderSettingsAttrs := stateOidcProviderSettings.Attributes()
+
+			// Check if all the non-computed attributes are unchanged
+			if planOidcProviderSettingsAttrs["authentication_scheme"].Equal(stateOidcProviderSettingsAttrs["authentication_scheme"]) &&
+				planOidcProviderSettingsAttrs["authentication_signing_algorithm"].Equal(stateOidcProviderSettingsAttrs["authentication_signing_algorithm"]) &&
+				planOidcProviderSettingsAttrs["authorization_endpoint"].Equal(stateOidcProviderSettingsAttrs["authorization_endpoint"]) &&
+				planOidcProviderSettingsAttrs["enable_pkce"].Equal(stateOidcProviderSettingsAttrs["enable_pkce"]) &&
+				planOidcProviderSettingsAttrs["jwks_url"].Equal(stateOidcProviderSettingsAttrs["jwks_url"]) &&
+				planOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"].Equal(stateOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"]) &&
+				planOidcProviderSettingsAttrs["login_type"].Equal(stateOidcProviderSettingsAttrs["login_type"]) &&
+				planOidcProviderSettingsAttrs["logout_endpoint"].Equal(stateOidcProviderSettingsAttrs["logout_endpoint"]) &&
+				planOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"].Equal(stateOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"]) &&
+				planOidcProviderSettingsAttrs["request_parameters"].Equal(stateOidcProviderSettingsAttrs["request_parameters"]) &&
+				planOidcProviderSettingsAttrs["request_signing_algorithm"].Equal(stateOidcProviderSettingsAttrs["request_signing_algorithm"]) &&
+				planOidcProviderSettingsAttrs["scopes"].Equal(stateOidcProviderSettingsAttrs["scopes"]) &&
+				planOidcProviderSettingsAttrs["token_endpoint"].Equal(stateOidcProviderSettingsAttrs["token_endpoint"]) &&
+				planOidcProviderSettingsAttrs["track_user_sessions_for_logout"].Equal(stateOidcProviderSettingsAttrs["track_user_sessions_for_logout"]) &&
+				planOidcProviderSettingsAttrs["user_info_endpoint"].Equal(stateOidcProviderSettingsAttrs["user_info_endpoint"]) {
+				// Keep the state values for computed attributes
+				planOidcProviderSettingsAttrs["back_channel_logout_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["back_channel_logout_uri"].(types.String).ValueStringPointer())
+				planOidcProviderSettingsAttrs["front_channel_logout_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["front_channel_logout_uri"].(types.String).ValueStringPointer())
+				planOidcProviderSettingsAttrs["redirect_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["redirect_uri"].(types.String).ValueStringPointer())
+				planOidcProviderSettingsAttrs["post_logout_redirect_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["post_logout_redirect_uri"].(types.String).ValueStringPointer())
+
+				planOidcProviderSettings, diags := types.ObjectValue(planOidcProviderSettings.AttributeTypes(ctx), planOidcProviderSettingsAttrs)
+				resp.Diagnostics.Append(diags...)
+				planSsoAttrs["oidc_provider_settings"] = planOidcProviderSettings
+				plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), planSsoAttrs)
+				resp.Diagnostics.Append(diags...)
+				planModified = true
+			}
 		}
 	}
 
