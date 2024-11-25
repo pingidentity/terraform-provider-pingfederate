@@ -56,20 +56,13 @@ func TestAccSpIdpConnection_OidcMinimalMaximal(t *testing.T) {
 				ImportStateId:     idpConnOidcId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// file_data gets formatted by PF so it won't match, and passwords won't be returned by the API
-				// encrypted_passwords change on each get.
-				// A couple password attributes also are not returned by the API when set to false.
-				// The adapter override settings seem to come back re-encrypted and in a different order, so we can't verify them here.
-				// ImportStateVerifyIgnore: []string{
-				// 	"credentials.certs.0.x509_file.file_data",
-				// 	"credentials.inbound_back_channel_auth.http_basic_credentials.password",
-				// 	"credentials.inbound_back_channel_auth.http_basic_credentials.encrypted_password",
-				// 	"credentials.outbound_back_channel_auth.http_basic_credentials.password",
-				// 	"credentials.outbound_back_channel_auth.http_basic_credentials.encrypted_password",
-				// 	"credentials.signing_settings.include_cert_in_signature",
-				// 	"idp_browser_sso.sign_authn_requests",
-				// 	"idp_browser_sso.adapter_mappings.0.adapter_override_settings.configuration.sensitive_fields",
-				// },
+				// client_secret won't be returned by the API.
+				// A couple boolean attributes also are not returned by the API when set to false.
+				ImportStateVerifyIgnore: []string{
+					"idp_browser_sso.assertions_signed",
+					"idp_browser_sso.sign_authn_requests",
+					"oidc_client_credentials.client_secret",
+				},
 			},
 		},
 	})
@@ -107,6 +100,7 @@ resource "pingfederate_sp_idp_connection" "oidc_example" {
   entity_id = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as"
 
   name         = "PingOne"
+  connection_id = "%s"
 
   oidc_client_credentials = {
     client_id     = "myclientid"
