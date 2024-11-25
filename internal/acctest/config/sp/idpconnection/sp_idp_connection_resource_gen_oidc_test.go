@@ -96,7 +96,7 @@ func spIdpConnection_OidcMinimalHCL() string {
 	return fmt.Sprintf(`
 %s
 
-resource "pingfederate_sp_idp_connection" "oidc_example" {
+resource "pingfederate_sp_idp_connection" "example" {
   entity_id = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as"
 
   name         = "PingOne"
@@ -500,41 +500,32 @@ resource "pingfederate_sp_idp_connection" "example" {
 // Validate any computed values when applying minimal HCL
 func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "active", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.expires", "2024-07-13T02:54:53Z"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.id", "4qrossmq1vxa4p836kyqzp48h"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.issuer_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_algorithm", "RSA"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.key_size", "2048"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.serial_number", "11775821034523537675"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha1_fingerprint", "3CFE421ED628F7CEFE08B02DEB3EB4FB5DE9B92D"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.sha256_fingerprint", "633FF42A14E808AEEE5810D78F2C68358AD27787CDDADA302A7E201BA7F2A046"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.signature_algorithm", "SHA256withRSA"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.status", "EXPIRED"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.subject_dn", "C=US, O=CDR, OU=PING, L=AUSTIN, ST=TEXAS, CN=localhost"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.valid_from", "2023-07-14T02:54:53Z"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.version", "1"),
-	// resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "credentials.certs.0.x509_file.formatted_file_data"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnOidcId),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.attribute_sources.#", "0"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.issuance_criteria.conditional_criteria.#", "0"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.restrict_virtual_entity_ids", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.restricted_virtual_entity_ids.#", "0"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.always_sign_artifact_response", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.assertions_signed", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "SAML_SUBJECT"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.extended_attributes.#", "0"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.authentication_policy_contract_mappings.#", "0"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.decryption_policy.assertion_encrypted", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.decryption_policy.attributes_encrypted", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.decryption_policy.slo_encrypt_subject_name_id", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.decryption_policy.slo_subject_name_id_encrypted", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.decryption_policy.subject_name_id_encrypted", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.default_target_url", ""),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sign_authn_requests", "false"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint", "https://localhost:9031/sp/startSSO.ping?PartnerIdpId=wsfed"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "logging_mode", "STANDARD"),
-	// resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "virtual_entity_ids.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "active", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.addtional_allowed_entities.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.allow_additional_entities", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.allow_all_entities", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnOidcId),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.assertions_signed", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "sub"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.masked", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.authentication_policy_contract_mappings.0.attribute_sources.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.authentication_policy_contract_mappings.0.issuance_criteria.conditional_criteria.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.authentication_policy_contract_mappings.0.restrict_virtual_server_ids", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.authentication_policy_contract_mappings.0.restricted_virtual_server_ids.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.default_target_url", ""),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.enable_pkce", "false"),
+		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.back_channel_logout_uri"),
+		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri", "https://localhost:9031/sp/eyJpc3MiOiJodHRwczpcL1wvYXV0aC5waW5nb25lLmV1XC84NWE1MmNmNy0zNTdmLTQwYzEtYjkwOS1kZTI0ZDk3NjAzMWRcL2FzIn0/fc-logout.openid"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type", "DISABLED"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.redirect_uri", "https://localhost:9031/sp/eyJpc3MiOiJodHRwczpcL1wvYXV0aC5waW5nb25lLmV1XC84NWE1MmNmNy0zNTdmLTQwYzEtYjkwOS1kZTI0ZDk3NjAzMWRcL2FzIn0/cb.openid"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.request_parameters.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.track_user_sessions_for_logout", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sign_authn_requests", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint", "https://localhost:9031/sp/startSSO.ping?PartnerIdpId=https%3A%2F%2Fauth.pingone.eu%2F85a52cf7-357f-40c1-b909-de24d976031d%2Fas"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "logging_mode", "STANDARD"),
+		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "oidc_client_credentials.client_secret"),
+		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "oidc_client_credentials.encrypted_secret"),
 	)
 }
 
