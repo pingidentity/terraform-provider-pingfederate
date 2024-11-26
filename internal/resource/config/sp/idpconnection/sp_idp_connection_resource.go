@@ -2581,8 +2581,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"group_support": schema.BoolAttribute{
 						Required:            true,
-						Description:         "Specify support for provisioning of groups.",
-						MarkdownDescription: "Specify support for provisioning of groups.",
+						Description:         "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
+						MarkdownDescription: "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
 					},
 					"groups": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2825,8 +2825,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 						},
 						Optional:            true,
-						Description:         "Group creation and read configuration.",
-						MarkdownDescription: "Group creation and read configuration.",
+						Description:         "Group creation and read configuration. Requires `group_support` to be `true`.",
+						MarkdownDescription: "Group creation and read configuration. Requires `group_support` to be `true`.",
 					},
 					"user_repository": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2880,8 +2880,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Optional:            true,
 										Computed:            true,
 										Default:             stringdefault.StaticString(""),
-										Description:         "The expression that results in a unique group identifier, when combined with the Base DN.",
-										MarkdownDescription: "The expression that results in a unique group identifier, when combined with the Base DN.",
+										Description:         "The expression that results in a unique group identifier, when combined with the Base DN. Only required when configuring the `inbound_provisioning.groups` attribute. Otherwise should not be set.",
+										MarkdownDescription: "The expression that results in a unique group identifier, when combined with the Base DN. Only required when configuring the `inbound_provisioning.groups` attribute. Otherwise should not be set.",
 									},
 								},
 							},
@@ -3458,6 +3458,27 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		}
 	}
 
+	// Ensure that group attributes have appropriate values
+	if internaltypes.IsDefined(plan.InboundProvisioning) {
+		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
+		groupSupportEnabled := inboundProvisioningAttrs["group_support"].(types.Bool).ValueBool()
+		groupsConfigured := internaltypes.IsDefined(inboundProvisioningAttrs["groups"])
+		if !groupSupportEnabled && groupsConfigured {
+			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
+				providererror.InvalidAttributeConfiguration, "`inbound_provisioning.group_support` must be set to `true` to configure inbound provisioning groups.")
+		}
+		if groupSupportEnabled && !groupsConfigured {
+			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
+				providererror.InvalidAttributeConfiguration, "If `inbound_provisioning.group_support` is set to `true`, then `inbound_provisioning.groups` must be configured.")
+		}
+
+		userRepositoryLdap := inboundProvisioningAttrs["user_repository"].(types.Object).Attributes()["ldap"]
+		if internaltypes.IsDefined(userRepositoryLdap) && len(userRepositoryLdap.(types.Object).Attributes()["unique_group_id_filter"].(types.String).ValueString()) == 0 && groupSupportEnabled {
+			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning.user_repository.ldap"),
+				providererror.InvalidAttributeConfiguration, "`inbound_provisioning.user_repository.ldap.unique_group_id_filter` must be set if `inbound_provisioning.group_support` is set to `true`.")
+		}
+	}
+
 	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+
 	planModified := false
 	var diags diag.Diagnostics
@@ -3887,6 +3908,13 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			err := json.Unmarshal([]byte(internaljson.FromValue(inboundProvisioningAttibutes["groups"], true)), &addRequest.InboundProvisioning.Groups)
 			if err != nil {
 				return err
+			}
+			// PF requires core_attributes to be set, even though the property is read-only.
+			// Provide a placeholder value here to prevent the API from returning an error.
+			addRequest.InboundProvisioning.Groups.ReadGroups.AttributeContract.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+				{
+					Name: "placeholder",
+				},
 			}
 		}
 
