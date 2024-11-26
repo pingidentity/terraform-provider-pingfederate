@@ -134,7 +134,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     }
   }
   entity_id                 = "partnersec:entity:id"
-  error_page_msg_id         = "errorDetail.spSsoFailure"
   idp_browser_sso = {
     artifact = {
       resolver_locations = [
@@ -612,6 +611,7 @@ func spIdpConnection_CheckComputedValuesSamlMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.outbound_back_channel_auth.digital_signature", "false"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "credentials.outbound_back_channel_auth.http_basic_credentials.encrypted_password"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.outbound_back_channel_auth.validate_partner_cert", "true"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "error_page_msg_id", "errorDetail.spSsoFailure"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.always_sign_artifact_response", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.assertions_signed", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "SAML_SUBJECT"),

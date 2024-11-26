@@ -106,8 +106,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     client_id     = "myclientid"
   }
 
-  error_page_msg_id = "errorDetail.spSsoFailure"
-
   idp_browser_sso = {
     attribute_contract = {
       extended_attributes = [
@@ -504,6 +502,7 @@ func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.addtional_allowed_entities.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.allow_additional_entities", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.allow_all_entities", "false"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "error_page_msg_id", "errorDetail.spSsoFailure"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnOidcId),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.assertions_signed", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "sub"),

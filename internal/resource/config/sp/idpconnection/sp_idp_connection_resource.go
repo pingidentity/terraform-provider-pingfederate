@@ -1087,6 +1087,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"error_page_msg_id": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "Identifier that specifies the message displayed on a user-facing error page.",
 				MarkdownDescription: "Identifier that specifies the message displayed on a user-facing error page.",
 				Validators: []validator.String{
@@ -3554,6 +3555,16 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		} else {
 			plan.VirtualEntityIds, diags = types.SetValue(types.StringType, nil)
 			resp.Diagnostics.Append(diags...)
+		}
+		planModified = true
+	}
+
+	// Set default for error_page_msg_id
+	if plan.ErrorPageMsgId.IsUnknown() {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) {
+			plan.ErrorPageMsgId = types.StringValue("errorDetail.spSsoFailure")
+		} else {
+			plan.ErrorPageMsgId = types.StringNull()
 		}
 		planModified = true
 	}

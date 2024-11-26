@@ -265,7 +265,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
   }
   entity_id                 = "wsfed"
-  error_page_msg_id         = "errorDetail.spSsoFailure"
   idp_browser_sso = {
     adapter_mappings = [
       {
@@ -803,6 +802,7 @@ func spIdpConnection_CheckComputedValuesWsFedMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.valid_from", "2023-07-14T02:54:53Z"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.0.cert_view.version", "1"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "credentials.certs.0.x509_file.formatted_file_data"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "error_page_msg_id", "errorDetail.spSsoFailure"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnWsFedId),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.attribute_sources.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.issuance_criteria.conditional_criteria.#", "0"),
