@@ -117,12 +117,10 @@ resource "pingfederate_sp_idp_connection" "example" {
   connection_id                             = "%s"
   credentials = {
     inbound_back_channel_auth = {
-      digital_signature = false
       http_basic_credentials = {
         password           = "2FederateM0re"
         username           = "uname2012"
       }
-      require_ssl             = true
     }
   }
   entity_id                         = "inbound_AD2012"
@@ -751,7 +749,9 @@ func spIdpConnection_CheckComputedValuesInboundProvisioningMinimal() resource.Te
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "active", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.inbound_back_channel_auth.digital_signature", "false"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "credentials.inbound_back_channel_auth.http_basic_credentials.encrypted_password"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.inbound_back_channel_auth.require_ssl", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnInboundProvisioningId),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "inbound_provisioning.custom_schema.namespace", "urn:scim:schemas:extension:custom:1.0"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "inbound_provisioning.users.read_users.attribute_contract.core_attributes.#", "1"),
