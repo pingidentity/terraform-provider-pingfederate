@@ -70,16 +70,16 @@ func TestAccSpIdpConnection_InboundProvisioningMinimalMaximal(t *testing.T) {
 func spIdpConnection_InboundProvisioningDependencyHCL() string {
 	return `
 resource "pingfederate_data_store" "example" {
-  data_store_id     = "addatastore"
+  data_store_id = "addatastore"
   ldap_data_store = {
-    binary_attributes          = ["objectGUID"]
-    bind_anonymously           = false
-    connection_timeout         = -1
-    create_if_necessary        = true
-    dns_ttl                    = 60000
-    password         = "2FederateM0re"
-    follow_ldap_referrals      = false
-    hostnames                  = ["ldaps2.pf.ping-eng.com"]
+    binary_attributes     = ["objectGUID"]
+    bind_anonymously      = false
+    connection_timeout    = -1
+    create_if_necessary   = true
+    dns_ttl               = 60000
+    password              = "2FederateM0re"
+    follow_ldap_referrals = false
+    hostnames             = ["ldaps2.pf.ping-eng.com"]
     hostnames_tags = [
       {
         default_source = true
@@ -103,7 +103,7 @@ resource "pingfederate_data_store" "example" {
     user_dn                 = "cn=localadmin,cn=users,dc=ldaps2,dc=com"
     verify_host             = false
   }
-  mask_attribute_values            = false
+  mask_attribute_values = false
 }
   `
 }
@@ -114,16 +114,16 @@ func spIdpConnection_InboundProvisioningMinimalHCL() string {
 %s
 
 resource "pingfederate_sp_idp_connection" "example" {
-  connection_id                             = "%s"
+  connection_id = "%s"
   credentials = {
     inbound_back_channel_auth = {
       http_basic_credentials = {
-        password           = "2FederateM0re"
-        username           = "uname2012"
+        password = "2FederateM0re"
+        username = "uname2012"
       }
     }
   }
-  entity_id                         = "inbound_AD2012"
+  entity_id = "inbound_AD2012"
   inbound_provisioning = {
     action_on_delete = "PERMANENTLY_DELETE_USER"
     custom_schema = {
@@ -137,7 +137,7 @@ resource "pingfederate_sp_idp_connection" "example" {
         data_store_ref = {
           id = pingfederate_data_store.example.id
         }
-        unique_user_id_filter  = "CN=$${userName}"
+        unique_user_id_filter = "CN=$${userName}"
       }
     }
     users = {
@@ -172,7 +172,7 @@ resource "pingfederate_sp_idp_connection" "example" {
       }
     }
   }
-  name                     = "inbound_AD2012"
+  name = "inbound_AD2012"
 }
 `, spIdpConnection_InboundProvisioningDependencyHCL(), idpConnInboundProvisioningId)
 }
@@ -183,9 +183,9 @@ func spIdpConnection_InboundProvisioningCompleteHCL() string {
 %s
 
 resource "pingfederate_sp_idp_connection" "example" {
-  active                                    = true
-  base_url                                  = "https://example.com"
-  connection_id                             = "%s"
+  active        = true
+  base_url      = "https://example.com"
+  connection_id = "%s"
   contact_info = {
     company    = "Ping Identity"
     email      = "test@test.com"
@@ -202,30 +202,30 @@ resource "pingfederate_sp_idp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
-          id              = "4qrossmq1vxa4p836kyqzp48h"
+          file_data = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
+          id        = "4qrossmq1vxa4p836kyqzp48h"
         }
       },
     ]
     inbound_back_channel_auth = {
       certs = [
-      {
-        active_verification_cert    = true
-        encryption_cert             = false
-        primary_verification_cert   = true
-        secondary_verification_cert = false
-        x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
-          id              = "4qrossmq1vxa4p836kyqzp48h"
-        }
-      },
-    ]
+        {
+          active_verification_cert    = true
+          encryption_cert             = false
+          primary_verification_cert   = true
+          secondary_verification_cert = false
+          x509_file = {
+            file_data = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
+            id        = "4qrossmq1vxa4p836kyqzp48h"
+          }
+        },
+      ]
       digital_signature = false
       http_basic_credentials = {
-        password           = "2FederateM0re"
-        username           = "uname2012"
+        password = "2FederateM0re"
+        username = "uname2012"
       }
-      require_ssl             = true
+      require_ssl = true
     }
     signing_settings = {
       signing_key_pair_ref = {
@@ -237,8 +237,8 @@ resource "pingfederate_sp_idp_connection" "example" {
     }
   }
   default_virtual_entity_id = "virtual_server_id_1"
-  entity_id                         = "inbound_AD2012"
- extended_properties = {
+  entity_id                 = "inbound_AD2012"
+  extended_properties = {
     authNexp = {
       values = ["val1"]
     }
@@ -252,7 +252,7 @@ resource "pingfederate_sp_idp_connection" "example" {
       attributes = [
         {
           multi_valued = false
-          name        = "customAttribute"
+          name         = "customAttribute"
           sub_attributes = [
             "subAttribute1",
             "subAttribute2"
@@ -260,10 +260,10 @@ resource "pingfederate_sp_idp_connection" "example" {
           types = []
         }
       ]
-      namespace  = "urn:scim:schemas:extension:custom:1.0"
+      namespace = "urn:scim:schemas:extension:custom:1.0"
     }
     group_support = true
-    groups        = {
+    groups = {
       read_groups = {
         attribute_contract = {
           extended_attributes = []
@@ -737,9 +737,9 @@ resource "pingfederate_sp_idp_connection" "example" {
       }
     }
   }
-  logging_mode             = "STANDARD"
-  name                     = "inbound_AD2012"
-  virtual_entity_ids                = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
+  logging_mode       = "STANDARD"
+  name               = "inbound_AD2012"
+  virtual_entity_ids = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
 }
 `, spIdpConnection_InboundProvisioningDependencyHCL(), idpConnInboundProvisioningId)
 }

@@ -78,42 +78,42 @@ func TestAccSpIdpConnection_WsFedMinimalMaximal(t *testing.T) {
 func spIdpConnection_WsFedDependencyHCL() string {
 	return `
 resource "pingfederate_authentication_policy_contract" "apc1" {
-    contract_id = "sp_idp1"
-    name = "Example sp_idp1"
-    extended_attributes = [
-      {
-        name = "directory_id"
-      },
-      {
-        name = "given_name"
-      },
-      {
-        name = "family_name"
-      },
-      {
-        name = "email"
-      }
-    ]
-  }
-  
+  contract_id = "sp_idp1"
+  name        = "Example sp_idp1"
+  extended_attributes = [
+    {
+      name = "directory_id"
+    },
+    {
+      name = "given_name"
+    },
+    {
+      name = "family_name"
+    },
+    {
+      name = "email"
+    }
+  ]
+}
+
 resource "pingfederate_authentication_policy_contract" "apc2" {
-    contract_id = "sp_idp2"
-    name = "Example sp_idp2"
-    extended_attributes = [
-      {
-        name = "directory_id"
-      },
-      {
-        name = "given_name"
-      },
-      {
-        name = "family_name"
-      },
-      {
-        name = "email"
-      }
-    ]
-  }
+  contract_id = "sp_idp2"
+  name        = "Example sp_idp2"
+  extended_attributes = [
+    {
+      name = "directory_id"
+    },
+    {
+      name = "given_name"
+    },
+    {
+      name = "family_name"
+    },
+    {
+      name = "email"
+    }
+  ]
+}
 
 resource "pingfederate_sp_adapter" "example" {
   adapter_id = "OTSPJava"
@@ -218,12 +218,12 @@ resource "pingfederate_sp_adapter" "example" {
     ]
     sensitive_fields = [
       {
-        name            = "Password"
-        value           = "2FederateM0re"
+        name  = "Password"
+        value = "2FederateM0re"
       },
       {
-        name            = "Confirm Password"
-        value           = "2FederateM0re"
+        name  = "Confirm Password"
+        value = "2FederateM0re"
       },
     ]
     tables = [
@@ -248,8 +248,8 @@ func spIdpConnection_WsFedMinimalHCL() string {
 %s
 
 resource "pingfederate_sp_idp_connection" "example" {
-  base_url                                  = "https://localhost:9031"
-  connection_id                             = "%s"
+  base_url      = "https://localhost:9031"
+  connection_id = "%s"
   credentials = {
     certs = [
       {
@@ -258,13 +258,13 @@ resource "pingfederate_sp_idp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
-          id              = "4qrossmq1vxa4p836kyqzp48h"
+          file_data = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
+          id        = "4qrossmq1vxa4p836kyqzp48h"
         }
       },
     ]
   }
-  entity_id                 = "wsfed"
+  entity_id = "wsfed"
   idp_browser_sso = {
     adapter_mappings = [
       {
@@ -284,8 +284,8 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
     attribute_contract = {
     }
-    idp_identity_mapping                     = "ACCOUNT_MAPPING"
-    protocol                                 = "WSFED"
+    idp_identity_mapping = "ACCOUNT_MAPPING"
+    protocol             = "WSFED"
     sso_service_endpoints = [
       {
         binding = null
@@ -293,7 +293,7 @@ resource "pingfederate_sp_idp_connection" "example" {
       },
     ]
   }
-  name                              = "wsfedidpconn"
+  name = "wsfedidpconn"
 }
 `, spIdpConnection_WsFedDependencyHCL(), idpConnWsFedId)
 }
@@ -304,9 +304,9 @@ func spIdpConnection_WsFedCompleteHCL() string {
 %s
 
 resource "pingfederate_sp_idp_connection" "example" {
-  active                                    = true
-  base_url                                  = "https://localhost:9031"
-  connection_id                             = "%s"
+  active        = true
+  base_url      = "https://localhost:9031"
+  connection_id = "%s"
   contact_info = {
     company    = "Ping Identity"
     email      = "test@test.com"
@@ -322,8 +322,8 @@ resource "pingfederate_sp_idp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
-          id              = "4qrossmq1vxa4p836kyqzp48h"
+          file_data = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
+          id        = "4qrossmq1vxa4p836kyqzp48h"
         }
       },
     ]
@@ -507,7 +507,7 @@ resource "pingfederate_sp_idp_connection" "example" {
         },
       ]
     }
-   authentication_policy_contract_mappings = [
+    authentication_policy_contract_mappings = [
       {
         attribute_contract_fulfillment = {
           directory_id = {
@@ -515,35 +515,35 @@ resource "pingfederate_sp_idp_connection" "example" {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           email = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           family_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           given_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           subject = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
         attribute_sources = [
@@ -576,35 +576,35 @@ resource "pingfederate_sp_idp_connection" "example" {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           email = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           family_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           given_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           subject = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
         attribute_sources = [
@@ -638,11 +638,11 @@ resource "pingfederate_sp_idp_connection" "example" {
       slo_subject_name_id_encrypted = false
       subject_name_id_encrypted     = false
     }
-    default_target_url                       = "https://example.com"
-    idp_identity_mapping                     = "ACCOUNT_MAPPING"
-    jit_provisioning                         = {
+    default_target_url   = "https://example.com"
+    idp_identity_mapping = "ACCOUNT_MAPPING"
+    jit_provisioning = {
       error_handling = "ABORT_SSO"
-      event_trigger = "NEW_USER_ONLY"
+      event_trigger  = "NEW_USER_ONLY"
       user_attributes = {
         do_attribute_query = false
       }
@@ -652,7 +652,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             id = "pingdirectory"
           }
           unique_user_id_filter = "uid=john,ou=org"
-          base_dn = "dc=example,dc=com"
+          base_dn               = "dc=example,dc=com"
           jit_repository_attribute_mapping = {
             USER_KEY = {
               source = {
@@ -672,8 +672,8 @@ resource "pingfederate_sp_idp_connection" "example" {
         }
       }
     }
-    protocol                                 = "WSFED"
-    sign_authn_requests                      = false
+    protocol            = "WSFED"
+    sign_authn_requests = false
     sso_oauth_mapping = {
       attribute_contract_fulfillment = {
         USER_KEY = {
@@ -744,21 +744,21 @@ resource "pingfederate_sp_idp_connection" "example" {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           "OrgName" = {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
-          attribute_sources = []
-      issuance_criteria = {
-        conditional_criteria = [
-        ]
-        expression_criteria = null
-      }
+        attribute_sources = []
+        issuance_criteria = {
+          conditional_criteria = [
+          ]
+          expression_criteria = null
+        }
         access_token_manager_ref = {
           id = "jwt"
         }
@@ -767,19 +767,19 @@ resource "pingfederate_sp_idp_connection" "example" {
     idp_oauth_attribute_contract = {
       extended_attributes = [
         {
-      masked = false
-          name = "asdf"
+          masked = false
+          name   = "asdf"
         },
         {
-      masked = false
-          name = "asdfd"
+          masked = false
+          name   = "asdfd"
         }
       ]
     }
   }
-  logging_mode                      = "STANDARD"
-  name                              = "wsfedidpconn"
-  virtual_entity_ids                = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
+  logging_mode       = "STANDARD"
+  name               = "wsfedidpconn"
+  virtual_entity_ids = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
 }
 `, spIdpConnection_WsFedDependencyHCL(), idpConnWsFedId)
 }

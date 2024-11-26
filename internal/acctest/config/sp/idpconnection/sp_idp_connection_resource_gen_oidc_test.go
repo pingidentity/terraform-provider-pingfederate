@@ -72,7 +72,7 @@ func spIdpConnection_OidcDependencyHCL() string {
 	return `
 resource "pingfederate_authentication_policy_contract" "apc1" {
   contract_id = "sp_idp1"
-  name = "Example sp_idp1"
+  name        = "Example sp_idp1"
   extended_attributes = [
     {
       name = "directory_id"
@@ -99,11 +99,11 @@ func spIdpConnection_OidcMinimalHCL() string {
 resource "pingfederate_sp_idp_connection" "example" {
   entity_id = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as"
 
-  name         = "PingOne"
+  name          = "PingOne"
   connection_id = "%s"
 
   oidc_client_credentials = {
-    client_id     = "myclientid"
+    client_id = "myclientid"
   }
 
   idp_browser_sso = {
@@ -169,10 +169,10 @@ resource "pingfederate_sp_idp_connection" "example" {
     idp_identity_mapping = "ACCOUNT_MAPPING"
 
     oidc_provider_settings = {
-      authorization_endpoint                       = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/authorize"
-      jwks_url                                     = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/jwks"
-      login_type                                   = "POST"
-      scopes                         = "openid profile email address phone"
+      authorization_endpoint = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/authorize"
+      jwks_url               = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/jwks"
+      login_type             = "POST"
+      scopes                 = "openid profile email address phone"
     }
     protocol = "OIDC"
   }
@@ -190,7 +190,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   additional_allowed_entities_configuration = {
     additional_allowed_entities = [
       {
-        entity_id = "https://bxretail.org",
+        entity_id          = "https://bxretail.org",
         entity_description = "additional entity"
       }
     ]
@@ -198,7 +198,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     allow_all_entities        = false
   }
   base_url      = "https://bxretail.org"
-  connection_id   = "%s"
+  connection_id = "%s"
   contact_info = {
     company    = "Ping Identity"
     email      = "test@test.com"
@@ -206,8 +206,8 @@ resource "pingfederate_sp_idp_connection" "example" {
     last_name  = "test"
     phone      = "555-5555"
   }
-  entity_id                 = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as"
-  error_page_msg_id         = "errorDetail.spSsoFailure"
+  entity_id         = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as"
+  error_page_msg_id = "errorDetail.spSsoFailure"
   extended_properties = {
     authNexp = {
       values = ["val1"]
@@ -225,7 +225,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
         issuance_criteria = {
@@ -362,11 +362,11 @@ resource "pingfederate_sp_idp_connection" "example" {
         remote = "Multi_Factor"
       },
     ]
-    default_target_url                       = "https://example.com"
-    idp_identity_mapping                     = "ACCOUNT_MAPPING"
-    jit_provisioning                         = {
+    default_target_url   = "https://example.com"
+    idp_identity_mapping = "ACCOUNT_MAPPING"
+    jit_provisioning = {
       error_handling = "ABORT_SSO"
-      event_trigger = "NEW_USER_ONLY"
+      event_trigger  = "NEW_USER_ONLY"
       user_attributes = {
         do_attribute_query = false
       }
@@ -376,7 +376,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             id = "pingdirectory"
           }
           unique_user_id_filter = "uid=john,ou=org"
-          base_dn = "dc=example,dc=com"
+          base_dn               = "dc=example,dc=com"
           jit_repository_attribute_mapping = {
             USER_KEY = {
               source = {
@@ -441,8 +441,8 @@ resource "pingfederate_sp_idp_connection" "example" {
       track_user_sessions_for_logout = true
       user_info_endpoint             = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/userinfo"
     }
-    protocol              = "OIDC"
-    sign_authn_requests   = false
+    protocol            = "OIDC"
+    sign_authn_requests = false
   }
   idp_oauth_grant_attribute_mapping = {
     access_token_manager_mappings = [
@@ -452,21 +452,21 @@ resource "pingfederate_sp_idp_connection" "example" {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           "OrgName" = {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
-          attribute_sources = []
-      issuance_criteria = {
-        conditional_criteria = [
-        ]
-        expression_criteria = null
-      }
+        attribute_sources = []
+        issuance_criteria = {
+          conditional_criteria = [
+          ]
+          expression_criteria = null
+        }
         access_token_manager_ref = {
           id = "jwt"
         }
@@ -475,18 +475,18 @@ resource "pingfederate_sp_idp_connection" "example" {
     idp_oauth_attribute_contract = {
       extended_attributes = [
         {
-      masked = false
-          name = "asdf"
+          masked = false
+          name   = "asdf"
         },
         {
-      masked = false
-          name = "asdfd"
+          masked = false
+          name   = "asdfd"
         }
       ]
     }
   }
-  logging_mode                      = "FULL"
-  name                              = "PingOne"
+  logging_mode = "FULL"
+  name         = "PingOne"
   oidc_client_credentials = {
     client_id     = "myclientid"
     client_secret = "myclientsecrets"

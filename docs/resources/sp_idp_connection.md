@@ -366,9 +366,9 @@ Required:
 Optional:
 
 - `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
-- `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
+- `digital_signature` (Boolean) If incoming or outgoing messages must be signed. The default value is `false`.
 - `http_basic_credentials` (Attributes) Username and password credentials. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--http_basic_credentials))
-- `require_ssl` (Boolean) Incoming HTTP transmissions must use a secure channel.
+- `require_ssl` (Boolean) Incoming HTTP transmissions must use a secure channel. The default value is `false`.
 - `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
 - `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.
 
@@ -556,15 +556,15 @@ Read-Only:
 Required:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--attribute_contract_fulfillment))
-- `sp_adapter_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--sp_adapter_ref))
 
 Optional:
 
 - `adapter_override_settings` (Attributes) An SP adapter instance. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings))
 - `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--issuance_criteria))
-- `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
+- `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
+- `sp_adapter_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--sp_adapter_ref))
 
 <a id="nestedatt--idp_browser_sso--adapter_mappings--attribute_contract_fulfillment"></a>
 ### Nested Schema for `idp_browser_sso.adapter_mappings.attribute_contract_fulfillment`
@@ -590,14 +590,6 @@ Optional:
 
 
 
-<a id="nestedatt--idp_browser_sso--adapter_mappings--sp_adapter_ref"></a>
-### Nested Schema for `idp_browser_sso.adapter_mappings.sp_adapter_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-
 <a id="nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings"></a>
 ### Nested Schema for `idp_browser_sso.adapter_mappings.adapter_override_settings`
 
@@ -605,13 +597,13 @@ Required:
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--configuration))
 - `id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
-- `name` (String) The plugin instance name.
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref))
 
 Optional:
 
 - `attribute_contract` (Attributes) (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract))
+- `name` (String) The plugin instance name.
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref))
 - `target_application_info` (Attributes) (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--target_application_info))
 
 <a id="nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--configuration"></a>
@@ -734,14 +726,6 @@ Required:
 
 
 
-<a id="nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref"></a>
-### Nested Schema for `idp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-
 <a id="nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract"></a>
 ### Nested Schema for `idp_browser_sso.adapter_mappings.adapter_override_settings.attribute_contract`
 
@@ -772,6 +756,14 @@ Read-Only:
 
 <a id="nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref"></a>
 ### Nested Schema for `idp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+
+<a id="nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref"></a>
+### Nested Schema for `idp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
 
 Required:
 
@@ -1022,6 +1014,14 @@ Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
+
+
+<a id="nestedatt--idp_browser_sso--adapter_mappings--sp_adapter_ref"></a>
+### Nested Schema for `idp_browser_sso.adapter_mappings.sp_adapter_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -1582,14 +1582,14 @@ Optional:
 
 - `authentication_scheme` (String) The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. Options are `BASIC`, `CLIENT_SECRET_JWT`, `POST`, `PRIVATE_KEY_JWT`.
 - `authentication_signing_algorithm` (String) The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `NONE`, `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `PS256`, `PS384`, `PS512` `RS256`, `RS384`, `RS512`.
-- `enable_pkce` (Boolean) Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.
+- `enable_pkce` (Boolean) Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow. The default value is `false`.
 - `jwt_secured_authorization_response_mode_type` (String) The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL. Supported in PingFederate `12.1` and later.
 - `logout_endpoint` (String) URL of the OpenID Provider's RP-Initiated Logout Endpoint.
 - `pushed_authorization_request_endpoint` (String) URL of the OpenID Provider's OAuth 2.0 Pushed Authorization Request Endpoint.
 - `request_parameters` (Attributes Set) A list of request parameters. Request parameters with same name but different attribute values are treated as a multi-valued request parameter. (see [below for nested schema](#nestedatt--idp_browser_sso--oidc_provider_settings--request_parameters))
 - `request_signing_algorithm` (String) The request signing algorithm. Required only if you wish to use signed requests. Only asymmetric algorithms are allowed. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `NONE`, `PS256`, `PS384`, `PS512`, `RS256`, `RS384`, `RS512`.
 - `token_endpoint` (String) URL of the OpenID Provider's OAuth 2.0 Token Endpoint.
-- `track_user_sessions_for_logout` (Boolean) Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO.
+- `track_user_sessions_for_logout` (Boolean) Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.
 - `user_info_endpoint` (String) URL of the OpenID Provider's UserInfo Endpoint.
 
 Read-Only:
@@ -2278,14 +2278,14 @@ Read-Only:
 Required:
 
 - `custom_schema` (Attributes) Custom SCIM Attributes configuration. (see [below for nested schema](#nestedatt--inbound_provisioning--custom_schema))
-- `group_support` (Boolean) Specify support for provisioning of groups.
+- `group_support` (Boolean) Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.
 - `user_repository` (Attributes) SCIM Inbound Provisioning user repository. (see [below for nested schema](#nestedatt--inbound_provisioning--user_repository))
 - `users` (Attributes) User creation and read configuration. (see [below for nested schema](#nestedatt--inbound_provisioning--users))
 
 Optional:
 
 - `action_on_delete` (String) Specify behavior of how SCIM DELETE requests are handled. Options are `DISABLE_USER`, `PERMANENTLY_DELETE_USER`.
-- `groups` (Attributes) Group creation and read configuration. (see [below for nested schema](#nestedatt--inbound_provisioning--groups))
+- `groups` (Attributes) Group creation and read configuration. Requires `group_support` to be `true`. (see [below for nested schema](#nestedatt--inbound_provisioning--groups))
 
 <a id="nestedatt--inbound_provisioning--custom_schema"></a>
 ### Nested Schema for `inbound_provisioning.custom_schema`
@@ -2337,12 +2337,12 @@ Required:
 Required:
 
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--inbound_provisioning--user_repository--ldap--data_store_ref))
-- `unique_group_id_filter` (String) The expression that results in a unique group identifier, when combined with the Base DN.
 - `unique_user_id_filter` (String) The expression that results in a unique user identifier, when combined with the Base DN.
 
 Optional:
 
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
+- `unique_group_id_filter` (String) The expression that results in a unique group identifier, when combined with the Base DN. Only required when configuring the `inbound_provisioning.groups` attribute. Otherwise should not be set.
 
 <a id="nestedatt--inbound_provisioning--user_repository--ldap--data_store_ref"></a>
 ### Nested Schema for `inbound_provisioning.user_repository.ldap.data_store_ref`
@@ -2619,7 +2619,8 @@ Required:
 
 Optional:
 
-- `client_secret` (String) The OpenID Connect client secret.
+- `client_secret` (String, Sensitive) The OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.
+- `encrypted_secret` (String) Encrypted OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.
 
 
 <a id="nestedatt--ws_trust"></a>

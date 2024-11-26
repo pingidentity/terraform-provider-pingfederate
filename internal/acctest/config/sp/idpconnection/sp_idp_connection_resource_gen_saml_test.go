@@ -73,48 +73,48 @@ func TestAccSpIdpConnection_SamlMinimalMaximal(t *testing.T) {
 func spIdpConnection_SamlDependencyHCL() string {
 	return `
 resource "pingfederate_authentication_policy_contract" "apc1" {
-    contract_id = "sp_idp1"
-    name = "Example sp_idp1"
-    extended_attributes = [
-      {
-        name = "directory_id"
-      },
-      {
-        name = "given_name"
-      },
-      {
-        name = "family_name"
-      },
-      {
-        name = "email"
-      }
-    ]
-  }
-  
-  resource "pingfederate_authentication_policy_contract" "apc2" {
-    contract_id = "sp_idp2"
-    name = "Example sp_idp2"
-    extended_attributes = [
-      {
-        name = "directory_id"
-      },
-      {
-        name = "given_name"
-      },
-      {
-        name = "family_name"
-      },
-      {
-        name = "email"
-      }
-    ]
-  }
-  
-  resource "pingfederate_metadata_url" "metadataUrl" {
-    url_id             = "myUrlId"
-    name               = "My Metadata Url"
-    url                = "https://example.com/metadata"
-  }  
+  contract_id = "sp_idp1"
+  name        = "Example sp_idp1"
+  extended_attributes = [
+    {
+      name = "directory_id"
+    },
+    {
+      name = "given_name"
+    },
+    {
+      name = "family_name"
+    },
+    {
+      name = "email"
+    }
+  ]
+}
+
+resource "pingfederate_authentication_policy_contract" "apc2" {
+  contract_id = "sp_idp2"
+  name        = "Example sp_idp2"
+  extended_attributes = [
+    {
+      name = "directory_id"
+    },
+    {
+      name = "given_name"
+    },
+    {
+      name = "family_name"
+    },
+    {
+      name = "email"
+    }
+  ]
+}
+
+resource "pingfederate_metadata_url" "metadataUrl" {
+  url_id = "myUrlId"
+  name   = "My Metadata Url"
+  url    = "https://example.com/metadata"
+}
   `
 }
 
@@ -124,16 +124,16 @@ func spIdpConnection_SamlMinimalHCL() string {
 %s
 
 resource "pingfederate_sp_idp_connection" "example" {
-  connection_id                             = "%s"
+  connection_id = "%s"
   credentials = {
     outbound_back_channel_auth = {
       http_basic_credentials = {
         password = "2FederateM0re"
-        username           = "user"
+        username = "user"
       }
     }
   }
-  entity_id                 = "partnersec:entity:id"
+  entity_id = "partnersec:entity:id"
   idp_browser_sso = {
     artifact = {
       resolver_locations = [
@@ -158,12 +158,12 @@ resource "pingfederate_sp_idp_connection" "example" {
         }
       },
     ]
-    enabled_profiles                         = ["IDP_INITIATED_SSO"]
-    idp_identity_mapping                     = "ACCOUNT_MAPPING"
-    incoming_bindings                        = ["ARTIFACT"]
-    protocol                                 = "SAML20"
+    enabled_profiles     = ["IDP_INITIATED_SSO"]
+    idp_identity_mapping = "ACCOUNT_MAPPING"
+    incoming_bindings    = ["ARTIFACT"]
+    protocol             = "SAML20"
   }
-  name                              = "minimalSaml2"
+  name = "minimalSaml2"
 }
 `, spIdpConnection_SamlDependencyHCL(), idpConnSamlId)
 }
@@ -174,7 +174,7 @@ func spIdpConnection_SamlCompleteHCL() string {
 %s
 
 resource "pingfederate_sp_idp_connection" "example" {
-  active                                    = true
+  active = true
   attribute_query = {
     name_mappings = [
       {
@@ -223,8 +223,8 @@ resource "pingfederate_sp_idp_connection" "example" {
       certs             = null
       digital_signature = false
       http_basic_credentials = {
-        password           = "2FederateM0re"
-        username           = "usertwo"
+        password = "2FederateM0re"
+        username = "usertwo"
       }
       require_ssl             = true
       verification_issuer_dn  = null
@@ -274,7 +274,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
         issuance_criteria = {
@@ -293,7 +293,7 @@ resource "pingfederate_sp_idp_connection" "example" {
       resolver_locations = [
         {
           index = 1
-          url = "/artifact"
+          url   = "/artifact"
         }
       ]
       source_id = null
@@ -319,35 +319,35 @@ resource "pingfederate_sp_idp_connection" "example" {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           email = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           family_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           given_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           subject = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
         attribute_sources = [
@@ -380,35 +380,35 @@ resource "pingfederate_sp_idp_connection" "example" {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           email = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           family_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           given_name = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           subject = {
             source = {
               id   = null
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
         attribute_sources = [
@@ -437,7 +437,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
     authn_context_mappings = [
       {
-        local = "asdf"
+        local  = "asdf"
         remote = "sdfg"
       }
     ]
@@ -448,13 +448,13 @@ resource "pingfederate_sp_idp_connection" "example" {
       slo_subject_name_id_encrypted = false
       subject_name_id_encrypted     = false
     }
-    default_target_url                       = "https://example.com"
-    enabled_profiles                         = ["IDP_INITIATED_SLO", "IDP_INITIATED_SSO"]
-    idp_identity_mapping                     = "ACCOUNT_MAPPING"
-    incoming_bindings                        = ["POST", "SOAP", "ARTIFACT"]
-    jit_provisioning                         = {
+    default_target_url   = "https://example.com"
+    enabled_profiles     = ["IDP_INITIATED_SLO", "IDP_INITIATED_SSO"]
+    idp_identity_mapping = "ACCOUNT_MAPPING"
+    incoming_bindings    = ["POST", "SOAP", "ARTIFACT"]
+    jit_provisioning = {
       error_handling = "ABORT_SSO"
-      event_trigger = "NEW_USER_ONLY"
+      event_trigger  = "NEW_USER_ONLY"
       user_attributes = {
         do_attribute_query = false
       }
@@ -464,7 +464,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             id = "pingdirectory"
           }
           unique_user_id_filter = "uid=john,ou=org"
-          base_dn = "dc=example,dc=com"
+          base_dn               = "dc=example,dc=com"
           jit_repository_attribute_mapping = {
             USER_KEY = {
               source = {
@@ -484,9 +484,9 @@ resource "pingfederate_sp_idp_connection" "example" {
         }
       }
     }
-    message_customizations                   = [
+    message_customizations = [
       {
-        context_name = "authn-request"
+        context_name       = "authn-request"
         message_expression = "asdf"
       }
     ]
@@ -553,21 +553,21 @@ resource "pingfederate_sp_idp_connection" "example" {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
           "OrgName" = {
             source = {
               type = "NO_MAPPING"
             }
-              value = ""
+            value = ""
           }
         }
-          attribute_sources = []
-      issuance_criteria = {
-        conditional_criteria = [
-        ]
-        expression_criteria = null
-      }
+        attribute_sources = []
+        issuance_criteria = {
+          conditional_criteria = [
+          ]
+          expression_criteria = null
+        }
         access_token_manager_ref = {
           id = "jwt"
         }
@@ -576,29 +576,29 @@ resource "pingfederate_sp_idp_connection" "example" {
     idp_oauth_attribute_contract = {
       extended_attributes = [
         {
-      masked = false
-          name = "asdf"
+          masked = false
+          name   = "asdf"
         },
         {
-      masked = false
-          name = "asdfd"
+          masked = false
+          name   = "asdfd"
         }
       ]
     }
   }
-  inbound_provisioning              = null
-  license_connection_group          = null
-  logging_mode                      = "STANDARD"
-  metadata_reload_settings          = {
+  inbound_provisioning     = null
+  license_connection_group = null
+  logging_mode             = "STANDARD"
+  metadata_reload_settings = {
     metadata_url_ref = {
       id = pingfederate_metadata_url.metadataUrl.id
     }
     enable_auto_metadata_update = false
   }
-  name                              = "My Partner IdP Connection"
-  oidc_client_credentials           = null
-  virtual_entity_ids                = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
-  ws_trust                          = null
+  name                    = "My Partner IdP Connection"
+  oidc_client_credentials = null
+  virtual_entity_ids      = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
+  ws_trust                = null
 }
 `, spIdpConnection_SamlDependencyHCL(), idpConnSamlId)
 }

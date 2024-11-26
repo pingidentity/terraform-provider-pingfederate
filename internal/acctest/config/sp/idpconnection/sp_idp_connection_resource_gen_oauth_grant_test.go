@@ -65,10 +65,10 @@ func TestAccSpIdpConnection_OAuthAssertionGrantMinimalMaximal(t *testing.T) {
 func spIdpConnection_OAuthAssertionGrantMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_idp_connection" "example" {
-  connection_id                             = "%s"
+  connection_id = "%s"
   credentials = {
   }
-  entity_id                 = "docker"
+  entity_id = "docker"
   idp_oauth_grant_attribute_mapping = {
     access_token_manager_mappings = [
       {
@@ -96,7 +96,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     idp_oauth_attribute_contract = {
     }
   }
-  name                     = "docker"
+  name = "docker"
 }
 `, idpConnOAuthAssertionGrantId)
 }
@@ -105,9 +105,9 @@ resource "pingfederate_sp_idp_connection" "example" {
 func spIdpConnection_OAuthAssertionGrantCompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_idp_connection" "example" {
-  active                                    = true
-  base_url                                  = "https://localhost:9031"
-  connection_id                             = "%s"
+  active        = true
+  base_url      = "https://localhost:9031"
+  connection_id = "%s"
   contact_info = {
     company    = "Ping Identity"
     email      = "test@test.com"
@@ -182,19 +182,19 @@ resource "pingfederate_sp_idp_connection" "example" {
     idp_oauth_attribute_contract = {
       extended_attributes = [
         {
-      masked = false
-          name = "asdf"
+          masked = false
+          name   = "asdf"
         },
         {
-      masked = false
-          name = "asdfd"
+          masked = false
+          name   = "asdfd"
         }
       ]
     }
   }
-  logging_mode             = "STANDARD"
-  name                     = "docker"
-  virtual_entity_ids                = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
+  logging_mode       = "STANDARD"
+  name               = "docker"
+  virtual_entity_ids = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
 }
 `, idpConnOAuthAssertionGrantId)
 }
