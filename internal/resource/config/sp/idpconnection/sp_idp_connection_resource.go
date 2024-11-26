@@ -1030,8 +1030,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"digital_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "If incoming or outgoing messages must be signed.",
-								MarkdownDescription: "If incoming or outgoing messages must be signed.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "If incoming or outgoing messages must be signed. The default value is `false`.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed. The default value is `false`.",
 							},
 							"verification_subject_dn": schema.StringAttribute{
 								Optional:            true,
@@ -1052,8 +1054,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", false),
 							"require_ssl": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Incoming HTTP transmissions must use a secure channel.",
-								MarkdownDescription: "Incoming HTTP transmissions must use a secure channel.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Incoming HTTP transmissions must use a secure channel. The default value is `false`.",
+								MarkdownDescription: "Incoming HTTP transmissions must use a secure channel. The default value is `false`.",
 							},
 						},
 						Optional:            true,
