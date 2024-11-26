@@ -2877,12 +2877,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 									"unique_group_id_filter": schema.StringAttribute{
-										Required:            true,
+										Optional:            true,
+										Computed:            true,
+										Default:             stringdefault.StaticString(""),
 										Description:         "The expression that results in a unique group identifier, when combined with the Base DN.",
 										MarkdownDescription: "The expression that results in a unique group identifier, when combined with the Base DN.",
-										Validators: []validator.String{
-											stringvalidator.LengthAtLeast(1),
-										},
 									},
 								},
 							},
@@ -3838,19 +3837,19 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 
 		// user repository
 		userRepository := inboundProvisioningAttibutes["user_repository"]
-		if userRepository != nil {
+		if internaltypes.IsDefined(userRepository) {
 			identityStoreDataStoreRepository := userRepository.(types.Object).Attributes()["identity_store"]
 			ldapDataStoreRepository := userRepository.(types.Object).Attributes()["ldap"]
-			if identityStoreDataStoreRepository != nil {
+			if internaltypes.IsDefined(identityStoreDataStoreRepository) {
 				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository = &client.IdentityStoreInboundProvisioningUserRepository{}
 				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.Type = "IDENTITY_STORE"
 				err := json.Unmarshal([]byte(internaljson.FromValue(identityStoreDataStoreRepository, true)), addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository)
 				if err != nil {
 					return err
 				}
-			} else if ldapDataStoreRepository != nil {
+			} else if internaltypes.IsDefined(ldapDataStoreRepository) {
 				addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository = &client.LdapInboundProvisioningUserRepository{}
-				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.Type = "LDAP"
+				addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.Type = "LDAP"
 				err := json.Unmarshal([]byte(internaljson.FromValue(ldapDataStoreRepository, true)), addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository)
 				if err != nil {
 					return err
@@ -3872,6 +3871,13 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			err := json.Unmarshal([]byte(internaljson.FromValue(inboundProvisioningAttibutes["users"], true)), &addRequest.InboundProvisioning.Users)
 			if err != nil {
 				return err
+			}
+			// PF requires core_attributes to be set, even though the property is read-only.
+			// Provide a placeholder value here to prevent the API from returning an error.
+			addRequest.InboundProvisioning.Users.ReadUsers.AttributeContract.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+				{
+					Name: "placeholder",
+				},
 			}
 		}
 
