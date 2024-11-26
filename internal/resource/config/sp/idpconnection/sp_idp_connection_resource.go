@@ -2615,9 +2615,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												Computed:            true,
 												Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 												MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
-												PlanModifiers: []planmodifier.Set{
-													setplanmodifier.UseStateForUnknown(),
-												},
 											},
 											"extended_attributes": schema.SetNestedAttribute{
 												NestedObject: schema.NestedAttributeObject{
@@ -2917,9 +2914,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												Computed:            true,
 												Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 												MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
-												PlanModifiers: []planmodifier.Set{
-													setplanmodifier.UseStateForUnknown(),
-												},
 											},
 											"extended_attributes": schema.SetNestedAttribute{
 												NestedObject: schema.NestedAttributeObject{
@@ -2941,7 +2935,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 												},
-												Optional:            true,
+												Optional: true,
+												Computed: true,
+												Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+													"name":   types.StringType,
+													"masked": types.BoolType,
+												}}, nil)),
 												Description:         "A list of additional attributes that are added to the SCIM response.",
 												MarkdownDescription: "A list of additional attributes that are added to the SCIM response.",
 											},
