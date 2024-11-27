@@ -14,15 +14,14 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const configStoreMinimalBundle = "org.sourceid.common.ExpressionManager"
-const configStoreMinimalId = "evaluateExpressions"
+const configStoreMinimalBundle = "org.sourceid.saml20.domain.mgmt.AdminUserManager"
+const configStoreMinimalId = "isEaRoleUpdated"
 const configStoreBundle = "org.sourceid.oauth20.handlers.process.exchange.execution.SecurityTokenCreator"
 const configStoreSettingId = "base64-required-plugins"
 const configStoreMapBundle = "com.pingidentity.crypto.SignatureAlgorithms"
 const configStoreMapSettingId = "signature-algorithms"
 
 func TestAccConfigStore_RemovalDrift(t *testing.T) {
-	t.SkipNow()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -47,7 +46,6 @@ func TestAccConfigStore_RemovalDrift(t *testing.T) {
 }
 
 func TestAccConfigStore_MinimalMaximal(t *testing.T) {
-	t.SkipNow()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
