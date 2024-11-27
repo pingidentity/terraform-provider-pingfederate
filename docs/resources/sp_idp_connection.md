@@ -196,7 +196,7 @@ resource "pingfederate_sp_idp_connection" "spIdpConnection" {
 - `contact_info` (Attributes) Contact information. (see [below for nested schema](#nestedatt--contact_info))
 - `credentials` (Attributes) The certificates and settings for encryption, signing, and signature verification. (see [below for nested schema](#nestedatt--credentials))
 - `default_virtual_entity_id` (String) The default alternate entity ID that identifies the local server to this partner. It is required when `virtual_entity_ids` is not empty and must be included in that list.
-- `error_page_msg_id` (String) Identifier that specifies the message displayed on a user-facing error page.
+- `error_page_msg_id` (String) Identifier that specifies the message displayed on a user-facing error page. Defaults to `errorDetail.spSsoFailure` for browser SSO connections, null otherwise.
 - `extended_properties` (Attributes Map) Extended Properties allows to store additional information for IdP/SP Connections. The names of these extended properties should be defined in /extendedProperties. (see [below for nested schema](#nestedatt--extended_properties))
 - `idp_browser_sso` (Attributes) The settings used to enable secure browser-based SSO to resources at your site. (see [below for nested schema](#nestedatt--idp_browser_sso))
 - `idp_oauth_grant_attribute_mapping` (Attributes) The OAuth Assertion Grant settings used to map from your IdP. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping))

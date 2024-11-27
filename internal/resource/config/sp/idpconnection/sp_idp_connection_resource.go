@@ -1088,8 +1088,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"error_page_msg_id": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Identifier that specifies the message displayed on a user-facing error page.",
-				MarkdownDescription: "Identifier that specifies the message displayed on a user-facing error page.",
+				Description:         "Identifier that specifies the message displayed on a user-facing error page. Defaults to `errorDetail.spSsoFailure` for browser SSO connections, null otherwise.",
+				MarkdownDescription: "Identifier that specifies the message displayed on a user-facing error page. Defaults to `errorDetail.spSsoFailure` for browser SSO connections, null otherwise.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
