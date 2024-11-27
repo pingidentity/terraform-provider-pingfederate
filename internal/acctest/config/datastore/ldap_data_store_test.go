@@ -70,6 +70,8 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.ConnectionTimeout = pointers.Int64(600)
 	updatedLdapDataStore.BinaryAttributes = []string{"updatedBinaryAttribute1", "updatedBinaryAttribute2"}
 	updatedLdapDataStore.DnsTtl = pointers.Int64(3000)
+	updatedLdapDataStore.LdapDnsSrvPrefix = pointers.String("_ldapcustom._tcp.")
+	updatedLdapDataStore.LdapsDnsSrvPrefix = pointers.String("_ldapscustom._tcp.")
 	return updatedLdapDataStore
 }
 

@@ -3895,7 +3895,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			credentialsInboundBackChannelAuthValue = types.ObjectNull(credentialsInboundBackChannelAuthAttrTypes)
 		} else {
 			var credentialsInboundBackChannelAuthCertsValue types.List
-			if r.Credentials.InboundBackChannelAuth.Certs != nil && len(r.Credentials.InboundBackChannelAuth.Certs) > 0 {
+			if len(r.Credentials.InboundBackChannelAuth.Certs) > 0 {
 				var credentialsInboundBackChannelAuthCertsValues []attr.Value
 				for _, ibcaCert := range r.Credentials.InboundBackChannelAuth.Certs {
 					if plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
@@ -4096,7 +4096,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	} else {
 		var idpBrowserSsoAdapterMappingsValues []attr.Value
 		idpBrowserSsoAdapterMappingsValue := types.SetNull(idpBrowserSsoAdapterMappingsElementType)
-		if r.IdpBrowserSso.AdapterMappings != nil && len(r.IdpBrowserSso.AdapterMappings) > 0 {
+		if len(r.IdpBrowserSso.AdapterMappings) > 0 {
 			for i, idpBrowserSsoAdapterMappingsResponseValue := range r.IdpBrowserSso.AdapterMappings {
 				var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue types.Object
 				if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings == nil {
@@ -4270,7 +4270,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 		// IdpBrowserSSO SSO Service Endpoints
 		idpBrowserSsoSsoServiceEndpointsValue := types.SetNull(idpBrowserSsoSsoServiceEndpointsElementType)
-		if r.IdpBrowserSso.SsoServiceEndpoints != nil && len(r.IdpBrowserSso.SsoServiceEndpoints) > 0 {
+		if len(r.IdpBrowserSso.SsoServiceEndpoints) > 0 {
 			idpBrowserSsoSsoServiceEndpointsValue, objDiags = types.SetValueFrom(ctx, idpBrowserSsoSsoServiceEndpointsElementType, r.IdpBrowserSso.SsoServiceEndpoints)
 			diags.Append(objDiags...)
 		}
