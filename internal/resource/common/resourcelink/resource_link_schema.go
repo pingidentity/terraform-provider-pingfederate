@@ -18,6 +18,15 @@ func ToSchema() map[string]schema.Attribute {
 	}
 }
 
+func ToSchemaNoLengthValidator() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Description: "The ID of the resource.",
+			Required:    true,
+		},
+	}
+}
+
 func SingleNestedAttribute() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: "A reference to a resource.",

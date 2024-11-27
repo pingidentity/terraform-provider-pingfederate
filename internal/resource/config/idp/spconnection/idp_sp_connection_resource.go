@@ -752,7 +752,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", true),
 					"block_encryption_algorithm": schema.StringAttribute{
 						Optional:            true,
 						Description:         "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
@@ -936,7 +936,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
-							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", false),
 							"require_ssl": schema.BoolAttribute{
 								Optional:            true,
 								Description:         "Incoming HTTP transmissions must use a secure channel.",
@@ -1436,7 +1436,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"artifact": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"lifetime": schema.Int64Attribute{
-								Required:    true,
+								Optional:    true,
 								Description: "The lifetime of the artifact in seconds.",
 							},
 							"resolver_locations": schema.SetNestedAttribute{
@@ -2511,7 +2511,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			credentialsInboundBackChannelAuthValue = types.ObjectNull(credentialsInboundBackChannelAuthAttrTypes)
 		} else {
 			var credentialsInboundBackChannelAuthCertsValue types.List
-			if response.Credentials.InboundBackChannelAuth.Certs != nil && len(response.Credentials.InboundBackChannelAuth.Certs) > 0 {
+			if len(response.Credentials.InboundBackChannelAuth.Certs) > 0 {
 				var credentialsInboundBackChannelAuthCertsValues []attr.Value
 				for _, ibcaCert := range response.Credentials.InboundBackChannelAuth.Certs {
 					if state.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
@@ -2548,16 +2548,10 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			if response.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if state != nil && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
-					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
-					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+					password = passwordFromPlan.ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if state != nil && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -2567,7 +2561,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					}
 				}
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringValue(password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
@@ -2591,16 +2585,10 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			if response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if state != nil && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
-					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
-					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+					password = passwordFromPlan.ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if state != nil && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -2610,7 +2598,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					}
 				}
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(&password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
@@ -3274,7 +3262,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			spBrowserSsoArtifactResolverLocationsValue, diags := types.SetValue(spBrowserSsoArtifactResolverLocationsElementType, spBrowserSsoArtifactResolverLocationsValues)
 			respDiags.Append(diags...)
 			spBrowserSsoArtifactValue, diags = types.ObjectValue(spBrowserSsoArtifactAttrTypes, map[string]attr.Value{
-				"lifetime":           types.Int64Value(response.SpBrowserSso.Artifact.Lifetime),
+				"lifetime":           types.Int64PointerValue(response.SpBrowserSso.Artifact.Lifetime),
 				"resolver_locations": spBrowserSsoArtifactResolverLocationsValue,
 				"source_id":          types.StringPointerValue(response.SpBrowserSso.Artifact.SourceId),
 			})
