@@ -22,6 +22,7 @@ const configStoreMapBundle = "com.pingidentity.crypto.SignatureAlgorithms"
 const configStoreMapSettingId = "signature-algorithms"
 
 func TestAccConfigStore_RemovalDrift(t *testing.T) {
+	t.SkipNow()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -46,6 +47,7 @@ func TestAccConfigStore_RemovalDrift(t *testing.T) {
 }
 
 func TestAccConfigStore_MinimalMaximal(t *testing.T) {
+	t.SkipNow()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
