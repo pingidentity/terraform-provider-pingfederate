@@ -3,7 +3,7 @@
 * `sp_idp_connection` resource
   * Marked `idp_oauth_grant_attribute_mapping.access_token_manager_mappings` as required and with minimum size of 1. Previously not including this attribute would have been allowed by the provider, but rejected by PingFederate. Now the provider itself will require at least one access token manager mapping when setting `idp_oauth_grant_attribute_mapping`.
   * Marked `idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract` as required. Previously not including this attribute would have been allowed by the provider, but rejected by PingFederate. Now the provider itself will require this attribute when setting `idp_oauth_grant_attribute_mapping`.
-  * Changed `idp_browser_sso.adapter_mappings` from a Set to a List to allow for correct handling of sensitive configuration values when specifying more than one adapter mapping.
+  * Changed `idp_browser_sso.adapter_mappings` from a Set to a List to work around terraform set identity issues.
 
 ### Enhancements
 * `sp_idp_connection` resource: Added additional validation that `inbound_provisioning` group attributes do not conflict.

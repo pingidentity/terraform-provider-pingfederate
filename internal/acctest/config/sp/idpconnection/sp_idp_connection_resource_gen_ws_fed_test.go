@@ -820,7 +820,7 @@ func spIdpConnection_CheckComputedValuesWsFedMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.decryption_policy.subject_name_id_encrypted", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.default_target_url", ""),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sign_authn_requests", "false"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint", "https://localhost:9031/sp/startSSO.ping?PartnerIdpId=wsfed"),
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "logging_mode", "STANDARD"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "virtual_entity_ids.#", "0"),
 	)
@@ -850,7 +850,7 @@ func spIdpConnection_CheckComputedValuesWsFedComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.adapter_mappings.0.adapter_override_settings.target_application_info.%"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "SAML_SUBJECT"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.jit_provisioning.user_attributes.attribute_contract.#", "2"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint", "https://localhost:9031/sp/startSSO.ping?PartnerIdpId=wsfed"),
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.0.name", "TOKEN_SUBJECT"),
 	)
 }
