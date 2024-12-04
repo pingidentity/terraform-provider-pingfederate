@@ -637,26 +637,44 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"encrypt_assertion": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Encrypt the assertion.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Encrypt the assertion. The default value is `false`.",
 							},
 							"require_encrypted_name_id": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Require an encrypted name identifier.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Require an encrypted name identifier. The default value is `false`.",
 							},
 							"require_signed_attribute_query": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Require signed attribute query.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Require signed attribute query. The default value is `false`.",
 							},
 							"sign_assertion": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Sign the assertion.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Sign the assertion. The default value is `false`.",
 							},
 							"sign_response": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Sign the response.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Sign the response. The default value is `false`.",
 							},
 						},
-						Optional:    true,
+						Optional: true,
+						Computed: true,
+						Default: objectdefault.StaticValue(types.ObjectValueMust(policyAttrTypes, map[string]attr.Value{
+							"encrypt_assertion":              types.BoolValue(false),
+							"require_encrypted_name_id":      types.BoolValue(false),
+							"require_signed_attribute_query": types.BoolValue(false),
+							"sign_assertion":                 types.BoolValue(false),
+							"sign_response":                  types.BoolValue(false),
+						})),
 						Description: "The attribute query profile's security policy.",
 					},
 				},
@@ -1940,19 +1958,6 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 					path.Root("sp_browser_sso").AtMapKey("encryption_policy").AtMapKey("encrypted_attributes"),
 					providererror.InvalidAttributeConfiguration,
 					"The 'encrypted_attributes' attribute cannot be configured when 'encrypt_assertion' is set to true.")
-			}
-		}
-
-		protocol := config.SpBrowserSso.Attributes()["protocol"].(types.String).ValueString()
-		if protocol == "SAML20" {
-			signResponseAsRequired := config.SpBrowserSso.Attributes()["sign_response_as_required"].(types.Bool)
-			signAssertions := config.SpBrowserSso.Attributes()["sign_assertions"].(types.Bool)
-			// Exactly one of the two booleans must be true for SAML20 connections
-			if !signResponseAsRequired.IsUnknown() && !signAssertions.IsUnknown() && signResponseAsRequired.ValueBool() == signAssertions.ValueBool() {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("sp_browser_sso"),
-					providererror.InvalidAttributeConfiguration,
-					"Exactly one of 'sign_response_as_required' and 'sign_assertions' must be true for SAML 2.0 connections.")
 			}
 		}
 	}
