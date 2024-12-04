@@ -802,8 +802,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"include_raw_key_in_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
-								MarkdownDescription: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element. The default value is `false`.",
+								MarkdownDescription: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element. The default value is `false`.",
 							},
 						},
 						Optional:            true,
@@ -1513,7 +1515,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"issuance_criteria":                  issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
-									Description: "Restricts this mapping to specific virtual entity IDs.",
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
+									Description: "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
 								},
 								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
@@ -1548,11 +1552,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"encrypt_assertion": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Whether the outgoing SAML assertion will be encrypted.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Whether the outgoing SAML assertion will be encrypted. The default value is `false`.",
 							},
 							"encrypt_slo_subject_name_id": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Encrypt the name-identifier attribute in outbound SLO messages. This can be set if the name id is encrypted.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Encrypt the name-identifier attribute in outbound SLO messages. This can be set if the name id is encrypted. The default value is `false`.",
 							},
 							"encrypted_attributes": schema.SetAttribute{
 								ElementType: types.StringType,
@@ -1563,7 +1571,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"slo_subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled. The default value is `false`.",
 							},
 						},
 						Optional:    true,
@@ -1599,11 +1609,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"require_signed_authn_requests": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Require AuthN requests to be signed when received via the POST or Redirect bindings.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "Require AuthN requests to be signed when received via the POST or Redirect bindings. The default value is `false`.",
 					},
 					"sign_assertions": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Always sign the SAML Assertion.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "Always sign the SAML Assertion. The default value is `false`.",
 					},
 					"sign_response_as_required": schema.BoolAttribute{
 						Optional:    true,
