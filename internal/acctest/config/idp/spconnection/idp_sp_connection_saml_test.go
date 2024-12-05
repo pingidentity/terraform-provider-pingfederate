@@ -65,7 +65,7 @@ func TestAccSpIdpConnection_SamlMinimalMaximal(t *testing.T) {
 	})
 }
 
-func idpSpConnection_DependencyHCL() string {
+func idpSpConnection_SamlDependencyHCL() string {
 	return `
 resource "pingfederate_metadata_url" "metadataUrl" {
   url_id = "myUrlId"
@@ -140,7 +140,7 @@ resource "pingfederate_idp_sp_connection" "example" {
     }
   }
 }
-`, idpSpConnection_DependencyHCL(), spConnSamlId)
+`, idpSpConnection_SamlDependencyHCL(), spConnSamlId)
 }
 
 // Maximal HCL with all values set where possible
@@ -351,7 +351,7 @@ resource "pingfederate_idp_sp_connection" "example" {
 	  "example2"
 	]
 }
-`, idpSpConnection_DependencyHCL(), spConnSamlId)
+`, idpSpConnection_SamlDependencyHCL(), spConnSamlId)
 }
 
 // Validate any computed values when applying minimal HCL

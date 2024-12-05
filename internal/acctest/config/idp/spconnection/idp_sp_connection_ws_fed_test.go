@@ -54,32 +54,14 @@ func TestAccSpIdpConnection_WsFedMinimalMaximal(t *testing.T) {
 				ImportStateId:     spConnWsFedId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Password can't be imported, and encrypted passwords change on each GET
-				// ImportStateVerifyIgnore: []string{
-				// 	"credentials.inbound_back_channel_auth.http_basic_credentials.encrypted_password",
-				// 	"credentials.outbound_back_channel_auth.http_basic_credentials.encrypted_password",
-				// 	"credentials.outbound_back_channel_auth.http_basic_credentials.password",
-				// },
 			},
 		},
 	})
 }
 
-func idpSpConnection_WsFedDependencyHCL() string {
-	return `
-resource "pingfederate_metadata_url" "metadataUrl" {
-  url_id = "myUrlId"
-  name   = "My Metadata Url"
-  url    = "https://example.com/metadata"
-}
-	`
-}
-
 // Minimal HCL with only required values set
 func idpSpConnection_WsFedMinimalHCL() string {
 	return fmt.Sprintf(`
-%s
-
 resource "pingfederate_idp_sp_connection" "example" {
   base_url                                  = "https://example.com"
   connection_id                             = "%s"
@@ -132,14 +114,12 @@ resource "pingfederate_idp_sp_connection" "example" {
     ws_fed_token_type = "SAML20"
   }
 }
-`, idpSpConnection_WsFedDependencyHCL(), spConnWsFedId)
+`, spConnWsFedId)
 }
 
 // Maximal HCL with all values set where possible
 func idpSpConnection_WsFedCompleteHCL() string {
 	return fmt.Sprintf(`
-%s
-
 resource "pingfederate_idp_sp_connection" "example" {
   active                                    = false
   application_icon_url                      = "https://example.com/icon.png"
@@ -271,7 +251,7 @@ resource "pingfederate_idp_sp_connection" "example" {
   }
   virtual_entity_ids = ["example1", "example2"]
 }
-`, idpSpConnection_WsFedDependencyHCL(), spConnWsFedId)
+`, spConnWsFedId)
 }
 
 // Validate any computed values when applying minimal HCL

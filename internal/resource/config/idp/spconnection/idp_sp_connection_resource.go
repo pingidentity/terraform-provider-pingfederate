@@ -1840,11 +1840,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"encrypt_saml2_assertion": schema.BoolAttribute{
 						Optional:    true,
-						Description: "When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles. The default value is `false`.",
 					},
 					"generate_key": schema.BoolAttribute{
 						Optional:    true,
-						Description: "When selected, the STS generates a symmetric key to be used in conjunction with the \"Holder of Key\" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "When selected, the STS generates a symmetric key to be used in conjunction with the \"Holder of Key\" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles. The default value is `false`.",
 					},
 					"message_customizations": schema.SetNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
@@ -1867,7 +1871,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"oauth_assertion_profiles": schema.BoolAttribute{
 						Optional:    true,
-						Description: "When selected, four additional token-type requests become available.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "When selected, four additional token-type requests become available. The default value is `false`.",
 					},
 					"partner_service_ids": schema.SetAttribute{
 						ElementType: types.StringType,
@@ -3607,12 +3613,20 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		}
 		wsTrustTokenProcessorMappingsValue, diags := types.SetValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
 		respDiags.Append(diags...)
+		// Ensure that nil values are handled as false for encrypt_saml2_assertion and generate_key
+		var encryptSaml2Assertion, generateKey bool
+		if response.WsTrust.EncryptSaml2Assertion != nil {
+			encryptSaml2Assertion = *response.WsTrust.EncryptSaml2Assertion
+		}
+		if response.WsTrust.GenerateKey != nil {
+			generateKey = *response.WsTrust.GenerateKey
+		}
 		wsTrustValue, diags = types.ObjectValue(wsTrustAttrTypes, map[string]attr.Value{
 			"abort_if_not_fulfilled_from_request": types.BoolPointerValue(response.WsTrust.AbortIfNotFulfilledFromRequest),
 			"attribute_contract":                  wsTrustAttributeContractValue,
 			"default_token_type":                  types.StringPointerValue(response.WsTrust.DefaultTokenType),
-			"encrypt_saml2_assertion":             types.BoolPointerValue(response.WsTrust.EncryptSaml2Assertion),
-			"generate_key":                        types.BoolPointerValue(response.WsTrust.GenerateKey),
+			"encrypt_saml2_assertion":             types.BoolValue(encryptSaml2Assertion),
+			"generate_key":                        types.BoolValue(generateKey),
 			"message_customizations":              wsTrustMessageCustomizationsValue,
 			"minutes_after":                       types.Int64PointerValue(response.WsTrust.MinutesAfter),
 			"minutes_before":                      types.Int64PointerValue(response.WsTrust.MinutesBefore),
