@@ -1435,7 +1435,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
-									Description: "Restricts this mapping to specific virtual entity IDs.",
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
+									Description: "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
 								},
 								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
@@ -1451,7 +1453,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"always_sign_artifact_response": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Specify to always sign the SAML ArtifactResponse.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "Specify to always sign the SAML ArtifactResponse. The default value is `false`.",
 					},
 					"artifact": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -3425,9 +3429,22 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			spBrowserSsoUrlWhitelistEntriesValue, diags = types.SetValue(spBrowserSsoUrlWhitelistEntriesElementType, spBrowserSsoUrlWhitelistEntriesValues)
 			respDiags.Append(diags...)
 		}
+
+		// always_sign_artifact_response, sign_assertions, require_signed_authn_requests can be returned as nil when set to false
+		var alwaysSignArtifactResponse, signAssertions, requireSignedAuthnRequests bool
+		if response.SpBrowserSso.AlwaysSignArtifactResponse != nil {
+			alwaysSignArtifactResponse = *response.SpBrowserSso.AlwaysSignArtifactResponse
+		}
+		if response.SpBrowserSso.SignAssertions != nil {
+			signAssertions = *response.SpBrowserSso.SignAssertions
+		}
+		if response.SpBrowserSso.RequireSignedAuthnRequests != nil {
+			requireSignedAuthnRequests = *response.SpBrowserSso.RequireSignedAuthnRequests
+		}
+
 		spBrowserSsoValue, diags = types.ObjectValue(spBrowserSsoAttrTypes, map[string]attr.Value{
 			"adapter_mappings":              spBrowserSsoAdapterMappingsValue,
-			"always_sign_artifact_response": types.BoolPointerValue(response.SpBrowserSso.AlwaysSignArtifactResponse),
+			"always_sign_artifact_response": types.BoolValue(alwaysSignArtifactResponse),
 			"artifact":                      spBrowserSsoArtifactValue,
 			"assertion_lifetime":            spBrowserSsoAssertionLifetimeValue,
 			"attribute_contract":            spBrowserSsoAttributeContractValue,
@@ -3438,8 +3455,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			"incoming_bindings":             spBrowserSsoIncomingBindingsValue,
 			"message_customizations":        spBrowserSsoMessageCustomizationsValue,
 			"protocol":                      types.StringValue(response.SpBrowserSso.Protocol),
-			"require_signed_authn_requests": types.BoolPointerValue(response.SpBrowserSso.RequireSignedAuthnRequests),
-			"sign_assertions":               types.BoolPointerValue(response.SpBrowserSso.SignAssertions),
+			"require_signed_authn_requests": types.BoolValue(requireSignedAuthnRequests),
+			"sign_assertions":               types.BoolValue(signAssertions),
 			"sign_response_as_required":     types.BoolPointerValue(response.SpBrowserSso.SignResponseAsRequired),
 			"slo_service_endpoints":         spBrowserSsoSloServiceEndpointsValue,
 			"sp_saml_identity_mapping":      types.StringPointerValue(response.SpBrowserSso.SpSamlIdentityMapping),
