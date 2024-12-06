@@ -17,7 +17,7 @@ const spConnOutboundProvisionId = "outboundspconn"
 
 var pingOneConnection, pingOneEnvironment string
 
-func TestAccSpIdpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
+func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
 	pingOneConnection = os.Getenv("PF_TF_P1_CONNECTION_ID")
 	pingOneEnvironment = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 	resource.Test(t, resource.TestCase{
@@ -1067,7 +1067,7 @@ func idpSpConnection_CheckComputedValuesOutboundProvisionComplete() resource.Tes
 // Test that any objects created by the test are destroyed
 func idpSpConnection_OutboundProvisionCheckDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
-	_, err := testClient.SpIdpConnectionsAPI.DeleteConnection(acctest.TestBasicAuthContext(), spConnOutboundProvisionId).Execute()
+	_, err := testClient.IdpSpConnectionsAPI.DeleteSpConnection(acctest.TestBasicAuthContext(), spConnOutboundProvisionId).Execute()
 	if err == nil {
 		return fmt.Errorf("sp_idp_connection still exists after tests. Expected it to be destroyed")
 	}

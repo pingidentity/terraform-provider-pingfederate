@@ -14,7 +14,7 @@ import (
 
 const spConnWsTrustId = "wstrustspconn"
 
-func TestAccSpIdpConnection_WsTrustMinimalMaximal(t *testing.T) {
+func TestAccIdpSpConnection_WsTrustMinimalMaximal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -283,9 +283,9 @@ func idpSpConnection_CheckComputedValuesWsTrustComplete() resource.TestCheckFunc
 // Test that any objects created by the test are destroyed
 func idpSpConnection_WsTrustCheckDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
-	_, err := testClient.SpIdpConnectionsAPI.DeleteConnection(acctest.TestBasicAuthContext(), spConnWsTrustId).Execute()
+	_, err := testClient.IdpSpConnectionsAPI.DeleteSpConnection(acctest.TestBasicAuthContext(), spConnWsTrustId).Execute()
 	if err == nil {
-		return fmt.Errorf("sp_idp_connection still exists after tests. Expected it to be destroyed")
+		return fmt.Errorf("pingfederate_idp_sp_connection still exists after tests. Expected it to be destroyed")
 	}
 	return nil
 }
