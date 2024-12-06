@@ -79,26 +79,26 @@ func idpSpConnection_WsTrustMinimalHCL() string {
 %s
 
 resource "pingfederate_idp_sp_connection" "example" {
-  connection_id                             = "%s"
+  connection_id = "%s"
   credentials = {
     signing_settings = {
-      algorithm                         = "SHA256withRSA"
+      algorithm = "SHA256withRSA"
       signing_key_pair_ref = {
         id = "rsaprevious"
       }
     }
   }
-  entity_id                 = "partner:entity:id"
-  name                      = "minimalWsTrust"
+  entity_id = "partner:entity:id"
+  name      = "minimalWsTrust"
   ws_trust = {
     attribute_contract = {
       core_attributes = [
         {
-          name      = "TOKEN_SUBJECT"
+          name = "TOKEN_SUBJECT"
         },
       ]
     }
-    partner_service_ids      = ["serviceid"]
+    partner_service_ids = ["serviceid"]
     token_processor_mappings = [
       {
         attribute_contract_fulfillment = {
@@ -125,12 +125,12 @@ func idpSpConnection_WsTrustCompleteHCL() string {
 %s
 
 resource "pingfederate_idp_sp_connection" "example" {
-  active                                    = false
-  application_icon_url                      = "https://example.com/logo.png"
-  application_name                          = "App"
-  base_url                                  = "https://example.com"
-  connection_id                             = "%s"
-  connection_target_type                    = "STANDARD"
+  active                 = false
+  application_icon_url   = "https://example.com/logo.png"
+  application_name       = "App"
+  base_url               = "https://example.com"
+  connection_id          = "%s"
+  connection_target_type = "STANDARD"
   contact_info = {
     company    = "Example Corp"
     email      = "name@example.com"
@@ -147,12 +147,12 @@ resource "pingfederate_idp_sp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDUTCCAjugAwIBAgIQPEkZGqCnSpsZf0jWCWxJ5jALBgkqhkiG9w0BAQswRzELMAkGA1UEBgwC\nVVMxHDAaBgNVBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9y\naXR5MB4XDTI0MDEwMTAwMDAwMFoXDTQzMTIyNzAwMDAwMFowRzELMAkGA1UEBgwCVVMxHDAaBgNV\nBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9yaXR5MIIBIjAN\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzdxT13IA0xJ8rB1hkqxa/JTTrmLnNjTRnVJdwagG\nKThQxpWqh0DchNMqXTaFNGgxia3hPB53ew7nEMuIf+Qfq4meexKL3yRg86Ng56BrGbsuK6z4ptRp\ndnmsxgkpEfGytdmUFkPXAGE6j4Td/UrAWByz7C9yl7qzFYeorWq5nABcIiOlLxBYXX3fOu3a44SN\nexNgl5dDJAtn8mosQ19wJcjm08fKRqHeWYvBV99kQlhWa7WiTxdrbUZOrUMHYRuKO/JD732dcpns\nar9HfjQi+PH3gCgw4NJNuBKzLv6t8DzZnNxaiKgZ+5cxdhhRAe98MF0QeTbymjVLyoFBpMrRDQID\nAQABoz0wOzAdBgNVHQ4EFgQUGNJsUqA63OVS8ouwVUkzaEP5vawwDAYDVR0TBAUwAwEB/zAMBgNV\nHQ8EBQMDBwYAMAsGCSqGSIb3DQEBCwOCAQEAGFvsWv35ipg0NNnq0x+e7Gtugn9OBhxkeTWoQ1IU\nR7CL9zMRdlErIx5waptJhlPZFZANVpuvYa+yRz7oz2txH8yf/0N+F0bTeNU/qZHenvp9RXzimxTF\nDoCkx7ESpW9b7IKSSZA6Zut6w7XzJeXRrNKfCSSrUGPfkCq4hOtAm9QzUVE7eJ5a7T3+O50gZdox\njdojPhh9h5E1b+bmexrfQKlVl/gL+KPacBJDbSxbiKECt5QGRdDGFFfoInhK1RiW7a/hQBhMWRsM\niOFtu0YpfxfwIyIaK5QfHZBCCC7JaJKg19njrnkjfmiBGoev7XiYWYt/WvYAiZR4nJn/cFrW1A==\n-----END CERTIFICATE-----\n"
-          id              = "f1f4rt7f288buvljrwl3sqsle"
+          file_data = "-----BEGIN CERTIFICATE-----\nMIIDUTCCAjugAwIBAgIQPEkZGqCnSpsZf0jWCWxJ5jALBgkqhkiG9w0BAQswRzELMAkGA1UEBgwC\nVVMxHDAaBgNVBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9y\naXR5MB4XDTI0MDEwMTAwMDAwMFoXDTQzMTIyNzAwMDAwMFowRzELMAkGA1UEBgwCVVMxHDAaBgNV\nBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9yaXR5MIIBIjAN\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzdxT13IA0xJ8rB1hkqxa/JTTrmLnNjTRnVJdwagG\nKThQxpWqh0DchNMqXTaFNGgxia3hPB53ew7nEMuIf+Qfq4meexKL3yRg86Ng56BrGbsuK6z4ptRp\ndnmsxgkpEfGytdmUFkPXAGE6j4Td/UrAWByz7C9yl7qzFYeorWq5nABcIiOlLxBYXX3fOu3a44SN\nexNgl5dDJAtn8mosQ19wJcjm08fKRqHeWYvBV99kQlhWa7WiTxdrbUZOrUMHYRuKO/JD732dcpns\nar9HfjQi+PH3gCgw4NJNuBKzLv6t8DzZnNxaiKgZ+5cxdhhRAe98MF0QeTbymjVLyoFBpMrRDQID\nAQABoz0wOzAdBgNVHQ4EFgQUGNJsUqA63OVS8ouwVUkzaEP5vawwDAYDVR0TBAUwAwEB/zAMBgNV\nHQ8EBQMDBwYAMAsGCSqGSIb3DQEBCwOCAQEAGFvsWv35ipg0NNnq0x+e7Gtugn9OBhxkeTWoQ1IU\nR7CL9zMRdlErIx5waptJhlPZFZANVpuvYa+yRz7oz2txH8yf/0N+F0bTeNU/qZHenvp9RXzimxTF\nDoCkx7ESpW9b7IKSSZA6Zut6w7XzJeXRrNKfCSSrUGPfkCq4hOtAm9QzUVE7eJ5a7T3+O50gZdox\njdojPhh9h5E1b+bmexrfQKlVl/gL+KPacBJDbSxbiKECt5QGRdDGFFfoInhK1RiW7a/hQBhMWRsM\niOFtu0YpfxfwIyIaK5QfHZBCCC7JaJKg19njrnkjfmiBGoev7XiYWYt/WvYAiZR4nJn/cFrW1A==\n-----END CERTIFICATE-----\n"
+          id        = "f1f4rt7f288buvljrwl3sqsle"
         }
       },
     ]
-    key_transport_algorithm           = "RSA_OAEP"
+    key_transport_algorithm = "RSA_OAEP"
     signing_settings = {
       algorithm = "SHA256withRSA"
       alternative_signing_key_pair_refs = [
@@ -177,15 +177,15 @@ resource "pingfederate_idp_sp_connection" "example" {
       values = ["val2"]
     }
   }
-  logging_mode             = "ENHANCED"
-  name                     = "minimalWsTrust"
-  virtual_entity_ids       = ["ex1", "ex2"]
+  logging_mode       = "ENHANCED"
+  name               = "minimalWsTrust"
+  virtual_entity_ids = ["ex1", "ex2"]
   ws_trust = {
     abort_if_not_fulfilled_from_request = true
     attribute_contract = {
       core_attributes = [
         {
-          name      = "TOKEN_SUBJECT"
+          name = "TOKEN_SUBJECT"
         },
       ]
       extended_attributes = [

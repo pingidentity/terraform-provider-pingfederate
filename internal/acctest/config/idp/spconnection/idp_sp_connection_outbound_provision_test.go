@@ -78,11 +78,11 @@ func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
 func idpSpConnection_OutboundProvisionMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_sp_connection" "example" {
-  connection_id                             = "%s"
+  connection_id = "%s"
   credentials = {
   }
-  entity_id                 = "partnermin:entity:id"
-  name                      = "minimalOutbound"
+  entity_id = "partnermin:entity:id"
+  name      = "minimalOutbound"
   outbound_provision = {
     channels = [
       {
@@ -310,21 +310,21 @@ resource "pingfederate_idp_sp_connection" "example" {
             id = "pingdirectory"
           }
           group_membership_detection = {
-            group_member_attribute_name    = "uniqueMember"
+            group_member_attribute_name = "uniqueMember"
           }
           guid_attribute_name = "entryUUID"
           guid_binary         = false
           user_source_location = {
-            group_dn      = "o=group,dc=example,dc=com"
+            group_dn = "o=group,dc=example,dc=com"
           }
         }
-        name        = "min"
+        name = "min"
       },
     ]
     target_settings = [
       {
-        name            = "PINGONE_ENVIRONMENT"
-        value           = "%s|%s"
+        name  = "PINGONE_ENVIRONMENT"
+        value = "%s|%s"
       },
     ]
     type = "PingOne"
@@ -337,12 +337,12 @@ resource "pingfederate_idp_sp_connection" "example" {
 func idpSpConnection_OutboundProvisionCompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_sp_connection" "example" {
-  active                                    = false
-  application_icon_url                      = "https://example.com/logo.png"
-  application_name                          = "App"
-  base_url                                  = "https://api.pingone.com/v1"
-  connection_id                             = "%s"
-  connection_target_type                    = "STANDARD"
+  active                 = false
+  application_icon_url   = "https://example.com/logo.png"
+  application_name       = "App"
+  base_url               = "https://api.pingone.com/v1"
+  connection_id          = "%s"
+  connection_target_type = "STANDARD"
   contact_info = {
     company    = "Example Corp"
     email      = "name@example.com"
@@ -358,8 +358,8 @@ resource "pingfederate_idp_sp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDUTCCAjugAwIBAgIQPEkZGqCnSpsZf0jWCWxJ5jALBgkqhkiG9w0BAQswRzELMAkGA1UEBgwC\nVVMxHDAaBgNVBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9y\naXR5MB4XDTI0MDEwMTAwMDAwMFoXDTQzMTIyNzAwMDAwMFowRzELMAkGA1UEBgwCVVMxHDAaBgNV\nBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9yaXR5MIIBIjAN\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzdxT13IA0xJ8rB1hkqxa/JTTrmLnNjTRnVJdwagG\nKThQxpWqh0DchNMqXTaFNGgxia3hPB53ew7nEMuIf+Qfq4meexKL3yRg86Ng56BrGbsuK6z4ptRp\ndnmsxgkpEfGytdmUFkPXAGE6j4Td/UrAWByz7C9yl7qzFYeorWq5nABcIiOlLxBYXX3fOu3a44SN\nexNgl5dDJAtn8mosQ19wJcjm08fKRqHeWYvBV99kQlhWa7WiTxdrbUZOrUMHYRuKO/JD732dcpns\nar9HfjQi+PH3gCgw4NJNuBKzLv6t8DzZnNxaiKgZ+5cxdhhRAe98MF0QeTbymjVLyoFBpMrRDQID\nAQABoz0wOzAdBgNVHQ4EFgQUGNJsUqA63OVS8ouwVUkzaEP5vawwDAYDVR0TBAUwAwEB/zAMBgNV\nHQ8EBQMDBwYAMAsGCSqGSIb3DQEBCwOCAQEAGFvsWv35ipg0NNnq0x+e7Gtugn9OBhxkeTWoQ1IU\nR7CL9zMRdlErIx5waptJhlPZFZANVpuvYa+yRz7oz2txH8yf/0N+F0bTeNU/qZHenvp9RXzimxTF\nDoCkx7ESpW9b7IKSSZA6Zut6w7XzJeXRrNKfCSSrUGPfkCq4hOtAm9QzUVE7eJ5a7T3+O50gZdox\njdojPhh9h5E1b+bmexrfQKlVl/gL+KPacBJDbSxbiKECt5QGRdDGFFfoInhK1RiW7a/hQBhMWRsM\niOFtu0YpfxfwIyIaK5QfHZBCCC7JaJKg19njrnkjfmiBGoev7XiYWYt/WvYAiZR4nJn/cFrW1A==\n-----END CERTIFICATE-----\n"
-          id              = "f1f4rt7f288buvljrwl3sqsle"
+          file_data = "-----BEGIN CERTIFICATE-----\nMIIDUTCCAjugAwIBAgIQPEkZGqCnSpsZf0jWCWxJ5jALBgkqhkiG9w0BAQswRzELMAkGA1UEBgwC\nVVMxHDAaBgNVBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9y\naXR5MB4XDTI0MDEwMTAwMDAwMFoXDTQzMTIyNzAwMDAwMFowRzELMAkGA1UEBgwCVVMxHDAaBgNV\nBAoME0V4YW1wbGUgQ29ycG9yYXRpb24xGjAYBgNVBAMMEUV4YW1wbGUgQXV0aG9yaXR5MIIBIjAN\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzdxT13IA0xJ8rB1hkqxa/JTTrmLnNjTRnVJdwagG\nKThQxpWqh0DchNMqXTaFNGgxia3hPB53ew7nEMuIf+Qfq4meexKL3yRg86Ng56BrGbsuK6z4ptRp\ndnmsxgkpEfGytdmUFkPXAGE6j4Td/UrAWByz7C9yl7qzFYeorWq5nABcIiOlLxBYXX3fOu3a44SN\nexNgl5dDJAtn8mosQ19wJcjm08fKRqHeWYvBV99kQlhWa7WiTxdrbUZOrUMHYRuKO/JD732dcpns\nar9HfjQi+PH3gCgw4NJNuBKzLv6t8DzZnNxaiKgZ+5cxdhhRAe98MF0QeTbymjVLyoFBpMrRDQID\nAQABoz0wOzAdBgNVHQ4EFgQUGNJsUqA63OVS8ouwVUkzaEP5vawwDAYDVR0TBAUwAwEB/zAMBgNV\nHQ8EBQMDBwYAMAsGCSqGSIb3DQEBCwOCAQEAGFvsWv35ipg0NNnq0x+e7Gtugn9OBhxkeTWoQ1IU\nR7CL9zMRdlErIx5waptJhlPZFZANVpuvYa+yRz7oz2txH8yf/0N+F0bTeNU/qZHenvp9RXzimxTF\nDoCkx7ESpW9b7IKSSZA6Zut6w7XzJeXRrNKfCSSrUGPfkCq4hOtAm9QzUVE7eJ5a7T3+O50gZdox\njdojPhh9h5E1b+bmexrfQKlVl/gL+KPacBJDbSxbiKECt5QGRdDGFFfoInhK1RiW7a/hQBhMWRsM\niOFtu0YpfxfwIyIaK5QfHZBCCC7JaJKg19njrnkjfmiBGoev7XiYWYt/WvYAiZR4nJn/cFrW1A==\n-----END CERTIFICATE-----\n"
+          id        = "f1f4rt7f288buvljrwl3sqsle"
         }
       },
     ]
@@ -387,8 +387,8 @@ resource "pingfederate_idp_sp_connection" "example" {
       values = ["val2"]
     }
   }
-  logging_mode             = "ENHANCED"
-  name                     = "PingOne Connector"
+  logging_mode = "ENHANCED"
+  name         = "PingOne Connector"
   outbound_provision = {
     channels = [
       {
@@ -931,40 +931,40 @@ resource "pingfederate_idp_sp_connection" "example" {
     ]
     target_settings = [
       {
-        name            = "CREATE_USERS_PROV_OPT"
-        value           = "true"
+        name  = "CREATE_USERS_PROV_OPT"
+        value = "true"
       },
       {
-        name            = "DEFAULT_AUTH_METHOD"
-        value           = "Email 1"
+        name  = "DEFAULT_AUTH_METHOD"
+        value = "Email 1"
       },
       {
-        name            = "MFA_USER_DEVICE_MANAGEMENT"
-        value           = "Merge with devices in PingOne"
+        name  = "MFA_USER_DEVICE_MANAGEMENT"
+        value = "Merge with devices in PingOne"
       },
       {
-        name            = "PINGONE_ENVIRONMENT"
-        value           = "%s|%s"
+        name  = "PINGONE_ENVIRONMENT"
+        value = "%s|%s"
       },
       {
-        name            = "PROVISION_DISABLED_USERS_PROV_OPT"
-        value           = "true"
+        name  = "PROVISION_DISABLED_USERS_PROV_OPT"
+        value = "true"
       },
       {
-        name            = "Provisioning Options"
-        value           = "opt"
+        name  = "Provisioning Options"
+        value = "opt"
       },
       {
-        name            = "REMOVE_ACTION"
-        value           = "Disable"
+        name  = "REMOVE_ACTION"
+        value = "Disable"
       },
       {
-        name            = "REMOVE_USERS_PROV_OPT"
-        value           = "true"
+        name  = "REMOVE_USERS_PROV_OPT"
+        value = "true"
       },
       {
-        name            = "UPDATE_USERS_PROV_OPT"
-        value           = "true"
+        name  = "UPDATE_USERS_PROV_OPT"
+        value = "true"
       },
     ]
     type = "PingOne"

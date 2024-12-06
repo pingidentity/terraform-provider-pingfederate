@@ -63,20 +63,20 @@ func TestAccIdpSpConnection_WsFedMinimalMaximal(t *testing.T) {
 func idpSpConnection_WsFedMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_sp_connection" "example" {
-  base_url                                  = "https://example.com"
-  connection_id                             = "%s"
-  entity_id                 = "myEntity"
-  name                      = "mySpConn"
+  base_url      = "https://example.com"
+  connection_id = "%s"
+  entity_id     = "myEntity"
+  name          = "mySpConn"
   credentials = {
     signing_settings = {
       signing_key_pair_ref = {
-      id = "419x9yg43rlawqwq9v6az997k"
+        id = "419x9yg43rlawqwq9v6az997k"
       }
-      algorithm                    = "SHA256withRSA"
+      algorithm = "SHA256withRSA"
     }
   }
   sp_browser_sso = {
-    protocol                      = "WSFED"
+    protocol = "WSFED"
     sso_service_endpoints = [
       {
         url = "/sp/prpwrong.wsf"
@@ -85,7 +85,7 @@ resource "pingfederate_idp_sp_connection" "example" {
     sp_ws_fed_identity_mapping = "EMAIL_ADDRESS"
     assertion_lifetime = {
       minutes_before = 5
-      minutes_after = 5
+      minutes_after  = 5
     }
     attribute_contract = {
       core_attributes = [
@@ -121,12 +121,12 @@ resource "pingfederate_idp_sp_connection" "example" {
 func idpSpConnection_WsFedCompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_sp_connection" "example" {
-  active                                    = false
-  application_icon_url                      = "https://example.com/icon.png"
-  application_name                          = "MyApp"
-  base_url                                  = "https://example.com"
-  connection_id                             = "%s"
-  connection_target_type                    = "STANDARD"
+  active                 = false
+  application_icon_url   = "https://example.com/icon.png"
+  application_name       = "MyApp"
+  base_url               = "https://example.com"
+  connection_id          = "%s"
+  connection_target_type = "STANDARD"
   contact_info = {
     company    = "Example Corp"
     email      = "bugsbunny@example.com"
@@ -143,12 +143,12 @@ resource "pingfederate_idp_sp_connection" "example" {
         primary_verification_cert   = true
         secondary_verification_cert = false
         x509_file = {
-          file_data       = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
-          id              = "4qrossmq1vxa4p836kyqzp48h"
+          file_data = "-----BEGIN CERTIFICATE-----\nMIIDOjCCAiICCQCjbB7XBVkxCzANBgkqhkiG9w0BAQsFADBfMRIwEAYDVQQDDAlsb2NhbGhvc3Qx\nDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsMBFBJTkcxDDAKBgNVBAoM\nA0NEUjELMAkGA1UEBhMCVVMwHhcNMjMwNzE0MDI1NDUzWhcNMjQwNzEzMDI1NDUzWjBfMRIwEAYD\nVQQDDAlsb2NhbGhvc3QxDjAMBgNVBAgMBVRFWEFTMQ8wDQYDVQQHDAZBVVNUSU4xDTALBgNVBAsM\nBFBJTkcxDDAKBgNVBAoMA0NEUjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQC5yFrh9VR2wk9IjzMz+Ei80K453g1j1/Gv3EQ/SC9h7HZBI6aV9FaEYhGnaquRT5q8\n7p8lzCphKNXVyeL6T/pDJOW70zXItkl8Ryoc0tIaknRQmj8+YA0Hr9GDdmYev2yrxSoVS7s5Bl8p\noasn3DljgnWT07vsQz+hw3NY4SPp7IFGP2PpGUBBIIvrOaDWpPGsXeznBxSFtis6Qo+JiEoaVql9\nb9/XyKZj65wOsVyZhFWeM1nCQITSP9OqOc9FSoDFYQ1AVogm4A2AzUrkMnT1SrN2dCuTmNbeVw7g\nOMqMrVf0CiTv9hI0cATbO5we1sPAlJxscSkJjsaI+sQfjiAnAgMBAAEwDQYJKoZIhvcNAQELBQAD\nggEBACgwoH1qklPF1nI9+WbIJ4K12Dl9+U3ZMZa2lP4hAk1rMBHk9SHboOU1CHDQKT1Z6uxi0NI4\nJZHmP1qP8KPNEWTI8Q76ue4Q3aiA53EQguzGb3SEtyp36JGBq05Jor9erEebFftVl83NFvio72Fn\n0N2xvu8zCnlylf2hpz9x1i01Xnz5UNtZ2ppsf2zzT+4U6w3frH+pkp0RDPuoe9mnBF001AguP31h\nSBZyZzWcwQltuNELnSRCcgJl4kC2h3mAgaVtYalrFxLRa3tA2XF2BHRHmKgocedVhTq+81xrqj+W\nQuDmUe06DnrS3Ohmyj3jhsCCluznAolmrBhT/SaDuGg=\n-----END CERTIFICATE-----\n"
+          id        = "4qrossmq1vxa4p836kyqzp48h"
         }
       },
     ]
-    key_transport_algorithm           = "RSA_OAEP"
+    key_transport_algorithm = "RSA_OAEP"
     signing_settings = {
       algorithm = "SHA256withRSA"
       alternative_signing_key_pair_refs = [
@@ -173,8 +173,8 @@ resource "pingfederate_idp_sp_connection" "example" {
       values = ["val2"]
     }
   }
-  logging_mode             = "STANDARD"
-  name                     = "mySpConn"
+  logging_mode = "STANDARD"
+  name         = "mySpConn"
   sp_browser_sso = {
     adapter_mappings = [
       {
@@ -210,7 +210,7 @@ resource "pingfederate_idp_sp_connection" "example" {
     attribute_contract = {
       core_attributes = [
         {
-          name        = "SAML_SUBJECT"
+          name = "SAML_SUBJECT"
         },
       ]
       extended_attributes = [
