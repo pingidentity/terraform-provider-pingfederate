@@ -2511,7 +2511,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			credentialsInboundBackChannelAuthValue = types.ObjectNull(credentialsInboundBackChannelAuthAttrTypes)
 		} else {
 			var credentialsInboundBackChannelAuthCertsValue types.List
-			if response.Credentials.InboundBackChannelAuth.Certs != nil && len(response.Credentials.InboundBackChannelAuth.Certs) > 0 {
+			if len(response.Credentials.InboundBackChannelAuth.Certs) > 0 {
 				var credentialsInboundBackChannelAuthCertsValues []attr.Value
 				for _, ibcaCert := range response.Credentials.InboundBackChannelAuth.Certs {
 					if state.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
