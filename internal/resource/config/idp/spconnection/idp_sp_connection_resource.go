@@ -1098,11 +1098,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												},
 												"default_status": schema.BoolAttribute{
 													Optional:    true,
-													Description: "The default status of the account.",
+													Computed:    true,
+													Default:     booldefault.StaticBool(true),
+													Description: "The default status of the account. The default value is `true`.",
 												},
 												"flag_comparison_status": schema.BoolAttribute{
 													Optional:    true,
-													Description: "The flag that represents comparison status.",
+													Computed:    true,
+													Default:     booldefault.StaticBool(true),
+													Description: "The flag that represents comparison status. The default value is `true`.",
 												},
 												"flag_comparison_value": schema.StringAttribute{
 													Optional:    true,
