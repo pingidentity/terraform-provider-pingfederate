@@ -310,7 +310,7 @@ func wsTrustHcl() string {
 	`
 }
 
-func spBrowserSSOHcl(authenticationPolicyContractName string) string {
+func spBrowserSSOHcl() string {
 	return `
 sp_browser_sso = {
     protocol                      = "SAML20"
@@ -375,7 +375,7 @@ sp_browser_sso = {
 `
 }
 
-func wsFedSpBrowserSSOHcl(authenticationPolicyContractName string) string {
+func wsFedSpBrowserSSOHcl() string {
 	return `
 sp_browser_sso = {
     protocol                      = "WSFED"
@@ -446,9 +446,9 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 func testAccSpConnectionBrowserSso(resourceName string, useWsFed bool) string {
 	var browserHcl string
 	if useWsFed {
-		browserHcl = wsFedSpBrowserSSOHcl(resourceName)
+		browserHcl = wsFedSpBrowserSSOHcl()
 	} else {
-		browserHcl = spBrowserSSOHcl(resourceName)
+		browserHcl = spBrowserSSOHcl()
 	}
 
 	return fmt.Sprintf(`
@@ -575,7 +575,7 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 		baseHcl(resourceName),
 		fullCredentials(),
 		outboundProvisionHcl(),
-		spBrowserSSOHcl(resourceName),
+		spBrowserSSOHcl(),
 		wsTrustHcl(),
 	)
 }
