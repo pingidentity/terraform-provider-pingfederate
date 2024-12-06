@@ -24,12 +24,12 @@ func TestAccIdpSpConnection_SamlMinimalMaximal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: idpSpConnection_SamlMinimalHCL(),
+				Config: idpSpConnection_SamlMinimalHCL(spConnSamlId),
 				Check:  idpSpConnection_CheckComputedValuesSamlMinimal(),
 			},
 			{
 				// Delete the minimal model
-				Config:  idpSpConnection_SamlMinimalHCL(),
+				Config:  idpSpConnection_SamlMinimalHCL(spConnSamlId),
 				Destroy: true,
 			},
 			{
@@ -39,7 +39,7 @@ func TestAccIdpSpConnection_SamlMinimalMaximal(t *testing.T) {
 			},
 			{
 				// Back to minimal model
-				Config: idpSpConnection_SamlMinimalHCL(),
+				Config: idpSpConnection_SamlMinimalHCL(spConnSamlId),
 				Check:  idpSpConnection_CheckComputedValuesSamlMinimal(),
 			},
 			{
@@ -76,7 +76,7 @@ resource "pingfederate_metadata_url" "metadataUrl" {
 }
 
 // Minimal HCL with only required values set
-func idpSpConnection_SamlMinimalHCL() string {
+func idpSpConnection_SamlMinimalHCL(id string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -140,7 +140,7 @@ resource "pingfederate_idp_sp_connection" "example" {
     }
   }
 }
-`, idpSpConnection_SamlDependencyHCL(), spConnSamlId)
+`, idpSpConnection_SamlDependencyHCL(), id)
 }
 
 // Maximal HCL with all values set where possible
