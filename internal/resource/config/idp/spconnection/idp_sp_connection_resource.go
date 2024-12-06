@@ -532,9 +532,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Sensitive:   true,
 				Description: "The value for the configuration field. Either this attribute or `encrypted_value` must be specified.",
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
 			},
 			"encrypted_value": schema.StringAttribute{
 				Optional:    true,
