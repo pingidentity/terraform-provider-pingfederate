@@ -88,6 +88,8 @@ import (
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
 	oauthopenidconnectsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/settings"
 	oauthtokenexchangegeneratorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/generator/settings"
+	oauthtokenexchangeprocessorpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/policies"
+	oauthtokenexchangeprocessorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/settings"
 	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/pingoneconnection"
@@ -765,9 +767,9 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		identitystoreprovisioners.IdentityStoreProvisionerResource,
 		idpadapter.IdpAdapterResource,
 		idpspconnection.IdpSpConnectionResource,
+		idptokenprocessors.IdpTokenProcessorResource,
 		idpstsrequestparameterscontracts.IdpStsRequestParametersContractResource,
 		idptospadaptermapping.IdpToSpAdapterMappingResource,
-		idptokenprocessors.IdpTokenProcessorResource,
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
@@ -804,6 +806,8 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthopenidconnectpolicy.OpenidConnectPolicyResource,
 		oauthopenidconnectsettings.OpenidConnectSettingsResource,
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
+		oauthtokenexchangeprocessorpolicies.OauthTokenExchangeProcessorPolicyResource,
+		oauthtokenexchangeprocessorsettings.OauthTokenExchangeProcessorSettingsResource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
 		pingoneconnection.PingoneConnectionResource,

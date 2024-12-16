@@ -1,4 +1,8 @@
 # v1.2.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_oauth_token_exchange_processor_policy` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
+* **New Resource:** `pingfederate_oauth_token_exchange_processor_settings` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
+
 ### Enhancements
 * Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source.
 
