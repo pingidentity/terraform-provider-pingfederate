@@ -2,6 +2,12 @@
 ### Enhancements
 * Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source.
 
+### Notes
+* bump `github.com/hashicorp/terraform-plugin-framework` 1.11.0 => 1.13.0
+* bump `github.com/hashicorp/terraform-plugin-framework-validators` 0.12.0 => 0.16.0
+* bump `github.com/hashicorp/terraform-plugin-go` 0.23.0 => 0.25.0
+* bump `golang.org/x/crypto` 0.29.0 => 0.31.0
+
 # v1.1.0 October 31, 2024
 ### Enhancements
 * Added `encrypted_` attributes for sensitive attributes. The `encrypted_` versions of these attributes can be used as an alternative to the original attribute when importing configuration into Terraform from an existing PingFederate. ([#419](https://github.com/pingidentity/terraform-provider-pingfederate/pull/419))
