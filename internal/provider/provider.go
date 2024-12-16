@@ -770,7 +770,6 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		idptokenprocessors.IdpTokenProcessorResource,
 		idpstsrequestparameterscontracts.IdpStsRequestParametersContractResource,
 		idptospadaptermapping.IdpToSpAdapterMappingResource,
-		idptokenprocessors.IdpTokenProcessorResource,
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
