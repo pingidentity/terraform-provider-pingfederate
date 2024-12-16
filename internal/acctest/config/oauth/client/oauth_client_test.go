@@ -407,6 +407,16 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 resource "pingfederate_extended_properties" "%[1]s" {
   items = [
     {
+      name         = "authNexp",
+      description  = "Authentication Experience [Single_Factor | Internal | ID-First | Multi_Factor]",
+      multi_valued = false
+    },
+    {
+      name         = "useAuthnApi",
+      description  = "Use the AuthN API",
+      multi_valued = false
+    },
+    {
       name         = "test"
       description  = "test"
       multi_valued = false

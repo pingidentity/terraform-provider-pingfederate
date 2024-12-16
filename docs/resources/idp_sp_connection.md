@@ -2008,11 +2008,11 @@ Optional:
 
 Required:
 
-- `lifetime` (Number) The lifetime of the artifact in seconds.
 - `resolver_locations` (Attributes Set) Remote party URLs that you will use to resolve/translate the artifact and get the actual protocol message (see [below for nested schema](#nestedatt--sp_browser_sso--artifact--resolver_locations))
 
 Optional:
 
+- `lifetime` (Number) The lifetime of the artifact in seconds.
 - `source_id` (String) Source ID for SAML1.x connections
 
 <a id="nestedatt--sp_browser_sso--artifact--resolver_locations"></a>
