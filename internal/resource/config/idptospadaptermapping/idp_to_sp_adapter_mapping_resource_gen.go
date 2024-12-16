@@ -17,9 +17,11 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -58,6 +60,7 @@ type idpToSpAdapterMappingResourceModel struct {
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
 	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
+	Id                               types.String `tfsdk:"id"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
 	MappingId                        types.String `tfsdk:"mapping_id"`
@@ -112,7 +115,7 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 			},
 			"source_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The id of the IdP Adapter.",
+				Description: "The id of the IdP Adapter. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -122,7 +125,7 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 			},
 			"target_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The id of the SP Adapter.",
+				Description: "The id of the SP Adapter. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -132,6 +135,7 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.IdpToSpAdapterMapping, error) {
@@ -172,6 +176,8 @@ func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.Id
 
 func (state *idpToSpAdapterMappingResourceModel) readClientResponse(response *client.IdpToSpAdapterMapping) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// application_icon_url
 	state.ApplicationIconUrl = types.StringPointerValue(response.ApplicationIconUrl)
 	// application_name
@@ -217,7 +223,7 @@ func (r *idpToSpAdapterMappingResource) Create(ctx context.Context, req resource
 	// Create API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the idpToSpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the idpToSpAdapterMapping: "+err.Error())
 		return
 	}
 	apiCreateRequest := r.apiClient.IdpToSpAdapterMappingAPI.CreateIdpToSpAdapterMapping(config.AuthContext(ctx, r.providerConfig))
@@ -277,7 +283,7 @@ func (r *idpToSpAdapterMappingResource) Update(ctx context.Context, req resource
 	// Update API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the idpToSpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the idpToSpAdapterMapping: "+err.Error())
 		return
 	}
 	apiUpdateRequest := r.apiClient.IdpToSpAdapterMappingAPI.UpdateIdpToSpAdapterMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString())

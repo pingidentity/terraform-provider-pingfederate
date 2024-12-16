@@ -61,13 +61,12 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 			},
 			{
 				// Test importing the resource
-				Config:            testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_password_credential_validator." + resourceName,
-				ImportStateId:     pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Sensitive field values can't be imported so they can't be verified
-				ImportStateVerifyIgnore: []string{"configuration.fields"},
+				Config:                  testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_password_credential_validator." + resourceName,
+				ImportStateId:           pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"configuration.sensitive_fields.0.value", "configuration.sensitive_fields.0.encrypted_value"},
 			},
 			{
 				// Back to minimal model
@@ -108,6 +107,10 @@ func testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceNa
 			]
 	  	}
 		`
+	} else {
+		optionalHcl = `
+		attribute_contract = {}
+		`
 	}
 
 	return fmt.Sprintf(`
@@ -123,10 +126,6 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
       {
         name  = "Client Id"
         value = "ping_federate_client_id"
-      },
-      {
-        name  = "Client Secret"
-        value = "%[4]s"
       },
       {
         name  = "PingOne URL"
@@ -152,6 +151,12 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
         name  = "Connection Pool Idle Timeout"
         value = "%[5]s"
       }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Client Secret"
+        value = "%[4]s"
+      },
     ]
   }
   %[7]s

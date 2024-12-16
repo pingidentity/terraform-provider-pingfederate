@@ -9,9 +9,25 @@ description: |-
 
 {{ .Description | trimspace }}
 
-## Example Usage
+## Example Usage - Authorization Code with PKCE
 
-{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-acwp.tf") }}
+
+## Example Usage - Authorization Code
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ac.tf") }}
+
+## Example Usage - Client Credentials
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-cc.tf") }}
+
+## Example Usage - Device Flow
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-df.tf") }}
+
+## Example Usage - Resource Server
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-rs.tf") }}
 
 {{ .SchemaMarkdown | trimspace }}
 

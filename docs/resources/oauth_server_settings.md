@@ -146,10 +146,6 @@ resource "pingfederate_oauth_server_settings" "oauthServerSettings" {
 - `user_authorization_consent_page_setting` (String) User Authorization Consent Page setting to use PingFederate's internal consent page or an external system. Supported values are `INTERNAL` and `ADAPTER`. The default value is `INTERNAL`.
 - `user_authorization_url` (String) The URL used to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 <a id="nestedatt--admin_web_service_pcv_ref"></a>
 ### Nested Schema for `admin_web_service_pcv_ref`
 
@@ -238,5 +234,5 @@ Import is supported using the following syntax:
 ~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 
 ```shell
-terraform import pingfederate_oauth_auth_server_settings.oauthServerSettings id
+terraform import pingfederate_oauth_server_settings.oauthServerSettings id
 ```

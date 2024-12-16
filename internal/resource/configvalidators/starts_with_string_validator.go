@@ -6,16 +6,17 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &startsWithValidator{}
 
 type startsWithValidator struct {
-	firstChar string
+	prefix string
 }
 
 func (v startsWithValidator) Description(ctx context.Context) string {
-	return "Validates value supplied does not contain any whitespaces"
+	return "Validates value supplied starts with a given prefix"
 }
 
 func (v startsWithValidator) MarkdownDescription(ctx context.Context) string {
@@ -29,18 +30,18 @@ func (v startsWithValidator) ValidateString(ctx context.Context, req validator.S
 	}
 
 	strVal := req.ConfigValue.ValueString()
-	isMatch := strings.HasPrefix(strVal, v.firstChar)
+	isMatch := strings.HasPrefix(strVal, v.prefix)
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid Prefix Value",
-			fmt.Sprintf("%s must be prefixed with a %s", req.ConfigValue, v.firstChar),
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("%s must be prefixed with a %s", req.ConfigValue, v.prefix),
 		)
 	}
 }
 
-func StartsWith(char string) startsWithValidator {
+func StartsWith(prefix string) startsWithValidator {
 	return startsWithValidator{
-		firstChar: char,
+		prefix: prefix,
 	}
 }

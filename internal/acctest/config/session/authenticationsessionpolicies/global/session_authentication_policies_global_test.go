@@ -27,10 +27,10 @@ type sessionAuthenticationPoliciesGlobalResourceModel struct {
 func TestAccSessionAuthenticationPoliciesGlobal(t *testing.T) {
 	resourceName := "mySessionAuthenticationPoliciesGlobal"
 	initialResourceModel := sessionAuthenticationPoliciesGlobalResourceModel{
-		enableSessions: true,
+		enableSessions: false,
 	}
 	updatedResourceModel := sessionAuthenticationPoliciesGlobalResourceModel{
-		enableSessions:             false,
+		enableSessions:             true,
 		persistentSessions:         pointers.Bool(false),
 		hashUniqueUserKeyAttribute: pointers.Bool(false),
 		idleTimeoutMins:            pointers.Int64(120),
@@ -65,10 +65,11 @@ func TestAccSessionAuthenticationPoliciesGlobal(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionAuthenticationPoliciesGlobal(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_session_authentication_policies_global." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccSessionAuthenticationPoliciesGlobal(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_session_authentication_policies_global." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "enable_sessions",
 			},
 			{
 				// Back to minimal model

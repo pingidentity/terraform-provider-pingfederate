@@ -13,11 +13,17 @@ Manages an Authentication Api Application
 
 ```terraform
 resource "pingfederate_authentication_api_application" "authenticationApiApplicationExample" {
-  application_id             = "example"
-  name                       = "example"
-  url                        = "https://example.com"
-  description                = "example"
-  additional_allowed_origins = ["https://example.com"]
+  name        = "My Example Application"
+  description = "My example application that has the authentication API widget embedded, or implements the authentication API directly."
+
+  url = "https://bxretail.org"
+  additional_allowed_origins = [
+    "https://bxretail.org",
+    "https://bxretail.org/*",
+    "https://bxretail.org/cb/*",
+    "https://auth.bxretail.org/*",
+  ]
+
   client_for_redirectless_mode_ref = {
     id = pingfederate_oauth_client.oauthClientExample.id
   }
@@ -35,7 +41,7 @@ resource "pingfederate_authentication_api_application" "authenticationApiApplica
 ### Optional
 
 - `additional_allowed_origins` (Set of String) The domain in the redirect URL is always whitelisted. This field contains a list of additional allowed origin URL's for cross-origin resource sharing.
-- `application_id` (String) The persistent, unique ID for the Authentication API application. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
+- `application_id` (String) The persistent, unique ID for the Authentication API application. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 - `client_for_redirectless_mode_ref` (Attributes) The client this application must use if it invokes the authentication API in redirectless mode. No client may be specified if `restrict_access_to_redirectless_mode` is `false` under `pingfederate_authentication_api_settings`. (see [below for nested schema](#nestedatt--client_for_redirectless_mode_ref))
 - `description` (String) The Authentication API Application description.
 

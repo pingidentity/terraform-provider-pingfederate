@@ -13,6 +13,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -70,7 +71,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique.")
+	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique. This field is immutable and will trigger a replacement plan if changed.")
 	resp.Schema = schema
 }
 
@@ -144,7 +145,7 @@ func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req
 	newPolicyFragment := client.NewAuthenticationPolicyFragment()
 	err := addOptionalAuthenticationPoliciesFragmentFields(newPolicyFragment, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the Authentication Policy Fragment: "+err.Error())
 		return
 	}
 
@@ -206,7 +207,7 @@ func (r *authenticationPoliciesFragmentResource) Update(ctx context.Context, req
 	updatedFragment := client.NewAuthenticationPolicyFragment()
 	err := addOptionalAuthenticationPoliciesFragmentFields(updatedFragment, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the Authentication Policy Fragment: "+err.Error())
 		return
 	}
 

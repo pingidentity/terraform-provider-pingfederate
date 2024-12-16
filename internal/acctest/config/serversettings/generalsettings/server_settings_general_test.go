@@ -55,10 +55,11 @@ func TestAccServerSettingsGeneral(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettingsGeneral(resourceName, &updatedResourceModel),
-				ResourceName:      "pingfederate_server_settings_general." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccServerSettingsGeneral(resourceName, &updatedResourceModel),
+				ResourceName:                         "pingfederate_server_settings_general." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "disable_automatic_connection_validation",
 			},
 			{
 				// Back to minimal model

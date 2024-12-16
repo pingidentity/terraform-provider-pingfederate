@@ -46,10 +46,6 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
         value = var.email_smtp_server_username
       },
       {
-        name  = "Password"
-        value = var.email_smtp_server_password
-      },
-      {
         name  = "Verify Hostname"
         value = "true"
       },
@@ -74,6 +70,12 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
         value = "true"
       }
     ]
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
+      }
+    ]
   }
   plugin_descriptor_ref = {
     id = "com.pingidentity.email.SmtpNotificationPlugin"
@@ -93,10 +95,6 @@ resource "pingfederate_notification_publisher_settings" "publisherSettings" {
 ### Required
 
 - `default_notification_publisher_ref` (Attributes) The default notification publisher reference (see [below for nested schema](#nestedatt--default_notification_publisher_ref))
-
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--default_notification_publisher_ref"></a>
 ### Nested Schema for `default_notification_publisher_ref`

@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -18,8 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
@@ -249,8 +248,6 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -258,12 +255,15 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	// Compare to version 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan redirectValidationModel
+	var plan *redirectValidationModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	// If redirect_validation_local_settings.uri_allow_list is set prior to PF version 11.3, throw an error
 	var diags diag.Diagnostics
 	var localSettingsAttrs map[string]attr.Value
@@ -293,7 +293,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	if localSettingsModified {
 		plan.RedirectValidationLocalSettings, diags = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, localSettingsAttrs)
 		resp.Diagnostics.Append(diags...)
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
@@ -365,7 +365,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	createRedirectValidation := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createRedirectValidation, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
 		return
 	}
 
@@ -379,7 +379,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 
 	// Read the response into the state
 	var state redirectValidationModel
-	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state, nil)
+	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -405,12 +405,7 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, id)
+	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -432,7 +427,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
 		return
 	}
 
@@ -445,12 +440,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 
 	// Read the response
 	var state redirectValidationModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, id)
+	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -473,6 +463,9 @@ func (r *redirectValidationResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *redirectValidationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState redirectValidationModel
+	emptyState.RedirectValidationLocalSettings = types.ObjectNull(redirectValidationLocalSettingsAttrTypes)
+	emptyState.RedirectValidationPartnerSettings = types.ObjectNull(redirectValidationPartnerSettingsAttrTypes)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

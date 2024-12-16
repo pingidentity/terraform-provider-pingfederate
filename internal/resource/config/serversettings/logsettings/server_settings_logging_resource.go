@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -17,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -69,9 +68,8 @@ type serverSettingsLoggingResource struct {
 }
 
 type serverSettingsLoggingResourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	LogCategories    types.Set    `tfsdk:"log_categories"`
-	LogCategoriesAll types.Set    `tfsdk:"log_categories_all"`
+	LogCategories    types.Set `tfsdk:"log_categories"`
+	LogCategoriesAll types.Set `tfsdk:"log_categories_all"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -115,9 +113,8 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 							},*/
 						},
 						"enabled": schema.BoolAttribute{
-							Description: "Determines whether or not the log category is enabled. The default is `false`.",
-							Optional:    true,
-							Computed:    true,
+							Description: "Determines whether or not the log category is enabled.",
+							Required:    true,
 							// This default causes issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
 							// Default:     booldefault.StaticBool(false),
 						},
@@ -153,8 +150,6 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -190,13 +185,8 @@ func (r *serverSettingsLoggingResource) Configure(_ context.Context, req resourc
 
 }
 
-func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.LogSettings, plan *serverSettingsLoggingResourceModel, state *serverSettingsLoggingResourceModel, existingId *string, isImport bool) diag.Diagnostics {
+func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.LogSettings, plan *serverSettingsLoggingResourceModel, state *serverSettingsLoggingResourceModel, isImport bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
 
 	// Build a list of log categories specified in the plan
 	plannedIds := map[string]bool{}
@@ -246,7 +236,7 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 	createServerSettingsLogging := client.NewLogSettings()
 	err := addOptionalServerSettingsLoggingFields(ctx, createServerSettingsLogging, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
 		return
 	}
 
@@ -260,7 +250,7 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 
 	// Read the response into the state
 	var state serverSettingsLoggingResourceModel
-	diags = readServerSettingsLoggingResourceResponse(ctx, serverSettingsLoggingResponse, &plan, &state, nil, false)
+	diags = readServerSettingsLoggingResourceResponse(ctx, serverSettingsLoggingResponse, &plan, &state, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -290,12 +280,7 @@ func (r *serverSettingsLoggingResource) Read(ctx context.Context, req resource.R
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsLoggingResourceResponse(ctx, apiReadServerSettingsLogging, &state, &state, id, isImportRead)
+	diags = readServerSettingsLoggingResourceResponse(ctx, apiReadServerSettingsLogging, &state, &state, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -317,7 +302,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 	createUpdateRequest := client.NewLogSettings()
 	err := addOptionalServerSettingsLoggingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
 		return
 	}
 
@@ -330,12 +315,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 
 	// Read the response
 	var state serverSettingsLoggingResourceModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsLoggingResourceResponse(ctx, updateServerSettingsLoggingResponse, &plan, &state, id, false)
+	diags = readServerSettingsLoggingResourceResponse(ctx, updateServerSettingsLoggingResponse, &plan, &state, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -343,14 +323,23 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 	resp.Diagnostics.Append(diags...)
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsLoggingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	serverLogSettingsClientData := client.NewLogSettings()
+	serverLogSettingsApiUpdateRequest := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.AuthContext(ctx, r.providerConfig))
+	serverLogSettingsApiUpdateRequest = serverLogSettingsApiUpdateRequest.Body(*serverLogSettingsClientData)
+	_, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateLogSettingsExecute(serverLogSettingsApiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the Server Log Settings", err, httpResp)
+	}
 }
 
 func (r *serverSettingsLoggingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState serverSettingsLoggingResourceModel
+	emptyState.LogCategories = types.SetNull(types.ObjectType{AttrTypes: logCategoriesAttrTypes})
+	emptyState.LogCategoriesAll = types.SetNull(types.ObjectType{AttrTypes: logCategoriesAttrTypes})
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

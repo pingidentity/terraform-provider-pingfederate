@@ -159,8 +159,8 @@ resource "pingfederate_oauth_token_exchange_token_generator_mapping" "exchangeGe
 ### Required
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
-- `source_id` (String) The id of the Token Exchange Processor policy.
-- `target_id` (String) The id of the Token Generator
+- `source_id` (String) The id of the Token Exchange Processor policy. This field is immutable and will trigger a replacement plan if changed.
+- `target_id` (String) The id of the Token Generator. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 

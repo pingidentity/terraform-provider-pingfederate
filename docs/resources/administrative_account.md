@@ -25,9 +25,8 @@ resource "pingfederate_administrative_account" "administrativeAccount" {
 
 ### Required
 
-- `password` (String, Sensitive) Password for the Account. This field is immutable.
 - `roles` (Set of String) Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions.
-- `username` (String) Username for the Administrative Account.
+- `username` (String) Username for the Administrative Account. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 
@@ -36,11 +35,12 @@ resource "pingfederate_administrative_account" "administrativeAccount" {
 - `department` (String) The Department name of the account user.
 - `description` (String) Description of the account.
 - `email_address` (String) Email address associated with the account.
+- `encrypted_password` (String) Encrypted password for the account. This field holds the value returned from PingFederate and used for updating an existing Administrative Account. Either this attribute or `password` must be specified.
+- `password` (String, Sensitive) Password for the Account. This field is immutable and will trigger a replacement plan if changed. Either this attribute or `encrypted_password` must be specified.
 - `phone_number` (String) Phone number associated with the account.
 
 ### Read-Only
 
-- `encrypted_password` (String, Sensitive, Deprecated) Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.
 - `id` (String) The ID of this resource.
 
 ## Import

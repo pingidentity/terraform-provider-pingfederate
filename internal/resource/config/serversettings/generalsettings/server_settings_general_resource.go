@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -12,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -79,8 +78,6 @@ func (r *serverSettingsGeneralResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -142,7 +139,7 @@ func (r *serverSettingsGeneralResource) Create(ctx context.Context, req resource
 	createServerSettingsGeneral := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralFields(ctx, createServerSettingsGeneral, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for general server settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for general server settings: "+err.Error())
 		return
 	}
 
@@ -156,7 +153,7 @@ func (r *serverSettingsGeneralResource) Create(ctx context.Context, req resource
 
 	// Read the response into the state
 	var state serverSettingsGeneralModel
-	readServerSettingsGeneralResponse(ctx, serverSettingsGeneralResponse, &state, nil)
+	readServerSettingsGeneralResponse(ctx, serverSettingsGeneralResponse, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -182,12 +179,7 @@ func (r *serverSettingsGeneralResource) Read(ctx context.Context, req resource.R
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readServerSettingsGeneralResponse(ctx, apiReadServerSettingsGeneral, &state, id)
+	readServerSettingsGeneralResponse(ctx, apiReadServerSettingsGeneral, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -208,7 +200,7 @@ func (r *serverSettingsGeneralResource) Update(ctx context.Context, req resource
 	createUpdateRequest := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for general server settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for general server settings: "+err.Error())
 		return
 	}
 
@@ -221,12 +213,7 @@ func (r *serverSettingsGeneralResource) Update(ctx context.Context, req resource
 
 	// Read the response
 	var state serverSettingsGeneralModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readServerSettingsGeneralResponse(ctx, updateServerSettingsGeneralResponse, &state, id)
+	readServerSettingsGeneralResponse(ctx, updateServerSettingsGeneralResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -248,6 +235,7 @@ func (r *serverSettingsGeneralResource) Delete(ctx context.Context, req resource
 }
 
 func (r *serverSettingsGeneralResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState serverSettingsGeneralModel
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

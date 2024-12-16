@@ -278,7 +278,6 @@ func (r *clusterStatusDataSource) Read(ctx context.Context, req datasource.ReadR
 		// If the error indicates that this PF server is not running in clustered mode, just return an empty model
 		isNonClusteredMode := false
 		if httpResp != nil {
-			var internalError error
 			body, internalError := io.ReadAll(httpResp.Body)
 			if internalError == nil {
 				bodyContents := string(body)

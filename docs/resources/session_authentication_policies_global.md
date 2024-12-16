@@ -39,10 +39,6 @@ resource "pingfederate_session_authentication_policies_global" "globalPolicy" {
 - `max_timeout_mins` (Number) The maximum timeout period, in minutes. If set to `-1`, sessions do not expire. The default is `480`.
 - `persistent_sessions` (Boolean) Determines whether authentication sessions are persistent by default. Persistent sessions are linked to a persistent cookie and stored in a data store. This field is ignored if `enable_sessions` is `false`. Default values is `false`.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

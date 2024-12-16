@@ -1,1 +1,0 @@
-terraform import pingfederate_open_id_connect_settings.openIdConnectSettings id

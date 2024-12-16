@@ -16,9 +16,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -26,6 +29,8 @@ var (
 	_ resource.Resource                = &notificationPublisherResource{}
 	_ resource.ResourceWithConfigure   = &notificationPublisherResource{}
 	_ resource.ResourceWithImportState = &notificationPublisherResource{}
+
+	customId = "publisher_id"
 )
 
 func NotificationPublisherResource() resource.Resource {
@@ -53,6 +58,7 @@ func (r *notificationPublisherResource) Configure(_ context.Context, req resourc
 
 type notificationPublisherResourceModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
+	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -85,18 +91,18 @@ func (r *notificationPublisherResource) Schema(ctx context.Context, req resource
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
-						Description: "The ID of the resource.",
+						Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},
 				Required:    true,
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
+				Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed.",
 			},
 			"publisher_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.",
+				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -106,6 +112,7 @@ func (r *notificationPublisherResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *notificationPublisherResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -122,7 +129,7 @@ func (r *notificationPublisherResource) ModifyPlan(ctx context.Context, req reso
 	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (model *notificationPublisherResourceModel) buildClientStruct() (*client.NotificationPublisher, diag.Diagnostics) {
@@ -132,7 +139,7 @@ func (model *notificationPublisherResourceModel) buildClientStruct() (*client.No
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
 	} else {
 		result.Configuration = *configurationValue
 	}
@@ -160,6 +167,8 @@ func (model *notificationPublisherResourceModel) buildClientStruct() (*client.No
 
 func (state *notificationPublisherResourceModel) readClientResponse(response *client.NotificationPublisher, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// configuration
 	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
@@ -214,7 +223,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.NotificationPublishersAPI.CreateNotificationPublisherExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the notificationPublisher", err, httpResp, &customId)
 		return
 	}
 
@@ -245,7 +254,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Notification Publisher", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp, &customId)
 		}
 		return
 	}
@@ -274,7 +283,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublisherExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the notificationPublisher", err, httpResp, &customId)
 		return
 	}
 
@@ -296,9 +305,10 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 	}
 
 	// Delete API call logic
-	httpResp, err := r.apiClient.NotificationPublishersAPI.DeleteNotificationPublisher(config.AuthContext(ctx, r.providerConfig), data.PublisherId.ValueString()).Execute()
+	httpResp, err := api.ExponentialBackOffRetryDelete([]int{403},
+		r.apiClient.NotificationPublishersAPI.DeleteNotificationPublisher(config.AuthContext(ctx, r.providerConfig), data.PublisherId.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the notificationPublisher", err, httpResp, &customId)
 	}
 }
 

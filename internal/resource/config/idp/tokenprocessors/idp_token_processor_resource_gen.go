@@ -5,7 +5,7 @@ package idptokenprocessors
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -23,6 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -30,6 +31,8 @@ var (
 	_ resource.Resource                = &idpTokenProcessorResource{}
 	_ resource.ResourceWithConfigure   = &idpTokenProcessorResource{}
 	_ resource.ResourceWithImportState = &idpTokenProcessorResource{}
+
+	customId = "processor_id"
 )
 
 func IdpTokenProcessorResource() resource.Resource {
@@ -71,7 +74,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"masked": schema.BoolAttribute{
@@ -87,12 +90,12 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 							},
 						},
 						Required: true,
-						Validators: []validator.List{
-							listvalidator.SizeAtLeast(1),
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
 						},
 						Description: "A list of token processor attributes that correspond to the attributes exposed by the token processor type.",
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"masked": schema.BoolAttribute{
@@ -109,7 +112,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 						},
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(extendedAttributesDefault),
+						Default:     setdefault.StaticValue(extendedAttributesDefault),
 						Description: "A list of additional attributes that can be returned by the token processor. The extended attributes are only used if the token processor supports them.",
 					},
 					"mask_ognl_values": schema.BoolAttribute{
@@ -144,7 +147,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
-						Description: "The ID of the resource.",
+						Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
@@ -154,11 +157,11 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 					},
 				},
 				Required:    true,
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed. Note: Ignored when specifying a connection's adapter override.",
 			},
 			"processor_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
+				Description: "The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.<br>Note: Ignored when specifying a connection's adapter override.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -186,7 +189,7 @@ func (r *idpTokenProcessorResource) ModifyPlan(ctx context.Context, req resource
 	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenProcessor, diag.Diagnostics) {
@@ -198,7 +201,7 @@ func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenP
 		attributeContractValue := &client.TokenProcessorAttributeContract{}
 		attributeContractAttrs := model.AttributeContract.Attributes()
 		attributeContractValue.CoreAttributes = []client.TokenProcessorAttribute{}
-		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.List).Elements() {
+		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
 			coreAttributesValue := client.TokenProcessorAttribute{}
 			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
 			coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
@@ -206,7 +209,7 @@ func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenP
 			attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
 		}
 		attributeContractValue.ExtendedAttributes = []client.TokenProcessorAttribute{}
-		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.List).Elements() {
+		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
 			extendedAttributesValue := client.TokenProcessorAttribute{}
 			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
 			extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
@@ -220,7 +223,7 @@ func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenP
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
 	} else {
 		result.Configuration = *configurationValue
 	}
@@ -262,8 +265,8 @@ func (state *idpTokenProcessorResourceModel) readClientResponse(response *client
 	}
 	attributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: attributeContractExtendedAttributesAttrTypes}
 	attributeContractAttrTypes := map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeContractCoreAttributesElementType},
-		"extended_attributes": types.ListType{ElemType: attributeContractExtendedAttributesElementType},
+		"core_attributes":     types.SetType{ElemType: attributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: attributeContractExtendedAttributesElementType},
 		"mask_ognl_values":    types.BoolType,
 	}
 	var attributeContractValue types.Object
@@ -279,7 +282,7 @@ func (state *idpTokenProcessorResourceModel) readClientResponse(response *client
 			respDiags.Append(diags...)
 			attributeContractCoreAttributesValues = append(attributeContractCoreAttributesValues, attributeContractCoreAttributesValue)
 		}
-		attributeContractCoreAttributesValue, diags := types.ListValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
+		attributeContractCoreAttributesValue, diags := types.SetValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
 		respDiags.Append(diags...)
 		var attributeContractExtendedAttributesValues []attr.Value
 		for _, attributeContractExtendedAttributesResponseValue := range response.AttributeContract.ExtendedAttributes {
@@ -290,7 +293,7 @@ func (state *idpTokenProcessorResourceModel) readClientResponse(response *client
 			respDiags.Append(diags...)
 			attributeContractExtendedAttributesValues = append(attributeContractExtendedAttributesValues, attributeContractExtendedAttributesValue)
 		}
-		attributeContractExtendedAttributesValue, diags := types.ListValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
+		attributeContractExtendedAttributesValue, diags := types.SetValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
 		respDiags.Append(diags...)
 		attributeContractValue, diags = types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributesValue,
@@ -355,7 +358,7 @@ func (r *idpTokenProcessorResource) Create(ctx context.Context, req resource.Cre
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpTokenProcessorsAPI.CreateTokenProcessorExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the idpTokenProcessor", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the idpTokenProcessor", err, httpResp, &customId)
 		return
 	}
 
@@ -386,7 +389,7 @@ func (r *idpTokenProcessorResource) Read(ctx context.Context, req resource.ReadR
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Token Processor", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the idpTokenProcessor", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the idpTokenProcessor", err, httpResp, &customId)
 		}
 		return
 	}
@@ -415,7 +418,7 @@ func (r *idpTokenProcessorResource) Update(ctx context.Context, req resource.Upd
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpTokenProcessorsAPI.UpdateTokenProcessorExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the idpTokenProcessor", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the idpTokenProcessor", err, httpResp, &customId)
 		return
 	}
 
@@ -439,7 +442,7 @@ func (r *idpTokenProcessorResource) Delete(ctx context.Context, req resource.Del
 	// Delete API call logic
 	httpResp, err := r.apiClient.IdpTokenProcessorsAPI.DeleteTokenProcessor(config.AuthContext(ctx, r.providerConfig), data.ProcessorId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the idpTokenProcessor", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the idpTokenProcessor", err, httpResp, &customId)
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -14,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -33,6 +34,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -45,10 +47,12 @@ var (
 )
 
 var (
-	emptyStringSet, _           = types.SetValue(types.StringType, []attr.Value{})
-	oidcPolicyDefaultObj, _     = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
-	secondarySecretsEmptySet, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
-	clientAuthDefaultObj, _     = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
+	emptyStringSet, _            = types.SetValue(types.StringType, []attr.Value{})
+	oidcPolicyDefaultObj, _      = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
+	secondarySecretsEmptyList, _ = types.ListValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
+	clientAuthDefaultObj, _      = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
+
+	customId = "client_id"
 )
 
 // OauthClientResource is a helper function to simplify the provider implementation.
@@ -68,7 +72,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 		Description: "Manages an Oauth Client",
 		Attributes: map[string]schema.Attribute{
 			"client_id": schema.StringAttribute{
-				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes.",
+				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -286,20 +290,14 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 			},
 			"bypass_approval_page": schema.BoolAttribute{
-				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection.",
+				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"restrict_scopes": schema.BoolAttribute{
-				Description: "Restricts this client's access to specific scopes.",
+				Description: "Restricts this client's access to specific scopes. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"restricted_scopes": schema.SetAttribute{
 				Description: "The scopes available for this client.",
@@ -506,7 +504,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     objectdefault.StaticValue(clientAuthDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "Client authentication type. The required field for type `SECRET` is secret.	The required fields for type `CERTIFICATE` are client_cert_issuer_dn and client_cert_subject_dn. The required field for type `PRIVATE_KEY_JWT` is: either jwks or jwks_url.",
+						Description: "Client authentication type. The required field for type `SECRET` is `secret`.	The required fields for type `CERTIFICATE` are `client_cert_issuer_dn` and `client_cert_subject_dn`. The required field for type `PRIVATE_KEY_JWT` is: either `jwks` or `jwks_url`.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -517,26 +515,48 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"secret": schema.StringAttribute{
-						Description: "Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
+						Description: "Client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.",
 						Optional:    true,
 						Sensitive:   true,
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"secondary_secrets": schema.SetNestedAttribute{
+					"encrypted_secret": schema.StringAttribute{
+						Description: "Encrypted client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.",
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("secret")),
+						},
+					},
+					"secondary_secrets": schema.ListNestedAttribute{
 						Description: "The list of secondary client secrets that are temporarily retained.",
 						Computed:    true,
 						Optional:    true,
-						Default:     setdefault.StaticValue(secondarySecretsEmptySet),
+						Default:     listdefault.StaticValue(secondarySecretsEmptyList),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"secret": schema.StringAttribute{
-									Description: "Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
-									Required:    true,
+									Description: "Secondary client secret for Basic Authentication. Either this attribute or `encrypted_secret` must be provided.",
+									Optional:    true,
 									Sensitive:   true,
 									Validators: []validator.String{
 										stringvalidator.LengthAtLeast(1),
+									},
+								},
+								"encrypted_secret": schema.StringAttribute{
+									Description: "Encrypted secondary client secret for Basic Authentication. Either this attribute or `secret` must be provided.",
+									Optional:    true,
+									Computed:    true,
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.UseStateForUnknown(),
+									},
+									Validators: []validator.String{
+										stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("secret")),
 									},
 								},
 								"expiry_time": schema.StringAttribute{
@@ -933,7 +953,10 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 
 	// Persistent Grant Expiration Validation
 	if (internaltypes.IsDefined(model.PersistentGrantExpirationTime) || internaltypes.IsDefined(model.PersistentGrantExpirationTimeUnit)) && model.PersistentGrantExpirationType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
-		resp.Diagnostics.AddError("persistent_grant_expiration_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to modify the other persistent_grant_expiration values.", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("persistent_grant_expiration_time"),
+			providererror.InvalidAttributeConfiguration,
+			"persistent_grant_expiration_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to modify the other persistent_grant_expiration values.")
 	}
 
 	// Refresh Token Rolling Validation
@@ -941,13 +964,22 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		// The refresh_token_rolling_interval and refresh_token_rolling_interval_time_unit value can't be
 		// configured with a non-default value when refresh_token_rolling_interval_type is set to "SERVER_DEFAULT"
 		if internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
-			resp.Diagnostics.AddError("refresh_token_rolling_interval can only be configured if refresh_token_rolling_interval_type is set to \"OVERRIDE_SERVER_DEFAULT\".", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("refresh_token_rolling_interval"),
+				providererror.InvalidAttributeConfiguration,
+				"refresh_token_rolling_interval can only be configured if refresh_token_rolling_interval_type is set to \"OVERRIDE_SERVER_DEFAULT\".")
 		}
 		if internaltypes.IsDefined(model.RefreshTokenRollingIntervalTimeUnit) && model.RefreshTokenRollingIntervalTimeUnit.ValueString() != "HOURS" {
-			resp.Diagnostics.AddError("refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("refresh_token_rolling_interval_time_unit"),
+				providererror.InvalidAttributeConfiguration,
+				"refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
 		}
 	} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && !internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
-		resp.Diagnostics.AddError("refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("refresh_token_rolling_interval"),
+			providererror.InvalidAttributeConfiguration,
+			"refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
 	}
 
 	//  Client Auth Defined
@@ -959,12 +991,40 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
 			switch clientAuthType {
 			case "PRIVATE_KEY_JWT":
-				if !internaltypes.IsNonEmptyObj(model.JwksSettings) {
-					resp.Diagnostics.AddError("jwks_settings must be defined when client_auth is configured to \"PRIVATE_KEY_JWT\".", "")
+				errorMsg := "jwks_settings.jwks or jwks_settings.jwks_url must be defined when client_auth is configured to \"PRIVATE_KEY_JWT\"."
+				if model.JwksSettings.IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("jwks_settings"),
+						providererror.InvalidAttributeConfiguration,
+						errorMsg)
+				} else if !model.JwksSettings.IsUnknown() {
+					jwksSettingsAttributes := model.JwksSettings.Attributes()
+					if jwksSettingsAttributes["jwks"].IsNull() && jwksSettingsAttributes["jwks_url"].IsNull() {
+						resp.Diagnostics.AddAttributeError(
+							path.Root("jwks_settings"),
+							providererror.InvalidAttributeConfiguration,
+							errorMsg)
+					}
 				}
 			case "CERTIFICATE":
-				if !internaltypes.IsDefined(clientAuthAttributes["client_cert_subject_dn"]) || !internaltypes.IsDefined(clientAuthAttributes["client_cert_issuer_dn"]) {
-					resp.Diagnostics.AddError("client_cert_subject_dn and client_cert_issuer_dn must be defined when client_auth is configured to \"CERTIFICATE\".", "")
+				if clientAuthAttributes["client_cert_subject_dn"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
+						providererror.InvalidAttributeConfiguration,
+						"client_cert_subject_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
+				}
+				if clientAuthAttributes["client_cert_issuer_dn"].IsNull() {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
+						providererror.InvalidAttributeConfiguration,
+						"client_cert_issuer_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
+				}
+			case "SECRET":
+				if clientAuthAttributes["secret"].IsNull() && !internaltypes.IsDefined(clientAuthAttributes["encrypted_secret"]) {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("client_auth"),
+						providererror.InvalidAttributeConfiguration,
+						"client_auth.secret or client_auth.encrypted_secret must be defined when client_auth.type is configured to \"SECRET\".")
 				}
 			}
 		}
@@ -976,17 +1036,11 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	for _, grantType := range model.GrantTypes.Elements() {
 		grantTypeVal := grantType.(types.String).ValueString()
 		if grantTypeVal == "CLIENT_CREDENTIALS" {
-			if clientAuthDefined {
-				clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
-				clientAuthSecret := clientAuthAttributes["secret"].(types.String)
-				if clientAuthType != "NONE" && clientAuthType != "SECRET" {
-					resp.Diagnostics.AddError("client_auth.type must be set to \"SECRET\" when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
-				}
-				if clientAuthSecret.IsNull() || (!clientAuthSecret.IsUnknown() && clientAuthSecret.ValueString() == "") {
-					resp.Diagnostics.AddError("client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
-				}
-			} else if !clientAuthDefined {
-				resp.Diagnostics.AddError("client_auth must be defined when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
+			if !clientAuthDefined {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("client_auth"),
+					providererror.InvalidAttributeConfiguration,
+					"client_auth must be defined when \"CLIENT_CREDENTIALS\" is included in grant_types.")
 			}
 		}
 		if grantTypeVal == "CIBA" {
@@ -1001,10 +1055,13 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		internaltypes.IsDefined(model.CibaRequireSignedRequests) ||
 		internaltypes.IsDefined(model.CibaRequestObjectSigningAlgorithm) ||
 		internaltypes.IsDefined(model.CibaUserCodeSupported)) {
-		resp.Diagnostics.AddError("ciba attributes can only be configured when \"CIBA\" is included in grant_types.", "")
+		resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, "ciba attributes can only be configured when \"CIBA\" is included in grant_types.")
 	}
 	if hasCibaGrantType && (model.CibaDeliveryMode.ValueString() == "PING" && !internaltypes.IsDefined(model.CibaNotificationEndpoint)) {
-		resp.Diagnostics.AddError("ciba_notification_endpoint must be defined when ciba_delivery_mode is \"PING\".", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("ciba_notification_endpoint"),
+			providererror.InvalidAttributeConfiguration,
+			"ciba_notification_endpoint must be defined when ciba_delivery_mode is \"PING\".")
 	}
 
 	// Client Auth Validation
@@ -1025,22 +1082,34 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 
 		for _, algorithmVal := range algorithmAttributeSet {
 			if algorithmVal == "HS256" {
-				resp.Diagnostics.AddError("client_auth must be defined when using the \"HS256\" signing algorithm", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("client_auth"),
+					providererror.InvalidAttributeConfiguration,
+					"client_auth must be defined when using the \"HS256\" signing algorithm")
 			}
 		}
 
 		if internaltypes.IsDefined(model.TokenIntrospectionEncryptionAlgorithm) {
-			resp.Diagnostics.AddError("client_auth must be configured when token_introspection_encryption_algorithm is configured.", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("token_introspection_encryption_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"client_auth must be configured when token_introspection_encryption_algorithm is configured.")
 		}
 	}
 
 	// Restrict Scopes Validation
 	if internaltypes.IsDefined(model.RestrictScopes) && !model.RestrictScopes.ValueBool() && model.AllowAuthenticationApiInit.ValueBool() {
-		resp.Diagnostics.AddError("restrict_scopes cannot be configured to false when allow_authentication_api_init is set to true.", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("restrict_scopes"),
+			providererror.InvalidAttributeConfiguration,
+			"restrict_scopes cannot be configured to false when allow_authentication_api_init is set to true.")
 	}
 
 	if len(model.RestrictedScopes.Elements()) > 0 && !model.RestrictScopes.ValueBool() {
-		resp.Diagnostics.AddError("restrict_scopes must be set to true to configure restricted_scopes.", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("restricted_scopes"),
+			providererror.InvalidAttributeConfiguration,
+			"restrict_scopes must be set to true to configure restricted_scopes.")
 	}
 
 	// OIDC Policy Validation
@@ -1049,24 +1118,45 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		pairwiseIdentifierUserType := oidcPolicy["pairwise_identifier_user_type"]
 		oidcPolicySectorIdentifierUri := oidcPolicy["sector_identifier_uri"]
 		if (pairwiseIdentifierUserType != nil && !pairwiseIdentifierUserType.(types.Bool).ValueBool()) && internaltypes.IsDefined(oidcPolicySectorIdentifierUri) {
-			resp.Diagnostics.AddError("sector_identifier_uri can only be configured when pairwise_identifier_user_type is set to true.", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("oidc_policy").AtMapKey("sector_identifier_uri"),
+				providererror.InvalidAttributeConfiguration,
+				"sector_identifier_uri can only be configured when pairwise_identifier_user_type is set to true.")
 		}
 	}
 
 	// JWKS Settings Validation
 	if !internaltypes.IsDefined(model.JwksSettings) {
 		if internaltypes.IsDefined(model.TokenIntrospectionEncryptionAlgorithm) {
-			resp.Diagnostics.AddError("token_introspection_encryption_algorithm must not be configured when jwks_settings is not configured.", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("token_introspection_encryption_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"token_introspection_encryption_algorithm must not be configured when jwks_settings is not configured.")
 		}
 		if model.RequireSignedRequests.ValueBool() {
-			resp.Diagnostics.AddError("require_signed_requests must be false when jwks_settings is not configured.", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("require_signed_requests"),
+				providererror.InvalidAttributeConfiguration,
+				"require_signed_requests must be false when jwks_settings is not configured.")
 		}
 	}
 
 	// offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to "YES"
 	if internaltypes.IsDefined(model.RequireOfflineAccessScopeToIssueRefreshTokens) && model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString() != "YES" &&
 		internaltypes.IsDefined(model.OfflineAccessRequireConsentPrompt) && model.OfflineAccessRequireConsentPrompt.ValueString() != "SERVER_DEFAULT" {
-		resp.Diagnostics.AddError("offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to \"YES\"", fmt.Sprintf("require_offline_access_scope_to_issue_refresh_tokens: %s, offline_access_require_consent_prompt: %s", model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString(), model.OfflineAccessRequireConsentPrompt.ValueString()))
+		resp.Diagnostics.AddAttributeError(
+			path.Root("offline_access_require_consent_prompt"),
+			providererror.InvalidAttributeConfiguration,
+			"offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to \"YES\".\n"+
+				fmt.Sprintf("require_offline_access_scope_to_issue_refresh_tokens: %s\noffline_access_require_consent_prompt: %s", model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString(), model.OfflineAccessRequireConsentPrompt.ValueString()))
+	}
+
+	// bypass_approval_page Validation
+	if internaltypes.IsDefined(model.BypassApprovalPage) && !model.BypassApprovalPage.ValueBool() && model.AllowAuthenticationApiInit.ValueBool() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("bypass_approval_page"),
+			providererror.InvalidAttributeConfiguration,
+			"bypass_approval_page cannot be configured to false when allow_authentication_api_init is set to true.")
 	}
 }
 
@@ -1074,26 +1164,31 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	// Compare to version 11.3 and 12.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan, state oauthClientModel
+	var plan *oauthClientModel
+	var state *oauthClientModel
 	var diags diag.Diagnostics
-	req.Plan.Get(ctx, &plan)
-	req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if plan == nil {
+		return
+	}
+
 	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
@@ -1195,14 +1290,46 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
-	if plan.AllowAuthenticationApiInit.ValueBool() && plan.RestrictScopes.IsUnknown() {
-		plan.RestrictScopes = types.BoolValue(true)
+	if plan.RestrictScopes.IsUnknown() {
+		plan.RestrictScopes = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())
 		planModified = true
+	}
+	if plan.BypassApprovalPage.IsUnknown() {
+		plan.BypassApprovalPage = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())
+		planModified = true
+	}
+
+	// Set encrypted values as neessary
+	if internaltypes.IsDefined(plan.ClientAuth) && state != nil {
+		clientAuthAttrs := plan.ClientAuth.Attributes()
+		stateClientAuthAttrs := state.ClientAuth.Attributes()
+		if !internaltypes.IsDefined(clientAuthAttrs["secret"]) && clientAuthAttrs["encrypted_secret"].IsUnknown() {
+			clientAuthAttrs["encrypted_secret"] = types.StringNull()
+		} else if !stateClientAuthAttrs["secret"].Equal(clientAuthAttrs["secret"]) {
+			clientAuthAttrs["encrypted_secret"] = types.StringUnknown()
+		}
+		if internaltypes.IsDefined(clientAuthAttrs["secondary_secrets"]) && internaltypes.IsDefined(stateClientAuthAttrs["secondary_secrets"]) &&
+			!clientAuthAttrs["secondary_secrets"].Equal(stateClientAuthAttrs["secondary_secrets"]) {
+			secondarySecrets := clientAuthAttrs["secondary_secrets"].(types.List).Elements()
+			updatedSecondarySecrets := []attr.Value{}
+			for _, secondarySecret := range secondarySecrets {
+				secondarySecretAttrs := secondarySecret.(types.Object).Attributes()
+				secondarySecretAttrs["encrypted_secret"] = types.StringUnknown()
+				updatedSecondarySecret, diags := types.ObjectValue(secondarySecretsAttrType, secondarySecretAttrs)
+				resp.Diagnostics.Append(diags...)
+				updatedSecondarySecrets = append(updatedSecondarySecrets, updatedSecondarySecret)
+			}
+			finalSecondarySecrets, diags := types.ListValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, updatedSecondarySecrets)
+			resp.Diagnostics.Append(diags...)
+			clientAuthAttrs["secondary_secrets"] = finalSecondarySecrets
+		}
+		plan.ClientAuth, diags = types.ObjectValue(clientAuthAttrType, clientAuthAttrs)
+		resp.Diagnostics.Append(diags...)
 	}
 
 	// If the new plan doesn't match the state, invalidate any last-changed time values
 	// See https://github.com/hashicorp/terraform-plugin-framework/issues/898 for some info on why this is needed
-	req.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(req.Plan.Set(ctx, plan)...)
 	if !req.Plan.Raw.Equal(req.State.Raw) {
 		plan.ModificationDate = types.StringUnknown()
 		plan.ClientSecretChangedTime = types.StringUnknown()
@@ -1210,7 +1337,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	if planModified {
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
@@ -1221,7 +1348,7 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	// state.ClientAuth
 	var clientAuthToState types.Object
 	clientAuthFromPlan := plan.ClientAuth.Attributes()
-	var secretToState basetypes.StringValue
+	var secretToState, encryptedSecretToState basetypes.StringValue
 
 	// state.ClientAuth.Secret
 	secretVal := clientAuthFromPlan["secret"]
@@ -1231,24 +1358,69 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 		secretToState = types.StringNull()
 	}
 
-	// state.ClientAuth.Secret
-	var secondarySecretsObjToState types.Set
-	var secondarySecretsSetSlice []attr.Value
+	// state.ClientAuth.EncryptedSecret
+	encryptedSecretVal := clientAuthFromPlan["encrypted_secret"]
+	if encryptedSecretVal != nil && internaltypes.IsDefined(encryptedSecretVal) {
+		encryptedSecretToState = types.StringValue(encryptedSecretVal.(types.String).ValueString())
+	} else {
+		encryptedSecretToState = types.StringPointerValue(r.ClientAuth.EncryptedSecret)
+	}
+
+	// state.ClientAuth.SecondarySecrets
+	var secondarySecretsObjToState types.List
+	var secondarySecretsListSlice []attr.Value
 	secondarySecretsFromPlan := clientAuthFromPlan["secondary_secrets"]
-	if secondarySecretsFromPlan != nil && len(secondarySecretsFromPlan.(types.Set).Elements()) > 0 {
-		for _, secondarySecretsFromPlan := range clientAuthFromPlan["secondary_secrets"].(types.Set).Elements() {
-			secondarySecretsAttrVal, respDiags := types.ObjectValueFrom(ctx, secondarySecretsAttrType, secondarySecretsFromPlan)
+	if secondarySecretsFromPlan != nil && len(secondarySecretsFromPlan.(types.List).Elements()) > 0 {
+		// Copy secret values from plan
+		for i, secondarySecretsFromPlan := range clientAuthFromPlan["secondary_secrets"].(types.List).Elements() {
+			if i < len(r.ClientAuth.SecondarySecrets) {
+				planAttrs := secondarySecretsFromPlan.(types.Object).Attributes()
+				expiryTime := types.StringNull()
+				if r.ClientAuth.SecondarySecrets[i].ExpiryTime != nil {
+					expiryTime = types.StringValue(r.ClientAuth.SecondarySecrets[i].ExpiryTime.Format(time.RFC3339Nano))
+				}
+				// Maintain encrypted secret from plan if included
+				encryptedSecret := types.StringPointerValue(r.ClientAuth.SecondarySecrets[i].EncryptedSecret)
+				if internaltypes.IsDefined(planAttrs["encrypted_secret"]) {
+					encryptedSecret = types.StringValue(planAttrs["encrypted_secret"].(types.String).ValueString())
+				}
+				secret := types.StringNull()
+				if internaltypes.IsDefined(planAttrs["secret"]) {
+					secret = types.StringValue(planAttrs["secret"].(types.String).ValueString())
+				}
+				secondarySecretsAttrVal, respDiags := types.ObjectValue(secondarySecretsAttrType, map[string]attr.Value{
+					"secret":           secret,
+					"encrypted_secret": encryptedSecret,
+					"expiry_time":      expiryTime,
+				})
+				diags.Append(respDiags...)
+				secondarySecretsListSlice = append(secondarySecretsListSlice, secondarySecretsAttrVal)
+			}
+		}
+	} else {
+		// Read values directly from response
+		for _, secondarySecretsFromResponse := range r.ClientAuth.SecondarySecrets {
+			expiryTime := types.StringNull()
+			if secondarySecretsFromResponse.ExpiryTime != nil {
+				expiryTime = types.StringValue(secondarySecretsFromResponse.ExpiryTime.Format(time.RFC3339Nano))
+			}
+			secondarySecretsAttrVal, respDiags := types.ObjectValue(secondarySecretsAttrType, map[string]attr.Value{
+				"secret":           types.StringPointerValue(secondarySecretsFromResponse.Secret),
+				"encrypted_secret": types.StringPointerValue(secondarySecretsFromResponse.EncryptedSecret),
+				"expiry_time":      expiryTime,
+			})
 			diags.Append(respDiags...)
-			secondarySecretsSetSlice = append(secondarySecretsSetSlice, secondarySecretsAttrVal)
+			secondarySecretsListSlice = append(secondarySecretsListSlice, secondarySecretsAttrVal)
 		}
 	}
-	secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsSetSlice)
+	secondarySecretsObjToState, respDiags = types.ListValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsListSlice)
 	diags.Append(respDiags...)
 
 	// state.ClientAuth to state
 	clientAuthAttrValue := map[string]attr.Value{}
 	clientAuthAttrValue["type"] = types.StringPointerValue(r.ClientAuth.Type)
 	clientAuthAttrValue["secret"] = secretToState
+	clientAuthAttrValue["encrypted_secret"] = encryptedSecretToState
 	clientAuthAttrValue["secondary_secrets"] = secondarySecretsObjToState
 	clientAuthAttrValue["client_cert_issuer_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertIssuerDn)
 	clientAuthAttrValue["client_cert_subject_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertSubjectDn)
@@ -1428,7 +1600,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	createOauthClient := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
 	err := addOptionalOauthClientFields(ctx, createOauthClient, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Client", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Client: "+err.Error())
 		return
 	}
 
@@ -1436,7 +1608,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	apiCreateOauthClient = apiCreateOauthClient.Body(*createOauthClient)
 	oauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.CreateOauthClientExecute(apiCreateOauthClient)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Client", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Client", err, httpResp, &customId)
 		return
 	}
 
@@ -1467,7 +1639,7 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Client", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OAuth Client", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the  OAuth Client", err, httpResp, &customId)
 		}
 		return
 	}
@@ -1495,14 +1667,14 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	createUpdateRequest := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
 	err := addOptionalOauthClientFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the OAuth Client", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the OAuth Client: "+err.Error())
 		return
 	}
 
 	updateOauthClient = updateOauthClient.Body(*createUpdateRequest)
 	updateOauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.UpdateOauthClientExecute(updateOauthClient)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Client", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Client", err, httpResp, &customId)
 		return
 	}
 
@@ -1526,7 +1698,7 @@ func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 	httpResp, err := r.apiClient.OauthClientsAPI.DeleteOauthClient(config.AuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Client", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Client", err, httpResp, &customId)
 	}
 }
 

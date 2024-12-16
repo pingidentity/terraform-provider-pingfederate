@@ -192,7 +192,7 @@ Read-Only:
 - `client_cert_subject_dn` (String) Client TLS Certificate Subject DN.
 - `encrypted_secret` (String) Encrypted client secret.
 - `enforce_replay_prevention` (Boolean) Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client Authentication.
-- `secondary_secrets` (Attributes Set) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
+- `secondary_secrets` (Attributes List) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
 - `token_endpoint_auth_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT Client Authentication. All signing algorithms are allowed if value is not present
 RS256 - RSA using SHA-256
 RS384 - RSA using SHA-384

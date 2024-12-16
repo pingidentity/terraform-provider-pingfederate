@@ -36,10 +36,6 @@ resource "pingfederate_incoming_proxy_settings" "incomingProxySettingsExample" {
 - `forwarded_ip_address_header_name` (String) Globally specify the header name (for example, X-Forwarded-For) where PingFederate should attempt to retrieve the client IP address in all HTTP requests.
 - `proxy_terminates_https_conns` (Boolean) Allows you to globally specify that connections to the reverse proxy are made over HTTPS even when HTTP is used between the reverse proxy and PingFederate. Default value is `false`.
 
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
-
 ## Import
 
 Import is supported using the following syntax:

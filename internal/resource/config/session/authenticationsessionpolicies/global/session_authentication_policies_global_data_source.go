@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -71,8 +69,6 @@ func (r *sessionAuthenticationPoliciesGlobalDataSource) Schema(ctx context.Conte
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -107,7 +103,7 @@ func (r *sessionAuthenticationPoliciesGlobalDataSource) Read(ctx context.Context
 	}
 
 	// Read the response into the state
-	readSessionAuthenticationPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationPoliciesGlobal, &state, pointers.String("session_authentication_session_policies_global_id"))
+	readSessionAuthenticationPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationPoliciesGlobal, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

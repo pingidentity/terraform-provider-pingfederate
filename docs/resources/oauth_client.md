@@ -9,82 +9,122 @@ description: |-
 
 Manages an Oauth Client
 
-## Example Usage
+## Example Usage - Authorization Code with PKCE
 
 ```terraform
-resource "pingfederate_oauth_client" "oauthClient" {
-  client_id = "oauthClientId"
-  grant_types = [
-    "IMPLICIT",
-    "AUTHORIZATION_CODE",
-    "RESOURCE_OWNER_CREDENTIALS",
-    "REFRESH_TOKEN",
-    "EXTENSION",
-    "DEVICE_CODE",
-    "ACCESS_TOKEN_VALIDATION",
-    "CIBA",
-    "TOKEN_EXCHANGE"
-  ]
-  name                          = "oauthClient"
-  allow_authentication_api_init = false
-  bypass_approval_page          = true
-  ciba_delivery_mode            = "PING"
-  ciba_polling_interval         = 1
-  ciba_require_signed_requests  = true
-  ciba_user_code_supported      = false
-  ciba_notification_endpoint    = "https://example.com"
+resource "pingfederate_oauth_client" "spa_oic_client" {
+  client_id = "spa_oic_client"
+  name      = "OpenID Connect Authorization Code with PKCE"
+  enabled   = true
+
+  client_auth = {
+    type = "NONE"
+  }
+
+  require_proof_key_for_code_exchange = true
+  bypass_approval_page                = true
+
+  default_access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.jwt_example.id
+  }
+
+  grant_types = ["AUTHORIZATION_CODE", "REFRESH_TOKEN"]
+
+  redirect_uris = ["https://www.bxretail.org/oidc/callback"]
+
+  oidc_policy = {
+    policy_group = {
+      id = pingfederate_openid_connect_policy.OIDCPolicy.id
+    }
+  }
+}
+```
+
+## Example Usage - Authorization Code
+
+```terraform
+resource "pingfederate_oauth_client" "web_oic_client" {
+  client_id = "web_oic_client"
+  name      = "OpenID Connect Authorization Code"
+  enabled   = true
+
   client_auth = {
     type   = "SECRET"
-    secret = var.oauth_client_auth_secret
-    secondary_secrets = [
-      {
-        secret      = var.oauth_client_secondary_auth_secret
-        expiry_time = "2030-01-02T15:24:00Z"
-      }
-    ]
+    secret = var.web_oic_client_secret
   }
-  enabled = true
-  jwks_settings = {
-    jwks_url = "https://example.com"
+
+  bypass_approval_page = true
+
+  default_access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.jwt_example.id
   }
-  jwt_secured_authorization_response_mode_encryption_algorithm         = "RSA_OAEP"
-  jwt_secured_authorization_response_mode_content_encryption_algorithm = "AES_128_CBC_HMAC_SHA_256"
-  logo_url                                                             = "https://example.com"
+
+  grant_types = ["AUTHORIZATION_CODE", "REFRESH_TOKEN"]
+
+  redirect_uris = ["https://www.bxretail.org/oidc/callback"]
+
   oidc_policy = {
-    id_token_signing_algorithm                  = "HS256"
-    grant_access_session_revocation_api         = false
-    grant_access_session_session_management_api = true
-    ping_access_logout_capable                  = false
-    pairwise_identifier_user_type               = true
-    sector_identifier_uri                       = "https://example.com"
-    id_token_encryption_algorithm               = "A192GCMKW"
-    id_token_content_encryption_algorithm       = "AES_128_CBC_HMAC_SHA_256"
+    policy_group = {
+      id = pingfederate_openid_connect_policy.OIDCPolicy.id
+    }
   }
-  redirect_uris = [
-    "https://example.com"
-  ]
-  require_jwt_secured_authorization_response_mode = false
-  require_pushed_authorization_requests           = false
-  require_proof_key_for_code_exchange             = false
-  require_signed_requests                         = true
-  restrict_scopes                                 = true
-  restricted_scopes = [
-    "openid"
-  ]
-  restricted_response_types = [
-    "code",
-    "code id_token",
-    "code id_token token",
-    "code token",
-    "id_token",
-    "id_token token",
-    "token"
-  ]
-  restrict_to_default_access_token_manager         = false
-  token_introspection_signing_algorithm            = "RS256"
-  token_introspection_encryption_algorithm         = "DIR"
-  token_introspection_content_encryption_algorithm = "AES_128_CBC_HMAC_SHA_256"
-  validate_using_all_eligible_atms                 = false
+}
+```
+
+## Example Usage - Client Credentials
+
+```terraform
+resource "pingfederate_oauth_client" "cc_secret_client" {
+  client_id = "cc_secret_client"
+  name      = "Client Credentials (Secret)"
+  enabled   = true
+
+  client_auth = {
+    type   = "SECRET"
+    secret = var.client_credentials_client_secret
+  }
+
+  grant_types = ["CLIENT_CREDENTIALS"]
+}
+```
+
+## Example Usage - Device Flow
+
+```terraform
+resource "pingfederate_oauth_client" "df_client" {
+  client_id = "df_client"
+  name      = "Device Authorization"
+  enabled   = true
+
+  client_auth = {
+    type   = "SECRET"
+    secret = var.df_client_secret
+  }
+
+  default_access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.jwt_device_example.id
+  }
+
+  grant_types = ["DEVICE_CODE"]
+}
+```
+
+## Example Usage - Resource Server
+
+```terraform
+resource "pingfederate_oauth_client" "rs_client" {
+  client_id = "rs_client"
+  name      = "Resource Server Client"
+  enabled   = true
+
+  client_auth = {
+    type   = "SECRET"
+    secret = var.rs_client_secret
+  }
+
+  grant_types = ["ACCESS_TOKEN_VALIDATION"]
+
+  validate_using_all_eligible_atms = true
 }
 ```
 
@@ -93,7 +133,7 @@ resource "pingfederate_oauth_client" "oauthClient" {
 
 ### Required
 
-- `client_id` (String) A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes.
+- `client_id` (String) A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. This field is immutable and will trigger a replacement plan if changed.
 - `grant_types` (Set of String) The grant types allowed for this client. The `EXTENSION` grant type applies to SAML/JWT assertion grants. Supported values are `IMPLICIT`, `AUTHORIZATION_CODE`, `RESOURCE_OWNER_CREDENTIALS`, `CLIENT_CREDENTIALS`, `REFRESH_TOKEN`, `EXTENSION`, `DEVICE_CODE`, `ACCESS_TOKEN_VALIDATION`, `CIBA`, and `TOKEN_EXCHANGE`.
 - `name` (String) A descriptive name for the client instance. This name appears when the user is prompted for authorization.
 
@@ -102,7 +142,7 @@ resource "pingfederate_oauth_client" "oauthClient" {
 - `allow_authentication_api_init` (Boolean) Set to `true` to allow this client to initiate the authentication API redirectless flow. Defaults to `false`.
 - `authorization_detail_types` (Set of String) The authorization detail types available for this client.
 - `bypass_activation_code_confirmation_override` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if `verification_url_complete` is used by the end user to authorize a device. This overrides the `bypass_use_code_confirmation` value present in Authorization Server Settings.
-- `bypass_approval_page` (Boolean) Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection.
+- `bypass_approval_page` (Boolean) Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.
 - `ciba_delivery_mode` (String) The token delivery mode for the client. The default value is `POLL`. Supported values are `POLL` and `PING`.
 - `ciba_notification_endpoint` (String) The endpoint the OP will call after a successful or failed end-user authentication.
 - `ciba_polling_interval` (Number) The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is `0` seconds. Must be between `0` and `3600` seconds.
@@ -205,7 +245,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 - `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for this client. Defaults to `false`.
 - `require_pushed_authorization_requests` (Boolean) Determines whether pushed authorization requests are required when initiating an authorization request. The default is `false`.
 - `require_signed_requests` (Boolean) Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is `false`.
-- `restrict_scopes` (Boolean) Restricts this client's access to specific scopes.
+- `restrict_scopes` (Boolean) Restricts this client's access to specific scopes. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.
 - `restrict_to_default_access_token_manager` (Boolean) Determines whether the client is restricted to using only its default access token manager. The default is `false`.
 - `restricted_response_types` (Set of String) The response types allowed for this client. If omitted all response types are available to the client.
 - `restricted_scopes` (Set of String) The scopes available for this client.
@@ -263,9 +303,10 @@ Optional:
 
 - `client_cert_issuer_dn` (String) Client TLS Certificate Issuer DN.
 - `client_cert_subject_dn` (String) Client TLS Certificate Subject DN.
+- `encrypted_secret` (String) Encrypted client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.
 - `enforce_replay_prevention` (Boolean) Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client and Client Secret JWT Authentication.
-- `secondary_secrets` (Attributes Set) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
-- `secret` (String, Sensitive) Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
+- `secondary_secrets` (Attributes List) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
+- `secret` (String, Sensitive) Client secret for Basic Authentication. Only one of `secret` or `encrypted_secret` can be set.
 - `token_endpoint_auth_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present
 `RS256` - RSA using SHA-256
 `RS384` - RSA using SHA-384
@@ -280,7 +321,7 @@ Optional:
 `HS256` - HMAC using SHA-256
 `HS384` - HMAC using SHA-384
 `HS512` - HMAC using SHA-512.
-- `type` (String) Client authentication type. The required field for type `SECRET` is secret.	The required fields for type `CERTIFICATE` are client_cert_issuer_dn and client_cert_subject_dn. The required field for type `PRIVATE_KEY_JWT` is: either jwks or jwks_url.
+- `type` (String) Client authentication type. The required field for type `SECRET` is `secret`.	The required fields for type `CERTIFICATE` are `client_cert_issuer_dn` and `client_cert_subject_dn`. The required field for type `PRIVATE_KEY_JWT` is: either `jwks` or `jwks_url`.
 
 <a id="nestedatt--client_auth--secondary_secrets"></a>
 ### Nested Schema for `client_auth.secondary_secrets`
@@ -288,7 +329,11 @@ Optional:
 Required:
 
 - `expiry_time` (String) The expiry time of the secondary secret.
-- `secret` (String, Sensitive) Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
+
+Optional:
+
+- `encrypted_secret` (String) Encrypted secondary client secret for Basic Authentication. Either this attribute or `secret` must be provided.
+- `secret` (String, Sensitive) Secondary client secret for Basic Authentication. Either this attribute or `encrypted_secret` must be provided.
 
 
 

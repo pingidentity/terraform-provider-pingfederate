@@ -70,6 +70,8 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.ConnectionTimeout = pointers.Int64(600)
 	updatedLdapDataStore.BinaryAttributes = []string{"updatedBinaryAttribute1", "updatedBinaryAttribute2"}
 	updatedLdapDataStore.DnsTtl = pointers.Int64(3000)
+	updatedLdapDataStore.LdapDnsSrvPrefix = pointers.String("_ldapcustom._tcp.")
+	updatedLdapDataStore.LdapsDnsSrvPrefix = pointers.String("_ldapscustom._tcp.")
 	return updatedLdapDataStore
 }
 
@@ -111,12 +113,13 @@ func TestAccLdapDataStore(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccLdapDataStore(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_data_store." + resourceName,
-				ImportStateId:           ldapDataStoreId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ldap_data_store.user_dn", "ldap_data_store.password"},
+				Config:            testAccLdapDataStore(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_data_store." + resourceName,
+				ImportStateId:     ldapDataStoreId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// password can't be imported, and encrypted_password will change each time it is read
+				ImportStateVerifyIgnore: []string{"ldap_data_store.password", "ldap_data_store.encrypted_password"},
 			},
 			{
 				// Back to the initial minimal model

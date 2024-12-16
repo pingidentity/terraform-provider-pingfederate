@@ -95,10 +95,11 @@ func TestAccRedirectValidation(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccRedirectValidation(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_redirect_validation." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccRedirectValidation(resourceName, updatedResourceModel),
+				ResourceName:                         "pingfederate_redirect_validation." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "redirect_validation_local_settings.enable_target_resource_validation_for_sso",
 			},
 			{
 				// Back to minimal model

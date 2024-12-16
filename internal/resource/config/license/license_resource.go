@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -49,7 +49,6 @@ type licenseResource struct {
 }
 
 type licenseResourceModel struct {
-	Id       types.String `tfsdk:"id"`
 	FileData types.String `tfsdk:"file_data"`
 	// Computed attributes
 	Name                types.String `tfsdk:"name"`
@@ -78,7 +77,8 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 		Description: "Manages a license summary object.",
 		Attributes: map[string]schema.Attribute{
 			"file_data": schema.StringAttribute{
-				Required: true,
+				Description: "The license file data. This field is immutable and will trigger a replacement plan if changed.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -192,7 +192,6 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -212,9 +211,8 @@ func (r *licenseResource) Configure(_ context.Context, req resource.ConfigureReq
 
 }
 
-func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, planFileData types.String, existingId *string) diag.Diagnostics {
+func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, planFileData types.String) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
 	state.FileData = types.StringValue(planFileData.ValueString())
 
 	state.Name = types.StringPointerValue(r.Name)
@@ -262,7 +260,7 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// Read the response into the state
 	var state licenseResourceModel
-	diags = readLicenseResponse(ctx, licenseResponse, &state, plan.FileData, nil)
+	diags = readLicenseResponse(ctx, licenseResponse, &state, plan.FileData)
 	resp.Diagnostics.Append(diags...)
 
 	diags = resp.State.Set(ctx, state)
@@ -289,12 +287,7 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readLicenseResponse(ctx, apiReadLicense, &state, state.FileData, id)
+	diags = readLicenseResponse(ctx, apiReadLicense, &state, state.FileData)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -322,13 +315,8 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Read the response
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	var state licenseResourceModel
-	diags = readLicenseResponse(ctx, updateLicenseResponse, &state, plan.FileData, id)
+	diags = readLicenseResponse(ctx, updateLicenseResponse, &state, plan.FileData)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -339,5 +327,5 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 // This config object is edit-only, so Terraform can't delete it.
 func (r *licenseResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_license", &resp.Diagnostics)
 }

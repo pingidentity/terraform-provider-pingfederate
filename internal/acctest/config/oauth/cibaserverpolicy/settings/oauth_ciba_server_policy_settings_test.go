@@ -37,10 +37,11 @@ func TestAccOauthCibaServerPolicySettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccOauthCibaServerPolicySettings(resourceName, initialResourceModel),
-				ResourceName:      "pingfederate_oauth_ciba_server_policy_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                               testAccOauthCibaServerPolicySettings(resourceName, initialResourceModel),
+				ResourceName:                         "pingfederate_oauth_ciba_server_policy_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "default_request_policy_ref.id",
 			},
 		},
 	})

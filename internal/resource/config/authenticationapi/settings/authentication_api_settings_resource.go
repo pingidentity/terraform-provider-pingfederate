@@ -3,14 +3,14 @@ package authenticationapisettings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -70,7 +70,6 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -136,7 +135,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the authentication API settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the authentication API settings: "+err.Error())
 		return
 	}
 
@@ -149,7 +148,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 
 	// Read the response
 	var state authenticationApiSettingsModel
-	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, nil)
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -177,12 +176,7 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, id)
+	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -203,7 +197,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the authentication API settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the authentication API settings: "+err.Error())
 		return
 	}
 
@@ -216,12 +210,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 
 	// Read the response
 	var state authenticationApiSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, id)
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -245,5 +234,8 @@ func (r *authenticationApiSettingsResource) Delete(ctx context.Context, req reso
 }
 
 func (r *authenticationApiSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState authenticationApiSettingsModel
+	emptyState.DefaultApplicationRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

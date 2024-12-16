@@ -3,12 +3,10 @@ package authenticationpoliciessettings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -50,8 +48,6 @@ func (r *authenticationPoliciesSettingsResource) Schema(ctx context.Context, req
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -99,7 +95,7 @@ func (r *authenticationPoliciesSettingsResource) Create(ctx context.Context, req
 	// Read the response into the state
 	var state authenticationPoliciesSettingsModel
 
-	readAuthenticationPoliciesSettingsResponse(authenticationPoliciesSettingsResponse, &state, nil)
+	readAuthenticationPoliciesSettingsResponse(authenticationPoliciesSettingsResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -125,12 +121,7 @@ func (r *authenticationPoliciesSettingsResource) Read(ctx context.Context, req r
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readAuthenticationPoliciesSettingsResponse(apiReadAuthenticationPoliciesSettings, &state, id)
+	readAuthenticationPoliciesSettingsResponse(apiReadAuthenticationPoliciesSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -161,13 +152,8 @@ func (r *authenticationPoliciesSettingsResource) Update(ctx context.Context, req
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// Read the response
-	readAuthenticationPoliciesSettingsResponse(updateAuthenticationPoliciesSettingsResponse, &state, id)
+	readAuthenticationPoliciesSettingsResponse(updateAuthenticationPoliciesSettingsResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -179,6 +165,7 @@ func (r *authenticationPoliciesSettingsResource) Delete(ctx context.Context, req
 }
 
 func (r *authenticationPoliciesSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState authenticationPoliciesSettingsModel
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

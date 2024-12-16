@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -15,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -47,8 +46,7 @@ type extendedPropertiesResource struct {
 }
 
 type extendedPropertiesResourceModel struct {
-	Id    types.String `tfsdk:"id"`
-	Items types.Set    `tfsdk:"items"`
+	Items types.Set `tfsdk:"items"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -83,8 +81,6 @@ func (r *extendedPropertiesResource) Schema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -120,13 +116,7 @@ func (r *extendedPropertiesResource) Configure(_ context.Context, req resource.C
 
 }
 
-func readExtendedPropertiesResponse(ctx context.Context, r *client.ExtendedProperties, state *extendedPropertiesResourceModel, existingId *string) diag.Diagnostics {
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
-
+func readExtendedPropertiesResponse(ctx context.Context, r *client.ExtendedProperties, state *extendedPropertiesResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	state.Items, diags = types.SetValueFrom(ctx, extendedPropertyAttrType, r.GetItems())
@@ -147,7 +137,7 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 	createExtendedProperties := client.NewExtendedProperties()
 	err := addExtendedPropertiesFields(ctx, createExtendedProperties, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for extended properties", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
 		return
 	}
 
@@ -162,7 +152,7 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 	// Read the response into the state
 	var state extendedPropertiesResourceModel
 
-	diags = readExtendedPropertiesResponse(ctx, extendedPropertiesResponse, &state, nil)
+	diags = readExtendedPropertiesResponse(ctx, extendedPropertiesResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -188,13 +178,8 @@ func (r *extendedPropertiesResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// Read the response into the state
-	diags = readExtendedPropertiesResponse(ctx, apiReadExtendedProperties, &state, id)
+	diags = readExtendedPropertiesResponse(ctx, apiReadExtendedProperties, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -216,7 +201,7 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 	createUpdateRequest := client.NewExtendedProperties()
 	err := addExtendedPropertiesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for extended properties", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
 		return
 	}
 
@@ -227,14 +212,9 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// Read the response
 	var state extendedPropertiesResourceModel
-	diags = readExtendedPropertiesResponse(ctx, updateExtendedPropertiesResponse, &state, id)
+	diags = readExtendedPropertiesResponse(ctx, updateExtendedPropertiesResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -247,6 +227,8 @@ func (r *extendedPropertiesResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *extendedPropertiesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState extendedPropertiesResourceModel
+	emptyState.Items = types.SetNull(extendedPropertyAttrType)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

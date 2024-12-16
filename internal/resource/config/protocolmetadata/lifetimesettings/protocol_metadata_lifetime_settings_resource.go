@@ -3,13 +3,12 @@ package protocolmetadatalifetimesettings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -51,8 +50,6 @@ func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, r
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -103,7 +100,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Protocol Metadata Lifetime Settings: "+err.Error())
 		return
 	}
 
@@ -116,7 +113,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 
 	// Read the response into the state
 	var state protocolMetadataLifetimeSettingsModel
-	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, nil)
+	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -142,12 +139,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state, id)
+	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -168,7 +160,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Protocol Metadata Lifetime Settings: "+err.Error())
 		return
 	}
 
@@ -181,12 +173,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 
 	// Read the response into the state
 	var state protocolMetadataLifetimeSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, id)
+	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -207,6 +194,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Delete(ctx context.Context, r
 }
 
 func (r *protocolMetadataLifetimeSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState protocolMetadataLifetimeSettingsModel
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

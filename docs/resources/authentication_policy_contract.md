@@ -31,7 +31,7 @@ resource "pingfederate_authentication_policy_contract" "example" {
 
 ### Optional
 
-- `contract_id` (String) The persistent, unique ID for the authentication policy contract. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
+- `contract_id` (String) The persistent, unique ID for the authentication policy contract. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 - `extended_attributes` (Attributes Set) A list of additional attributes as needed. (see [below for nested schema](#nestedatt--extended_attributes))
 
 ### Read-Only

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -53,14 +54,16 @@ var (
 	}
 
 	secondarySecretsAttrType = map[string]attr.Type{
-		"secret":      types.StringType,
-		"expiry_time": types.StringType,
+		"secret":           types.StringType,
+		"encrypted_secret": types.StringType,
+		"expiry_time":      types.StringType,
 	}
 
 	clientAuthAttrType = map[string]attr.Type{
 		"type":                                  types.StringType,
 		"secret":                                types.StringType,
-		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsAttrType}},
+		"encrypted_secret":                      types.StringType,
+		"secondary_secrets":                     types.ListType{ElemType: types.ObjectType{AttrTypes: secondarySecretsAttrType}},
 		"client_cert_issuer_dn":                 types.StringType,
 		"client_cert_subject_dn":                types.StringType,
 		"enforce_replay_prevention":             types.BoolType,
@@ -70,7 +73,8 @@ var (
 	clientAuthDefaultAttrValue = map[string]attr.Value{
 		"type":                                  types.StringValue("NONE"),
 		"secret":                                types.StringNull(),
-		"secondary_secrets":                     secondarySecretsEmptySet,
+		"encrypted_secret":                      types.StringNull(),
+		"secondary_secrets":                     secondarySecretsEmptyList,
 		"client_cert_issuer_dn":                 types.StringNull(),
 		"client_cert_subject_dn":                types.StringNull(),
 		"enforce_replay_prevention":             types.BoolNull(),
@@ -189,7 +193,7 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		// This attribute is returned as empty string when set to its default, and it only exists on PF 12.1+
 		compare, err := version.Compare(productVersion, version.PingFederate1210)
 		if err != nil {
-			diags.AddError("Failed to compare PingFederate versions", err.Error())
+			diags.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		}
 		pfVersionAtLeast121 := compare >= 0
 		if r.GetRefreshTokenRollingIntervalTimeUnit() == "" && pfVersionAtLeast121 {

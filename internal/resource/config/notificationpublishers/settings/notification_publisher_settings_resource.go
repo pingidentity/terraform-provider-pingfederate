@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -34,7 +33,6 @@ type notificationPublisherSettingsResource struct {
 }
 
 type notificationPublisherSettingsResourceModel struct {
-	Id                              types.String `tfsdk:"id"`
 	DefaultNotificationPublisherRef types.Object `tfsdk:"default_notification_publisher_ref"`
 }
 
@@ -51,10 +49,7 @@ func (r *notificationPublisherSettingsResource) Schema(ctx context.Context, req 
 			),
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
-
 }
 
 // Metadata returns the resource type name.
@@ -73,14 +68,8 @@ func (r *notificationPublisherSettingsResource) Configure(_ context.Context, req
 
 }
 
-func readNotificationPublisherSettingsResponse(ctx context.Context, r *client.NotificationPublishersSettings, state *notificationPublisherSettingsResourceModel, existingId *string) diag.Diagnostics {
+func readNotificationPublisherSettingsResponse(ctx context.Context, r *client.NotificationPublishersSettings, state *notificationPublisherSettingsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
 	state.DefaultNotificationPublisherRef, diags = resourcelink.ToState(ctx, r.DefaultNotificationPublisherRef)
 
 	// make sure all object type building appends diags
@@ -100,7 +89,7 @@ func (r *notificationPublisherSettingsResource) Create(ctx context.Context, req 
 	createNotificationPublisherSettings := client.NewNotificationPublishersSettings()
 	createNotificationPublisherSettings.DefaultNotificationPublisherRef, err = resourcelink.ClientStruct(plan.DefaultNotificationPublisherRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add request for Notification Publishers settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add request for Notification Publishers settings: "+err.Error())
 		return
 	}
 
@@ -115,7 +104,7 @@ func (r *notificationPublisherSettingsResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state notificationPublisherSettingsResourceModel
 
-	diags = readNotificationPublisherSettingsResponse(ctx, notificationPublisherSettingsResponse, &state, nil)
+	diags = readNotificationPublisherSettingsResponse(ctx, notificationPublisherSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -142,12 +131,7 @@ func (r *notificationPublisherSettingsResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readNotificationPublisherSettingsResponse(ctx, apiReadNotificationPublisherSettings, &state, id)
+	readNotificationPublisherSettingsResponse(ctx, apiReadNotificationPublisherSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -167,7 +151,7 @@ func (r *notificationPublisherSettingsResource) Update(ctx context.Context, req 
 	createUpdateRequest := client.NewNotificationPublishersSettings()
 	createUpdateRequest.DefaultNotificationPublisherRef, err = resourcelink.ClientStruct(plan.DefaultNotificationPublisherRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Notification Publishers Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Notification Publishers Settings: "+err.Error())
 		return
 	}
 	updateNotificationPublisherSettings := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettings(config.AuthContext(ctx, r.providerConfig))
@@ -181,12 +165,7 @@ func (r *notificationPublisherSettingsResource) Update(ctx context.Context, req 
 	// Read the response
 	var state notificationPublisherSettingsResourceModel
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readNotificationPublisherSettingsResponse(ctx, updateNotificationPublisherSettingsResponse, &state, id)
+	diags = readNotificationPublisherSettingsResponse(ctx, updateNotificationPublisherSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -197,10 +176,12 @@ func (r *notificationPublisherSettingsResource) Update(ctx context.Context, req 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *notificationPublisherSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_notification_publisher_settings", &resp.Diagnostics)
 }
 
 func (r *notificationPublisherSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState notificationPublisherSettingsResourceModel
+	emptyState.DefaultNotificationPublisherRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

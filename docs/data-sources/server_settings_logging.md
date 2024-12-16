@@ -17,7 +17,6 @@ Describes the settings related to server logging.
 
 ### Read-Only
 
-- `id` (String) ID of this resource.
 - `log_categories` (Attributes Set) The log categories defined for the system and whether they are enabled. (see [below for nested schema](#nestedatt--log_categories))
 
 <a id="nestedatt--log_categories"></a>
@@ -26,6 +25,6 @@ Describes the settings related to server logging.
 Read-Only:
 
 - `description` (String) The description of the log category.
-- `enabled` (Boolean) Determines whether or not the log category is enabled. The default is false.
+- `enabled` (Boolean) Determines whether or not the log category is enabled.
 - `id` (String) The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.
 - `name` (String) The description of the log category.

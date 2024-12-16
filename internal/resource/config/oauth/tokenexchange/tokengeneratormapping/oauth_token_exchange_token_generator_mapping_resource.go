@@ -20,6 +20,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -61,7 +62,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 			"source_id": schema.StringAttribute{
-				Description: "The id of the Token Exchange Processor policy.",
+				Description: "The id of the Token Exchange Processor policy. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -71,7 +72,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 				},
 			},
 			"target_id": schema.StringAttribute{
-				Description: "The id of the Token Generator",
+				Description: "The id of the Token Generator. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -167,13 +168,13 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Con
 	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
 	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
 	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+attributeContractFulfillmentErr.Error())
 		return
 	}
 	createOauthTokenExchangeTokenGeneratorMapping := client.NewProcessorPolicyToGeneratorMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err := addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx, createOauthTokenExchangeTokenGeneratorMapping, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Token Exchange Token Generator Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth Token Exchange Token Generator Mapping: "+err.Error())
 		return
 	}
 
@@ -203,7 +204,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Read(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthTokenExchangeTokenGeneratorMapping, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthTokenExchangeTokenGeneratorMapping, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -235,14 +236,14 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Update(ctx context.Con
 	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
 	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
 	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+attributeContractFulfillmentErr.Error())
 		return
 	}
-	updateOauthTokenExchangeTokenGeneratorMapping := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.UpdateTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updateOauthTokenExchangeTokenGeneratorMapping := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.UpdateTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString())
 	createUpdateRequest := client.NewProcessorPolicyToGeneratorMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err := addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Token Exchange Token Generator Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth Token Exchange Token Generator Mapping: "+err.Error())
 		return
 	}
 
@@ -271,7 +272,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Delete(ctx context.Con
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.DeleteTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.DeleteTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Token Exchange Token Generator Mapping", err, httpResp)
 	}
@@ -279,5 +280,5 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Delete(ctx context.Con
 
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("mapping_id"), req, resp)
 }

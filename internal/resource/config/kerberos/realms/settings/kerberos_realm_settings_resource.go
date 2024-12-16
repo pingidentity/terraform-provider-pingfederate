@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 func (state *kerberosRealmSettingsResourceModel) readClientResponse(response *client.KerberosRealmsSettings, checkForIgnoredRequestAttrs bool) diag.Diagnostics {
@@ -24,7 +25,7 @@ func (state *kerberosRealmSettingsResourceModel) readClientResponse(response *cl
 	}
 	kdcRetriesInt, err := strconv.ParseInt(response.KdcRetries, 10, 64)
 	if err != nil {
-		respDiags.AddError("Failed to parse kdc_retries as int", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Failed to parse kdc_retries as int: "+err.Error())
 	}
 	state.KdcRetries = types.Int64Value(kdcRetriesInt)
 	// kdc_timeout
@@ -33,7 +34,7 @@ func (state *kerberosRealmSettingsResourceModel) readClientResponse(response *cl
 	}
 	kdcTimeoutInt, err := strconv.ParseInt(response.KdcTimeout, 10, 64)
 	if err != nil {
-		respDiags.AddError("Failed to parse kdc_timeout as int", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Failed to parse kdc_timeout as int: "+err.Error())
 	}
 	state.KdcTimeout = types.Int64Value(kdcTimeoutInt)
 	// key_set_retention_period_mins
@@ -60,8 +61,9 @@ func (state *kerberosRealmSettingsResourceModel) reportPfIgnoredAttrs(response *
 
 func addPfIgnoredError(respDiags *diag.Diagnostics, attrName, responseValue, requestValue string) {
 	if requestValue != responseValue {
-		respDiags.AddError(fmt.Sprintf("PingFederate failed to save the provided value for %s. "+
-			"Ensure you have a kerberos realm configured before modifying the kerberos realm settings.", attrName),
-			fmt.Sprintf("PingFederate returned \"%s\" after request to set %s to \"%s\"", responseValue, attrName, requestValue))
+		respDiags.AddError(providererror.InvalidResourceConfiguration,
+			fmt.Sprintf("PingFederate failed to save the provided value for %[1]s. "+
+				"Ensure you have a kerberos realm configured before modifying the pingfederate_kerberos_realm_settings.\n"+
+				"PingFederate returned \"%[2]s\" after request to set %[1]s to \"%[3]s\"", attrName, responseValue, requestValue))
 	}
 }

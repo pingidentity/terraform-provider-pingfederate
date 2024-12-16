@@ -16,9 +16,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -26,6 +28,8 @@ var (
 	_ resource.Resource                = &secretManagerResource{}
 	_ resource.ResourceWithConfigure   = &secretManagerResource{}
 	_ resource.ResourceWithImportState = &secretManagerResource{}
+
+	customId = "manager_id"
 )
 
 func SecretManagerResource() resource.Resource {
@@ -53,6 +57,7 @@ func (r *secretManagerResource) Configure(_ context.Context, req resource.Config
 
 type secretManagerResourceModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
+	Id                  types.String `tfsdk:"id"`
 	ManagerId           types.String `tfsdk:"manager_id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
@@ -66,7 +71,7 @@ func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaR
 			"configuration": pluginconfiguration.ToSchema(),
 			"manager_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
+				Description: "The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.<br>Note: Ignored when specifying a connection's adapter override.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -96,17 +101,18 @@ func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaR
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
-						Description: "The ID of the resource.",
+						Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},
 				Required:    true,
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.Note: Ignored when specifying a connection's adapter override.",
+				Description: "Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed. Note: Ignored when specifying a connection's adapter override.",
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *secretManagerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -123,7 +129,7 @@ func (r *secretManagerResource) ModifyPlan(ctx context.Context, req resource.Mod
 	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (model *secretManagerResourceModel) buildClientStruct() (*client.SecretManager, diag.Diagnostics) {
@@ -133,7 +139,7 @@ func (model *secretManagerResourceModel) buildClientStruct() (*client.SecretMana
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
+		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
 	} else {
 		result.Configuration = *configurationValue
 	}
@@ -161,6 +167,8 @@ func (model *secretManagerResourceModel) buildClientStruct() (*client.SecretMana
 
 func (state *secretManagerResourceModel) readClientResponse(response *client.SecretManager, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// configuration
 	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
@@ -215,7 +223,7 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.SecretManagersAPI.CreateSecretManagerExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the secretManager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the secretManager", err, httpResp, &customId)
 		return
 	}
 
@@ -246,7 +254,7 @@ func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadReque
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Secret Manager", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the secretManager", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the secretManager", err, httpResp, &customId)
 		}
 		return
 	}
@@ -275,7 +283,7 @@ func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateR
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.SecretManagersAPI.UpdateSecretManagerExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the secretManager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the secretManager", err, httpResp, &customId)
 		return
 	}
 
@@ -299,7 +307,7 @@ func (r *secretManagerResource) Delete(ctx context.Context, req resource.DeleteR
 	// Delete API call logic
 	httpResp, err := r.apiClient.SecretManagersAPI.DeleteSecretManager(config.AuthContext(ctx, r.providerConfig), data.ManagerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the secretManager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the secretManager", err, httpResp, &customId)
 	}
 }
 

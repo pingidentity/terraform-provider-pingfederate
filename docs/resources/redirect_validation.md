@@ -24,8 +24,8 @@ resource "pingfederate_redirect_validation" "redirectValidationExample" {
         target_resource_slo      = true,
         in_error_resource        = true,
         idp_discovery            = true,
-        valid_domain             = "example.com",
-        valid_path               = "/path",
+        valid_domain             = "bxretail.org",
+        valid_path               = "/callback",
         allow_query_and_fragment = true,
         require_https            = true
       },
@@ -34,11 +34,21 @@ resource "pingfederate_redirect_validation" "redirectValidationExample" {
         target_resource_slo      = true,
         in_error_resource        = true,
         idp_discovery            = true,
-        valid_domain             = "example2.com",
-        valid_path               = "/path2",
+        valid_domain             = "bxretail.org",
+        valid_path               = "/redirect",
         allow_query_and_fragment = false,
         require_https            = true
-      }
+      },
+    ]
+    uri_allow_list = [
+      {
+        allow_query_and_fragment = true
+        idp_discovery            = false
+        in_error_resource        = true
+        target_resource_slo      = true
+        target_resource_sso      = true
+        valid_uri                = "https://auth.bxretail.org/*/callback"
+      },
     ]
   }
   redirect_validation_partner_settings = {
@@ -54,10 +64,6 @@ resource "pingfederate_redirect_validation" "redirectValidationExample" {
 
 - `redirect_validation_local_settings` (Attributes) Settings for local redirect validation. (see [below for nested schema](#nestedatt--redirect_validation_local_settings))
 - `redirect_validation_partner_settings` (Attributes) Settings for partner redirect validation. (see [below for nested schema](#nestedatt--redirect_validation_partner_settings))
-
-### Read-Only
-
-- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--redirect_validation_local_settings"></a>
 ### Nested Schema for `redirect_validation_local_settings`

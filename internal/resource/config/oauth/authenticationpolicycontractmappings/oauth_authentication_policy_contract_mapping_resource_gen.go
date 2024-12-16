@@ -16,8 +16,10 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -54,6 +56,7 @@ type oauthAuthenticationPolicyContractMappingResourceModel struct {
 	AttributeContractFulfillment    types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	AttributeSources                types.Set    `tfsdk:"attribute_sources"`
 	AuthenticationPolicyContractRef types.Object `tfsdk:"authentication_policy_contract_ref"`
+	Id                              types.String `tfsdk:"id"`
 	IssuanceCriteria                types.Object `tfsdk:"issuance_criteria"`
 	MappingId                       types.String `tfsdk:"mapping_id"`
 }
@@ -62,20 +65,20 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Schema(ctx context.Co
 	resp.Schema = schema.Schema{
 		Description: "Resource to create and manage authentication policy contract to persistent grant mappings.",
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_auth_server_settings` resource), these must also be configured as map keys."),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_server_settings` resource), these must also be configured as map keys."),
 			"attribute_sources":              attributesources.ToSchema(0, false),
 			"authentication_policy_contract_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
-						Description: "The ID of the resource.",
+						Description: "The ID of the resource. This field is immutable and will trigger a replacement plan if changed.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},
 				Required:    true,
-				Description: "Reference to the associated authentication policy contract. The reference cannot be changed after the mapping has been created.",
+				Description: "Reference to the associated authentication policy contract. This field is immutable and will trigger a replacement plan if changed.",
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
 			"mapping_id": schema.StringAttribute{
@@ -88,6 +91,7 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Schema(ctx context.Co
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthAuthenticationPolicyContractMappingResourceModel) buildClientStruct() (*client.ApcToPersistentGrantMapping, error) {
@@ -124,6 +128,8 @@ func (model *oauthAuthenticationPolicyContractMappingResourceModel) buildClientS
 
 func (state *oauthAuthenticationPolicyContractMappingResourceModel) readClientResponse(response *client.ApcToPersistentGrantMapping) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// attribute_contract_fulfillment
 	attributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.AttributeContractFulfillment)
 	respDiags.Append(diags...)
@@ -167,7 +173,7 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Create(ctx context.Co
 	// Create API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the oauthAuthenticationPolicyContractMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the oauthAuthenticationPolicyContractMapping: "+err.Error())
 		return
 	}
 	apiCreateRequest := r.apiClient.OauthAuthenticationPolicyContractMappingsAPI.CreateApcMapping(config.AuthContext(ctx, r.providerConfig))
@@ -227,7 +233,7 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Update(ctx context.Co
 	// Update API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the oauthAuthenticationPolicyContractMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the oauthAuthenticationPolicyContractMapping: "+err.Error())
 		return
 	}
 	apiUpdateRequest := r.apiClient.OauthAuthenticationPolicyContractMappingsAPI.UpdateApcMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString())

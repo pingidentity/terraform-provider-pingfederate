@@ -29,6 +29,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/connectioncert"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -37,7 +38,9 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -45,6 +48,8 @@ var (
 	_ resource.Resource                = &idpSpConnectionResource{}
 	_ resource.ResourceWithConfigure   = &idpSpConnectionResource{}
 	_ resource.ResourceWithImportState = &idpSpConnectionResource{}
+
+	customId = "connection_id"
 )
 
 var (
@@ -55,74 +60,50 @@ var (
 		"metadata_url_ref":            resourceLinkObjectType,
 	}
 
-	certsListType = types.SetType{
-		ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"cert_view": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"id":                        types.StringType,
-				"serial_number":             types.StringType,
-				"subject_dn":                types.StringType,
-				"subject_alternative_names": types.SetType{ElemType: types.StringType},
-				"issuer_dn":                 types.StringType,
-				"valid_from":                types.StringType,
-				"expires":                   types.StringType,
-				"key_algorithm":             types.StringType,
-				"key_size":                  types.Int64Type,
-				"signature_algorithm":       types.StringType,
-				"version":                   types.Int64Type,
-				"sha1fingerprint":           types.StringType,
-				"sha256fingerprint":         types.StringType,
-				"status":                    types.StringType,
-				"crypto_provider":           types.StringType,
-			}},
-			"x509file": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"id":              types.StringType,
-				"file_data":       types.StringType,
-				"crypto_provider": types.StringType,
-			}},
-			"active_verification_cert":    types.BoolType,
-			"primary_verification_cert":   types.BoolType,
-			"secondary_verification_cert": types.BoolType,
-			"encryption_cert":             types.BoolType,
-		}},
+	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
+		"password":           types.StringType,
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
 	}
-	signingSettingsAttrTypes = map[string]attr.Type{
-		"signing_key_pair_ref":              resourceLinkObjectType,
-		"alternative_signing_key_pair_refs": types.SetType{ElemType: resourceLinkObjectType},
+	credentialsInboundBackChannelAuthAttrTypes = map[string]attr.Type{
+		"certs":                   types.ListType{ElemType: connectioncert.ObjType()},
+		"digital_signature":       types.BoolType,
+		"http_basic_credentials":  types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes},
+		"require_ssl":             types.BoolType,
+		"verification_issuer_dn":  types.StringType,
+		"verification_subject_dn": types.StringType,
+	}
+	credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
+		"password":           types.StringType,
+		"encrypted_password": types.StringType,
+		"username":           types.StringType,
+	}
+
+	credentialsOutboundBackChannelAuthAttrTypes = map[string]attr.Type{
+		"digital_signature":      types.BoolType,
+		"http_basic_credentials": types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes},
+		"ssl_auth_key_pair_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"validate_partner_cert":  types.BoolType,
+	}
+
+	credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType = types.ObjectType{AttrTypes: resourcelink.AttrType()}
+
+	credentialsSigningSettingsAttrTypes = map[string]attr.Type{
 		"algorithm":                         types.StringType,
+		"alternative_signing_key_pair_refs": types.SetType{ElemType: credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType},
 		"include_cert_in_signature":         types.BoolType,
 		"include_raw_key_in_signature":      types.BoolType,
+		"signing_key_pair_ref":              types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 	credentialsAttrTypes = map[string]attr.Type{
-		"block_encryption_algorithm": types.StringType,
-		"certs":                      certsListType,
-		"decryption_key_pair_ref":    resourceLinkObjectType,
-		"inbound_back_channel_auth": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"type": types.StringType,
-			"http_basic_credentials": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"username":           types.StringType,
-				"password":           types.StringType,
-				"encrypted_password": types.StringType,
-			}},
-			"digital_signature":       types.BoolType,
-			"verification_subject_dn": types.StringType,
-			"verification_issuer_dn":  types.StringType,
-			"certs":                   certsListType,
-			"require_ssl":             types.BoolType,
-		}},
-		"key_transport_algorithm": types.StringType,
-		"outbound_back_channel_auth": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"type": types.StringType,
-			"http_basic_credentials": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"username":           types.StringType,
-				"password":           types.StringType,
-				"encrypted_password": types.StringType,
-			}},
-			"digital_signature":     types.BoolType,
-			"ssl_auth_key_pair_ref": resourceLinkObjectType,
-			"validate_partner_cert": types.BoolType,
-		}},
-		"secondary_decryption_key_pair_ref": resourceLinkObjectType,
-		"signing_settings":                  types.ObjectType{AttrTypes: signingSettingsAttrTypes},
+		"block_encryption_algorithm":        types.StringType,
+		"certs":                             types.ListType{ElemType: connectioncert.ObjType()},
+		"decryption_key_pair_ref":           types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"inbound_back_channel_auth":         types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthAttrTypes},
+		"key_transport_algorithm":           types.StringType,
+		"outbound_back_channel_auth":        types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthAttrTypes},
+		"secondary_decryption_key_pair_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"signing_settings":                  types.ObjectType{AttrTypes: credentialsSigningSettingsAttrTypes},
 		"verification_issuer_dn":            types.StringType,
 		"verification_subject_dn":           types.StringType,
 	}
@@ -322,8 +303,9 @@ var (
 		},
 	}
 	targetSettingsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"name":  types.StringType,
-		"value": types.StringType,
+		"name":            types.StringType,
+		"value":           types.StringType,
+		"encrypted_value": types.StringType,
 	}}
 
 	channelsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
@@ -369,180 +351,6 @@ type idpSpConnectionResource struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	certsSchema := schema.SetNestedAttribute{
-		NestedObject: schema.NestedAttributeObject{
-			Attributes: map[string]schema.Attribute{
-				"active_verification_cert": schema.BoolAttribute{
-					Optional:    true,
-					Description: "Indicates whether this is an active signature verification certificate.",
-				},
-				"cert_view": schema.SingleNestedAttribute{
-					Attributes: map[string]schema.Attribute{
-						"crypto_provider": schema.StringAttribute{
-							Computed:    true,
-							Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.",
-							Validators: []validator.String{
-								stringvalidator.OneOf(
-									"LOCAL",
-									"HSM",
-								),
-							},
-						},
-						"expires": schema.StringAttribute{
-							Computed:    true,
-							Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
-						},
-						"id": schema.StringAttribute{
-							Computed:    true,
-							Description: "The persistent, unique ID for the certificate.",
-						},
-						"issuer_dn": schema.StringAttribute{
-							Computed:    true,
-							Description: "The issuer's distinguished name.",
-						},
-						"key_algorithm": schema.StringAttribute{
-							Computed:    true,
-							Description: "The public key algorithm.",
-						},
-						"key_size": schema.Int64Attribute{
-							Computed:    true,
-							Description: "The public key size.",
-						},
-						"serial_number": schema.StringAttribute{
-							Computed:    true,
-							Description: "The serial number assigned by the CA.",
-						},
-						"sha1fingerprint": schema.StringAttribute{
-							Computed:    true,
-							Description: "SHA-1 fingerprint in Hex encoding.",
-						},
-						"sha256fingerprint": schema.StringAttribute{
-							Computed:    true,
-							Description: "SHA-256 fingerprint in Hex encoding.",
-						},
-						"signature_algorithm": schema.StringAttribute{
-							Computed:    true,
-							Description: "The signature algorithm.",
-						},
-						"status": schema.StringAttribute{
-							Computed:    true,
-							Description: "Status of the item. Options are `VALID`, `EXPIRED`, `NOT_YET_VALID`, `REVOKED`.",
-							Validators: []validator.String{
-								stringvalidator.OneOf(
-									"VALID",
-									"EXPIRED",
-									"NOT_YET_VALID",
-									"REVOKED",
-								),
-							},
-						},
-						"subject_alternative_names": schema.SetAttribute{
-							ElementType: types.StringType,
-							Computed:    true,
-							Description: "The subject alternative names (SAN).",
-						},
-						"subject_dn": schema.StringAttribute{
-							Computed:    true,
-							Description: "The subject's distinguished name.",
-						},
-						"valid_from": schema.StringAttribute{
-							Computed:    true,
-							Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
-						},
-						"version": schema.Int64Attribute{
-							Computed:    true,
-							Description: "The X.509 version to which the item conforms.",
-						},
-					},
-					Computed:    true,
-					Description: "Certificate details.",
-				},
-				"encryption_cert": schema.BoolAttribute{
-					Optional:    true,
-					Description: "Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.",
-				},
-				"primary_verification_cert": schema.BoolAttribute{
-					Optional:    true,
-					Description: "Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.",
-				},
-				"secondary_verification_cert": schema.BoolAttribute{
-					Optional:    true,
-					Description: "Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.",
-				},
-				"x509file": schema.SingleNestedAttribute{
-					Attributes: map[string]schema.Attribute{
-						"crypto_provider": schema.StringAttribute{
-							Optional:    true,
-							Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.",
-							Validators: []validator.String{
-								stringvalidator.OneOf(
-									"LOCAL",
-									"HSM",
-								),
-							},
-						},
-						"file_data": schema.StringAttribute{
-							Required:    true,
-							Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
-							Validators: []validator.String{
-								stringvalidator.LengthAtLeast(1),
-							},
-						},
-						"id": schema.StringAttribute{
-							Optional:    true,
-							Computed:    true,
-							Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
-							Validators: []validator.String{
-								stringvalidator.LengthAtLeast(1),
-								configvalidators.LowercaseId(),
-							},
-						},
-					},
-					Required:    true,
-					Description: "Encoded certificate data.",
-				},
-			},
-		},
-		Optional:    true,
-		Computed:    true,
-		Default:     setdefault.StaticValue(certsDefault),
-		Description: "The certificates used for signature verification and XML encryption.",
-	}
-
-	httpBasicCredentialsSchema := schema.SingleNestedAttribute{
-		Attributes: map[string]schema.Attribute{
-			"encrypted_password": schema.StringAttribute{
-				Optional:           true,
-				Computed:           true,
-				DeprecationMessage: "This field is deprecated and will be removed in a future release. Use the `password` field instead.",
-				Description:        "For GET requests, this field contains the encrypted password, if one exists.",
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"password": schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
-				Description: "User password.",
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"username": schema.StringAttribute{
-				Optional:    true,
-				Description: "The username.",
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-		},
-		Optional:    true,
-		Description: "Username and password credentials.",
-	}
-
 	adapterOverrideSettingsAttribute := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
 			"masked": schema.BoolAttribute{
@@ -723,19 +531,28 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"value": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: "The value for the configuration field.",
+				Description: "The value for the configuration field. Either this attribute or `encrypted_value` must be specified.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"encrypted_value": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The encrypted value for the configuration field. Either this attribute or `value` must be specified.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("value")),
 				},
 			},
 		},
 	}
 
 	schema := schema.Schema{
+		Version:     1,
 		Description: "Manages an IdP SP Connection",
 		Attributes: map[string]schema.Attribute{
 			"connection_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`.",
+				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -919,142 +736,221 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"credentials": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"block_encryption_algorithm": schema.StringAttribute{
-						Optional:    true,
-						Description: "The algorithm used to encrypt assertions sent to this partner. `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM` and `Triple_DES` are supported.",
+					"verification_issuer_dn": schema.StringAttribute{
+						Optional:            true,
+						Description:         "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+						MarkdownDescription: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 						Validators: []validator.String{
-							stringvalidator.OneOf(
-								"AES_128",
-								"AES_256",
-								"AES_128_GCM",
-								"AES_192_GCM",
-								"AES_256_GCM",
-								"Triple_DES",
-							),
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"certs":                   certsSchema,
-					"decryption_key_pair_ref": resourcelink.SingleNestedAttribute(),
-					"inbound_back_channel_auth": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"certs": certsSchema,
-							"digital_signature": schema.BoolAttribute{
-								Optional:    true,
-								Description: "If incoming or outgoing messages must be signed.",
-							},
-							"http_basic_credentials": httpBasicCredentialsSchema,
-							"require_ssl": schema.BoolAttribute{
-								Optional:    true,
-								Description: "Incoming HTTP transmissions must use a secure channel.",
-							},
-							"type": schema.StringAttribute{
-								Computed:           true,
-								Default:            stringdefault.StaticString("INBOUND"),
-								Description:        "The back channel authentication type.",
-								DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-							},
-							"verification_issuer_dn": schema.StringAttribute{
-								Optional:    true,
-								Description: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-									stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("verification_subject_dn")),
-								},
-							},
-							"verification_subject_dn": schema.StringAttribute{
-								Optional:    true,
-								Description: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
-							},
+					"verification_subject_dn": schema.StringAttribute{
+						Optional:            true,
+						Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
+						MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
 						},
-						Optional:    true,
-						Description: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
+					},
+					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+					"block_encryption_algorithm": schema.StringAttribute{
+						Optional:            true,
+						Description:         "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
+						MarkdownDescription: "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("AES_128", "AES_256", "AES_128_GCM", "AES_192_GCM", "AES_256_GCM", "Triple_DES"),
+						},
 					},
 					"key_transport_algorithm": schema.StringAttribute{
-						Optional:    true,
-						Description: "The algorithm used to transport keys to this partner. `RSA_OAEP`, `RSA_OAEP_256` and `RSA_v15` are supported.",
+						Optional:            true,
+						Description:         "The algorithm used to transport keys to this partner. Options are `RSA_OAEP`, `RSA_OAEP_256`, `RSA_v15`.",
+						MarkdownDescription: "The algorithm used to transport keys to this partner. Options are `RSA_OAEP`, `RSA_OAEP_256`, `RSA_v15`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf("RSA_OAEP", "RSA_OAEP_256", "RSA_v15"),
 						},
 					},
-					"outbound_back_channel_auth": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"digital_signature": schema.BoolAttribute{
-								Optional:    true,
-								Description: "If incoming or outgoing messages must be signed.",
-							},
-							"http_basic_credentials": httpBasicCredentialsSchema,
-							"ssl_auth_key_pair_ref":  resourcelink.SingleNestedAttribute(),
-							"type": schema.StringAttribute{
-								Computed:           true,
-								Default:            stringdefault.StaticString("OUTBOUND"),
-								Description:        "The back channel authentication type.",
-								DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-							},
-							"validate_partner_cert": schema.BoolAttribute{
-								Optional:    true,
-								Computed:    true,
-								Default:     booldefault.StaticBool(true),
-								Description: "Validate the partner server certificate. Default is `true`.",
-							},
-						},
-						Optional:    true,
-						Description: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
-					},
-					"secondary_decryption_key_pair_ref": resourcelink.SingleNestedAttribute(),
 					"signing_settings": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"algorithm": schema.StringAttribute{
-								Optional:    true,
-								Description: "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
+							"signing_key_pair_ref": schema.SingleNestedAttribute{
+								Attributes:          resourcelink.ToSchema(),
+								Optional:            true,
+								Description:         "A reference to a signing key pair.",
+								MarkdownDescription: "A reference to a signing key pair.",
 							},
 							"alternative_signing_key_pair_refs": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: resourcelink.ToSchema(),
 								},
-								Optional:    true,
-								Computed:    true,
-								Default:     setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)),
-								Description: "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
+								Optional:            true,
+								Description:         "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
+								MarkdownDescription: "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
+							},
+							"algorithm": schema.StringAttribute{
+								Optional:            true,
+								Description:         "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								MarkdownDescription: "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"include_cert_in_signature": schema.BoolAttribute{
-								Optional:    true,
-								Computed:    true,
-								Default:     booldefault.StaticBool(false),
-								Description: "Determines whether the signing certificate is included in the signature <KeyInfo> element. Default is `false`.",
+								Optional:            true,
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Determines whether the signing certificate is included in the signature <KeyInfo> element. The default value is `false`.",
+								MarkdownDescription: "Determines whether the signing certificate is included in the signature <KeyInfo> element. The default value is `false`.",
 							},
 							"include_raw_key_in_signature": schema.BoolAttribute{
-								Optional:    true,
-								Description: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
+								Optional:            true,
+								Description:         "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
+								MarkdownDescription: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
 							},
-							"signing_key_pair_ref": resourcelink.SingleNestedAttribute(),
 						},
-						Optional:    true,
-						Description: "Settings related to signing messages sent to this partner.",
+						Optional:            true,
+						Description:         "Settings related to signing messages sent to this partner.",
+						MarkdownDescription: "Settings related to signing messages sent to this partner.",
 					},
-					"verification_issuer_dn": schema.StringAttribute{
-						Optional:    true,
-						Description: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("verification_subject_dn")),
-						},
+					"decryption_key_pair_ref": schema.SingleNestedAttribute{
+						Attributes:          resourcelink.ToSchema(),
+						Optional:            true,
+						Description:         "A reference to a resource.",
+						MarkdownDescription: "A reference to a resource.",
 					},
-					"verification_subject_dn": schema.StringAttribute{
-						Optional:    true,
-						Description: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
+					"secondary_decryption_key_pair_ref": schema.SingleNestedAttribute{
+						Attributes:          resourcelink.ToSchema(),
+						Optional:            true,
+						Description:         "A reference to a resource.",
+						MarkdownDescription: "A reference to a resource.",
+					},
+					"outbound_back_channel_auth": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"http_basic_credentials": schema.SingleNestedAttribute{
+								Attributes: map[string]schema.Attribute{
+									"username": schema.StringAttribute{
+										Optional:            true,
+										Description:         "The username.",
+										MarkdownDescription: "The username.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
+									},
+									"password": schema.StringAttribute{
+										Optional:            true,
+										Sensitive:           true,
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
+									},
+									"encrypted_password": schema.StringAttribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
+										Validators: []validator.String{
+											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
+										},
+									},
+								},
+								Optional:            true,
+								Description:         "Username and password credentials.",
+								MarkdownDescription: "Username and password credentials.",
+							},
+							"digital_signature": schema.BoolAttribute{
+								Optional:            true,
+								Description:         "If incoming or outgoing messages must be signed.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed.",
+							},
+							"ssl_auth_key_pair_ref": schema.SingleNestedAttribute{
+								Attributes:          resourcelink.ToSchema(),
+								Optional:            true,
+								Description:         "A reference to a resource.",
+								MarkdownDescription: "A reference to a resource.",
+							},
+							"validate_partner_cert": schema.BoolAttribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Validate the partner server certificate. Default is `true`.",
+								MarkdownDescription: "Validate the partner server certificate. Default is `true`.",
+								Default:             booldefault.StaticBool(true),
+							},
 						},
+						Optional:            true,
+						Description:         "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
+						MarkdownDescription: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
+					},
+					"inbound_back_channel_auth": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"http_basic_credentials": schema.SingleNestedAttribute{
+								Attributes: map[string]schema.Attribute{
+									"username": schema.StringAttribute{
+										Optional:            true,
+										Description:         "The username.",
+										MarkdownDescription: "The username.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
+									},
+									"password": schema.StringAttribute{
+										Optional:            true,
+										Sensitive:           true,
+										Description:         "User password. Either this attribute or `encrypted_password` must be specified.",
+										MarkdownDescription: "User password. Either this attribute or `encrypted_password` must be specified.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
+									},
+									"encrypted_password": schema.StringAttribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "Encrypted user password. Either this attribute or `password` must be specified.",
+										MarkdownDescription: "Encrypted user password. Either this attribute or `password` must be specified.",
+										Validators: []validator.String{
+											stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
+										},
+									},
+								},
+								Optional:            true,
+								Description:         "Username and password credentials.",
+								MarkdownDescription: "Username and password credentials.",
+							},
+							"digital_signature": schema.BoolAttribute{
+								Optional:            true,
+								Description:         "If incoming or outgoing messages must be signed.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed.",
+							},
+							"verification_subject_dn": schema.StringAttribute{
+								Optional:            true,
+								Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
+								MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the `certs` array.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
+							},
+							"verification_issuer_dn": schema.StringAttribute{
+								Optional:            true,
+								Description:         "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								MarkdownDescription: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
+							},
+							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+							"require_ssl": schema.BoolAttribute{
+								Optional:            true,
+								Description:         "Incoming HTTP transmissions must use a secure channel.",
+								MarkdownDescription: "Incoming HTTP transmissions must use a secure channel.",
+							},
+						},
+						Optional:            true,
+						Description:         "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
+						MarkdownDescription: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
 					},
 				},
-				Optional:    true,
-				Description: "The certificates and settings for encryption, signing, and signature verification.",
+				Optional:            true,
+				Description:         "The certificates and settings for encryption, signing, and signature verification.",
+				MarkdownDescription: "The certificates and settings for encryption, signing, and signature verification.",
 			},
 			"default_virtual_entity_id": schema.StringAttribute{
 				Optional:    true,
@@ -1083,7 +979,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 				},
 				Optional:    true,
-				Description: "Extended Properties allows to store additional information for IdP/SP Connections. The names of these extended properties should be defined in /extendedProperties.",
+				Description: "Extended Properties allows to store additional information for IdP/SP Connections. The names of these extended properties should be defined in the `pingfederate_extended_properties` resource.",
 			},
 			"id": schema.StringAttribute{
 				Optional:    true,
@@ -1106,7 +1002,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("STANDARD"),
-				Description: "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `NONE`, `STANDARD`, `ENHANCED`, `FULL`.",
+				Description: "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `NONE`, `STANDARD`, `ENHANCED`, `FULL`. If the `sp_connection_transaction_logging_override` attribute is set to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource, then this attribute must be set to the same value.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"NONE",
@@ -1862,13 +1758,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Description: "The SAML settings used to enable secure browser-based SSO to resources at your partner's site.",
 			},
-			"type": schema.StringAttribute{
-				Optional:           false,
-				Computed:           true,
-				Default:            stringdefault.StaticString("SP"),
-				DeprecationMessage: "This field is deprecated and will be removed in a future release.",
-				Description:        "The type of this connection.",
-			},
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
@@ -2014,11 +1903,17 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 			}
 		}
 		if !found {
-			resp.Diagnostics.AddError("The value provided for 'default_virtual_entity_id' must be included in the 'virtual_entity_ids' list.",
-				fmt.Sprintf("The value '%s' is not included in the 'virtual_entity_ids' list.", defaultId))
+			resp.Diagnostics.AddAttributeError(
+				path.Root("default_virtual_entity_id"),
+				providererror.InvalidAttributeConfiguration,
+				"The value provided for 'default_virtual_entity_id' must be included in the 'virtual_entity_ids' list. "+
+					fmt.Sprintf("The value '%s' is not included in the 'virtual_entity_ids' list.", defaultId))
 		}
 	} else if len(virtualIds) > 0 && config.DefaultVirtualEntityId.IsNull() {
-		resp.Diagnostics.AddError("The 'default_virtual_entity_id' attribute must be set when 'virtual_entity_ids' is non-empty.", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("default_virtual_entity_id"),
+			providererror.InvalidAttributeConfiguration,
+			"The 'default_virtual_entity_id' attribute must be set when 'virtual_entity_ids' is non-empty.")
 	}
 
 	if internaltypes.IsDefined(config.SpBrowserSso) {
@@ -2027,7 +1922,10 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 			encryptAssertion := encryptionPolicy.Attributes()["encrypt_assertion"].(types.Bool)
 			encryptionAttributes := encryptionPolicy.Attributes()["encrypted_attributes"].(types.Set)
 			if encryptAssertion.ValueBool() && len(encryptionAttributes.Elements()) > 0 {
-				resp.Diagnostics.AddError("The 'encrypted_attributes' attribute cannot be configured when 'encrypt_assertion' is set to true.", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("sp_browser_sso").AtMapKey("encryption_policy").AtMapKey("encrypted_attributes"),
+					providererror.InvalidAttributeConfiguration,
+					"The 'encrypted_attributes' attribute cannot be configured when 'encrypt_assertion' is set to true.")
 			}
 		}
 
@@ -2037,7 +1935,10 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 			signAssertions := config.SpBrowserSso.Attributes()["sign_assertions"].(types.Bool)
 			// Exactly one of the two booleans must be true for SAML20 connections
 			if !signResponseAsRequired.IsUnknown() && !signAssertions.IsUnknown() && signResponseAsRequired.ValueBool() == signAssertions.ValueBool() {
-				resp.Diagnostics.AddError("Exactly one of 'sign_response_as_required' and 'sign_assertions' must be true for SAML 2.0 connections.", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("sp_browser_sso"),
+					providererror.InvalidAttributeConfiguration,
+					"Exactly one of 'sign_response_as_required' and 'sign_assertions' must be true for SAML 2.0 connections.")
 			}
 		}
 	}
@@ -2049,7 +1950,46 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	var respDiags diag.Diagnostics
 
-	if plan == nil || state == nil {
+	if plan == nil {
+		return
+	}
+
+	planSpBrowserSsoAttributes := plan.SpBrowserSso.Attributes()
+	if internaltypes.IsDefined(plan.SpBrowserSso) {
+		// Get the protocol
+		spBrowserSsoPlanModified := false
+		protocol := planSpBrowserSsoAttributes["protocol"].(types.String).ValueString()
+		switch protocol {
+		case "SAML20":
+			if planSpBrowserSsoAttributes["sign_response_as_required"].IsUnknown() {
+				planSpBrowserSsoAttributes["sign_response_as_required"] = types.BoolValue(true)
+				spBrowserSsoPlanModified = true
+			}
+		case "WSFED":
+			if planSpBrowserSsoAttributes["ws_trust_version"].IsUnknown() {
+				planSpBrowserSsoAttributes["ws_trust_version"] = types.StringValue("WSTRUST12")
+				spBrowserSsoPlanModified = true
+			}
+		}
+		if planSpBrowserSsoAttributes["sign_response_as_required"].IsUnknown() {
+			planSpBrowserSsoAttributes["sign_response_as_required"] = types.BoolNull()
+			spBrowserSsoPlanModified = true
+		}
+		if planSpBrowserSsoAttributes["ws_trust_version"].IsUnknown() {
+			planSpBrowserSsoAttributes["ws_trust_version"] = types.StringNull()
+			spBrowserSsoPlanModified = true
+		}
+
+		if spBrowserSsoPlanModified {
+			// Update the plan for sp_browser_sso
+			plan.SpBrowserSso, respDiags = types.ObjectValue(plan.SpBrowserSso.AttributeTypes(ctx), planSpBrowserSsoAttributes)
+			resp.Diagnostics.Append(respDiags...)
+			// Update plan
+			resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+		}
+	}
+
+	if state == nil {
 		return
 	}
 
@@ -2094,9 +2034,8 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 
 	if internaltypes.IsDefined(plan.SpBrowserSso) && internaltypes.IsDefined(state.SpBrowserSso) && !plan.SpBrowserSso.Equal(state.SpBrowserSso) {
-		planSpBrowserSsoAttributes := plan.SpBrowserSso.Attributes()
 		stateSpBrowserSsoAttributes := state.SpBrowserSso.Attributes()
-		planModified := false
+		spBrowserSsoPlanModified := false
 		if internaltypes.IsDefined(planSpBrowserSsoAttributes["adapter_mappings"]) && internaltypes.IsDefined(stateSpBrowserSsoAttributes["adapter_mappings"]) {
 			planAdapterMappings := planSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
 			stateAdapterMappings := stateSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
@@ -2122,21 +2061,20 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 									resp.Diagnostics.Append(respDiags...)
 									planElemObj, respDiags = types.ObjectValue(planElemObj.AttributeTypes(ctx), planElemAttrs)
 									resp.Diagnostics.Append(respDiags...)
-									planModified = true
+									spBrowserSsoPlanModified = true
 									finalPlanAdapterMappingsElems = append(finalPlanAdapterMappingsElems, planElemObj)
 								}
 							}
 						}
 					}
 				}
-				if planModified {
+				if spBrowserSsoPlanModified {
 					planSpBrowserSsoAttributes["adapter_mappings"], respDiags = types.SetValue(planAdapterMappings.ElementType(ctx), finalPlanAdapterMappingsElems)
 					resp.Diagnostics.Append(respDiags...)
 				}
 			}
 		}
-
-		if planModified {
+		if spBrowserSsoPlanModified {
 			// Update the plan for sp_browser_sso
 			plan.SpBrowserSso, respDiags = types.ObjectValue(plan.SpBrowserSso.AttributeTypes(ctx), planSpBrowserSsoAttributes)
 			resp.Diagnostics.Append(respDiags...)
@@ -2148,7 +2086,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) error {
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
-	addRequest.Type = plan.Type.ValueStringPointer()
+	addRequest.Type = utils.Pointer("SP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
 	addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
@@ -2179,6 +2117,12 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), &addRequest.Credentials)
 		if err != nil {
 			return err
+		}
+		if addRequest.Credentials.InboundBackChannelAuth != nil {
+			addRequest.Credentials.InboundBackChannelAuth.Type = "INBOUND"
+		}
+		if addRequest.Credentials.OutboundBackChannelAuth != nil {
+			addRequest.Credentials.OutboundBackChannelAuth.Type = "OUTBOUND"
 		}
 	}
 
@@ -2346,10 +2290,12 @@ func (state *idpSpConnectionModel) buildAttributeMappingAttrs(channelName string
 func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettings []client.ConfigField, isImportRead bool) (types.Set, types.Set, diag.Diagnostics) {
 	// Get a list of target_setting names that were expected based on the state
 	expectedTargetSettingsValues := map[string]string{}
+	expectedTargetSettingsEncryptedValues := map[string]types.String{}
 	if internaltypes.IsDefined(state.OutboundProvision) {
 		for _, targetSetting := range state.OutboundProvision.Attributes()["target_settings"].(types.Set).Elements() {
 			targetSettingsAttrs := targetSetting.(types.Object).Attributes()
 			expectedTargetSettingsValues[targetSettingsAttrs["name"].(types.String).ValueString()] = targetSettingsAttrs["value"].(types.String).ValueString()
+			expectedTargetSettingsEncryptedValues[targetSettingsAttrs["name"].(types.String).ValueString()] = targetSettingsAttrs["encrypted_value"].(types.String)
 		}
 	}
 
@@ -2361,9 +2307,14 @@ func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettin
 		if settingInPlan && outboundProvisionTargetSettingsResponseValue.Value == nil {
 			responseValue = types.StringValue(expectedValue)
 		}
+		encryptedValue := types.StringPointerValue(outboundProvisionTargetSettingsResponseValue.EncryptedValue)
+		if !expectedTargetSettingsEncryptedValues[outboundProvisionTargetSettingsResponseValue.Name].IsUnknown() {
+			encryptedValue = types.StringValue(expectedTargetSettingsEncryptedValues[outboundProvisionTargetSettingsResponseValue.Name].ValueString())
+		}
 		outboundProvisionTargetSettingsValue, diags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
-			"name":  types.StringValue(outboundProvisionTargetSettingsResponseValue.Name),
-			"value": responseValue,
+			"name":            types.StringValue(outboundProvisionTargetSettingsResponseValue.Name),
+			"value":           responseValue,
+			"encrypted_value": encryptedValue,
 		})
 		respDiags.Append(diags...)
 		allTargetSettings = append(allTargetSettings, outboundProvisionTargetSettingsValue)
@@ -2517,259 +2468,120 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	// creation_date
 	state.CreationDate = types.StringValue(response.CreationDate.Format(time.RFC3339))
 	// credentials
-	credentialsCertsCertViewAttrTypes := map[string]attr.Type{
-		"crypto_provider":           types.StringType,
-		"expires":                   types.StringType,
-		"id":                        types.StringType,
-		"issuer_dn":                 types.StringType,
-		"key_algorithm":             types.StringType,
-		"key_size":                  types.Int64Type,
-		"serial_number":             types.StringType,
-		"sha1fingerprint":           types.StringType,
-		"sha256fingerprint":         types.StringType,
-		"signature_algorithm":       types.StringType,
-		"status":                    types.StringType,
-		"subject_alternative_names": types.SetType{ElemType: types.StringType},
-		"subject_dn":                types.StringType,
-		"valid_from":                types.StringType,
-		"version":                   types.Int64Type,
-	}
-	credentialsCertsX509FileAttrTypes := map[string]attr.Type{
-		"crypto_provider": types.StringType,
-		"file_data":       types.StringType,
-		"id":              types.StringType,
-	}
-	credentialsCertsAttrTypes := map[string]attr.Type{
-		"active_verification_cert":    types.BoolType,
-		"cert_view":                   types.ObjectType{AttrTypes: credentialsCertsCertViewAttrTypes},
-		"encryption_cert":             types.BoolType,
-		"primary_verification_cert":   types.BoolType,
-		"secondary_verification_cert": types.BoolType,
-		"x509file":                    types.ObjectType{AttrTypes: credentialsCertsX509FileAttrTypes},
-	}
-	credentialsCertsElementType := types.ObjectType{AttrTypes: credentialsCertsAttrTypes}
-	credentialsDecryptionKeyPairRefAttrTypes := map[string]attr.Type{
-		"id": types.StringType,
-	}
-	credentialsInboundBackChannelAuthCertsCertViewAttrTypes := map[string]attr.Type{
-		"crypto_provider":           types.StringType,
-		"expires":                   types.StringType,
-		"id":                        types.StringType,
-		"issuer_dn":                 types.StringType,
-		"key_algorithm":             types.StringType,
-		"key_size":                  types.Int64Type,
-		"serial_number":             types.StringType,
-		"sha1fingerprint":           types.StringType,
-		"sha256fingerprint":         types.StringType,
-		"signature_algorithm":       types.StringType,
-		"status":                    types.StringType,
-		"subject_alternative_names": types.SetType{ElemType: types.StringType},
-		"subject_dn":                types.StringType,
-		"valid_from":                types.StringType,
-		"version":                   types.Int64Type,
-	}
-	credentialsInboundBackChannelAuthCertsX509FileAttrTypes := map[string]attr.Type{
-		"crypto_provider": types.StringType,
-		"file_data":       types.StringType,
-		"id":              types.StringType,
-	}
-	credentialsInboundBackChannelAuthCertsAttrTypes := map[string]attr.Type{
-		"active_verification_cert":    types.BoolType,
-		"cert_view":                   types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthCertsCertViewAttrTypes},
-		"encryption_cert":             types.BoolType,
-		"primary_verification_cert":   types.BoolType,
-		"secondary_verification_cert": types.BoolType,
-		"x509file":                    types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthCertsX509FileAttrTypes},
-	}
-	credentialsInboundBackChannelAuthCertsElementType := types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthCertsAttrTypes}
-	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes := map[string]attr.Type{
-		"password":           types.StringType,
-		"encrypted_password": types.StringType,
-		"username":           types.StringType,
-	}
-	credentialsInboundBackChannelAuthAttrTypes := map[string]attr.Type{
-		"certs":                   types.SetType{ElemType: credentialsInboundBackChannelAuthCertsElementType},
-		"digital_signature":       types.BoolType,
-		"http_basic_credentials":  types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes},
-		"require_ssl":             types.BoolType,
-		"type":                    types.StringType,
-		"verification_issuer_dn":  types.StringType,
-		"verification_subject_dn": types.StringType,
-	}
-	credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes := map[string]attr.Type{
-		"password":           types.StringType,
-		"encrypted_password": types.StringType,
-		"username":           types.StringType,
-	}
-	credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrTypes := map[string]attr.Type{
-		"id": types.StringType,
-	}
-	credentialsOutboundBackChannelAuthAttrTypes := map[string]attr.Type{
-		"digital_signature":      types.BoolType,
-		"http_basic_credentials": types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes},
-		"ssl_auth_key_pair_ref":  types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrTypes},
-		"type":                   types.StringType,
-		"validate_partner_cert":  types.BoolType,
-	}
-	credentialsSecondaryDecryptionKeyPairRefAttrTypes := map[string]attr.Type{
-		"id": types.StringType,
-	}
-	credentialsSigningSettingsAlternativeSigningKeyPairRefsAttrTypes := map[string]attr.Type{
-		"id": types.StringType,
-	}
-	credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType := types.ObjectType{AttrTypes: credentialsSigningSettingsAlternativeSigningKeyPairRefsAttrTypes}
-	credentialsSigningSettingsSigningKeyPairRefAttrTypes := map[string]attr.Type{
-		"id": types.StringType,
-	}
-	credentialsSigningSettingsAttrTypes := map[string]attr.Type{
-		"algorithm":                         types.StringType,
-		"alternative_signing_key_pair_refs": types.SetType{ElemType: credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType},
-		"include_cert_in_signature":         types.BoolType,
-		"include_raw_key_in_signature":      types.BoolType,
-		"signing_key_pair_ref":              types.ObjectType{AttrTypes: credentialsSigningSettingsSigningKeyPairRefAttrTypes},
-	}
-	credentialsAttrTypes := map[string]attr.Type{
-		"block_encryption_algorithm":        types.StringType,
-		"certs":                             types.SetType{ElemType: credentialsCertsElementType},
-		"decryption_key_pair_ref":           types.ObjectType{AttrTypes: credentialsDecryptionKeyPairRefAttrTypes},
-		"inbound_back_channel_auth":         types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthAttrTypes},
-		"key_transport_algorithm":           types.StringType,
-		"outbound_back_channel_auth":        types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthAttrTypes},
-		"secondary_decryption_key_pair_ref": types.ObjectType{AttrTypes: credentialsSecondaryDecryptionKeyPairRefAttrTypes},
-		"signing_settings":                  types.ObjectType{AttrTypes: credentialsSigningSettingsAttrTypes},
-		"verification_issuer_dn":            types.StringType,
-		"verification_subject_dn":           types.StringType,
-	}
 	var credentialsValue types.Object
-	if response.Credentials == nil {
-		credentialsValue = types.ObjectNull(credentialsAttrTypes)
-	} else {
+	if response.Credentials != nil {
 		var credentialsCertsValues []attr.Value
-		for _, credentialsCertsResponseValue := range response.Credentials.Certs {
-			var credentialsCertsCertViewValue types.Object
-			if credentialsCertsResponseValue.CertView == nil {
-				credentialsCertsCertViewValue = types.ObjectNull(credentialsCertsCertViewAttrTypes)
+		for _, cert := range response.Credentials.Certs {
+			if state.Credentials.Attributes()["certs"] != nil {
+				certMatchFound := false
+				for _, certInPlan := range state.Credentials.Attributes()["certs"].(types.List).Elements() {
+					x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
+					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
+					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
+						planFileData := x509FilePlanAttrs["file_data"].(types.String)
+						credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planFileData, cert, &diags, isImportRead)
+						diags.Append(objDiags...)
+						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
+						certMatchFound = true
+						break
+					}
+				}
+				if !certMatchFound {
+					credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), cert, &diags, isImportRead)
+					diags.Append(objDiags...)
+					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
+				}
 			} else {
-				credentialsCertsCertViewSubjectAlternativeNamesValue, diags := types.SetValueFrom(context.Background(), types.StringType, credentialsCertsResponseValue.CertView.SubjectAlternativeNames)
-				respDiags.Append(diags...)
-				credentialsCertsCertViewValue, diags = types.ObjectValue(credentialsCertsCertViewAttrTypes, map[string]attr.Value{
-					"crypto_provider":           types.StringPointerValue(credentialsCertsResponseValue.CertView.CryptoProvider),
-					"expires":                   types.StringValue(credentialsCertsResponseValue.CertView.Expires.Format(time.RFC3339)),
-					"id":                        types.StringPointerValue(credentialsCertsResponseValue.CertView.Id),
-					"issuer_dn":                 types.StringPointerValue(credentialsCertsResponseValue.CertView.IssuerDN),
-					"key_algorithm":             types.StringPointerValue(credentialsCertsResponseValue.CertView.KeyAlgorithm),
-					"key_size":                  types.Int64PointerValue(credentialsCertsResponseValue.CertView.KeySize),
-					"serial_number":             types.StringPointerValue(credentialsCertsResponseValue.CertView.SerialNumber),
-					"sha1fingerprint":           types.StringPointerValue(credentialsCertsResponseValue.CertView.Sha1Fingerprint),
-					"sha256fingerprint":         types.StringPointerValue(credentialsCertsResponseValue.CertView.Sha256Fingerprint),
-					"signature_algorithm":       types.StringPointerValue(credentialsCertsResponseValue.CertView.SignatureAlgorithm),
-					"status":                    types.StringPointerValue(credentialsCertsResponseValue.CertView.Status),
-					"subject_alternative_names": credentialsCertsCertViewSubjectAlternativeNamesValue,
-					"subject_dn":                types.StringPointerValue(credentialsCertsResponseValue.CertView.SubjectDN),
-					"valid_from":                types.StringValue(credentialsCertsResponseValue.CertView.ValidFrom.Format(time.RFC3339)),
-					"version":                   types.Int64PointerValue(credentialsCertsResponseValue.CertView.Version),
-				})
-				respDiags.Append(diags...)
+				credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), cert, &diags, isImportRead)
+				diags.Append(objDiags...)
+				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
-			credentialsCertsX509FileValue, diags := types.ObjectValue(credentialsCertsX509FileAttrTypes, map[string]attr.Value{
-				"crypto_provider": types.StringPointerValue(credentialsCertsResponseValue.X509File.CryptoProvider),
-				"file_data":       types.StringValue(credentialsCertsResponseValue.X509File.FileData),
-				"id":              types.StringPointerValue(credentialsCertsResponseValue.X509File.Id),
-			})
-			respDiags.Append(diags...)
-			credentialsCertsValue, diags := types.ObjectValue(credentialsCertsAttrTypes, map[string]attr.Value{
-				"active_verification_cert":    types.BoolPointerValue(credentialsCertsResponseValue.ActiveVerificationCert),
-				"cert_view":                   credentialsCertsCertViewValue,
-				"encryption_cert":             types.BoolPointerValue(credentialsCertsResponseValue.EncryptionCert),
-				"primary_verification_cert":   types.BoolPointerValue(credentialsCertsResponseValue.PrimaryVerificationCert),
-				"secondary_verification_cert": types.BoolPointerValue(credentialsCertsResponseValue.SecondaryVerificationCert),
-				"x509file":                    credentialsCertsX509FileValue,
-			})
-			respDiags.Append(diags...)
-			credentialsCertsValues = append(credentialsCertsValues, credentialsCertsValue)
 		}
-		credentialsCertsValue, diags := types.SetValue(credentialsCertsElementType, credentialsCertsValues)
-		respDiags.Append(diags...)
+		credentialsCertsValue, objDiags := types.ListValue(connectioncert.ObjType(), credentialsCertsValues)
+		diags.Append(objDiags...)
 		var credentialsDecryptionKeyPairRefValue types.Object
 		if response.Credentials.DecryptionKeyPairRef == nil {
-			credentialsDecryptionKeyPairRefValue = types.ObjectNull(credentialsDecryptionKeyPairRefAttrTypes)
+			credentialsDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
-			credentialsDecryptionKeyPairRefValue, diags = types.ObjectValue(credentialsDecryptionKeyPairRefAttrTypes, map[string]attr.Value{
-				"id": types.StringValue(response.Credentials.DecryptionKeyPairRef.Id),
-			})
-			respDiags.Append(diags...)
+			credentialsDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.DecryptionKeyPairRef)
+			diags.Append(objDiags...)
 		}
 		var credentialsInboundBackChannelAuthValue types.Object
 		if response.Credentials.InboundBackChannelAuth == nil {
 			credentialsInboundBackChannelAuthValue = types.ObjectNull(credentialsInboundBackChannelAuthAttrTypes)
 		} else {
-			var credentialsInboundBackChannelAuthCertsValues []attr.Value
-			for _, credentialsInboundBackChannelAuthCertsResponseValue := range response.Credentials.InboundBackChannelAuth.Certs {
-				var credentialsInboundBackChannelAuthCertsCertViewValue types.Object
-				if credentialsInboundBackChannelAuthCertsResponseValue.CertView == nil {
-					credentialsInboundBackChannelAuthCertsCertViewValue = types.ObjectNull(credentialsInboundBackChannelAuthCertsCertViewAttrTypes)
-				} else {
-					credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue, diags := types.SetValueFrom(context.Background(), types.StringType, credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectAlternativeNames)
-					respDiags.Append(diags...)
-					credentialsInboundBackChannelAuthCertsCertViewValue, diags = types.ObjectValue(credentialsInboundBackChannelAuthCertsCertViewAttrTypes, map[string]attr.Value{
-						"crypto_provider":           types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.CryptoProvider),
-						"expires":                   types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Expires.Format(time.RFC3339)),
-						"id":                        types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Id),
-						"issuer_dn":                 types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.IssuerDN),
-						"key_algorithm":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeyAlgorithm),
-						"key_size":                  types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeySize),
-						"serial_number":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SerialNumber),
-						"sha1fingerprint":           types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha1Fingerprint),
-						"sha256fingerprint":         types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha256Fingerprint),
-						"signature_algorithm":       types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SignatureAlgorithm),
-						"status":                    types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Status),
-						"subject_alternative_names": credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue,
-						"subject_dn":                types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectDN),
-						"valid_from":                types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.ValidFrom.Format(time.RFC3339)),
-						"version":                   types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Version),
-					})
-					respDiags.Append(diags...)
+			var credentialsInboundBackChannelAuthCertsValue types.List
+			if len(response.Credentials.InboundBackChannelAuth.Certs) > 0 {
+				var credentialsInboundBackChannelAuthCertsValues []attr.Value
+				for _, ibcaCert := range response.Credentials.InboundBackChannelAuth.Certs {
+					if state.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
+						ibaCertMatch := false
+						for _, ibcaCertInPlan := range state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
+							ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
+							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
+							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
+								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
+								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
+								diags.Append(objDiags...)
+								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
+								ibaCertMatch = true
+								break
+							}
+						}
+						if !ibaCertMatch {
+							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), ibcaCert, &diags, isImportRead)
+							diags.Append(objDiags...)
+							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
+						}
+					} else {
+						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), ibcaCert, &diags, isImportRead)
+						diags.Append(objDiags...)
+						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
+					}
 				}
-				credentialsInboundBackChannelAuthCertsX509FileValue, diags := types.ObjectValue(credentialsInboundBackChannelAuthCertsX509FileAttrTypes, map[string]attr.Value{
-					"crypto_provider": types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.CryptoProvider),
-					"file_data":       types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.FileData),
-					"id":              types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.Id),
-				})
-				respDiags.Append(diags...)
-				credentialsInboundBackChannelAuthCertsValue, diags := types.ObjectValue(credentialsInboundBackChannelAuthCertsAttrTypes, map[string]attr.Value{
-					"active_verification_cert":    types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.ActiveVerificationCert),
-					"cert_view":                   credentialsInboundBackChannelAuthCertsCertViewValue,
-					"encryption_cert":             types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.EncryptionCert),
-					"primary_verification_cert":   types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.PrimaryVerificationCert),
-					"secondary_verification_cert": types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.SecondaryVerificationCert),
-					"x509file":                    credentialsInboundBackChannelAuthCertsX509FileValue,
-				})
-				respDiags.Append(diags...)
-				credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, credentialsInboundBackChannelAuthCertsValue)
+				credentialsInboundBackChannelAuthCertsValue, objDiags = types.ListValue(connectioncert.ObjType(), credentialsInboundBackChannelAuthCertsValues)
+				diags.Append(objDiags...)
+			} else {
+				credentialsInboundBackChannelAuthCertsValue = types.ListNull(connectioncert.ObjType())
 			}
-			credentialsInboundBackChannelAuthCertsValue, diags := types.SetValue(credentialsInboundBackChannelAuthCertsElementType, credentialsInboundBackChannelAuthCertsValues)
-			respDiags.Append(diags...)
 			var credentialsInboundBackChannelAuthHttpBasicCredentialsValue types.Object
 			if response.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, diags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Password),
-					"encrypted_password": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword),
+				password := ""
+				if state != nil && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					passwordFromPlan := state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
+					if internaltypes.IsDefined(passwordFromPlan) {
+						password = passwordFromPlan.ValueString()
+					} else if state != nil {
+						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+					}
+				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
+					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				}
+				encryptedPassword := types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
+				if state != nil && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					encryptedPasswordFromPlan := state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["encrypted_password"].(types.String)
+					if internaltypes.IsDefined(encryptedPasswordFromPlan) {
+						encryptedPassword = types.StringValue(encryptedPasswordFromPlan.ValueString())
+					}
+				}
+				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
+					"password":           types.StringValue(password),
+					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				respDiags.Append(diags...)
+				diags.Append(objDiags...)
 			}
-			credentialsInboundBackChannelAuthValue, diags = types.ObjectValue(credentialsInboundBackChannelAuthAttrTypes, map[string]attr.Value{
+			credentialsInboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"certs":                   credentialsInboundBackChannelAuthCertsValue,
 				"digital_signature":       types.BoolPointerValue(response.Credentials.InboundBackChannelAuth.DigitalSignature),
 				"http_basic_credentials":  credentialsInboundBackChannelAuthHttpBasicCredentialsValue,
 				"require_ssl":             types.BoolPointerValue(response.Credentials.InboundBackChannelAuth.RequireSsl),
-				"type":                    types.StringValue(response.Credentials.InboundBackChannelAuth.Type),
 				"verification_issuer_dn":  types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
 				"verification_subject_dn": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
 			})
-			respDiags.Append(diags...)
+			diags.Append(objDiags...)
 		}
 		var credentialsOutboundBackChannelAuthValue types.Object
 		if response.Credentials.OutboundBackChannelAuth == nil {
@@ -2779,39 +2591,52 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			if response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, diags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Password),
-					"encrypted_password": types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword),
+				password := ""
+				if state != nil && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					passwordFromPlan := state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
+					if internaltypes.IsDefined(passwordFromPlan) {
+						password = passwordFromPlan.ValueString()
+					} else if state != nil {
+						password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+					}
+				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
+					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				}
+				encryptedPassword := types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
+				if state != nil && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					encryptedPasswordFromPlan := state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["encrypted_password"].(types.String)
+					if internaltypes.IsDefined(encryptedPasswordFromPlan) {
+						encryptedPassword = types.StringValue(encryptedPasswordFromPlan.ValueString())
+					}
+				}
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
+					"password":           types.StringPointerValue(&password),
+					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				respDiags.Append(diags...)
+				diags.Append(objDiags...)
 			}
 			var credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue types.Object
 			if response.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef == nil {
-				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue = types.ObjectNull(credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrTypes)
+				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 			} else {
-				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue, diags = types.ObjectValue(credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrTypes, map[string]attr.Value{
-					"id": types.StringValue(response.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef.Id),
-				})
-				respDiags.Append(diags...)
+				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef)
+				diags.Append(objDiags...)
 			}
-			credentialsOutboundBackChannelAuthValue, diags = types.ObjectValue(credentialsOutboundBackChannelAuthAttrTypes, map[string]attr.Value{
+			credentialsOutboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"digital_signature":      types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.DigitalSignature),
 				"http_basic_credentials": credentialsOutboundBackChannelAuthHttpBasicCredentialsValue,
 				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
-				"type":                   types.StringValue(response.Credentials.OutboundBackChannelAuth.Type),
 				"validate_partner_cert":  types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
 			})
-			respDiags.Append(diags...)
+			diags.Append(objDiags...)
 		}
 		var credentialsSecondaryDecryptionKeyPairRefValue types.Object
 		if response.Credentials.SecondaryDecryptionKeyPairRef == nil {
-			credentialsSecondaryDecryptionKeyPairRefValue = types.ObjectNull(credentialsSecondaryDecryptionKeyPairRefAttrTypes)
+			credentialsSecondaryDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
-			credentialsSecondaryDecryptionKeyPairRefValue, diags = types.ObjectValue(credentialsSecondaryDecryptionKeyPairRefAttrTypes, map[string]attr.Value{
-				"id": types.StringValue(response.Credentials.SecondaryDecryptionKeyPairRef.Id),
-			})
-			respDiags.Append(diags...)
+			credentialsSecondaryDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.SecondaryDecryptionKeyPairRef)
+			diags.Append(objDiags...)
 		}
 		var credentialsSigningSettingsValue types.Object
 		if response.Credentials.SigningSettings == nil {
@@ -2819,33 +2644,37 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		} else {
 			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValues []attr.Value
 			for _, credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue := range response.Credentials.SigningSettings.AlternativeSigningKeyPairRefs {
-				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, diags := types.ObjectValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsAttrTypes, map[string]attr.Value{
-					"id": types.StringValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue.Id),
-				})
-				respDiags.Append(diags...)
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink := &client.ResourceLink{}
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink.Id = credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue.Id
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(context.Background(), credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink)
+				diags.Append(objDiags...)
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
 			}
-			credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, diags := types.SetValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
-			respDiags.Append(diags...)
-			credentialsSigningSettingsSigningKeyPairRefValue, diags := types.ObjectValue(credentialsSigningSettingsSigningKeyPairRefAttrTypes, map[string]attr.Value{
-				"id": types.StringValue(response.Credentials.SigningSettings.SigningKeyPairRef.Id),
-			})
-			respDiags.Append(diags...)
-			// PF will return nil for include_cert_in_signature if it is false
-			includeCertInSignature := types.BoolValue(false)
-			if response.Credentials.SigningSettings.IncludeCertInSignature != nil {
-				includeCertInSignature = types.BoolPointerValue(response.Credentials.SigningSettings.IncludeCertInSignature)
+			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValue types.Set
+			if len(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues) > 0 {
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags = types.SetValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
+				diags.Append(objDiags...)
+			} else {
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue = types.SetNull(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType)
 			}
-			credentialsSigningSettingsValue, diags = types.ObjectValue(credentialsSigningSettingsAttrTypes, map[string]attr.Value{
+
+			credentialsSigningSettingsSigningKeyPairRefValue, objDiags := resourcelink.ToState(context.Background(), &response.Credentials.SigningSettings.SigningKeyPairRef)
+			diags.Append(objDiags...)
+			// PF will return false include_cert_in_signature as nil
+			includeCertInSignature := false
+			if response.Credentials.SigningSettings.IncludeCertInSignature != nil {
+				includeCertInSignature = *response.Credentials.SigningSettings.IncludeCertInSignature
+			}
+			credentialsSigningSettingsValue, objDiags = types.ObjectValue(credentialsSigningSettingsAttrTypes, map[string]attr.Value{
 				"algorithm":                         types.StringPointerValue(response.Credentials.SigningSettings.Algorithm),
 				"alternative_signing_key_pair_refs": credentialsSigningSettingsAlternativeSigningKeyPairRefsValue,
-				"include_cert_in_signature":         includeCertInSignature,
+				"include_cert_in_signature":         types.BoolValue(includeCertInSignature),
 				"include_raw_key_in_signature":      types.BoolPointerValue(response.Credentials.SigningSettings.IncludeRawKeyInSignature),
 				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
 			})
-			respDiags.Append(diags...)
+			diags.Append(objDiags...)
 		}
-		credentialsValue, diags = types.ObjectValue(credentialsAttrTypes, map[string]attr.Value{
+		credentialsValue, objDiags = types.ObjectValue(credentialsAttrTypes, map[string]attr.Value{
 			"block_encryption_algorithm":        types.StringPointerValue(response.Credentials.BlockEncryptionAlgorithm),
 			"certs":                             credentialsCertsValue,
 			"decryption_key_pair_ref":           credentialsDecryptionKeyPairRefValue,
@@ -2857,9 +2686,10 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			"verification_issuer_dn":            types.StringPointerValue(response.Credentials.VerificationIssuerDN),
 			"verification_subject_dn":           types.StringPointerValue(response.Credentials.VerificationSubjectDN),
 		})
-		respDiags.Append(diags...)
+		diags.Append(objDiags...)
+	} else {
+		credentialsValue = types.ObjectNull(credentialsAttrTypes)
 	}
-
 	state.Credentials = credentialsValue
 	// default_virtual_entity_id
 	state.DefaultVirtualEntityId = types.StringPointerValue(response.DefaultVirtualEntityId)
@@ -2892,6 +2722,14 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	// license_connection_group
 	state.LicenseConnectionGroup = types.StringPointerValue(response.LicenseConnectionGroup)
 	// logging_mode
+	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
+	// by the `server_settings_general` resource
+	if response.LoggingMode != nil && state.LoggingMode.ValueString() != *response.LoggingMode {
+		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
+			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
+				"If `sp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
+				" `logging_mode` should be configured to the same value in this resource.")
+	}
 	state.LoggingMode = types.StringPointerValue(response.LoggingMode)
 	// metadata_reload_settings
 	metadataReloadSettingsMetadataUrlRefAttrTypes := map[string]attr.Type{
@@ -2999,8 +2837,9 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"namespace":  types.StringType,
 	}
 	outboundProvisionTargetSettingsAttrTypes := map[string]attr.Type{
-		"name":  types.StringType,
-		"value": types.StringType,
+		"name":            types.StringType,
+		"value":           types.StringType,
+		"encrypted_value": types.StringType,
 	}
 	outboundProvisionTargetSettingsElementType := types.ObjectType{AttrTypes: outboundProvisionTargetSettingsAttrTypes}
 	outboundProvisionAttrTypes := map[string]attr.Type{
@@ -3608,8 +3447,6 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 
 	state.SpBrowserSso = spBrowserSsoValue
-	// type
-	state.Type = types.StringPointerValue(response.Type)
 	// virtual_entity_ids
 	state.VirtualEntityIds, diags = types.SetValueFrom(context.Background(), types.StringType, response.VirtualEntityIds)
 	respDiags.Append(diags...)
@@ -3779,7 +3616,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP SP Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdP SP Connection: "+err.Error())
 		return
 	}
 
@@ -3787,7 +3624,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	apiCreateIdpSpconnection = apiCreateIdpSpconnection.Body(*createIdpSpconnection)
 	idpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.CreateSpConnectionExecute(apiCreateIdpSpconnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdP SP Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the IdP SP Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -3817,7 +3654,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP SP Connection", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the IdP SP Connection", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the IdP SP Connection", err, httpResp, &customId)
 		}
 		return
 	}
@@ -3844,14 +3681,14 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the IdP SP Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the IdP SP Connection: "+err.Error())
 		return
 	}
 
 	updateIdpSpconnection = updateIdpSpconnection.Body(*createUpdateRequest)
 	updateIdpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnectionExecute(updateIdpSpconnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the IdP SP Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the IdP SP Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -3874,7 +3711,7 @@ func (r *idpSpConnectionResource) Delete(ctx context.Context, req resource.Delet
 	}
 	httpResp, err := r.apiClient.IdpSpConnectionsAPI.DeleteSpConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP SP Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP SP Connection", err, httpResp, &customId)
 	}
 }
 

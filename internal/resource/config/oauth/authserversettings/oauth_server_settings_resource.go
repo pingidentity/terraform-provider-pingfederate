@@ -25,11 +25,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -42,11 +42,12 @@ var (
 
 	scopesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: scopeentry.AttrTypes()}, nil)
 
-	scopeGroupsDefault, _ = types.SetValue(types.ObjectType{AttrTypes: map[string]attr.Type{
+	scopeGroupsAttrTypes = map[string]attr.Type{
 		"name":        types.StringType,
 		"description": types.StringType,
 		"scopes":      types.SetType{ElemType: types.StringType},
-	}}, nil)
+	}
+	scopeGroupsDefault, _                    = types.SetValue(types.ObjectType{AttrTypes: scopeGroupsAttrTypes}, nil)
 	persistentGrantReuseGrantTypesDefault, _ = types.SetValue(types.StringType, nil)
 	allowedOriginsDefault, _                 = types.SetValue(types.StringType, nil)
 	defaultCoreAttribute1, _                 = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
@@ -565,8 +566,6 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -586,7 +585,10 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if scopeEntryIsDynamic {
 				if strings.Count(scopeEntryName, "*") != 1 {
-					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
+					resp.Diagnostics.AddAttributeError(
+						path.Root("scopes"),
+						providererror.InvalidAttributeConfiguration,
+						fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
 				}
 			}
 		}
@@ -603,7 +605,10 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if eScopeEntryIsDynamic {
 				if strings.Index(eScopeEntryName, "*") != 0 {
-					resp.Diagnostics.AddError("Exclusive scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
+					resp.Diagnostics.AddAttributeError(
+						path.Root("exclusive_scopes"),
+						providererror.InvalidAttributeConfiguration,
+						fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
 				}
 			}
 		}
@@ -612,12 +617,17 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 	// Test if values in sets match
 	matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
 	if matchVal != nil {
-		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", *matchVal))
+		resp.Diagnostics.AddError(
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("The scope name \"%s\" is defined in both scopes and exclusive_scopes", *matchVal))
 	}
 
 	// offline_access_require_consent_prompt can't be true if require_offline_access_scope_to_issue_refresh_tokens is false
 	if model.OfflineAccessRequireConsentPrompt.ValueBool() && !model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueBool() {
-		resp.Diagnostics.AddError("require_offline_access_scope_to_issue_refresh_tokens must be set to true to set offline_access_require_consent_prompt to true", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("require_offline_access_scope_to_issue_refresh_tokens"),
+			providererror.InvalidAttributeConfiguration,
+			"require_offline_access_scope_to_issue_refresh_tokens must be set to true to set offline_access_require_consent_prompt to true")
 	}
 }
 
@@ -625,24 +635,27 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 	// Compare to versions 11.3, 12.0, and 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan oauthServerSettingsModel
+	var plan *oauthServerSettingsModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
 	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
@@ -749,7 +762,7 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 	}
 
 	if !resp.Diagnostics.HasError() {
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
@@ -878,7 +891,7 @@ func (r *oauthServerSettingsResource) Create(ctx context.Context, req resource.C
 	createOauthServerSettings := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
 	err := addOptionalOauthServerSettingsFields(ctx, createOauthServerSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings: "+err.Error())
 		return
 	}
 
@@ -892,7 +905,7 @@ func (r *oauthServerSettingsResource) Create(ctx context.Context, req resource.C
 
 	// Read the response into the state
 	var state oauthServerSettingsModel
-	diags = readOauthServerSettingsResponse(ctx, oauthServerSettingsResponse, &state, nil)
+	diags = readOauthServerSettingsResponse(ctx, oauthServerSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -919,12 +932,7 @@ func (r *oauthServerSettingsResource) Read(ctx context.Context, req resource.Rea
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state, id)
+	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -947,7 +955,7 @@ func (r *oauthServerSettingsResource) Update(ctx context.Context, req resource.U
 	createUpdateRequest := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
 	err := addOptionalOauthServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings: "+err.Error())
 		return
 	}
 
@@ -960,12 +968,7 @@ func (r *oauthServerSettingsResource) Update(ctx context.Context, req resource.U
 
 	// Read the response
 	var state oauthServerSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthServerSettingsResponse(ctx, updateOauthServerSettingsResponse, &state, id)
+	diags = readOauthServerSettingsResponse(ctx, updateOauthServerSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -978,6 +981,15 @@ func (r *oauthServerSettingsResource) Delete(ctx context.Context, req resource.D
 }
 
 func (r *oauthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState oauthServerSettingsModel
+	emptyState.Scopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeGroupsAttrTypes})
+	emptyState.ExclusiveScopes = types.SetNull(types.ObjectType{AttrTypes: scopeentry.AttrTypes()})
+	emptyState.ExclusiveScopeGroups = types.SetNull(types.ObjectType{AttrTypes: scopeGroupsAttrTypes})
+	emptyState.PersistentGrantReuseGrantTypes = types.SetNull(types.StringType)
+	emptyState.AllowedOrigins = types.SetNull(types.StringType)
+	emptyState.PersistentGrantContract = types.ObjectNull(persistentGrantObjContractTypes)
+	emptyState.AdminWebServicePcvRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

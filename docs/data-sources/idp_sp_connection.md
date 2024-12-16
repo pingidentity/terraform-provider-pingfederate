@@ -47,7 +47,6 @@ data "pingfederate_idp_sp_connection" "myIdpSpConnection" {
 - `name` (String) The connection name.
 - `outbound_provision` (Attributes) Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled. (see [below for nested schema](#nestedatt--outbound_provision))
 - `sp_browser_sso` (Attributes) The SAML settings used to enable secure browser-based SSO to resources at your partner's site. (see [below for nested schema](#nestedatt--sp_browser_sso))
-- `type` (String) The type of this connection.
 - `virtual_entity_ids` (Set of String) List of alternate entity IDs that identifies the local server to this partner.
 - `ws_trust` (Attributes) Ws-Trust STS provides security-token validation and creation to extend SSO access to identity-enabled Web Services (see [below for nested schema](#nestedatt--ws_trust))
 
@@ -329,12 +328,12 @@ Optional:
 Read-Only:
 
 - `block_encryption_algorithm` (String) The algorithm used to encrypt assertions sent to this partner.
-- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
+- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
 - `inbound_back_channel_auth` (Attributes) (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth))
 - `key_transport_algorithm` (String) The algorithm used to transport keys to this partner.
 - `secondary_decryption_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--secondary_decryption_key_pair_ref))
 - `signing_settings` (Attributes) Settings related to signing messages sent to this partner. (see [below for nested schema](#nestedatt--credentials--signing_settings))
-- `verification_issuer_dn` (String) If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
 - `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
 
 <a id="nestedatt--credentials--decryption_key_pair_ref"></a>
@@ -362,7 +361,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_password` (String) For GET requests, this field contains the encrypted password, if one exists.
-- `password` (String) User password.  To update the password, specify the plaintext value in this field.
 - `username` (String) The username.
 
 
@@ -380,12 +378,12 @@ Read-Only:
 
 Read-Only:
 
-- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
 - `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--certs--cert_view))
-- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions.
-- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate.
-- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate.
-- `x509file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--certs--x509file))
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `x509_file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--certs--x509_file))
 
 <a id="nestedatt--credentials--certs--cert_view"></a>
 ### Nested Schema for `credentials.certs.cert_view`
@@ -399,24 +397,24 @@ Read-Only:
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.
 - `serial_number` (String) The serial number assigned by the CA.
-- `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
-- `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
+- `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding.
+- `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String)
+- `status` (String) Status of the item.
 - `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
 - `version` (Number) The X.509 version to which the item conforms.
 
 
-<a id="nestedatt--credentials--certs--x509file"></a>
-### Nested Schema for `credentials.certs.x509file`
+<a id="nestedatt--credentials--certs--x509_file"></a>
+### Nested Schema for `credentials.certs.x509_file`
 
 Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider.
-- `file_data` (String) The certificate data in PEM format.
-- `id` (String) The persistent, unique ID for the certificate.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.
+- `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
+- `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 
 
@@ -425,12 +423,12 @@ Read-Only:
 
 Read-Only:
 
-- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
+- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
 - `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
 - `http_basic_credentials` (Attributes) Username and password credentials. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--http_basic_credentials))
 - `require_ssl` (Boolean) Incoming HTTP transmissions must use a secure channel.
 - `type` (String) The back channel authentication type.
-- `verification_issuer_dn` (String) If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
 - `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs"></a>
@@ -438,12 +436,12 @@ Read-Only:
 
 Read-Only:
 
-- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
 - `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--cert_view))
-- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions.
-- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate.
-- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate.
-- `x509file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--x509file))
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `x509_file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--x509_file))
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs--cert_view"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs.cert_view`
@@ -457,24 +455,24 @@ Read-Only:
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.
 - `serial_number` (String) The serial number assigned by the CA.
-- `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
-- `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
+- `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding.
+- `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String)
+- `status` (String) Status of the item.
 - `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
 - `version` (Number) The X.509 version to which the item conforms.
 
 
-<a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509file"></a>
-### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509file`
+<a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509_file"></a>
+### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509_file`
 
 Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider.
-- `file_data` (String) The certificate data in PEM format.
-- `id` (String) The persistent, unique ID for the certificate.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.
+- `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
+- `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 
 
@@ -484,7 +482,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_password` (String) For GET requests, this field contains the encrypted password, if one exists.
-- `password` (String) User password.  To update the password, specify the plaintext value in this field.
 - `username` (String) The username.
 
 
@@ -778,12 +775,13 @@ Read-Only:
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables))
 
 Read-Only:
 
 - `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields_all))
-- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.fields`
@@ -791,7 +789,20 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--sensitive_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables"></a>
@@ -812,6 +823,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--sensitive_fields))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--fields"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables.rows.fields`
@@ -819,7 +831,20 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--sensitive_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 
@@ -830,7 +855,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all"></a>
@@ -858,7 +883,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 

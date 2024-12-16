@@ -19,6 +19,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -29,6 +30,8 @@ var (
 	_ resource.ResourceWithImportState = &kerberosRealmsResource{}
 
 	emptyStringSet, _ = types.SetValue(types.StringType, nil)
+
+	customId = "realm_id"
 )
 
 // KerberosRealmsResource is a helper function to simplify the provider implementation.
@@ -50,6 +53,7 @@ type kerberosRealmsResourceModel struct {
 	KeyDistributionCenters             types.Set    `tfsdk:"key_distribution_centers"`
 	KerberosUsername                   types.String `tfsdk:"kerberos_username"`
 	KerberosPassword                   types.String `tfsdk:"kerberos_password"`
+	KerberosEncryptedPassword          types.String `tfsdk:"kerberos_encrypted_password"`
 	RetainPreviousKeysOnPasswordChange types.Bool   `tfsdk:"retain_previous_keys_on_password_change"`
 	SuppressDomainNameConcatenation    types.Bool   `tfsdk:"suppress_domain_name_concatenation"`
 	LdapGatewayDataStoreRef            types.Object `tfsdk:"ldap_gateway_data_store_ref"`
@@ -61,7 +65,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 		Description: "Resource to create and manage a Kerberos Realm",
 		Attributes: map[string]schema.Attribute{
 			"realm_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`.",
+				Description: "The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -103,11 +107,19 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"kerberos_password": schema.StringAttribute{
-				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.",
+				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_encrypted_password' should be specified.",
 				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"kerberos_encrypted_password": schema.StringAttribute{
+				Description: "The encrypted Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_password' should be specified.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("kerberos_password")),
 				},
 			},
 			// Computed due to dependency on connection_type, this value is not present when connection_type is LDAP_GATEWAY, default set in ModifyPlan
@@ -152,38 +164,55 @@ func (r *kerberosRealmsResource) Configure(_ context.Context, req resource.Confi
 
 func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerberosRealmsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
-	errSummary := "Invalid property combination:"
 	errorMsg := "is only applicable when connection_type is set to \"DIRECT\"."
 	if plan.ConnectionType.ValueString() != "DIRECT" {
 		if internaltypes.IsDefined(plan.KerberosUsername) {
-			diags.AddError(errSummary, "kerberos_username "+errorMsg)
+			diags.AddAttributeError(path.Root("kerberos_username"),
+				providererror.InvalidAttributeConfiguration, "kerberos_username "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.KerberosPassword) {
-			diags.AddError(errSummary, "kerberos_password "+errorMsg)
+			diags.AddAttributeError(path.Root("kerberos_password"),
+				providererror.InvalidAttributeConfiguration, "kerberos_password "+errorMsg)
+		}
+		if internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
+			diags.AddAttributeError(path.Root("kerberos_encrypted_password"),
+				providererror.InvalidAttributeConfiguration, "kerberos_encrypted_password "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.RetainPreviousKeysOnPasswordChange) {
-			diags.AddError(errSummary, "retain_previous_keys_on_password_change "+errorMsg)
+			diags.AddAttributeError(path.Root("retain_previous_keys_on_password_change"),
+				providererror.InvalidAttributeConfiguration, "retain_previous_keys_on_password_change "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.SuppressDomainNameConcatenation) {
-			diags.AddError(errSummary, "suppress_domain_name_concatenation "+errorMsg)
+			diags.AddAttributeError(path.Root("suppress_domain_name_concatenation"),
+				providererror.InvalidAttributeConfiguration, "suppress_domain_name_concatenation "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.KeyDistributionCenters) {
-			diags.AddError(errSummary, "key_distribution_centers "+errorMsg)
+			diags.AddAttributeError(path.Root("key_distribution_centers"),
+				providererror.InvalidAttributeConfiguration, "key_distribution_centers "+errorMsg)
 		}
 	} else {
 		// This implies that connection_type is set to DIRECT, the default value
 		if plan.KerberosUsername.IsNull() {
-			diags.AddError("Property Required:", "kerberos_username is required when connection_type is set to \"DIRECT\".")
+			diags.AddAttributeError(
+				path.Root("kerberos_username"),
+				providererror.InvalidAttributeConfiguration,
+				"kerberos_username is required when connection_type is set to \"DIRECT\".")
 		}
-		if plan.KerberosPassword.IsNull() {
-			diags.AddError("Property Required:", "kerberos_password is required when connection_type is set to \"DIRECT\".")
+		if plan.KerberosPassword.IsNull() && !internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
+			diags.AddAttributeError(
+				path.Root("kerberos_password"),
+				providererror.InvalidAttributeConfiguration,
+				"kerberos_password or kerberos_encrypted_password is required when connection_type is set to \"DIRECT\".")
 		}
 	}
 
 	// ldap_gateway_data_store_ref is required when connection_type is set to LDAP_GATEWAY
 	if plan.ConnectionType.ValueString() == "LDAP_GATEWAY" {
 		if plan.LdapGatewayDataStoreRef.IsNull() {
-			diags.AddError("Property Required:", "ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
+			diags.AddAttributeError(
+				path.Root("ldap_gateway_data_store_ref"),
+				providererror.InvalidAttributeConfiguration,
+				"ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
 		}
 	}
 	return diags
@@ -204,7 +233,7 @@ func (r *kerberosRealmsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		}
 	}
 	resp.Diagnostics.Append(r.validatePlan(ctx, plan)...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func readKerberosRealmsResponse(ctx context.Context, r *client.KerberosRealm, state *kerberosRealmsResourceModel, plan *kerberosRealmsResourceModel) diag.Diagnostics {
@@ -217,6 +246,11 @@ func readKerberosRealmsResponse(ctx context.Context, r *client.KerberosRealm, st
 	state.KeyDistributionCenters = internaltypes.GetStringSet(r.KeyDistributionCenters)
 	state.KerberosUsername = types.StringPointerValue(r.KerberosUsername)
 	state.KerberosPassword = types.StringValue(plan.KerberosPassword.ValueString())
+	if internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
+		state.KerberosEncryptedPassword = types.StringValue(plan.KerberosEncryptedPassword.ValueString())
+	} else {
+		state.KerberosEncryptedPassword = types.StringPointerValue(r.KerberosEncryptedPassword)
+	}
 	state.RetainPreviousKeysOnPasswordChange = types.BoolPointerValue(r.RetainPreviousKeysOnPasswordChange)
 	state.SuppressDomainNameConcatenation = types.BoolPointerValue(r.SuppressDomainNameConcatenation)
 	state.LdapGatewayDataStoreRef, diags = resourcelink.ToState(ctx, r.LdapGatewayDataStoreRef)
@@ -232,6 +266,7 @@ func addOptionalKerberosRealmsFields(ctx context.Context, addRequest *client.Ker
 	addRequest.ConnectionType = plan.ConnectionType.ValueStringPointer()
 	addRequest.KerberosUsername = plan.KerberosUsername.ValueStringPointer()
 	addRequest.KerberosPassword = plan.KerberosPassword.ValueStringPointer()
+	addRequest.KerberosEncryptedPassword = plan.KerberosEncryptedPassword.ValueStringPointer()
 
 	var slice []string
 	plan.KeyDistributionCenters.ElementsAs(ctx, &slice, false)
@@ -265,7 +300,7 @@ func (r *kerberosRealmsResource) Create(ctx context.Context, req resource.Create
 	createKerberosRealms := client.NewKerberosRealm(plan.KerberosRealmName.ValueString())
 	err := addOptionalKerberosRealmsFields(ctx, createKerberosRealms, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a kerberos realm", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a kerberos realm: "+err.Error())
 		return
 	}
 
@@ -273,7 +308,7 @@ func (r *kerberosRealmsResource) Create(ctx context.Context, req resource.Create
 	apiCreateKerberosRealms = apiCreateKerberosRealms.Body(*createKerberosRealms)
 	kerberosRealmsResponse, httpResp, err := r.apiClient.KerberosRealmsAPI.CreateKerberosRealmExecute(apiCreateKerberosRealms)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a kerberos realm", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating a kerberos realm", err, httpResp, &customId)
 		return
 	}
 
@@ -301,7 +336,7 @@ func (r *kerberosRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Kerberos Realm", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a kerberos realm", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting a kerberos realm", err, httpResp, &customId)
 		}
 		return
 	}
@@ -328,14 +363,14 @@ func (r *kerberosRealmsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewKerberosRealm(plan.KerberosRealmName.ValueString())
 	err := addOptionalKerberosRealmsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a kerberos realm", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a kerberos realm: "+err.Error())
 		return
 	}
 
 	updateKerberosRealms = updateKerberosRealms.Body(*createUpdateRequest)
 	updateKerberosRealmsResponse, httpResp, err := r.apiClient.KerberosRealmsAPI.UpdateKerberosRealmExecute(updateKerberosRealms)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a kerberos realm", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating a kerberos realm", err, httpResp, &customId)
 		return
 	}
 
@@ -358,7 +393,7 @@ func (r *kerberosRealmsResource) Delete(ctx context.Context, req resource.Delete
 	}
 	httpResp, err := r.apiClient.KerberosRealmsAPI.DeleteKerberosRealm(config.AuthContext(ctx, r.providerConfig), state.RealmId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a kerberos realm", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a kerberos realm", err, httpResp, &customId)
 	}
 }
 

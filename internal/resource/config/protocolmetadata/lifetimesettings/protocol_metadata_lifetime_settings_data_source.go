@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -46,8 +44,6 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Schema(ctx context.Context,
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -83,7 +79,7 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Read(ctx context.Context, r
 	}
 
 	// Read the response into the state
-	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state, pointers.String("protocol_metadata_lifetime_settings_id"))
+	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

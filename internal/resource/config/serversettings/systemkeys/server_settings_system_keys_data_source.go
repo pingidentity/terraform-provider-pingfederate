@@ -10,9 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	resourceid "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -27,6 +24,12 @@ var (
 		"encrypted_key_data": types.StringType,
 	}
 )
+
+type serverSettingsSystemKeysModel struct {
+	Current  types.Object `tfsdk:"current"`
+	Previous types.Object `tfsdk:"previous"`
+	Pending  types.Object `tfsdk:"pending"`
+}
 
 // ServerSettingsSystemKeysDataSource is a helper function to simplify the provider implementation.
 func ServerSettingsSystemKeysDataSource() datasource.DataSource {
@@ -98,7 +101,6 @@ func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req dat
 		},
 	}
 
-	id.ToDataSourceSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -118,13 +120,8 @@ func (r *serverSettingsSystemKeysDataSource) Configure(_ context.Context, req da
 
 }
 
-func readServerSettingsSystemKeysDataSourceResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysModel, existingId *string) diag.Diagnostics {
+func readServerSettingsSystemKeysDataSourceResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysModel) diag.Diagnostics {
 	var diags diag.Diagnostics
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = resourceid.GenerateUUIDToState(existingId)
-	}
 	currentAttrs := r.GetCurrent()
 	currentAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
@@ -171,7 +168,7 @@ func (r *serverSettingsSystemKeysDataSource) Read(ctx context.Context, req datas
 	}
 
 	// Read the response into the state
-	diags = readServerSettingsSystemKeysDataSourceResponse(ctx, apiReadServerSettingsSystemKeys, &state, pointers.String("server_settings_system_keys_id"))
+	diags = readServerSettingsSystemKeysDataSourceResponse(ctx, apiReadServerSettingsSystemKeys, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
