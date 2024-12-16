@@ -6,6 +6,7 @@
   * Changed `idp_browser_sso.adapter_mappings` from a Set to a List to work around terraform set identity issues.
 
 ### Enhancements
+* Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source.
 * `sp_idp_connection` resource: Added additional validation that `inbound_provisioning` group attributes do not conflict.
 
 ### Bug fixes
@@ -42,7 +43,6 @@
   * Added empty or null default for `virtual_entity_ids`, depending on the type of connection
   * Added null default for `jwt_secured_authorization_response_mode_type` for PingFederate versions prior to `12.1`.
   * Fixed errors with `false` values being returned as `null` for `credentials.signing_settings.include_cert_in_signature`, `idp_browser_sso.sign_authn_request`, and `idp_browser_sso.assertions_signed`.
-
 
 # v1.1.0 October 31, 2024
 ### Enhancements
