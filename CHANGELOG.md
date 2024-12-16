@@ -1,4 +1,4 @@
-# v1.2.0 (Unreleased)
+# v1.2.0 December 16, 2024
 ### Enhancements
 * Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source. ([#428](https://github.com/pingidentity/terraform-provider-pingfederate/pull/428))
 
