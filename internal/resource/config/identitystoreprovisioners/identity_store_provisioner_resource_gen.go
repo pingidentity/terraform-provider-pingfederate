@@ -217,7 +217,7 @@ func (r *identityStoreProvisionerResource) ModifyPlan(ctx context.Context, req r
 	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client.IdentityStoreProvisioner, diag.Diagnostics) {
