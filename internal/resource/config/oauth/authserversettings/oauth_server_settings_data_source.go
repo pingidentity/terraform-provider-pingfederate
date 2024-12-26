@@ -473,6 +473,10 @@ func (r *oauthServerSettingsDataSource) Schema(ctx context.Context, req datasour
 				Optional:    false,
 				Computed:    true,
 			},
+			"return_id_token_on_open_id_with_device_authz_grant": schema.BoolAttribute{
+				Description: "Indicates if an ID token should be returned during the device authorization grant flow when the 'openid' scope is approved. The default is `false`. Supported in PF version `12.2` or later.",
+				Computed:    true,
+			},
 		},
 	}
 	resp.Schema = schemaDef

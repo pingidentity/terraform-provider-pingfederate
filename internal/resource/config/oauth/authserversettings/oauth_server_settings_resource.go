@@ -564,6 +564,12 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 				Computed:    true,
 				Optional:    true,
 			},
+			"return_id_token_on_open_id_with_device_authz_grant": schema.BoolAttribute{
+				// Default is set in ModifyPlan below. Once only PF 12.2 and newer is supported, we can set the default in the schema here
+				Description: "Indicates if an ID token should be returned during the device authorization grant flow when the 'openid' scope is approved. The default is `false`. Supported in PF version `12.2` or later.",
+				Computed:    true,
+				Optional:    true,
+			},
 		},
 	}
 	resp.Schema = schema
@@ -651,6 +657,12 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
+		return
+	}
+	pfVersionAtLeast122 := compare >= 0
 	var plan *oauthServerSettingsModel
 	req.Plan.Get(ctx, &plan)
 	if plan == nil {
@@ -761,6 +773,20 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 		}
 	}
 
+	// Similar logic for PF 12.2
+	if !pfVersionAtLeast122 {
+		if internaltypes.IsDefined(plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant) {
+			version.AddUnsupportedAttributeError("return_id_token_on_open_id_with_device_authz_grant",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		} else if plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant.IsUnknown() {
+			plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant = types.BoolNull()
+		}
+	} else {
+		if plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant.IsUnknown() {
+			plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant = types.BoolValue(false)
+		}
+	}
+
 	if !resp.Diagnostics.HasError() {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
@@ -858,6 +884,7 @@ func addOptionalOauthServerSettingsFields(ctx context.Context, addRequest *clien
 	addRequest.DpopProofRequireNonce = plan.DpopProofRequireNonce.ValueBoolPointer()
 	addRequest.BypassAuthorizationForApprovedConsents = plan.BypassAuthorizationForApprovedConsents.ValueBoolPointer()
 	addRequest.ConsentLifetimeDays = plan.ConsentLifetimeDays.ValueInt64Pointer()
+	addRequest.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant = plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant.ValueBoolPointer()
 
 	return nil
 
