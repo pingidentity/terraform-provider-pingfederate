@@ -25,6 +25,7 @@ const (
 	PingFederate1128  SupportedVersion = "11.2.8"
 	PingFederate1129  SupportedVersion = "11.2.9"
 	PingFederate11210 SupportedVersion = "11.2.10"
+	PingFederate11211 SupportedVersion = "11.2.11"
 	PingFederate1130  SupportedVersion = "11.3.0"
 	PingFederate1131  SupportedVersion = "11.3.1"
 	PingFederate1132  SupportedVersion = "11.3.2"
@@ -34,16 +35,20 @@ const (
 	PingFederate1136  SupportedVersion = "11.3.6"
 	PingFederate1137  SupportedVersion = "11.3.7"
 	PingFederate1138  SupportedVersion = "11.3.8"
+	PingFederate1139  SupportedVersion = "11.3.9"
+	PingFederate11310 SupportedVersion = "11.3.10"
 	PingFederate1200  SupportedVersion = "12.0.0"
 	PingFederate1201  SupportedVersion = "12.0.1"
 	PingFederate1202  SupportedVersion = "12.0.2"
 	PingFederate1203  SupportedVersion = "12.0.3"
 	PingFederate1204  SupportedVersion = "12.0.4"
 	PingFederate1205  SupportedVersion = "12.0.5"
+	PingFederate1206  SupportedVersion = "12.0.6"
 	PingFederate1210  SupportedVersion = "12.1.0"
 	PingFederate1211  SupportedVersion = "12.1.1"
 	PingFederate1212  SupportedVersion = "12.1.2"
 	PingFederate1213  SupportedVersion = "12.1.3"
+	PingFederate1214  SupportedVersion = "12.1.4"
 )
 
 func IsValid(versionString string) bool {
@@ -72,6 +77,7 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1128,
 		PingFederate1129,
 		PingFederate11210,
+		PingFederate11211,
 		PingFederate1130,
 		PingFederate1131,
 		PingFederate1132,
@@ -81,16 +87,20 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1136,
 		PingFederate1137,
 		PingFederate1138,
+		PingFederate1139,
+		PingFederate11310,
 		PingFederate1200,
 		PingFederate1201,
 		PingFederate1202,
 		PingFederate1203,
 		PingFederate1204,
 		PingFederate1205,
+		PingFederate1206,
 		PingFederate1210,
 		PingFederate1211,
 		PingFederate1212,
 		PingFederate1213,
+		PingFederate1214,
 	}
 }
 
