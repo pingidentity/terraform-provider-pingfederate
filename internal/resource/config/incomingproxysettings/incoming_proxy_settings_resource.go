@@ -13,6 +13,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -34,13 +35,15 @@ type incomingProxySettingsResource struct {
 }
 
 type incomingProxySettingsResourceModel struct {
-	ForwardedIpAddressHeaderName  types.String `tfsdk:"forwarded_ip_address_header_name"`
-	ForwardedIpAddressHeaderIndex types.String `tfsdk:"forwarded_ip_address_header_index"`
-	ForwardedHostHeaderName       types.String `tfsdk:"forwarded_host_header_name"`
-	ForwardedHostHeaderIndex      types.String `tfsdk:"forwarded_host_header_index"`
-	ClientCertSSLHeaderName       types.String `tfsdk:"client_cert_ssl_header_name"`
-	ClientCertChainSSLHeaderName  types.String `tfsdk:"client_cert_chain_ssl_header_name"`
-	ProxyTerminatesHttpsConns     types.Bool   `tfsdk:"proxy_terminates_https_conns"`
+	ForwardedIpAddressHeaderName   types.String `tfsdk:"forwarded_ip_address_header_name"`
+	ForwardedIpAddressHeaderIndex  types.String `tfsdk:"forwarded_ip_address_header_index"`
+	ForwardedHostHeaderName        types.String `tfsdk:"forwarded_host_header_name"`
+	ForwardedHostHeaderIndex       types.String `tfsdk:"forwarded_host_header_index"`
+	ClientCertSSLHeaderName        types.String `tfsdk:"client_cert_ssl_header_name"`
+	ClientCertHeaderEncodingFormat types.String `tfsdk:"client_cert_header_encoding_format"`
+	ClientCertChainSSLHeaderName   types.String `tfsdk:"client_cert_chain_ssl_header_name"`
+	ProxyTerminatesHttpsConns      types.Bool   `tfsdk:"proxy_terminates_https_conns"`
+	EnableClientCertHeaderAuth     types.Bool   `tfsdk:"enable_client_cert_header_auth"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -92,6 +95,21 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 				Computed:    false,
 				Optional:    true,
 			},
+			"client_cert_header_encoding_format": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Specify the encoding format of the client certificate header. The default value is `APACHE_MOD_SSL`. Supported values are `APACHE_MOD_SSL`, `NGINX`. Supported in PF version `12.2` and later.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"APACHE_MOD_SSL",
+						"NGINX",
+					),
+				},
+			},
+			"enable_client_cert_header_auth": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Enable client certificate header authentication. Supported in PF version `12.2` and later.",
+			},
 			"proxy_terminates_https_conns": schema.BoolAttribute{
 				Description: "Allows you to globally specify that connections to the reverse proxy are made over HTTPS even when HTTP is used between the reverse proxy and PingFederate. Default value is `false`.",
 				Computed:    true,
@@ -105,12 +123,13 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 }
 
 func addOptionalIncomingProxySettingsFields(ctx context.Context, addRequest *client.IncomingProxySettings, plan incomingProxySettingsResourceModel) {
-
+	addRequest.EnableClientCertHeaderAuth = plan.EnableClientCertHeaderAuth.ValueBoolPointer()
 	addRequest.ForwardedIpAddressHeaderName = plan.ForwardedIpAddressHeaderName.ValueStringPointer()
 	addRequest.ForwardedIpAddressHeaderIndex = plan.ForwardedIpAddressHeaderIndex.ValueStringPointer()
 	addRequest.ForwardedHostHeaderName = plan.ForwardedHostHeaderName.ValueStringPointer()
 	addRequest.ForwardedHostHeaderIndex = plan.ForwardedHostHeaderIndex.ValueStringPointer()
 	addRequest.ClientCertSSLHeaderName = plan.ClientCertSSLHeaderName.ValueStringPointer()
+	addRequest.ClientCertHeaderEncodingFormat = plan.ClientCertHeaderEncodingFormat.ValueStringPointer()
 	addRequest.ClientCertChainSSLHeaderName = plan.ClientCertChainSSLHeaderName.ValueStringPointer()
 	addRequest.ProxyTerminatesHttpsConns = plan.ProxyTerminatesHttpsConns.ValueBoolPointer()
 }
@@ -132,29 +151,54 @@ func (r *incomingProxySettingsResource) Configure(_ context.Context, req resourc
 }
 
 func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 12.2.0 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1220 := compare >= 0
 	var plan *incomingProxySettingsResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {
 		return
 	}
 
+	// If any of these fields are set by the user and the PF version is not new enough, throw an error
+	if !pfVersionAtLeast1220 {
+		if internaltypes.IsDefined(plan.ClientCertHeaderEncodingFormat) {
+			version.AddUnsupportedAttributeError("client_cert_header_encoding_format",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		} else {
+			plan.ClientCertHeaderEncodingFormat = types.StringNull()
+		}
+		if internaltypes.IsDefined(plan.EnableClientCertHeaderAuth) {
+			version.AddUnsupportedAttributeError("enable_client_cert_header_auth",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		}
+	} else {
+		if plan.ClientCertHeaderEncodingFormat.IsUnknown() {
+			plan.ClientCertHeaderEncodingFormat = types.StringValue("APACHE_MOD_SSL")
+		}
+	}
+
 	// PingFederate sets index to "LAST" if the header name is set and the index is not
 	// Need these to match the behavior in state
-	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
+	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && plan.ForwardedIpAddressHeaderIndex.IsUnknown() {
 		plan.ForwardedIpAddressHeaderIndex = types.StringValue("LAST")
 	}
 
-	if internaltypes.IsDefined(plan.ForwardedHostHeaderName) && !internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
+	if internaltypes.IsDefined(plan.ForwardedHostHeaderName) && plan.ForwardedHostHeaderIndex.IsUnknown() {
 		plan.ForwardedHostHeaderIndex = types.StringValue("LAST")
 	}
 
 	// Plan checks against nil values, not empty strings
-	if !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
+	if !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && plan.ForwardedIpAddressHeaderIndex.IsUnknown() {
 		plan.ForwardedIpAddressHeaderIndex = types.StringNull()
 	}
 
 	// Plan checks against nil values, not empty strings
-	if !internaltypes.IsDefined(plan.ForwardedHostHeaderName) && !internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
+	if !internaltypes.IsDefined(plan.ForwardedHostHeaderName) && plan.ForwardedHostHeaderIndex.IsUnknown() {
 		plan.ForwardedHostHeaderIndex = types.StringNull()
 	}
 
@@ -168,9 +212,10 @@ func readIncomingProxySettingsResponse(ctx context.Context, r *client.IncomingPr
 	state.ForwardedHostHeaderName = types.StringPointerValue(r.ForwardedHostHeaderName)
 	state.ForwardedHostHeaderIndex = types.StringPointerValue(r.ForwardedHostHeaderIndex)
 	state.ClientCertSSLHeaderName = types.StringPointerValue(r.ClientCertSSLHeaderName)
+	state.ClientCertHeaderEncodingFormat = types.StringPointerValue(r.ClientCertHeaderEncodingFormat)
 	state.ClientCertChainSSLHeaderName = types.StringPointerValue(r.ClientCertChainSSLHeaderName)
 	state.ProxyTerminatesHttpsConns = types.BoolPointerValue(r.ProxyTerminatesHttpsConns)
-
+	state.EnableClientCertHeaderAuth = types.BoolPointerValue(r.EnableClientCertHeaderAuth)
 }
 
 func (r *incomingProxySettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
