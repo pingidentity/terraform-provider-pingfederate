@@ -182,6 +182,22 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Description: "The initial access token to prevent unwanted client registrations.",
 					},
+					"lockout_max_malicious_actions": schema.Int64Attribute{
+						Optional:    true,
+						Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PingFederate `12.2` and newer.",
+					},
+					"lockout_max_malicious_actions_type": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in AccountLockingService. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PingFederate `12.2` and newer.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"DO_NOT_LOCKOUT",
+								"SERVER_DEFAULT",
+								"OVERRIDE_SERVER_DEFAULT",
+							),
+						},
+					},
 					"offline_access_require_consent_prompt": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
@@ -503,6 +519,13 @@ func (r *oauthClientSettingsResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast1210 := compare >= 0
+	// Compare to version 12.2.0 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1220 := compare >= 0
 	var plan *oauthClientSettingsResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {
@@ -529,6 +552,39 @@ func (r *oauthClientSettingsResource) ModifyPlan(ctx context.Context, req resour
 		}
 	} else {
 		r.validatePf121Config(ctx, req, resp)
+	}
+	if !pfVersionAtLeast1220 {
+		if internaltypes.IsDefined(plan.DynamicClientRegistration) {
+			lockoutMaxMaliciousActions := plan.DynamicClientRegistration.Attributes()["lockout_max_malicious_actions"]
+			if internaltypes.IsDefined(lockoutMaxMaliciousActions) {
+				version.AddUnsupportedAttributeError("dynamic_client_registration.lockout_max_malicious_actions",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			}
+			lockoutMaxMaliciousActionsType := plan.DynamicClientRegistration.Attributes()["lockout_max_malicious_actions_type"]
+			if internaltypes.IsDefined(lockoutMaxMaliciousActionsType) {
+				version.AddUnsupportedAttributeError("dynamic_client_registration.lockout_max_malicious_actions_type",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			} else if lockoutMaxMaliciousActionsType.IsUnknown() {
+				dynamicClientRegistrationAttrs := plan.DynamicClientRegistration.Attributes()
+				dynamicClientRegistrationAttrs["lockout_max_malicious_actions_type"] = types.StringNull()
+				var diags diag.Diagnostics
+				plan.DynamicClientRegistration, diags = types.ObjectValue(plan.DynamicClientRegistration.AttributeTypes(ctx), dynamicClientRegistrationAttrs)
+				resp.Diagnostics.Append(diags...)
+				resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
+			}
+		}
+	} else {
+		if internaltypes.IsDefined(plan.DynamicClientRegistration) {
+			dynamicClientRegistrationAttrs := plan.DynamicClientRegistration.Attributes()
+			lockoutMaxMaliciousActionsType := dynamicClientRegistrationAttrs["lockout_max_malicious_actions_type"]
+			if lockoutMaxMaliciousActionsType.IsUnknown() {
+				dynamicClientRegistrationAttrs["lockout_max_malicious_actions_type"] = types.StringValue("SERVER_DEFAULT")
+				var diags diag.Diagnostics
+				plan.DynamicClientRegistration, diags = types.ObjectValue(plan.DynamicClientRegistration.AttributeTypes(ctx), dynamicClientRegistrationAttrs)
+				resp.Diagnostics.Append(diags...)
+				resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
+			}
+		}
 	}
 	r.setVersionDependentDefaults(ctx, plan, pfVersionAtLeast1210, resp)
 }
@@ -575,6 +631,8 @@ func (model *oauthClientSettingsResourceModel) buildClientStruct(existingExtende
 		dynamicClientRegistrationValue.DisableRegistrationAccessTokens = dynamicClientRegistrationAttrs["disable_registration_access_tokens"].(types.Bool).ValueBoolPointer()
 		dynamicClientRegistrationValue.EnforceReplayPrevention = dynamicClientRegistrationAttrs["enforce_replay_prevention"].(types.Bool).ValueBoolPointer()
 		dynamicClientRegistrationValue.InitialAccessTokenScope = dynamicClientRegistrationAttrs["initial_access_token_scope"].(types.String).ValueStringPointer()
+		dynamicClientRegistrationValue.LockoutMaxMaliciousActions = dynamicClientRegistrationAttrs["lockout_max_malicious_actions"].(types.Int64).ValueInt64Pointer()
+		dynamicClientRegistrationValue.LockoutMaxMaliciousActionsType = dynamicClientRegistrationAttrs["lockout_max_malicious_actions_type"].(types.String).ValueStringPointer()
 		dynamicClientRegistrationValue.OfflineAccessRequireConsentPrompt = dynamicClientRegistrationAttrs["offline_access_require_consent_prompt"].(types.String).ValueStringPointer()
 		if !dynamicClientRegistrationAttrs["oidc_policy"].IsNull() {
 			dynamicClientRegistrationOidcPolicyValue := &client.ClientRegistrationOIDCPolicy{}
@@ -699,6 +757,8 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 		"enforce_replay_prevention":                            types.BoolType,
 		"initial_access_token_scope":                           types.StringType,
 		"offline_access_require_consent_prompt":                types.StringType,
+		"lockout_max_malicious_actions":                        types.Int64Type,
+		"lockout_max_malicious_actions_type":                   types.StringType,
 		"oidc_policy":                                          types.ObjectType{AttrTypes: dynamicClientRegistrationOidcPolicyAttrTypes},
 		"pending_authorization_timeout_override":               types.Int64Type,
 		"persistent_grant_expiration_time":                     types.Int64Type,
@@ -832,6 +892,8 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 			"disable_registration_access_tokens":                   types.BoolValue(disableRegistrationAccessTokens),
 			"enforce_replay_prevention":                            types.BoolPointerValue(response.DynamicClientRegistration.EnforceReplayPrevention),
 			"initial_access_token_scope":                           types.StringPointerValue(response.DynamicClientRegistration.InitialAccessTokenScope),
+			"lockout_max_malicious_actions":                        types.Int64PointerValue(response.DynamicClientRegistration.LockoutMaxMaliciousActions),
+			"lockout_max_malicious_actions_type":                   types.StringPointerValue(response.DynamicClientRegistration.LockoutMaxMaliciousActionsType),
 			"offline_access_require_consent_prompt":                types.StringPointerValue(response.DynamicClientRegistration.OfflineAccessRequireConsentPrompt),
 			"oidc_policy":                                          dynamicClientRegistrationOidcPolicyValue,
 			"pending_authorization_timeout_override":               types.Int64PointerValue(response.DynamicClientRegistration.PendingAuthorizationTimeoutOverride),
@@ -915,6 +977,8 @@ func (r *oauthClientSettingsResource) emptyModel() oauthClientSettingsResourceMo
 		"disable_registration_access_tokens":                   types.BoolType,
 		"enforce_replay_prevention":                            types.BoolType,
 		"initial_access_token_scope":                           types.StringType,
+		"lockout_max_malicious_actions":                        types.Int64Type,
+		"lockout_max_malicious_actions_type":                   types.StringType,
 		"offline_access_require_consent_prompt":                types.StringType,
 		"oidc_policy":                                          types.ObjectType{AttrTypes: dynamicClientRegistrationOidcPolicyAttrTypes},
 		"pending_authorization_timeout_override":               types.Int64Type,

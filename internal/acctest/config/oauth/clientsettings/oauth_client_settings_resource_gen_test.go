@@ -146,6 +146,12 @@ func oauthClientSettings_CompleteHCL() string {
 	require_offline_access_scope_to_issue_refresh_tokens = "YES"
 		`
 	}
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		versionSpecificHcl += `
+  lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
+  lockout_max_malicious_actions = 5
+    `
+	}
 
 	return fmt.Sprintf(`
 	%s
@@ -253,6 +259,10 @@ func oauthClientSettings_CheckComputedValues() resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1210) {
 		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.offline_access_require_consent_prompt", "SERVER_DEFAULT"))
 		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"))
+	}
+
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.lockout_max_malicious_actions_type", "SERVER_DEFAULT"))
 	}
 
 	return resource.ComposeTestCheckFunc(testCheckFuncs...)

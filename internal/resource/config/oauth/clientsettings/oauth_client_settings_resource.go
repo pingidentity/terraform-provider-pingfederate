@@ -93,6 +93,11 @@ func (r *oauthClientSettingsResource) ValidateConfig(ctx context.Context, req re
 			"device_polling_interval_override":       attrs["device_polling_interval_override"],
 		})...)
 
+		// Validate overriding server default for lockout_max_malicious_actions
+		resp.Diagnostics.Append(validateOverride("lockout_max_malicious_actions_type", attrs["lockout_max_malicious_actions_type"].(types.String), map[string]attr.Value{
+			"lockout_max_malicious_actions": attrs["lockout_max_malicious_actions"],
+		})...)
+
 		// Validate overriding server default for persistent_grant_expiration_type
 		resp.Diagnostics.Append(validateOverride("persistent_grant_expiration_type", attrs["persistent_grant_expiration_type"].(types.String), map[string]attr.Value{
 			"persistent_grant_expiration_time":      attrs["persistent_grant_expiration_time"],
