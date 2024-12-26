@@ -261,6 +261,13 @@ func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
 	post_logout_redirect_uris = ["https://example.com", "https://pingidentity.com"]
 		`
 	}
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		versionedHcl += `
+	user_info_response_content_encryption_algorithm = "AES_256_GCM"
+	user_info_response_encryption_algorithm = "RSA_OAEP_256"
+	user_info_response_signing_algorithm = "RS256"
+		`
+	}
 	return fmt.Sprintf(`
   oidc_policy = {
     id_token_signing_algorithm                  = "%s"
@@ -387,6 +394,13 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 		enable_cookieless_authentication_api = true
 		require_offline_access_scope_to_issue_refresh_tokens = "YES"
 		offline_access_require_consent_prompt = "YES"
+			`
+		}
+
+		if acctest.VersionAtLeast(version.PingFederate1220) {
+			optionalHcl += `
+		lockout_max_malicious_actions = 500
+		lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
 			`
 		}
 	}

@@ -492,6 +492,62 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Optional:    true,
 						ElementType: types.StringType,
 					},
+					"user_info_response_content_encryption_algorithm": schema.StringAttribute{
+						Optional:    true,
+						Description: "The JSON Web Encryption [JWE] content-encryption algorithm for the UserInfo Response. Supported values are `AES_128_CBC_HMAC_SHA_256`, `AES_192_CBC_HMAC_SHA_384`, `AES_256_CBC_HMAC_SHA_512`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`. Supported in PF version `12.2` or later.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"AES_128_CBC_HMAC_SHA_256",
+								"AES_192_CBC_HMAC_SHA_384",
+								"AES_256_CBC_HMAC_SHA_512",
+								"AES_128_GCM",
+								"AES_192_GCM",
+								"AES_256_GCM",
+							),
+						},
+					},
+					"user_info_response_encryption_algorithm": schema.StringAttribute{
+						Optional:    true,
+						Description: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the UserInfo response. Supported values are `DIR`, `A128KW`, `A192KW`, `A256KW`, `A128GCMKW`, `A192GCMKW`, `A256GCMKW`, `ECDH_ES`, `ECDH_ES_A128KW`, `ECDH_ES_A192KW`, `ECDH_ES_A256KW`, `RSA_OAEP`, `RSA_OAEP_256`. Supported in PF version `12.2` or later.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"DIR",
+								"A128KW",
+								"A192KW",
+								"A256KW",
+								"A128GCMKW",
+								"A192GCMKW",
+								"A256GCMKW",
+								"ECDH_ES",
+								"ECDH_ES_A128KW",
+								"ECDH_ES_A192KW",
+								"ECDH_ES_A256KW",
+								"RSA_OAEP",
+								"RSA_OAEP_256",
+							),
+						},
+					},
+					"user_info_response_signing_algorithm": schema.StringAttribute{
+						Optional:    true,
+						Description: "The JSON Web Signature [JWS] algorithm required to sign the UserInfo response. Supported values are `NONE`, `HS256`, `HS384`, `HS512`, `RS256`, `RS384`, `RS512`, `ES256`, `ES384`, `ES512`, `PS256`, `PS384`, `PS512`. Supported in PF version `12.2` or later.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"NONE",
+								"HS256",
+								"HS384",
+								"HS512",
+								"RS256",
+								"RS384",
+								"RS512",
+								"ES256",
+								"ES384",
+								"ES512",
+								"PS256",
+								"PS384",
+								"PS512",
+							),
+						},
+					},
 				},
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -924,6 +980,22 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					),
 				},
 			},
+			"lockout_max_malicious_actions": schema.Int64Attribute{
+				Optional:    true,
+				Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.",
+			},
+			"lockout_max_malicious_actions_type": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"DO_NOT_LOCKOUT",
+						"SERVER_DEFAULT",
+						"OVERRIDE_SERVER_DEFAULT",
+					),
+				},
+			},
 		},
 	}
 
@@ -1158,6 +1230,14 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			providererror.InvalidAttributeConfiguration,
 			"bypass_approval_page cannot be configured to false when allow_authentication_api_init is set to true.")
 	}
+
+	// lockout_max_malicious_actions validation
+	if internaltypes.IsDefined(model.LockoutMaxMaliciousActions) && model.LockoutMaxMaliciousActionsType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("lockout_max_malicious_actions"),
+			providererror.InvalidAttributeConfiguration,
+			"lockout_max_malicious_actions_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to set lockout_max_malicious_actions.")
+	}
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -1180,6 +1260,12 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
+		return
+	}
+	pfVersionAtLeast122 := compare >= 0
 	var plan *oauthClientModel
 	var state *oauthClientModel
 	var diags diag.Diagnostics
@@ -1239,6 +1325,24 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 			version.AddUnsupportedAttributeError("oidc_policy.post_logout_redirect_uris",
 				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
 		}
+		// Check for OIDC policy attrs added in PF 12.2
+		if !pfVersionAtLeast122 {
+			userInfoResponseContentEncryptionAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_content_encryption_algorithm"]
+			if internaltypes.IsDefined(userInfoResponseContentEncryptionAlgorithm) {
+				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_content_encryption_algorithm",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			}
+			userInfoResponseEncryptionAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_encryption_algorithm"]
+			if internaltypes.IsDefined(userInfoResponseEncryptionAlgorithm) {
+				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_encryption_algorithm",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			}
+			userInfoResponseSigningAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_signing_algorithm"]
+			if internaltypes.IsDefined(userInfoResponseSigningAlgorithm) {
+				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_signing_algorithm",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			}
+		}
 	}
 
 	// Version checking and default settings for attrs added in PF 12.1
@@ -1286,6 +1390,25 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 		if plan.OfflineAccessRequireConsentPrompt.IsUnknown() {
 			plan.OfflineAccessRequireConsentPrompt = types.StringValue("SERVER_DEFAULT")
+			planModified = true
+		}
+	}
+
+	// Version checking and default settings for attrs added in PF 12.2
+	if !pfVersionAtLeast122 {
+		if internaltypes.IsDefined(plan.LockoutMaxMaliciousActions) {
+			version.AddUnsupportedAttributeError("lockout_max_malicious_actions",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		}
+		if internaltypes.IsDefined(plan.LockoutMaxMaliciousActionsType) {
+			version.AddUnsupportedAttributeError("lockout_max_malicious_actions_type",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		} else {
+			plan.LockoutMaxMaliciousActionsType = types.StringNull()
+		}
+	} else {
+		if plan.LockoutMaxMaliciousActionsType.IsUnknown() {
+			plan.LockoutMaxMaliciousActionsType = types.StringValue("SERVER_DEFAULT")
 			planModified = true
 		}
 	}
@@ -1491,6 +1614,8 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
 	addRequest.RequireOfflineAccessScopeToIssueRefreshTokens = plan.RequireOfflineAccessScopeToIssueRefreshTokens.ValueStringPointer()
 	addRequest.OfflineAccessRequireConsentPrompt = plan.OfflineAccessRequireConsentPrompt.ValueStringPointer()
+	addRequest.LockoutMaxMaliciousActions = plan.LockoutMaxMaliciousActions.ValueInt64Pointer()
+	addRequest.LockoutMaxMaliciousActionsType = plan.LockoutMaxMaliciousActionsType.ValueStringPointer()
 
 	// addRequest.RestrictedScopes
 	var restrictedScopes []string
