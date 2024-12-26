@@ -84,30 +84,30 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"connection_type": schema.StringAttribute{
-				Description: "Controls how PingFederate connects to the Active Directory/Kerberos Realm. Options are `DIRECT` and `LDAP_GATEWAY`. The default is `DIRECT`.",
+				Description: "Controls how PingFederate connects to the Active Directory/Kerberos Realm. Options are `DIRECT`, `LDAP_GATEWAY`, `LOCAL_VALIDATION`. The default is `DIRECT`. `LOCAL_VALIDATION` only supported in PF version `12.2` or later.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DIRECT"),
 				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"DIRECT", "LDAP_GATEWAY"}...),
+					stringvalidator.OneOf([]string{"DIRECT", "LDAP_GATEWAY", "LOCAL_VALIDATION"}...),
 				},
 			},
 			"key_distribution_centers": schema.SetAttribute{
-				Description: "The Domain Controller/Key Distribution Center Host Action Names. Only applicable when 'connection_type' is `DIRECT`.",
+				Description: "The Domain Controller/Key Distribution Center Host Action Names. Only applicable when `connection_type` is `DIRECT`.",
 				Computed:    true,
 				Optional:    true,
 				ElementType: types.StringType,
 				Default:     setdefault.StaticValue(emptyStringSet),
 			},
 			"kerberos_username": schema.StringAttribute{
-				Description: "The Domain/Realm username. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.",
+				Description: "The Domain/Realm username. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`.",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"kerberos_password": schema.StringAttribute{
-				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_encrypted_password' should be specified.",
+				Description: "The Domain/Realm password. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_encrypted_password' should be specified.",
 				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
@@ -115,7 +115,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"kerberos_encrypted_password": schema.StringAttribute{
-				Description: "The encrypted Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_password' should be specified.",
+				Description: "The encrypted Domain/Realm password. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_password' should be specified.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
@@ -124,13 +124,13 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 			},
 			// Computed due to dependency on connection_type, this value is not present when connection_type is LDAP_GATEWAY, default set in ModifyPlan
 			"retain_previous_keys_on_password_change": schema.BoolAttribute{
-				Description: "Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is `false`. Only applicable when 'connection_type' is `DIRECT`.",
+				Description: "Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is `false`. Only applicable when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`.",
 				Computed:    true,
 				Optional:    true,
 			},
 			// Computed due to dependency on connection_type, this value is not present when connection_type is LDAP_GATEWAY, default set in ModifyPlan
 			"suppress_domain_name_concatenation": schema.BoolAttribute{
-				Description: "Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated `krb5.conf` file. Only applicable when 'connection_type' is `DIRECT`.",
+				Description: "Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated `krb5.conf` file. Only applicable when `connection_type` is `DIRECT`.",
 				Computed:    true,
 				Optional:    true,
 			},
@@ -164,8 +164,8 @@ func (r *kerberosRealmsResource) Configure(_ context.Context, req resource.Confi
 
 func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerberosRealmsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
-	errorMsg := "is only applicable when connection_type is set to \"DIRECT\"."
-	if plan.ConnectionType.ValueString() != "DIRECT" {
+	errorMsg := "is only applicable when connection_type is set to \"DIRECT\" or \"LOCAL_VALIDATION\"."
+	if plan.ConnectionType.ValueString() != "DIRECT" && plan.ConnectionType.ValueString() != "LOCAL_VALIDATION" {
 		if internaltypes.IsDefined(plan.KerberosUsername) {
 			diags.AddAttributeError(path.Root("kerberos_username"),
 				providererror.InvalidAttributeConfiguration, "kerberos_username "+errorMsg)
@@ -182,27 +182,31 @@ func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerbero
 			diags.AddAttributeError(path.Root("retain_previous_keys_on_password_change"),
 				providererror.InvalidAttributeConfiguration, "retain_previous_keys_on_password_change "+errorMsg)
 		}
+	}
+	errorMsg = "is only applicable when connection_type is set to \"DIRECT\"."
+	if plan.ConnectionType.ValueString() != "DIRECT" {
 		if internaltypes.IsDefined(plan.SuppressDomainNameConcatenation) {
 			diags.AddAttributeError(path.Root("suppress_domain_name_concatenation"),
 				providererror.InvalidAttributeConfiguration, "suppress_domain_name_concatenation "+errorMsg)
 		}
-		if internaltypes.IsDefined(plan.KeyDistributionCenters) {
+		if len(plan.KeyDistributionCenters.Elements()) > 0 {
 			diags.AddAttributeError(path.Root("key_distribution_centers"),
 				providererror.InvalidAttributeConfiguration, "key_distribution_centers "+errorMsg)
 		}
-	} else {
-		// This implies that connection_type is set to DIRECT, the default value
+	}
+
+	if plan.ConnectionType.ValueString() == "DIRECT" || plan.ConnectionType.ValueString() == "LOCAL_VALIDATION" {
 		if plan.KerberosUsername.IsNull() {
 			diags.AddAttributeError(
 				path.Root("kerberos_username"),
 				providererror.InvalidAttributeConfiguration,
-				"kerberos_username is required when connection_type is set to \"DIRECT\".")
+				"kerberos_username is required when connection_type is set to \"DIRECT\" or \"LOCAL_VALIDATON\".")
 		}
 		if plan.KerberosPassword.IsNull() && !internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
 			diags.AddAttributeError(
 				path.Root("kerberos_password"),
 				providererror.InvalidAttributeConfiguration,
-				"kerberos_password or kerberos_encrypted_password is required when connection_type is set to \"DIRECT\".")
+				"kerberos_password or kerberos_encrypted_password is required when connection_type is set to \"DIRECT\" or \"LOCAL_VALIDATON\".")
 		}
 	}
 
@@ -245,7 +249,7 @@ func readKerberosRealmsResponse(ctx context.Context, r *client.KerberosRealm, st
 	state.ConnectionType = types.StringPointerValue(r.ConnectionType)
 	state.KeyDistributionCenters = internaltypes.GetStringSet(r.KeyDistributionCenters)
 	state.KerberosUsername = types.StringPointerValue(r.KerberosUsername)
-	state.KerberosPassword = types.StringValue(plan.KerberosPassword.ValueString())
+	state.KerberosPassword = types.StringPointerValue(plan.KerberosPassword.ValueStringPointer())
 	if internaltypes.IsDefined(plan.KerberosEncryptedPassword) {
 		state.KerberosEncryptedPassword = types.StringValue(plan.KerberosEncryptedPassword.ValueString())
 	} else {
@@ -268,9 +272,11 @@ func addOptionalKerberosRealmsFields(ctx context.Context, addRequest *client.Ker
 	addRequest.KerberosPassword = plan.KerberosPassword.ValueStringPointer()
 	addRequest.KerberosEncryptedPassword = plan.KerberosEncryptedPassword.ValueStringPointer()
 
-	var slice []string
-	plan.KeyDistributionCenters.ElementsAs(ctx, &slice, false)
-	addRequest.KeyDistributionCenters = slice
+	if len(plan.KeyDistributionCenters.Elements()) > 0 {
+		var slice []string
+		plan.KeyDistributionCenters.ElementsAs(ctx, &slice, false)
+		addRequest.KeyDistributionCenters = slice
+	}
 
 	addRequest.LdapGatewayDataStoreRef, err = resourcelink.ClientStruct(plan.LdapGatewayDataStoreRef)
 	if err != nil {

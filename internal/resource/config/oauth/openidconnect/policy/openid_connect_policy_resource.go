@@ -200,6 +200,11 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
+			"return_id_token_on_token_exchange_grant": schema.BoolAttribute{
+				Description: "Determines whether an ID Token should be returned when token exchange is requested or not. Defaults to `false`. Supported in PF version `12.2` or later.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 	id.ToSchema(&schema)
@@ -215,6 +220,13 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
+	// Compare to version 12.2 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
+		return
+	}
+	pfVersionAtLeast122 := compare >= 0
 	var plan *oauthOpenIdConnectPolicyModel
 	req.Plan.Get(ctx, &plan)
 	if plan == nil {
@@ -241,6 +253,19 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 	// Set default if PF version is new enough
 	if pfVersionAtLeast113 && plan.IncludeX5tInIdToken.IsUnknown() {
 		plan.IncludeX5tInIdToken = types.BoolValue(false)
+		planModified = true
+	}
+
+	if !pfVersionAtLeast122 {
+		if internaltypes.IsDefined(plan.ReturnIdTokenOnTokenExchangeGrant) {
+			version.AddUnsupportedAttributeError("return_id_token_on_token_exchange_grant",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		} else {
+			plan.ReturnIdTokenOnTokenExchangeGrant = types.BoolNull()
+			planModified = true
+		}
+	} else if plan.ReturnIdTokenOnTokenExchangeGrant.IsUnknown() {
+		plan.ReturnIdTokenOnTokenExchangeGrant = types.BoolValue(false)
 		planModified = true
 	}
 
@@ -336,6 +361,8 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	result.ReissueIdTokenInHybridFlow = model.ReissueIdTokenInHybridFlow.ValueBoolPointer()
 	// return_id_token_on_refresh_grant
 	result.ReturnIdTokenOnRefreshGrant = model.ReturnIdTokenOnRefreshGrant.ValueBoolPointer()
+	// return_id_token_on_token_exchange_grant
+	result.ReturnIdTokenOnTokenExchangeGrant = model.ReturnIdTokenOnTokenExchangeGrant.ValueBoolPointer()
 	// scope_attribute_mappings
 	if !model.ScopeAttributeMappings.IsNull() {
 		result.ScopeAttributeMappings = &map[string]client.ParameterValues{}

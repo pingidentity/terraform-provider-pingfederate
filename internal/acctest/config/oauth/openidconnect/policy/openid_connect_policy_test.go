@@ -242,6 +242,12 @@ func testAccOpenidConnectPolicies(resourceName string, resourceModel oauthOpenId
 		id_token_typ_header_value = "Example"
 			`
 		}
+
+		if acctest.VersionAtLeast(version.PingFederate1220) {
+			optionalHcl += `
+		return_id_token_on_token_exchange_grant = true
+			`
+		}
 	}
 
 	return fmt.Sprintf(`

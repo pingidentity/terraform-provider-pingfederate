@@ -167,6 +167,10 @@ func (r *openidConnectPolicyDataSource) Schema(ctx context.Context, req datasour
 				Optional:    false,
 				Computed:    true,
 			},
+			"return_id_token_on_token_exchange_grant": schema.BoolAttribute{
+				Description: "Determines whether an ID Token should be returned when token exchange is requested or not. Supported in PF version `12.2` or later.",
+				Computed:    true,
+			},
 		},
 	}
 	id.ToDataSourceSchema(&schema)
