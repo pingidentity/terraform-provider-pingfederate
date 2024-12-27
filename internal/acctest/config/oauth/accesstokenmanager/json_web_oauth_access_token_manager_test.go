@@ -202,6 +202,25 @@ func testAccJsonWebOauthAccessTokenManager(resourceName string, resourceModel js
       },
     `
 	}
+	additionalVersionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		additionalVersionedHcl += `
+  token_endpoint_attribute_contract = {
+    attributes = [
+      {
+        mapped_scopes = ["email"]
+        multi_valued  = false
+        name          = "normal"
+      },
+      {
+        mapped_scopes = []
+        multi_valued  = true
+        name          = "another"
+      },
+    ]
+  }
+    `
+	}
 
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "%[1]s" {
@@ -405,6 +424,7 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
     update_authn_session_activity   = false
     include_session_id              = false
   }
+  %[10]s
 }
 data "pingfederate_oauth_access_token_manager" "%[1]s" {
   manager_id = pingfederate_oauth_access_token_manager.%[1]s.id
@@ -417,6 +437,7 @@ data "pingfederate_oauth_access_token_manager" "%[1]s" {
 		resourceModel.activeSymmetricKeyId,
 		*resourceModel.checkValidAuthnSession,
 		versionedFields,
+		additionalVersionedHcl,
 	)
 }
 
