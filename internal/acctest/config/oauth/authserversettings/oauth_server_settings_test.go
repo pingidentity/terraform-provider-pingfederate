@@ -339,6 +339,12 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
   enable_cookieless_user_authorization_authentication_api = true
 			`
 		}
+
+		if acctest.VersionAtLeast(version.PingFederate1220) {
+			optionalHcl += `
+  return_id_token_on_open_id_with_device_authz_grant = true
+  			`
+		}
 	}
 
 	return fmt.Sprintf(`

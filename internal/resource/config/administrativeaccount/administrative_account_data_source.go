@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -90,7 +90,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 				Computed:    true,
 			},
 			"roles": schema.SetAttribute{
-				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
+				Description: "Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions. `DATA_COLLECTION_ADMINISTRATOR` - Can run the Collect Support Data Utility",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,

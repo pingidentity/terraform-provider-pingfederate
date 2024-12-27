@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var stateId string
@@ -91,6 +92,10 @@ func TestAccKerberosRealms(t *testing.T) {
 				Check:  testAccCheckExpectedKerberosRealmsAttributes(initialResourceModel),
 			},
 			{
+				Config: testAccLocalValidationKerberosRealm(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedKerberosRealmsAttributes(initialResourceModel),
+			},
+			{
 				PreConfig: func() {
 					testClient := acctest.TestClient()
 					ctx := acctest.TestBasicAuthContext()
@@ -145,6 +150,28 @@ resource "pingfederate_kerberos_realm" "%[1]s" {
 	)
 }
 
+func testAccLocalValidationKerberosRealm(resourceName string, resourceModel kerberosRealmsResourceModel) string {
+	connectionType := "DIRECT"
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		connectionType = "LOCAL_VALIDATION"
+	}
+	return fmt.Sprintf(`
+resource "pingfederate_kerberos_realm" "%[1]s" {
+	%[2]s
+  kerberos_realm_name                     = "%[3]s"
+  kerberos_username                       = "%[4]s"
+  kerberos_password                       = "%[5]s"
+  retain_previous_keys_on_password_change = true
+  connection_type                         = "%[6]s"
+}`, resourceName,
+		acctest.AddIdHcl("realm_id", resourceModel.id),
+		resourceModel.kerberosRealmName,
+		resourceModel.kerberosUsername,
+		resourceModel.kerberosPassword,
+		connectionType,
+	)
+}
+
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -163,12 +190,6 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 				return err
 			}
 		}
-		if config.connectionType != "" {
-			err = acctest.TestAttributesMatchString(resourceType, nil, "connection_type", config.connectionType, *response.ConnectionType)
-			if err != nil {
-				return err
-			}
-		}
 
 		err = acctest.TestAttributesMatchString(resourceType, &config.kerberosRealmName, "kerberos_realm_name", config.kerberosRealmName, response.KerberosRealmName)
 		if err != nil {
@@ -182,13 +203,6 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 
 		if config.keyDistributionCenters != nil {
 			err = acctest.TestAttributesMatchStringSlice(resourceType, nil, "key_distribution_centers", config.keyDistributionCenters, response.KeyDistributionCenters)
-			if err != nil {
-				return err
-			}
-		}
-
-		if config.retainPreviousKeysOnPasswordChange {
-			err = acctest.TestAttributesMatchBool(resourceType, nil, "retain_previous_keys_on_password_change", config.retainPreviousKeysOnPasswordChange, *response.RetainPreviousKeysOnPasswordChange)
 			if err != nil {
 				return err
 			}

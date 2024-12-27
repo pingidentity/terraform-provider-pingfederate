@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
@@ -83,6 +83,7 @@ type oauthServerSettingsModel struct {
 	DpopProofEnforceReplayPrevention                   types.Bool   `tfsdk:"dpop_proof_enforce_replay_prevention"`
 	BypassAuthorizationForApprovedConsents             types.Bool   `tfsdk:"bypass_authorization_for_approved_consents"`
 	ConsentLifetimeDays                                types.Int64  `tfsdk:"consent_lifetime_days"`
+	ReturnIdTokenOnOpenIdWithDeviceAuthzGrant          types.Bool   `tfsdk:"return_id_token_on_open_id_with_device_authz_grant"`
 }
 
 func readOauthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthServerSettingsModel) diag.Diagnostics {
@@ -147,5 +148,6 @@ func readOauthServerSettingsResponse(ctx context.Context, r *client.Authorizatio
 	state.DpopProofEnforceReplayPrevention = types.BoolPointerValue(r.DpopProofEnforceReplayPrevention)
 	state.BypassAuthorizationForApprovedConsents = types.BoolPointerValue(r.BypassAuthorizationForApprovedConsents)
 	state.ConsentLifetimeDays = types.Int64PointerValue(r.ConsentLifetimeDays)
+	state.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant = types.BoolPointerValue(r.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant)
 	return diags
 }

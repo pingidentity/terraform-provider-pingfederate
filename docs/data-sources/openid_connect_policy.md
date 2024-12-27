@@ -43,6 +43,7 @@ data "pingfederate_openid_connect_policy" "myOIDCPolicy" {
 - `name` (String) The name used for display in UI screens.
 - `reissue_id_token_in_hybrid_flow` (Boolean) Determines whether a new ID Token should be returned during token request of the hybrid flow.
 - `return_id_token_on_refresh_grant` (Boolean) Determines whether an ID Token should be returned when refresh grant is requested or not.
+- `return_id_token_on_token_exchange_grant` (Boolean) Determines whether an ID Token should be returned when token exchange is requested or not. Supported in PF version `12.2` or later.
 - `scope_attribute_mappings` (Attributes Map) The attribute scope mappings from scopes to attribute names. (see [below for nested schema](#nestedatt--scope_attribute_mappings))
 
 <a id="nestedatt--access_token_manager_ref"></a>

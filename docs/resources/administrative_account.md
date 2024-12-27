@@ -25,7 +25,7 @@ resource "pingfederate_administrative_account" "administrativeAccount" {
 
 ### Required
 
-- `roles` (Set of String) Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions.
+- `roles` (Set of String) Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions. `DATA_COLLECTION_ADMINISTRATOR` - Can run the Collect Support Data Utility.
 - `username` (String) Username for the Administrative Account. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional

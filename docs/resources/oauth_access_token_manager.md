@@ -286,6 +286,7 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 - `selection_settings` (Attributes) Settings which determine how this token manager can be selected for use by an OAuth request. (see [below for nested schema](#nestedatt--selection_settings))
 - `session_validation_settings` (Attributes) Settings which determine how the user session is associated with the access token. (see [below for nested schema](#nestedatt--session_validation_settings))
+- `token_endpoint_attribute_contract` (Attributes) A set of attributes exposed by an Access Token Manager in a token endpoint response. Supported in PingFederate `12.2.0` and later. (see [below for nested schema](#nestedatt--token_endpoint_attribute_contract))
 
 ### Read-Only
 
@@ -462,7 +463,7 @@ Required:
 
 Optional:
 
-- `allowed_clients` (Attributes List) If 'restrict_clients' is `true`, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
+- `allowed_clients` (Attributes List) If `restrict_clients` is `true`, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
 - `restrict_clients` (Boolean) Determines whether access to this token manager is restricted to specific OAuth clients. If `false`, the `allowed_clients` field is ignored. The default value is `false`.
 
 <a id="nestedatt--access_control_settings--allowed_clients"></a>
@@ -499,6 +500,26 @@ Optional:
 - `check_valid_authn_session` (Boolean) Check for a valid authentication session when validating the access token. The default is `false`.
 - `include_session_id` (Boolean) Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens. The default is `false`.
 - `update_authn_session_activity` (Boolean) Update authentication session activity when validating the access token. The default is `false`.
+
+
+<a id="nestedatt--token_endpoint_attribute_contract"></a>
+### Nested Schema for `token_endpoint_attribute_contract`
+
+Optional:
+
+- `attributes` (Attributes Set) A list of token endpoint response attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--token_endpoint_attribute_contract--attributes))
+
+<a id="nestedatt--token_endpoint_attribute_contract--attributes"></a>
+### Nested Schema for `token_endpoint_attribute_contract.attributes`
+
+Required:
+
+- `name` (String) The name of this attribute.
+
+Optional:
+
+- `mapped_scopes` (Set of String) List of scopes that will trigger this attribute to be included in the token endpoint response.
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
 
 ## Import
 

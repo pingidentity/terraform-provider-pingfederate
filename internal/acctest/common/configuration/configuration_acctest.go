@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 )
 
 func Hcl(configuration client.PluginConfiguration) string {
