@@ -42,6 +42,7 @@ func validateUrlValue(path path.Path, value types.String, respDiags *diag.Diagno
 	// Ensure the the URL can be parsed by url.Parse
 	valueString := value.ValueString()
 
+	// Rely on PingFederate validation for values containing asterisk(s)
 	if strings.Contains(valueString, "*") {
 		return
 	}
