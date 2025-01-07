@@ -60,7 +60,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 
 	updatedResourceModel := oauthAuthServerSettingsResourceModel{
 		activationCodeCheckMode:                     "BEFORE_AUTHENTICATION",
-		allowedOrigins:                              []string{"https://example.com"},
+		allowedOrigins:                              []string{"https://example.com:*"},
 		allowUnidentifiedClientExtensionGrants:      true,
 		allowUnidentifiedClientRoCreds:              true,
 		atmIdForOauthGrantManagement:                "jwt",

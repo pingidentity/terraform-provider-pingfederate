@@ -1,6 +1,7 @@
 # v1.2.1 (Unreleased)
 ### Bug Fixes
 * Fix terraform import failure for certain `pingfederate_sp_idp_connection` configurations ([#442](https://github.com/pingidentity/terraform-provider-pingfederate/pull/442))
+* Fix URL config validator where some asterisks in value returned "Invalid URL Format" ([#445](https://github.com/pingidentity/terraform-provider-pingfederate/pull/445))
 
 ### Notes
 * bump `golang.org/x/net` 0.31.0 => 0.33.0 ([#441](https://github.com/pingidentity/terraform-provider-pingfederate/pull/441))
