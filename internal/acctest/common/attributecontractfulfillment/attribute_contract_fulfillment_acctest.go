@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 )
 
 func InitialAttributeContractFulfillment() client.AttributeFulfillmentValue {

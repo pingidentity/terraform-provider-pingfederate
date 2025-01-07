@@ -1,4 +1,7 @@
-# v1.2.1 (Unreleased)
+# v1.3.0 (Unreleased)
+### Enhancements
+* Added support for PingFederate `12.2.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, `12.0`, and `12.1`. This will be the last release with support for PingFederate `11.2` in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#440]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/440)))
+
 ### Bug Fixes
 * Fix terraform import failure for certain `pingfederate_sp_idp_connection` configurations ([#442](https://github.com/pingidentity/terraform-provider-pingfederate/pull/442))
 * Fix URL config validator where some asterisks in value returned "Invalid URL Format" ([#445](https://github.com/pingidentity/terraform-provider-pingfederate/pull/445))

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -22,35 +22,41 @@ var (
 	}
 
 	oidcPolicyAttrType = map[string]attr.Type{
-		"id_token_signing_algorithm":                  types.StringType,
-		"id_token_encryption_algorithm":               types.StringType,
-		"id_token_content_encryption_algorithm":       types.StringType,
-		"policy_group":                                types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"grant_access_session_revocation_api":         types.BoolType,
-		"grant_access_session_session_management_api": types.BoolType,
-		"ping_access_logout_capable":                  types.BoolType,
-		"logout_uris":                                 types.SetType{ElemType: types.StringType},
-		"pairwise_identifier_user_type":               types.BoolType,
-		"sector_identifier_uri":                       types.StringType,
-		"logout_mode":                                 types.StringType,
-		"back_channel_logout_uri":                     types.StringType,
-		"post_logout_redirect_uris":                   types.SetType{ElemType: types.StringType},
+		"id_token_signing_algorithm":                      types.StringType,
+		"id_token_encryption_algorithm":                   types.StringType,
+		"id_token_content_encryption_algorithm":           types.StringType,
+		"policy_group":                                    types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"grant_access_session_revocation_api":             types.BoolType,
+		"grant_access_session_session_management_api":     types.BoolType,
+		"ping_access_logout_capable":                      types.BoolType,
+		"logout_uris":                                     types.SetType{ElemType: types.StringType},
+		"pairwise_identifier_user_type":                   types.BoolType,
+		"sector_identifier_uri":                           types.StringType,
+		"logout_mode":                                     types.StringType,
+		"back_channel_logout_uri":                         types.StringType,
+		"post_logout_redirect_uris":                       types.SetType{ElemType: types.StringType},
+		"user_info_response_content_encryption_algorithm": types.StringType,
+		"user_info_response_encryption_algorithm":         types.StringType,
+		"user_info_response_signing_algorithm":            types.StringType,
 	}
 
 	oidcPolicyDefaultAttrValue = map[string]attr.Value{
-		"id_token_signing_algorithm":                  types.StringNull(),
-		"id_token_encryption_algorithm":               types.StringNull(),
-		"id_token_content_encryption_algorithm":       types.StringNull(),
-		"policy_group":                                types.ObjectNull(resourcelink.AttrType()),
-		"grant_access_session_revocation_api":         types.BoolValue(false),
-		"grant_access_session_session_management_api": types.BoolValue(false),
-		"ping_access_logout_capable":                  types.BoolValue(false),
-		"logout_uris":                                 types.SetNull(types.StringType),
-		"pairwise_identifier_user_type":               types.BoolValue(false),
-		"sector_identifier_uri":                       types.StringNull(),
-		"logout_mode":                                 types.StringNull(),
-		"back_channel_logout_uri":                     types.StringNull(),
-		"post_logout_redirect_uris":                   types.SetNull(types.StringType),
+		"id_token_signing_algorithm":                      types.StringNull(),
+		"id_token_encryption_algorithm":                   types.StringNull(),
+		"id_token_content_encryption_algorithm":           types.StringNull(),
+		"policy_group":                                    types.ObjectNull(resourcelink.AttrType()),
+		"grant_access_session_revocation_api":             types.BoolValue(false),
+		"grant_access_session_session_management_api":     types.BoolValue(false),
+		"ping_access_logout_capable":                      types.BoolValue(false),
+		"logout_uris":                                     types.SetNull(types.StringType),
+		"pairwise_identifier_user_type":                   types.BoolValue(false),
+		"sector_identifier_uri":                           types.StringNull(),
+		"logout_mode":                                     types.StringNull(),
+		"back_channel_logout_uri":                         types.StringNull(),
+		"post_logout_redirect_uris":                       types.SetNull(types.StringType),
+		"user_info_response_content_encryption_algorithm": types.StringNull(),
+		"user_info_response_encryption_algorithm":         types.StringNull(),
+		"user_info_response_signing_algorithm":            types.StringNull(),
 	}
 
 	secondarySecretsAttrType = map[string]attr.Type{
@@ -157,6 +163,8 @@ type oauthClientModel struct {
 	RequireDpop                                                   types.Bool   `tfsdk:"require_dpop"`
 	RequireOfflineAccessScopeToIssueRefreshTokens                 types.String `tfsdk:"require_offline_access_scope_to_issue_refresh_tokens"`
 	OfflineAccessRequireConsentPrompt                             types.String `tfsdk:"offline_access_require_consent_prompt"`
+	LockoutMaxMaliciousActions                                    types.Int64  `tfsdk:"lockout_max_malicious_actions"`
+	LockoutMaxMaliciousActionsType                                types.String `tfsdk:"lockout_max_malicious_actions_type"`
 }
 
 func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state, plan *oauthClientModel, productVersion version.SupportedVersion, isImportRead bool) diag.Diagnostics {
@@ -263,6 +271,8 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.RequireDpop = types.BoolPointerValue(r.RequireDpop)
 	state.RequireOfflineAccessScopeToIssueRefreshTokens = types.StringPointerValue(r.RequireOfflineAccessScopeToIssueRefreshTokens)
 	state.OfflineAccessRequireConsentPrompt = types.StringPointerValue(r.OfflineAccessRequireConsentPrompt)
+	state.LockoutMaxMaliciousActions = types.Int64PointerValue(r.LockoutMaxMaliciousActions)
+	state.LockoutMaxMaliciousActionsType = types.StringPointerValue(r.LockoutMaxMaliciousActionsType)
 
 	// state.OidcPolicy
 	oidcPolicyToState, respDiags := types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
@@ -240,6 +240,12 @@ func testAccOpenidConnectPolicies(resourceName string, resourceModel oauthOpenId
 			optionalHcl += `
 		include_x5t_in_id_token = true
 		id_token_typ_header_value = "Example"
+			`
+		}
+
+		if acctest.VersionAtLeast(version.PingFederate1220) {
+			optionalHcl += `
+		return_id_token_on_token_exchange_grant = true
 			`
 		}
 	}
