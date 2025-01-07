@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -39,7 +40,14 @@ func (v urlValidator) ValidateString(ctx context.Context, req validator.StringRe
 
 func validateUrlValue(path path.Path, value types.String, respDiags *diag.Diagnostics) {
 	// Ensure the the URL can be parsed by url.Parse
-	_, err := url.Parse(value.ValueString())
+	valueString := value.ValueString()
+
+	// Rely on PingFederate validation for values containing asterisk(s)
+	if strings.Contains(valueString, "*") {
+		return
+	}
+
+	_, err := url.Parse(valueString)
 	if err != nil {
 		respDiags.AddAttributeError(
 			path,

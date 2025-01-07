@@ -2,6 +2,13 @@
 ### Enhancements
 * Added support for PingFederate `12.2.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, `12.0`, and `12.1`. This will be the last release with support for PingFederate `11.2` in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#440]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/440)))
 
+### Bug Fixes
+* Fix terraform import failure for certain `pingfederate_sp_idp_connection` configurations ([#442](https://github.com/pingidentity/terraform-provider-pingfederate/pull/442))
+* Fix URL config validator where some asterisks in value returned "Invalid URL Format" ([#445](https://github.com/pingidentity/terraform-provider-pingfederate/pull/445))
+
+### Notes
+* bump `golang.org/x/net` 0.31.0 => 0.33.0 ([#441](https://github.com/pingidentity/terraform-provider-pingfederate/pull/441))
+
 # v1.2.0 December 16, 2024
 ### Enhancements
 * Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source. ([#428](https://github.com/pingidentity/terraform-provider-pingfederate/pull/428))

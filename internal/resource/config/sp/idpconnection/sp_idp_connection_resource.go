@@ -4632,6 +4632,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		if tokenGeneratorMappings != nil {
 			tokenGeneratorMappingsSet, objDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}, tokenGeneratorMappings)
 			diags.Append(objDiags...)
+		} else {
+			tokenGeneratorMappingsSet = types.SetNull(types.ObjectType{AttrTypes: tokenGeneratorAttrTypes})
 		}
 
 		wsTrustAttrValues := map[string]attr.Value{
