@@ -152,7 +152,7 @@ func testAccCustomDataStore(resourceName string, resourceModel customDataStoreRe
         },
 		`
 	}
-	if acctest.VersionAtLeast(version.PingFederate1220) {
+	if acctest.VersionAtLeast(version.PingFederate1214) {
 		versionedFields += `
 		{
 		  name = "Exclude default Content-Type from GET Request"
