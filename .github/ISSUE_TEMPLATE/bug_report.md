@@ -2,7 +2,7 @@
 name: 🐛 Bug Report
 about: Create a report to help us improve
 title: ''
-labels: bug
+labels: bug,status/needs-triage
 assignees: ''
 
 ---
