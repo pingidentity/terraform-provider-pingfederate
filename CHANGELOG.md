@@ -1,4 +1,4 @@
-# v1.3.0 (Unreleased)
+# v1.3.0 January 9, 2024
 ### Enhancements
 * Added support for PingFederate `12.2.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, `12.0`, and `12.1`. This will be the last release with support for PingFederate `11.2` in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#440]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/440)))
 
