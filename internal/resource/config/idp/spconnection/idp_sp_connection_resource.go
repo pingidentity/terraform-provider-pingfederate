@@ -2126,22 +2126,27 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 	addRequest.ApplicationIconUrl = plan.ApplicationIconUrl.ValueStringPointer()
 	addRequest.ConnectionTargetType = plan.ConnectionTargetType.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.VirtualEntityIds) {
+	// virtual_entity_ids
+	if !plan.VirtualEntityIds.IsNull() {
 		addRequest.VirtualEntityIds = []string{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.VirtualEntityIds, true)), &addRequest.VirtualEntityIds)
-		if err != nil {
-			return err
+		for _, virtualEntityIdsElement := range plan.VirtualEntityIds.Elements() {
+			addRequest.VirtualEntityIds = append(addRequest.VirtualEntityIds, virtualEntityIdsElement.(types.String).ValueString())
 		}
 	}
 
-	if internaltypes.IsDefined(plan.MetadataReloadSettings) {
-		addRequest.MetadataReloadSettings = &client.ConnectionMetadataUrl{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.MetadataReloadSettings, true)), &addRequest.MetadataReloadSettings)
-		if err != nil {
-			return err
-		}
+	// metadata_reload_settings
+	if !plan.MetadataReloadSettings.IsNull() {
+		metadataReloadSettingsValue := &client.ConnectionMetadataUrl{}
+		metadataReloadSettingsAttrs := plan.MetadataReloadSettings.Attributes()
+		metadataReloadSettingsValue.EnableAutoMetadataUpdate = metadataReloadSettingsAttrs["enable_auto_metadata_update"].(types.Bool).ValueBoolPointer()
+		metadataReloadSettingsMetadataUrlRefValue := client.ResourceLink{}
+		metadataReloadSettingsMetadataUrlRefAttrs := metadataReloadSettingsAttrs["metadata_url_ref"].(types.Object).Attributes()
+		metadataReloadSettingsMetadataUrlRefValue.Id = metadataReloadSettingsMetadataUrlRefAttrs["id"].(types.String).ValueString()
+		metadataReloadSettingsValue.MetadataUrlRef = metadataReloadSettingsMetadataUrlRefValue
+		addRequest.MetadataReloadSettings = metadataReloadSettingsValue
 	}
 
+	//TODO replace?
 	if internaltypes.IsDefined(plan.Credentials) {
 		addRequest.Credentials = &client.ConnectionCredentials{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), &addRequest.Credentials)
@@ -2156,30 +2161,52 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ContactInfo) {
-		addRequest.ContactInfo = &client.ContactInfo{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, true)), &addRequest.ContactInfo)
-		if err != nil {
-			return err
-		}
+	// contact_info
+	if !plan.ContactInfo.IsNull() {
+		contactInfoValue := &client.ContactInfo{}
+		contactInfoAttrs := plan.ContactInfo.Attributes()
+		contactInfoValue.Company = contactInfoAttrs["company"].(types.String).ValueStringPointer()
+		contactInfoValue.Email = contactInfoAttrs["email"].(types.String).ValueStringPointer()
+		contactInfoValue.FirstName = contactInfoAttrs["first_name"].(types.String).ValueStringPointer()
+		contactInfoValue.LastName = contactInfoAttrs["last_name"].(types.String).ValueStringPointer()
+		contactInfoValue.Phone = contactInfoAttrs["phone"].(types.String).ValueStringPointer()
+		addRequest.ContactInfo = contactInfoValue
 	}
 
-	if internaltypes.IsDefined(plan.AdditionalAllowedEntitiesConfiguration) {
-		addRequest.AdditionalAllowedEntitiesConfiguration = &client.AdditionalAllowedEntitiesConfiguration{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdditionalAllowedEntitiesConfiguration, true)), &addRequest.AdditionalAllowedEntitiesConfiguration)
-		if err != nil {
-			return err
+	// additional_allowed_entities_configuration
+	if !plan.AdditionalAllowedEntitiesConfiguration.IsNull() {
+		additionalAllowedEntitiesConfigurationValue := &client.AdditionalAllowedEntitiesConfiguration{}
+		additionalAllowedEntitiesConfigurationAttrs := plan.AdditionalAllowedEntitiesConfiguration.Attributes()
+		additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = []client.Entity{}
+		for _, additionalAllowedEntitiesElement := range additionalAllowedEntitiesConfigurationAttrs["additional_allowed_entities"].(types.List).Elements() {
+			additionalAllowedEntitiesValue := client.Entity{}
+			additionalAllowedEntitiesAttrs := additionalAllowedEntitiesElement.(types.Object).Attributes()
+			additionalAllowedEntitiesValue.EntityDescription = additionalAllowedEntitiesAttrs["entity_description"].(types.String).ValueStringPointer()
+			additionalAllowedEntitiesValue.EntityId = additionalAllowedEntitiesAttrs["entity_id"].(types.String).ValueStringPointer()
+			additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = append(additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities, additionalAllowedEntitiesValue)
 		}
+		additionalAllowedEntitiesConfigurationValue.AllowAdditionalEntities = additionalAllowedEntitiesConfigurationAttrs["allow_additional_entities"].(types.Bool).ValueBoolPointer()
+		additionalAllowedEntitiesConfigurationValue.AllowAllEntities = additionalAllowedEntitiesConfigurationAttrs["allow_all_entities"].(types.Bool).ValueBoolPointer()
+		addRequest.AdditionalAllowedEntitiesConfiguration = additionalAllowedEntitiesConfigurationValue
 	}
 
-	if internaltypes.IsDefined(plan.ExtendedProperties) {
+	// extended_properties
+	if !plan.ExtendedProperties.IsNull() {
 		addRequest.ExtendedProperties = &map[string]client.ParameterValues{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedProperties, true)), &addRequest.ExtendedProperties)
-		if err != nil {
-			return err
+		for key, extendedPropertiesElement := range plan.ExtendedProperties.Elements() {
+			extendedPropertiesValue := client.ParameterValues{}
+			extendedPropertiesAttrs := extendedPropertiesElement.(types.Object).Attributes()
+			if !extendedPropertiesAttrs["values"].IsNull() {
+				extendedPropertiesValue.Values = []string{}
+				for _, valuesElement := range extendedPropertiesAttrs["values"].(types.Set).Elements() {
+					extendedPropertiesValue.Values = append(extendedPropertiesValue.Values, valuesElement.(types.String).ValueString())
+				}
+			}
+			(*addRequest.ExtendedProperties)[key] = extendedPropertiesValue
 		}
 	}
 
+	//TODO fix
 	if internaltypes.IsDefined(plan.SpBrowserSso) {
 		addRequest.SpBrowserSso = &client.SpBrowserSso{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, true)), &addRequest.SpBrowserSso)
@@ -2190,35 +2217,43 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.AttributeQuery) {
 		addRequest.AttributeQuery = &client.SpAttributeQuery{}
+		attributeQueryAttrs := plan.AttributeQuery.Attributes()
 
 		addRequest.AttributeQuery.Attributes = []string{}
-		for _, attribute := range plan.AttributeQuery.Attributes()["attributes"].(types.Set).Elements() {
+		for _, attribute := range attributeQueryAttrs["attributes"].(types.Set).Elements() {
 			addRequest.AttributeQuery.Attributes = append(addRequest.AttributeQuery.Attributes, attribute.(types.String).ValueString())
 		}
 
+		//TODO replace?
 		addRequest.AttributeQuery.AttributeContractFulfillment = map[string]client.AttributeFulfillmentValue{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery.Attributes()["attribute_contract_fulfillment"], true)), &addRequest.AttributeQuery.AttributeContractFulfillment)
+		err := json.Unmarshal([]byte(internaljson.FromValue(attributeQueryAttrs["attribute_contract_fulfillment"], true)), &addRequest.AttributeQuery.AttributeContractFulfillment)
 		if err != nil {
 			return err
 		}
 
-		addRequest.AttributeQuery.IssuanceCriteria, err = issuancecriteria.ClientStruct(plan.AttributeQuery.Attributes()["issuance_criteria"].(types.Object))
+		addRequest.AttributeQuery.IssuanceCriteria, err = issuancecriteria.ClientStruct(attributeQueryAttrs["issuance_criteria"].(types.Object))
 		if err != nil {
 			return err
 		}
 
-		addRequest.AttributeQuery.Policy = &client.SpAttributeQueryPolicy{}
-		err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery.Attributes()["policy"], true)), &addRequest.AttributeQuery.Policy)
-		if err != nil {
-			return err
+		if !attributeQueryAttrs["policy"].IsNull() {
+			attributeQueryPolicyValue := &client.SpAttributeQueryPolicy{}
+			attributeQueryPolicyAttrs := attributeQueryAttrs["policy"].(types.Object).Attributes()
+			attributeQueryPolicyValue.EncryptAssertion = attributeQueryPolicyAttrs["encrypt_assertion"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.RequireEncryptedNameId = attributeQueryPolicyAttrs["require_encrypted_name_id"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.RequireSignedAttributeQuery = attributeQueryPolicyAttrs["require_signed_attribute_query"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.SignAssertion = attributeQueryPolicyAttrs["sign_assertion"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.SignResponse = attributeQueryPolicyAttrs["sign_response"].(types.Bool).ValueBoolPointer()
+			addRequest.AttributeQuery.Policy = attributeQueryPolicyValue
 		}
 
-		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(plan.AttributeQuery.Attributes()["attribute_sources"].(types.Set))
+		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(attributeQueryAttrs["attribute_sources"].(types.Set))
 		if err != nil {
 			return err
 		}
 	}
 
+	//TODO validate
 	if internaltypes.IsDefined(plan.WsTrust) {
 		addRequest.WsTrust = &client.SpWsTrust{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, true)), &addRequest.WsTrust)
@@ -2227,6 +2262,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		}
 	}
 
+	//TODO validate
 	if internaltypes.IsDefined(plan.OutboundProvision) {
 		addRequest.OutboundProvision = &client.OutboundProvision{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
