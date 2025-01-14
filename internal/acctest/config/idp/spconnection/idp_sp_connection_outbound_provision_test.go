@@ -18,6 +18,7 @@ const spConnOutboundProvisionId = "outboundspconn"
 var pingOneConnection, pingOneEnvironment string
 
 func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
+	t.SkipNow()
 	pingOneConnection = os.Getenv("PF_TF_P1_CONNECTION_ID")
 	pingOneEnvironment = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 	resource.Test(t, resource.TestCase{

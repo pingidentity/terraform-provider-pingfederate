@@ -2114,7 +2114,9 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) error {
+func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) diag.Diagnostics {
+	var err error
+	var respDiags diag.Diagnostics
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = utils.Pointer("SP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
@@ -2151,7 +2153,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.Credentials = &client.ConnectionCredentials{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), &addRequest.Credentials)
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for credentials", err.Error())
 		}
 		if addRequest.Credentials.InboundBackChannelAuth != nil {
 			addRequest.Credentials.InboundBackChannelAuth.Type = "INBOUND"
@@ -2211,7 +2213,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.SpBrowserSso = &client.SpBrowserSso{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, true)), &addRequest.SpBrowserSso)
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for sp_browser_sso", err.Error())
 		}
 	}
 
@@ -2228,12 +2230,12 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.AttributeQuery.AttributeContractFulfillment = map[string]client.AttributeFulfillmentValue{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(attributeQueryAttrs["attribute_contract_fulfillment"], true)), &addRequest.AttributeQuery.AttributeContractFulfillment)
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
 		}
 
 		addRequest.AttributeQuery.IssuanceCriteria, err = issuancecriteria.ClientStruct(attributeQueryAttrs["issuance_criteria"].(types.Object))
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
 		}
 
 		if !attributeQueryAttrs["policy"].IsNull() {
@@ -2249,17 +2251,86 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(attributeQueryAttrs["attribute_sources"].(types.Set))
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for attribute_sources", err.Error())
 		}
 	}
 
-	//TODO validate
-	if internaltypes.IsDefined(plan.WsTrust) {
-		addRequest.WsTrust = &client.SpWsTrust{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, true)), &addRequest.WsTrust)
-		if err != nil {
-			return err
+	if !plan.WsTrust.IsNull() {
+		wsTrustValue := &client.SpWsTrust{}
+		wsTrustAttrs := plan.WsTrust.Attributes()
+		wsTrustValue.AbortIfNotFulfilledFromRequest = wsTrustAttrs["abort_if_not_fulfilled_from_request"].(types.Bool).ValueBoolPointer()
+		wsTrustAttributeContractValue := client.SpWsTrustAttributeContract{}
+		wsTrustAttributeContractAttrs := wsTrustAttrs["attribute_contract"].(types.Object).Attributes()
+		wsTrustAttributeContractValue.CoreAttributes = []client.SpWsTrustAttribute{}
+		for _, coreAttributesElement := range wsTrustAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.SpWsTrustAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			coreAttributesValue.Namespace = coreAttributesAttrs["namespace"].(types.String).ValueString()
+			wsTrustAttributeContractValue.CoreAttributes = append(wsTrustAttributeContractValue.CoreAttributes, coreAttributesValue)
 		}
+		wsTrustAttributeContractValue.ExtendedAttributes = []client.SpWsTrustAttribute{}
+		for _, extendedAttributesElement := range wsTrustAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.SpWsTrustAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			extendedAttributesValue.Namespace = extendedAttributesAttrs["namespace"].(types.String).ValueString()
+			wsTrustAttributeContractValue.ExtendedAttributes = append(wsTrustAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		wsTrustValue.AttributeContract = wsTrustAttributeContractValue
+		wsTrustValue.DefaultTokenType = wsTrustAttrs["default_token_type"].(types.String).ValueStringPointer()
+		wsTrustValue.EncryptSaml2Assertion = wsTrustAttrs["encrypt_saml2_assertion"].(types.Bool).ValueBoolPointer()
+		wsTrustValue.GenerateKey = wsTrustAttrs["generate_key"].(types.Bool).ValueBoolPointer()
+		wsTrustValue.MessageCustomizations = []client.ProtocolMessageCustomization{}
+		for _, messageCustomizationsElement := range wsTrustAttrs["message_customizations"].(types.Set).Elements() {
+			messageCustomizationsValue := client.ProtocolMessageCustomization{}
+			messageCustomizationsAttrs := messageCustomizationsElement.(types.Object).Attributes()
+			messageCustomizationsValue.ContextName = messageCustomizationsAttrs["context_name"].(types.String).ValueStringPointer()
+			messageCustomizationsValue.MessageExpression = messageCustomizationsAttrs["message_expression"].(types.String).ValueStringPointer()
+			wsTrustValue.MessageCustomizations = append(wsTrustValue.MessageCustomizations, messageCustomizationsValue)
+		}
+		wsTrustValue.MinutesAfter = wsTrustAttrs["minutes_after"].(types.Int64).ValueInt64Pointer()
+		wsTrustValue.MinutesBefore = wsTrustAttrs["minutes_before"].(types.Int64).ValueInt64Pointer()
+		wsTrustValue.OAuthAssertionProfiles = wsTrustAttrs["oauth_assertion_profiles"].(types.Bool).ValueBoolPointer()
+		wsTrustValue.PartnerServiceIds = []string{}
+		for _, partnerServiceIdsElement := range wsTrustAttrs["partner_service_ids"].(types.Set).Elements() {
+			wsTrustValue.PartnerServiceIds = append(wsTrustValue.PartnerServiceIds, partnerServiceIdsElement.(types.String).ValueString())
+		}
+		if !wsTrustAttrs["request_contract_ref"].IsNull() {
+			wsTrustRequestContractRefValue := &client.ResourceLink{}
+			wsTrustRequestContractRefAttrs := wsTrustAttrs["request_contract_ref"].(types.Object).Attributes()
+			wsTrustRequestContractRefValue.Id = wsTrustRequestContractRefAttrs["id"].(types.String).ValueString()
+			wsTrustValue.RequestContractRef = wsTrustRequestContractRefValue
+		}
+		wsTrustValue.TokenProcessorMappings = []client.IdpTokenProcessorMapping{}
+		for _, tokenProcessorMappingsElement := range wsTrustAttrs["token_processor_mappings"].(types.Set).Elements() {
+			tokenProcessorMappingsValue := client.IdpTokenProcessorMapping{}
+			tokenProcessorMappingsAttrs := tokenProcessorMappingsElement.(types.Object).Attributes()
+			tokenProcessorMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(tokenProcessorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			tokenProcessorMappingsValue.AttributeSources, err = attributesources.ClientStruct(tokenProcessorMappingsAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			tokenProcessorMappingsIdpTokenProcessorRefValue := client.ResourceLink{}
+			tokenProcessorMappingsIdpTokenProcessorRefAttrs := tokenProcessorMappingsAttrs["idp_token_processor_ref"].(types.Object).Attributes()
+			tokenProcessorMappingsIdpTokenProcessorRefValue.Id = tokenProcessorMappingsIdpTokenProcessorRefAttrs["id"].(types.String).ValueString()
+			tokenProcessorMappingsValue.IdpTokenProcessorRef = tokenProcessorMappingsIdpTokenProcessorRefValue
+			tokenProcessorMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(tokenProcessorMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			if !tokenProcessorMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				tokenProcessorMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range tokenProcessorMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					tokenProcessorMappingsValue.RestrictedVirtualEntityIds = append(tokenProcessorMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			wsTrustValue.TokenProcessorMappings = append(wsTrustValue.TokenProcessorMappings, tokenProcessorMappingsValue)
+		}
+		addRequest.WsTrust = wsTrustValue
 	}
 
 	//TODO validate
@@ -2267,11 +2338,11 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.OutboundProvision = &client.OutboundProvision{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for outbound_provision", err.Error())
 		}
 	}
 
-	return nil
+	return respDiags
 }
 
 func (state *idpSpConnectionModel) getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex int) types.Object {
@@ -3689,9 +3760,8 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	err := addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdP SP Connection: "+err.Error())
+	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -3754,9 +3824,8 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the IdP SP Connection: "+err.Error())
+	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
