@@ -2333,13 +2333,138 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.WsTrust = wsTrustValue
 	}
 
-	//TODO validate
-	if internaltypes.IsDefined(plan.OutboundProvision) {
-		addRequest.OutboundProvision = &client.OutboundProvision{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
-		if err != nil {
-			respDiags.AddError("Error building client struct for outbound_provision", err.Error())
+	// outbound_provision
+	if !plan.OutboundProvision.IsNull() {
+		outboundProvisionValue := &client.OutboundProvision{}
+		outboundProvisionAttrs := plan.OutboundProvision.Attributes()
+		outboundProvisionValue.Channels = []client.Channel{}
+		for _, channelsElement := range outboundProvisionAttrs["channels"].(types.List).Elements() {
+			channelsValue := client.Channel{}
+			channelsAttrs := channelsElement.(types.Object).Attributes()
+			channelsValue.Active = channelsAttrs["active"].(types.Bool).ValueBool()
+			channelsValue.AttributeMapping = []client.SaasAttributeMapping{}
+			for _, attributeMappingElement := range channelsAttrs["attribute_mapping"].(types.Set).Elements() {
+				attributeMappingValue := client.SaasAttributeMapping{}
+				attributeMappingAttrs := attributeMappingElement.(types.Object).Attributes()
+				attributeMappingValue.FieldName = attributeMappingAttrs["field_name"].(types.String).ValueString()
+				attributeMappingSaasFieldInfoValue := client.SaasFieldConfiguration{}
+				attributeMappingSaasFieldInfoAttrs := attributeMappingAttrs["saas_field_info"].(types.Object).Attributes()
+				if !attributeMappingSaasFieldInfoAttrs["attribute_names"].IsNull() {
+					attributeMappingSaasFieldInfoValue.AttributeNames = []string{}
+					for _, attributeNamesElement := range attributeMappingSaasFieldInfoAttrs["attribute_names"].(types.List).Elements() {
+						attributeMappingSaasFieldInfoValue.AttributeNames = append(attributeMappingSaasFieldInfoValue.AttributeNames, attributeNamesElement.(types.String).ValueString())
+					}
+				}
+				if !attributeMappingSaasFieldInfoAttrs["character_case"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.CharacterCase = attributeMappingSaasFieldInfoAttrs["character_case"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["create_only"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.CreateOnly = attributeMappingSaasFieldInfoAttrs["create_only"].(types.Bool).ValueBoolPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["default_value"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.DefaultValue = attributeMappingSaasFieldInfoAttrs["default_value"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["expression"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Expression = attributeMappingSaasFieldInfoAttrs["expression"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["masked"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Masked = attributeMappingSaasFieldInfoAttrs["masked"].(types.Bool).ValueBoolPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["parser"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Parser = attributeMappingSaasFieldInfoAttrs["parser"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["trim"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Trim = attributeMappingSaasFieldInfoAttrs["trim"].(types.Bool).ValueBoolPointer()
+				}
+				attributeMappingValue.SaasFieldInfo = attributeMappingSaasFieldInfoValue
+				channelsValue.AttributeMapping = append(channelsValue.AttributeMapping, attributeMappingValue)
+			}
+			channelsChannelSourceValue := client.ChannelSource{}
+			channelsChannelSourceAttrs := channelsAttrs["channel_source"].(types.Object).Attributes()
+			channelsChannelSourceAccountManagementSettingsValue := client.AccountManagementSettings{}
+			channelsChannelSourceAccountManagementSettingsAttrs := channelsChannelSourceAttrs["account_management_settings"].(types.Object).Attributes()
+			channelsChannelSourceAccountManagementSettingsValue.AccountStatusAlgorithm = channelsChannelSourceAccountManagementSettingsAttrs["account_status_algorithm"].(types.String).ValueString()
+			channelsChannelSourceAccountManagementSettingsValue.AccountStatusAttributeName = channelsChannelSourceAccountManagementSettingsAttrs["account_status_attribute_name"].(types.String).ValueString()
+			channelsChannelSourceAccountManagementSettingsValue.DefaultStatus = channelsChannelSourceAccountManagementSettingsAttrs["default_status"].(types.Bool).ValueBoolPointer()
+			channelsChannelSourceAccountManagementSettingsValue.FlagComparisonStatus = channelsChannelSourceAccountManagementSettingsAttrs["flag_comparison_status"].(types.Bool).ValueBoolPointer()
+			channelsChannelSourceAccountManagementSettingsValue.FlagComparisonValue = channelsChannelSourceAccountManagementSettingsAttrs["flag_comparison_value"].(types.String).ValueStringPointer()
+			channelsChannelSourceValue.AccountManagementSettings = channelsChannelSourceAccountManagementSettingsValue
+			channelsChannelSourceValue.BaseDn = channelsChannelSourceAttrs["base_dn"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue := client.ChangeDetectionSettings{}
+			channelsChannelSourceChangeDetectionSettingsAttrs := channelsChannelSourceAttrs["change_detection_settings"].(types.Object).Attributes()
+			channelsChannelSourceChangeDetectionSettingsValue.ChangedUsersAlgorithm = channelsChannelSourceChangeDetectionSettingsAttrs["changed_users_algorithm"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.GroupObjectClass = channelsChannelSourceChangeDetectionSettingsAttrs["group_object_class"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.TimeStampAttributeName = channelsChannelSourceChangeDetectionSettingsAttrs["time_stamp_attribute_name"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.UserObjectClass = channelsChannelSourceChangeDetectionSettingsAttrs["user_object_class"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.UsnAttributeName = channelsChannelSourceChangeDetectionSettingsAttrs["usn_attribute_name"].(types.String).ValueStringPointer()
+			channelsChannelSourceValue.ChangeDetectionSettings = channelsChannelSourceChangeDetectionSettingsValue
+			channelsChannelSourceDataSourceValue := client.ResourceLink{}
+			channelsChannelSourceDataSourceAttrs := channelsChannelSourceAttrs["data_source"].(types.Object).Attributes()
+			channelsChannelSourceDataSourceValue.Id = channelsChannelSourceDataSourceAttrs["id"].(types.String).ValueString()
+			channelsChannelSourceValue.DataSource = channelsChannelSourceDataSourceValue
+			channelsChannelSourceGroupMembershipDetectionValue := client.GroupMembershipDetection{}
+			channelsChannelSourceGroupMembershipDetectionAttrs := channelsChannelSourceAttrs["group_membership_detection"].(types.Object).Attributes()
+			channelsChannelSourceGroupMembershipDetectionValue.GroupMemberAttributeName = channelsChannelSourceGroupMembershipDetectionAttrs["group_member_attribute_name"].(types.String).ValueStringPointer()
+			channelsChannelSourceGroupMembershipDetectionValue.MemberOfGroupAttributeName = channelsChannelSourceGroupMembershipDetectionAttrs["member_of_group_attribute_name"].(types.String).ValueStringPointer()
+			channelsChannelSourceValue.GroupMembershipDetection = channelsChannelSourceGroupMembershipDetectionValue
+			if !channelsChannelSourceAttrs["group_source_location"].IsNull() {
+				channelsChannelSourceGroupSourceLocationValue := &client.ChannelSourceLocation{}
+				channelsChannelSourceGroupSourceLocationAttrs := channelsChannelSourceAttrs["group_source_location"].(types.Object).Attributes()
+				channelsChannelSourceGroupSourceLocationValue.Filter = channelsChannelSourceGroupSourceLocationAttrs["filter"].(types.String).ValueStringPointer()
+				channelsChannelSourceGroupSourceLocationValue.GroupDN = channelsChannelSourceGroupSourceLocationAttrs["group_dn"].(types.String).ValueStringPointer()
+				channelsChannelSourceGroupSourceLocationValue.NestedSearch = channelsChannelSourceGroupSourceLocationAttrs["nested_search"].(types.Bool).ValueBoolPointer()
+				channelsChannelSourceValue.GroupSourceLocation = channelsChannelSourceGroupSourceLocationValue
+			}
+			channelsChannelSourceValue.GuidAttributeName = channelsChannelSourceAttrs["guid_attribute_name"].(types.String).ValueString()
+			channelsChannelSourceValue.GuidBinary = channelsChannelSourceAttrs["guid_binary"].(types.Bool).ValueBool()
+			channelsChannelSourceUserSourceLocationValue := client.ChannelSourceLocation{}
+			channelsChannelSourceUserSourceLocationAttrs := channelsChannelSourceAttrs["user_source_location"].(types.Object).Attributes()
+			channelsChannelSourceUserSourceLocationValue.Filter = channelsChannelSourceUserSourceLocationAttrs["filter"].(types.String).ValueStringPointer()
+			channelsChannelSourceUserSourceLocationValue.GroupDN = channelsChannelSourceUserSourceLocationAttrs["group_dn"].(types.String).ValueStringPointer()
+			channelsChannelSourceUserSourceLocationValue.NestedSearch = channelsChannelSourceUserSourceLocationAttrs["nested_search"].(types.Bool).ValueBoolPointer()
+			channelsChannelSourceValue.UserSourceLocation = channelsChannelSourceUserSourceLocationValue
+			channelsValue.ChannelSource = channelsChannelSourceValue
+			channelsValue.MaxThreads = channelsAttrs["max_threads"].(types.Int64).ValueInt64()
+			channelsValue.Name = channelsAttrs["name"].(types.String).ValueString()
+			channelsValue.Timeout = channelsAttrs["timeout"].(types.Int64).ValueInt64()
+			outboundProvisionValue.Channels = append(outboundProvisionValue.Channels, channelsValue)
 		}
+		if !outboundProvisionAttrs["custom_schema"].IsNull() {
+			outboundProvisionCustomSchemaValue := &client.Schema{}
+			outboundProvisionCustomSchemaAttrs := outboundProvisionAttrs["custom_schema"].(types.Object).Attributes()
+			outboundProvisionCustomSchemaValue.Attributes = []client.SchemaAttribute{}
+			for _, attributesElement := range outboundProvisionCustomSchemaAttrs["attributes"].(types.Set).Elements() {
+				attributesValue := client.SchemaAttribute{}
+				attributesAttrs := attributesElement.(types.Object).Attributes()
+				attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+				attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
+				if !attributesAttrs["sub_attributes"].IsNull() {
+					attributesValue.SubAttributes = []string{}
+					for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
+						attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesElement.(types.String).ValueString())
+					}
+				}
+				if !attributesAttrs["types"].IsNull() {
+					attributesValue.Types = []string{}
+					for _, typesElement := range attributesAttrs["types"].(types.Set).Elements() {
+						attributesValue.Types = append(attributesValue.Types, typesElement.(types.String).ValueString())
+					}
+				}
+				outboundProvisionCustomSchemaValue.Attributes = append(outboundProvisionCustomSchemaValue.Attributes, attributesValue)
+			}
+			outboundProvisionCustomSchemaValue.Namespace = outboundProvisionCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
+			outboundProvisionValue.CustomSchema = outboundProvisionCustomSchemaValue
+		}
+		outboundProvisionValue.TargetSettings = []client.ConfigField{}
+		for _, targetSettingsElement := range outboundProvisionAttrs["target_settings"].(types.Set).Elements() {
+			targetSettingsValue := client.ConfigField{}
+			targetSettingsAttrs := targetSettingsElement.(types.Object).Attributes()
+			targetSettingsValue.Name = targetSettingsAttrs["name"].(types.String).ValueString()
+			targetSettingsValue.Value = targetSettingsAttrs["value"].(types.String).ValueStringPointer()
+			outboundProvisionValue.TargetSettings = append(outboundProvisionValue.TargetSettings, targetSettingsValue)
+		}
+		outboundProvisionValue.Type = outboundProvisionAttrs["type"].(types.String).ValueString()
+		addRequest.OutboundProvision = outboundProvisionValue
 	}
 
 	return respDiags
