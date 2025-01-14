@@ -302,6 +302,22 @@ resource "pingfederate_idp_sp_connection" "example" {
           }
         }
         attribute_sources = [
+          {
+            custom_attribute_source = null
+            jdbc_attribute_source = {
+              attribute_contract_fulfillment = null
+              column_names                   = ["GRANTEE"]
+              data_store_ref = {
+                id = "ProvisionerDS"
+              }
+              description = "JDBC"
+              filter      = "$${SAML_SUBJECT}"
+              id          = null
+              schema      = "INFORMATION_SCHEMA"
+              table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
+            }
+            ldap_attribute_source = null
+          },
         ]
         authentication_policy_contract_ref = {
           id = "QGxlec5CX693lBQL"
