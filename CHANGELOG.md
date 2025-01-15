@@ -14,6 +14,7 @@
 * Fixed incorrect length validation for certain resource link `id` attributes.
 * `sp_idp_connection` and `idp_sp_connection` resources: Fixed `password` incorrectly defaulting to an empty string for `credentials.inbound_back_channel_auth.http_basic_credentials.password` and `credentials.outbound_back_channel_auth.http_basic_credentials.password`.
 * `idp_sp_connection` resource
+  * Fixed JSON marshal errors when setting `attribute_sources` values.
   * Fixed `sp_browser_sso.artifact.lifetime` attribute incorrectly being marked as required.
   * Fixed invalid validation requiring either `sp_browser_sso.sign_response_as_required` or `sp_browser_sso.sign_assertions` to be set to `true`.
   * Fixed some booleans being left out of state when set to `false`.
