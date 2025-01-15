@@ -65,6 +65,7 @@ data "pingfederate_oauth_server_settings" "myOauthAuthServerSettings" {
 - `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds.
 - `registered_authorization_path` (String) The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified
 - `require_offline_access_scope_to_issue_refresh_tokens` (Boolean) Determines whether offline_access scope is required to issue refresh tokens or not.
+- `return_id_token_on_open_id_with_device_authz_grant` (Boolean) Indicates if an ID token should be returned during the device authorization grant flow when the 'openid' scope is approved. The default is `false`. Supported in PF version `12.2` or later.
 - `roll_refresh_token_values` (Boolean) The roll refresh token values default policy.
 - `scope_for_oauth_grant_management` (String) The OAuth scope to validate when accessing grant management service.
 - `scope_groups` (Attributes Set) The list of common scope groups. (see [below for nested schema](#nestedatt--scope_groups))

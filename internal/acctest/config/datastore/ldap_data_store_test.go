@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
@@ -70,6 +70,8 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.ConnectionTimeout = pointers.Int64(600)
 	updatedLdapDataStore.BinaryAttributes = []string{"updatedBinaryAttribute1", "updatedBinaryAttribute2"}
 	updatedLdapDataStore.DnsTtl = pointers.Int64(3000)
+	updatedLdapDataStore.LdapDnsSrvPrefix = pointers.String("_ldapcustom._tcp.")
+	updatedLdapDataStore.LdapsDnsSrvPrefix = pointers.String("_ldapscustom._tcp.")
 	return updatedLdapDataStore
 }
 

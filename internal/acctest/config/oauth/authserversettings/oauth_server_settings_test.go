@@ -60,7 +60,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 
 	updatedResourceModel := oauthAuthServerSettingsResourceModel{
 		activationCodeCheckMode:                     "BEFORE_AUTHENTICATION",
-		allowedOrigins:                              []string{"https://example.com"},
+		allowedOrigins:                              []string{"https://example.com:*"},
 		allowUnidentifiedClientExtensionGrants:      true,
 		allowUnidentifiedClientRoCreds:              true,
 		atmIdForOauthGrantManagement:                "jwt",
@@ -338,6 +338,12 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
   refresh_rolling_interval_time_unit = "MINUTES"
   enable_cookieless_user_authorization_authentication_api = true
 			`
+		}
+
+		if acctest.VersionAtLeast(version.PingFederate1220) {
+			optionalHcl += `
+  return_id_token_on_open_id_with_device_authz_grant = true
+  			`
 		}
 	}
 

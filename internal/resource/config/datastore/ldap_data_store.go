@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -53,6 +53,7 @@ var (
 		"use_ssl":                    types.BoolType,
 		"test_on_borrow":             types.BoolType,
 		"ldap_dns_srv_prefix":        types.StringType,
+		"ldaps_dns_srv_prefix":       types.StringType,
 		"name":                       types.StringType,
 		"read_timeout":               types.Int64Type,
 		"use_dns_srv_records":        types.BoolType,
@@ -175,6 +176,12 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Computed:    true,
 			Optional:    true,
 			Default:     stringdefault.StaticString("_ldap._tcp"),
+		},
+		"ldaps_dns_srv_prefix": schema.StringAttribute{
+			Description: "The prefix value used to discover LDAPS DNS SRV record. Defaults to `_ldaps._tcp`.",
+			Computed:    true,
+			Optional:    true,
+			Default:     stringdefault.StaticString("_ldaps._tcp"),
 		},
 		"use_dns_srv_records": schema.BoolAttribute{
 			Description: "Use DNS SRV Records to discover LDAP server information. The default value is `false`.",
@@ -391,6 +398,11 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Computed:    true,
 			Optional:    false,
 		},
+		"ldaps_dns_srv_prefix": datasourceschema.StringAttribute{
+			Description: "The prefix value used to discover LDAPS DNS SRV record.",
+			Computed:    true,
+			Optional:    false,
+		},
 		"use_dns_srv_records": datasourceschema.BoolAttribute{
 			Description: "Use DNS SRV Records to discover LDAP server information.",
 			Computed:    true,
@@ -557,6 +569,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		"use_ssl":                    types.BoolPointerValue(ldapDataStore.UseSsl),
 		"test_on_borrow":             types.BoolPointerValue(ldapDataStore.TestOnBorrow),
 		"ldap_dns_srv_prefix":        types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
+		"ldaps_dns_srv_prefix":       types.StringPointerValue(ldapDataStore.LdapsDnsSrvPrefix),
 		"name":                       types.StringPointerValue(ldapDataStore.Name),
 		"read_timeout":               types.Int64PointerValue(ldapDataStore.ReadTimeout),
 		"use_dns_srv_records":        types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
@@ -618,6 +631,7 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 		"use_ssl":                    types.BoolPointerValue(ldapDataStore.UseSsl),
 		"test_on_borrow":             types.BoolPointerValue(ldapDataStore.TestOnBorrow),
 		"ldap_dns_srv_prefix":        types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
+		"ldaps_dns_srv_prefix":       types.StringPointerValue(ldapDataStore.LdapsDnsSrvPrefix),
 		"name":                       types.StringPointerValue(ldapDataStore.Name),
 		"read_timeout":               types.Int64PointerValue(ldapDataStore.ReadTimeout),
 		"use_dns_srv_records":        types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
@@ -735,6 +749,11 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 	ldapDnsSrvPrefix, ok := ldapDataStorePlan["ldap_dns_srv_prefix"]
 	if ok {
 		addRequest.LdapDataStore.LdapDnsSrvPrefix = ldapDnsSrvPrefix.(types.String).ValueStringPointer()
+	}
+
+	ldapsDnsSrvPrefix, ok := ldapDataStorePlan["ldaps_dns_srv_prefix"]
+	if ok {
+		addRequest.LdapDataStore.LdapsDnsSrvPrefix = ldapsDnsSrvPrefix.(types.String).ValueStringPointer()
 	}
 
 	name, ok := ldapDataStorePlan["name"]

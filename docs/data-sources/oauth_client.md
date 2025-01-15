@@ -99,6 +99,8 @@ PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
+- `lockout_max_malicious_actions` (Number) The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.
+- `lockout_max_malicious_actions_type` (String) Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.
 - `logo_url` (String) The location of the logo used on user-facing OAuth grant authorization and revocation pages.
 - `modification_date` (String) The time at which the client was last changed. This property is read only.
 - `name` (String) A descriptive name for the client instance. This name appears when the user is prompted for authorization.
@@ -293,6 +295,9 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `policy_group` (Attributes) The Open ID Connect policy. A null value will represent the default policy group. (see [below for nested schema](#nestedatt--oidc_policy--policy_group))
 - `post_logout_redirect_uris` (Set of String) URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.
 - `sector_identifier_uri` (String) The URI references a file with a single JSON array of Redirect URI and JWKS URL values.
+- `user_info_response_content_encryption_algorithm` (String) The JSON Web Encryption [JWE] content-encryption algorithm for the UserInfo Response. Supported values are `AES_128_CBC_HMAC_SHA_256`, `AES_192_CBC_HMAC_SHA_384`, `AES_256_CBC_HMAC_SHA_512`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`. Supported in PF version `12.2` or later.
+- `user_info_response_encryption_algorithm` (String) The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the UserInfo response. Supported values are `DIR`, `A128KW`, `A192KW`, `A256KW`, `A128GCMKW`, `A192GCMKW`, `A256GCMKW`, `ECDH_ES`, `ECDH_ES_A128KW`, `ECDH_ES_A192KW`, `ECDH_ES_A256KW`, `RSA_OAEP`, `RSA_OAEP_256`. Supported in PF version `12.2` or later.
+- `user_info_response_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm required to sign the UserInfo response. Supported values are `NONE`, `HS256`, `HS384`, `HS512`, `RS256`, `RS384`, `RS512`, `ES256`, `ES384`, `ES512`, `PS256`, `PS384`, `PS512`. Supported in PF version `12.2` or later.
 
 <a id="nestedatt--oidc_policy--policy_group"></a>
 ### Nested Schema for `oidc_policy.policy_group`

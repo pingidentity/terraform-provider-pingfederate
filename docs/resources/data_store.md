@@ -607,6 +607,7 @@ Optional:
 - `hostnames` (List of String) The default LDAP host names. This field is required if `hostnames_tags` is not specified. Failover can be configured by providing multiple host names.
 - `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. This is required if 'hostnames' is not provided. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
 - `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record. Defaults to `_ldap._tcp`.
+- `ldaps_dns_srv_prefix` (String) The prefix value used to discover LDAPS DNS SRV record. Defaults to `_ldaps._tcp`.
 - `max_connections` (Number) The largest number of active connections that can remain in each pool without releasing extra ones. Defaults to `100`.
 - `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Setting a value of `-1` causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available). Defaults to `-1`.
 - `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones. Defaults to `10`.

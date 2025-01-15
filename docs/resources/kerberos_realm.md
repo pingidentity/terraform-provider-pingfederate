@@ -30,15 +30,15 @@ resource "pingfederate_kerberos_realm" "kerberos_realm" {
 
 ### Optional
 
-- `connection_type` (String) Controls how PingFederate connects to the Active Directory/Kerberos Realm. Options are `DIRECT` and `LDAP_GATEWAY`. The default is `DIRECT`.
-- `kerberos_encrypted_password` (String) The encrypted Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_password' should be specified.
-- `kerberos_password` (String, Sensitive) The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified. Only one of this attribute and 'kerberos_encrypted_password' should be specified.
-- `kerberos_username` (String) The Domain/Realm username. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.
-- `key_distribution_centers` (Set of String) The Domain Controller/Key Distribution Center Host Action Names. Only applicable when 'connection_type' is `DIRECT`.
+- `connection_type` (String) Controls how PingFederate connects to the Active Directory/Kerberos Realm. Options are `DIRECT`, `LDAP_GATEWAY`, `LOCAL_VALIDATION`. The default is `DIRECT`. `LOCAL_VALIDATION` only supported in PF version `12.2` or later.
+- `kerberos_encrypted_password` (String) The encrypted Domain/Realm password. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_password' should be specified.
+- `kerberos_password` (String, Sensitive) The Domain/Realm password. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_encrypted_password' should be specified.
+- `kerberos_username` (String) The Domain/Realm username. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`.
+- `key_distribution_centers` (Set of String) The Domain Controller/Key Distribution Center Host Action Names. Only applicable when `connection_type` is `DIRECT`.
 - `ldap_gateway_data_store_ref` (Attributes) The LDAP gateway used by PingFederate to communicate with the Active Directory. Required when `connection_type` is `LDAP_GATEWAY`. (see [below for nested schema](#nestedatt--ldap_gateway_data_store_ref))
 - `realm_id` (String) The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`. This field is immutable and will trigger a replacement plan if changed.
-- `retain_previous_keys_on_password_change` (Boolean) Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is `false`. Only applicable when 'connection_type' is `DIRECT`.
-- `suppress_domain_name_concatenation` (Boolean) Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated `krb5.conf` file. Only applicable when 'connection_type' is `DIRECT`.
+- `retain_previous_keys_on_password_change` (Boolean) Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is `false`. Only applicable when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`.
+- `suppress_domain_name_concatenation` (Boolean) Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated `krb5.conf` file. Only applicable when `connection_type` is `DIRECT`.
 
 ### Read-Only
 
