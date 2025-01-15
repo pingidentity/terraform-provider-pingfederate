@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -118,11 +118,11 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"roles": schema.SetAttribute{
-				Description: "Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions.",
+				Description: "Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions. `DATA_COLLECTION_ADMINISTRATOR` - Can run the Collect Support Data Utility.",
 				Required:    true,
 				ElementType: types.StringType,
 				Validators: []validator.Set{
-					setvalidator.ValueStringsAre(stringvalidator.OneOf("USER_ADMINISTRATOR", "CRYPTO_ADMINISTRATOR", "ADMINISTRATOR", "EXPRESSION_ADMINISTRATOR")),
+					setvalidator.ValueStringsAre(stringvalidator.OneOf("USER_ADMINISTRATOR", "CRYPTO_ADMINISTRATOR", "ADMINISTRATOR", "EXPRESSION_ADMINISTRATOR", "DATA_COLLECTION_ADMINISTRATOR")),
 				},
 			},
 			"username": schema.StringAttribute{

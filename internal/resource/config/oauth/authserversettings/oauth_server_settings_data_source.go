@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -471,6 +471,10 @@ func (r *oauthServerSettingsDataSource) Schema(ctx context.Context, req datasour
 				Description: "The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.",
 				Required:    false,
 				Optional:    false,
+				Computed:    true,
+			},
+			"return_id_token_on_open_id_with_device_authz_grant": schema.BoolAttribute{
+				Description: "Indicates if an ID token should be returned during the device authorization grant flow when the 'openid' scope is approved. The default is `false`. Supported in PF version `12.2` or later.",
 				Computed:    true,
 			},
 		},

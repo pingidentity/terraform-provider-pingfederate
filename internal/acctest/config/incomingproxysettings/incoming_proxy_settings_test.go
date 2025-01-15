@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Function to build out test object HCL; necessary for null value testing
@@ -61,7 +62,7 @@ func incomingProxySettingsHCLObj(incomingProxySettings *client.IncomingProxySett
 	var proxyTerminatesHttpsConns string
 	// GetProxyTerminatesHttpsConns returns the ProxyTerminatesHttpsConns field value if set, zero value (false) otherwise.
 	if incomingProxySettings.GetProxyTerminatesHttpsConns() == false {
-		return ""
+		proxyTerminatesHttpsConns = ""
 	} else {
 		proxyTerminatesHttpsConns = fmt.Sprintf("\tproxy_terminates_https_conns = %t", *incomingProxySettings.ProxyTerminatesHttpsConns)
 	}
@@ -134,11 +135,20 @@ func TestAccIncomingProxySettings(t *testing.T) {
 }
 
 func testAccIncomingProxySettings(resourceName string, incomingProxySettings *client.IncomingProxySettings) string {
+	versionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		versionedHcl += `
+	client_cert_header_encoding_format = "NGINX"
+	enable_client_cert_header_auth = true
+		`
+	}
 	return fmt.Sprintf(`
-resource "pingfederate_incoming_proxy_settings" "%[1]s" {
-	%[2]s
+resource "pingfederate_incoming_proxy_settings" "%s" {
+	%s
+	%s
 }`, resourceName,
 		incomingProxySettingsHCLObj(incomingProxySettings),
+		versionedHcl,
 	)
 }
 

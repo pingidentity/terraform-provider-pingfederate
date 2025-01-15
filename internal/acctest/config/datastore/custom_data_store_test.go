@@ -152,6 +152,14 @@ func testAccCustomDataStore(resourceName string, resourceModel customDataStoreRe
         },
 		`
 	}
+	if acctest.VersionAtLeast(version.PingFederate1214) {
+		versionedFields += `
+		{
+		  name = "Exclude default Content-Type from GET Request"
+		  value = "false"
+		},
+		`
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "%[1]s" {
   data_store_id         = "%[2]s"

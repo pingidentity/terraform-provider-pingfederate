@@ -1,4 +1,4 @@
-# v1.2.0 (Unreleased)
+# v1.4.0 (Unreleased)
 ### Breaking changes
 * `sp_idp_connection` resource
   * Marked `idp_oauth_grant_attribute_mapping.access_token_manager_mappings` as required and with minimum size of 1. Previously not including this attribute would have been allowed by the provider, but rejected by PingFederate. Now the provider itself will require at least one access token manager mapping when setting `idp_oauth_grant_attribute_mapping`.
@@ -43,6 +43,27 @@
   * Added empty or null default for `virtual_entity_ids`, depending on the type of connection
   * Added null default for `jwt_secured_authorization_response_mode_type` for PingFederate versions prior to `12.1`.
   * Fixed errors with `false` values being returned as `null` for `credentials.signing_settings.include_cert_in_signature`, `idp_browser_sso.sign_authn_request`, and `idp_browser_sso.assertions_signed`.
+
+# v1.3.0 January 9, 2024
+### Enhancements
+* Added support for PingFederate `12.2.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, `12.0`, and `12.1`. This will be the last release with support for PingFederate `11.2` in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#440]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/440)))
+
+### Bug Fixes
+* Fix terraform import failure for certain `pingfederate_sp_idp_connection` configurations ([#442](https://github.com/pingidentity/terraform-provider-pingfederate/pull/442))
+* Fix URL config validator where some asterisks in value returned "Invalid URL Format" ([#445](https://github.com/pingidentity/terraform-provider-pingfederate/pull/445))
+
+### Notes
+* bump `golang.org/x/net` 0.31.0 => 0.33.0 ([#441](https://github.com/pingidentity/terraform-provider-pingfederate/pull/441))
+
+# v1.2.0 December 16, 2024
+### Enhancements
+* Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source. ([#428](https://github.com/pingidentity/terraform-provider-pingfederate/pull/428))
+
+### Notes
+* bump `github.com/hashicorp/terraform-plugin-framework` 1.11.0 => 1.13.0 ([#434](https://github.com/pingidentity/terraform-provider-pingfederate/pull/434))
+* bump `github.com/hashicorp/terraform-plugin-framework-validators` 0.12.0 => 0.16.0 ([#434](https://github.com/pingidentity/terraform-provider-pingfederate/pull/434))
+* bump `github.com/hashicorp/terraform-plugin-go` 0.23.0 => 0.25.0 ([#434](https://github.com/pingidentity/terraform-provider-pingfederate/pull/434))
+* bump `golang.org/x/crypto` 0.29.0 => 0.31.0 ([#434](https://github.com/pingidentity/terraform-provider-pingfederate/pull/434))
 
 # v1.1.0 October 31, 2024
 ### Enhancements

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -91,6 +91,11 @@ func (r *oauthClientSettingsResource) ValidateConfig(ctx context.Context, req re
 			"pending_authorization_timeout_override": attrs["pending_authorization_timeout_override"],
 			"user_authorization_url_override":        attrs["user_authorization_url_override"],
 			"device_polling_interval_override":       attrs["device_polling_interval_override"],
+		})...)
+
+		// Validate overriding server default for lockout_max_malicious_actions
+		resp.Diagnostics.Append(validateOverride("lockout_max_malicious_actions_type", attrs["lockout_max_malicious_actions_type"].(types.String), map[string]attr.Value{
+			"lockout_max_malicious_actions": attrs["lockout_max_malicious_actions"],
 		})...)
 
 		// Validate overriding server default for persistent_grant_expiration_type
