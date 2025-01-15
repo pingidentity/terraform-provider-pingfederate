@@ -3702,7 +3702,9 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 	var err error
 	var respDiags diag.Diagnostics
 	addRequest.ErrorPageMsgId = plan.ErrorPageMsgId.ValueStringPointer()
-	addRequest.Id = plan.ConnectionId.ValueStringPointer()
+	if !plan.ConnectionId.IsUnknown() {
+		addRequest.Id = plan.ConnectionId.ValueStringPointer()
+	}
 	addRequest.Type = utils.Pointer("IDP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
@@ -3768,7 +3770,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 	}
 
 	// additional_allowed_entities_configuration
-	if !plan.AdditionalAllowedEntitiesConfiguration.IsNull() {
+	if internaltypes.IsDefined(plan.AdditionalAllowedEntitiesConfiguration) {
 		additionalAllowedEntitiesConfigurationValue := &client.AdditionalAllowedEntitiesConfiguration{}
 		additionalAllowedEntitiesConfigurationAttrs := plan.AdditionalAllowedEntitiesConfiguration.Attributes()
 		additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = []client.Entity{}
@@ -3836,8 +3838,8 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 
 			attributeSources := ssoOAuthMapping.(types.Object).Attributes()["attribute_sources"]
 			if internaltypes.IsDefined(attributeSources) {
-				attributeSourceClientStruct, attributeSourceClientStructErr := attributesources.ClientStruct(attributeSources.(types.Set))
-				if attributeSourceClientStructErr != nil {
+				attributeSourceClientStruct, err := attributesources.ClientStruct(attributeSources.(types.Set))
+				if err != nil {
 					respDiags.AddError("Error building client struct for sso_oauth_mapping.attribute_sources", err.Error())
 				}
 
@@ -3846,8 +3848,8 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 
 			attributeContractFulfillment := ssoOAuthMapping.(types.Object).Attributes()["attribute_contract_fulfillment"]
 			if internaltypes.IsDefined(attributeContractFulfillment) {
-				attributeContractFulfillmentClientStruct, attributeContractFulfillmentClientStructErr := attributecontractfulfillment.ClientStruct(attributeContractFulfillment.(types.Map))
-				if attributeContractFulfillmentClientStructErr != nil {
+				attributeContractFulfillmentClientStruct, err := attributecontractfulfillment.ClientStruct(attributeContractFulfillment.(types.Map))
+				if err != nil {
 					respDiags.AddError("Error building client struct for sso_oauth_mapping.attribute_contract_fulfillment", err.Error())
 				}
 				addRequest.IdpBrowserSso.SsoOAuthMapping.AttributeContractFulfillment = attributeContractFulfillmentClientStruct
@@ -3855,8 +3857,8 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 
 			issuanceCriteria := ssoOAuthMapping.(types.Object).Attributes()["issuance_criteria"]
 			if internaltypes.IsDefined(issuanceCriteria) {
-				issuanceCriteriaClientStruct, issuanceCriteriaClientStructErr := issuancecriteria.ClientStruct(issuanceCriteria.(types.Object))
-				if issuanceCriteriaClientStructErr != nil {
+				issuanceCriteriaClientStruct, err := issuancecriteria.ClientStruct(issuanceCriteria.(types.Object))
+				if err != nil {
 					respDiags.AddError("Error building client struct for sso_oauth_mapping.issuance_criteria", err.Error())
 				}
 				addRequest.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria = issuanceCriteriaClientStruct
@@ -4005,88 +4007,186 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		addRequest.WsTrust = wsTrustValue
 	}
 
-	if internaltypes.IsDefined(plan.InboundProvisioning) {
-		inboundProvisioningAttibutes := plan.InboundProvisioning.Attributes()
-		addRequest.InboundProvisioning = &client.IdpInboundProvisioning{}
-
-		// group support
-		addRequest.InboundProvisioning.GroupSupport = inboundProvisioningAttibutes["group_support"].(types.Bool).ValueBool()
-
-		// user repository
-		userRepository := inboundProvisioningAttibutes["user_repository"]
-		if internaltypes.IsDefined(userRepository) {
-			identityStoreDataStoreRepository := userRepository.(types.Object).Attributes()["identity_store"]
-			ldapDataStoreRepository := userRepository.(types.Object).Attributes()["ldap"]
-			if internaltypes.IsDefined(identityStoreDataStoreRepository) {
-				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository = &client.IdentityStoreInboundProvisioningUserRepository{}
-				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.Type = "IDENTITY_STORE"
-				//TODO replace?
-				err := json.Unmarshal([]byte(internaljson.FromValue(identityStoreDataStoreRepository, true)), addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository)
-				if err != nil {
-					respDiags.AddError("Error building client struct for inbound_provisioning.user_repository.identity_store", err.Error())
-				}
-			} else if internaltypes.IsDefined(ldapDataStoreRepository) {
-				addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository = &client.LdapInboundProvisioningUserRepository{}
-				addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.Type = "LDAP"
-				//TODO replace?
-				err := json.Unmarshal([]byte(internaljson.FromValue(ldapDataStoreRepository, true)), addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository)
-				if err != nil {
-					respDiags.AddError("Error building client struct for inbound_provisioning.user_repository.identity_store", err.Error())
+	// inbound_provisioning
+	if !plan.InboundProvisioning.IsNull() {
+		inboundProvisioningValue := &client.IdpInboundProvisioning{}
+		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
+		inboundProvisioningValue.ActionOnDelete = inboundProvisioningAttrs["action_on_delete"].(types.String).ValueStringPointer()
+		inboundProvisioningCustomSchemaValue := client.Schema{}
+		inboundProvisioningCustomSchemaAttrs := inboundProvisioningAttrs["custom_schema"].(types.Object).Attributes()
+		inboundProvisioningCustomSchemaValue.Attributes = []client.SchemaAttribute{}
+		for _, attributesElement := range inboundProvisioningCustomSchemaAttrs["attributes"].(types.Set).Elements() {
+			attributesValue := client.SchemaAttribute{}
+			attributesAttrs := attributesElement.(types.Object).Attributes()
+			attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+			attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
+			if !attributesAttrs["sub_attributes"].IsNull() {
+				attributesValue.SubAttributes = []string{}
+				for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
+					attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesElement.(types.String).ValueString())
 				}
 			}
-		}
-
-		// custom schema
-		customSchema := inboundProvisioningAttibutes["custom_schema"]
-		addRequest.InboundProvisioning.CustomSchema = client.Schema{}
-		//TODO replace?
-		err := json.Unmarshal([]byte(internaljson.FromValue(customSchema, true)), &addRequest.InboundProvisioning.CustomSchema)
-		if err != nil {
-			respDiags.AddError("Error building client struct for inbound_provisioning.custom_schema", err.Error())
-		}
-
-		// users
-		if internaltypes.IsDefined(inboundProvisioningAttibutes["users"]) {
-			addRequest.InboundProvisioning.Users = client.Users{}
-			//TODO replace?
-			err := json.Unmarshal([]byte(internaljson.FromValue(inboundProvisioningAttibutes["users"], true)), &addRequest.InboundProvisioning.Users)
-			if err != nil {
-				respDiags.AddError("Error building client struct for inbound_provisioning.users", err.Error())
+			if !attributesAttrs["types"].IsNull() {
+				attributesValue.Types = []string{}
+				for _, typesElement := range attributesAttrs["types"].(types.Set).Elements() {
+					attributesValue.Types = append(attributesValue.Types, typesElement.(types.String).ValueString())
+				}
 			}
+			inboundProvisioningCustomSchemaValue.Attributes = append(inboundProvisioningCustomSchemaValue.Attributes, attributesValue)
+		}
+		if !inboundProvisioningCustomSchemaAttrs["namespace"].IsUnknown() {
+			inboundProvisioningCustomSchemaValue.Namespace = inboundProvisioningCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
+		}
+		inboundProvisioningValue.CustomSchema = inboundProvisioningCustomSchemaValue
+		inboundProvisioningValue.GroupSupport = inboundProvisioningAttrs["group_support"].(types.Bool).ValueBool()
+		if !inboundProvisioningAttrs["groups"].IsNull() {
+			inboundProvisioningGroupsValue := &client.Groups{}
+			inboundProvisioningGroupsAttrs := inboundProvisioningAttrs["groups"].(types.Object).Attributes()
+			inboundProvisioningGroupsReadGroupsValue := client.ReadGroups{}
+			inboundProvisioningGroupsReadGroupsAttrs := inboundProvisioningGroupsAttrs["read_groups"].(types.Object).Attributes()
+			inboundProvisioningGroupsReadGroupsAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
+			inboundProvisioningGroupsReadGroupsAttributeContractAttrs := inboundProvisioningGroupsReadGroupsAttrs["attribute_contract"].(types.Object).Attributes()
 			// PF requires core_attributes to be set, even though the property is read-only.
 			// Provide a placeholder value here to prevent the API from returning an error.
-			addRequest.InboundProvisioning.Users.ReadUsers.AttributeContract.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+			inboundProvisioningGroupsReadGroupsAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
 				{
 					Name: "placeholder",
 				},
 			}
-		}
-
-		// groups
-		if internaltypes.IsDefined(inboundProvisioningAttibutes["groups"]) {
-			addRequest.InboundProvisioning.Groups = &client.Groups{}
-			//TODO replace?
-			err := json.Unmarshal([]byte(internaljson.FromValue(inboundProvisioningAttibutes["groups"], true)), &addRequest.InboundProvisioning.Groups)
-			if err != nil {
-				respDiags.AddError("Error building client struct for inbound_provisioning.groups", err.Error())
+			inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
+			for _, extendedAttributesElement := range inboundProvisioningGroupsReadGroupsAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.IdpInboundProvisioningAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes = append(inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
 			}
-			// PF requires core_attributes to be set, even though the property is read-only.
-			// Provide a placeholder value here to prevent the API from returning an error.
-			addRequest.InboundProvisioning.Groups.ReadGroups.AttributeContract.CoreAttributes = []client.IdpInboundProvisioningAttribute{
-				{
-					Name: "placeholder",
-				},
+			inboundProvisioningGroupsReadGroupsValue.AttributeContract = inboundProvisioningGroupsReadGroupsAttributeContractValue
+			inboundProvisioningGroupsReadGroupsValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+			for key, attributeFulfillmentElement := range inboundProvisioningGroupsReadGroupsAttrs["attribute_fulfillment"].(types.Map).Elements() {
+				attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+				attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+				attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+				attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+				attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+				attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+				attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+				attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+				inboundProvisioningGroupsReadGroupsValue.AttributeFulfillment[key] = attributeFulfillmentValue
 			}
+			inboundProvisioningGroupsReadGroupsValue.Attributes = []client.Attribute{}
+			for _, attributesElement := range inboundProvisioningGroupsReadGroupsAttrs["attributes"].(types.Set).Elements() {
+				attributesValue := client.Attribute{}
+				attributesAttrs := attributesElement.(types.Object).Attributes()
+				attributesValue.Name = attributesAttrs["name"].(types.String).ValueString()
+				inboundProvisioningGroupsReadGroupsValue.Attributes = append(inboundProvisioningGroupsReadGroupsValue.Attributes, attributesValue)
+			}
+			inboundProvisioningGroupsValue.ReadGroups = inboundProvisioningGroupsReadGroupsValue
+			inboundProvisioningGroupsWriteGroupsValue := client.WriteGroups{}
+			inboundProvisioningGroupsWriteGroupsAttrs := inboundProvisioningGroupsAttrs["write_groups"].(types.Object).Attributes()
+			inboundProvisioningGroupsWriteGroupsValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+			for key, attributeFulfillmentElement := range inboundProvisioningGroupsWriteGroupsAttrs["attribute_fulfillment"].(types.Map).Elements() {
+				attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+				attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+				attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+				attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+				attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+				attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+				attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+				attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+				inboundProvisioningGroupsWriteGroupsValue.AttributeFulfillment[key] = attributeFulfillmentValue
+			}
+			inboundProvisioningGroupsValue.WriteGroups = inboundProvisioningGroupsWriteGroupsValue
+			inboundProvisioningValue.Groups = inboundProvisioningGroupsValue
 		}
-
-		// action on delete
-		if internaltypes.IsDefined(inboundProvisioningAttibutes["action_on_delete"]) {
-			addRequest.InboundProvisioning.ActionOnDelete = inboundProvisioningAttibutes["action_on_delete"].(types.String).ValueStringPointer()
+		inboundProvisioningUserRepositoryValue := client.InboundProvisioningUserRepositoryAggregation{}
+		inboundProvisioningUserRepositoryAttrs := inboundProvisioningAttrs["user_repository"].(types.Object).Attributes()
+		if !inboundProvisioningUserRepositoryAttrs["identity_store"].IsNull() {
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue := &client.IdentityStoreInboundProvisioningUserRepository{}
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryAttrs := inboundProvisioningUserRepositoryAttrs["identity_store"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefValue := client.ResourceLink{}
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefAttrs := inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryAttrs["identity_store_provisioner_ref"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefValue.Id = inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefAttrs["id"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue.IdentityStoreProvisionerRef = inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefValue
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue.Type = "IDENTITY_STORE"
+			inboundProvisioningUserRepositoryValue.IdentityStoreInboundProvisioningUserRepository = inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue
 		}
-
+		if !inboundProvisioningUserRepositoryAttrs["ldap"].IsNull() {
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue := &client.LdapInboundProvisioningUserRepository{}
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs := inboundProvisioningUserRepositoryAttrs["ldap"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.BaseDn = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["base_dn"].(types.String).ValueStringPointer()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefValue := client.ResourceLink{}
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefAttrs := inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["data_store_ref"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefValue.Id = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefAttrs["id"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.DataStoreRef = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefValue
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.Type = "LDAP"
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.UniqueGroupIdFilter = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["unique_group_id_filter"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.UniqueUserIdFilter = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["unique_user_id_filter"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryValue.LdapInboundProvisioningUserRepository = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue
+		}
+		inboundProvisioningValue.UserRepository = inboundProvisioningUserRepositoryValue
+		inboundProvisioningUsersValue := client.Users{}
+		inboundProvisioningUsersAttrs := inboundProvisioningAttrs["users"].(types.Object).Attributes()
+		inboundProvisioningUsersReadUsersValue := client.ReadUsers{}
+		inboundProvisioningUsersReadUsersAttrs := inboundProvisioningUsersAttrs["read_users"].(types.Object).Attributes()
+		inboundProvisioningUsersReadUsersAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
+		inboundProvisioningUsersReadUsersAttributeContractAttrs := inboundProvisioningUsersReadUsersAttrs["attribute_contract"].(types.Object).Attributes()
+		// PF requires core_attributes to be set, even though the property is read-only.
+		// Provide a placeholder value here to prevent the API from returning an error.
+		inboundProvisioningUsersReadUsersAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+			{
+				Name: "placeholder",
+			},
+		}
+		inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
+		for _, extendedAttributesElement := range inboundProvisioningUsersReadUsersAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.IdpInboundProvisioningAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes = append(inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		inboundProvisioningUsersReadUsersValue.AttributeContract = inboundProvisioningUsersReadUsersAttributeContractValue
+		inboundProvisioningUsersReadUsersValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+		for key, attributeFulfillmentElement := range inboundProvisioningUsersReadUsersAttrs["attribute_fulfillment"].(types.Map).Elements() {
+			attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+			attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+			attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+			attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+			attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+			attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+			attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+			attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+			inboundProvisioningUsersReadUsersValue.AttributeFulfillment[key] = attributeFulfillmentValue
+		}
+		inboundProvisioningUsersReadUsersValue.Attributes = []client.Attribute{}
+		for _, attributesElement := range inboundProvisioningUsersReadUsersAttrs["attributes"].(types.Set).Elements() {
+			attributesValue := client.Attribute{}
+			attributesAttrs := attributesElement.(types.Object).Attributes()
+			attributesValue.Name = attributesAttrs["name"].(types.String).ValueString()
+			inboundProvisioningUsersReadUsersValue.Attributes = append(inboundProvisioningUsersReadUsersValue.Attributes, attributesValue)
+		}
+		inboundProvisioningUsersValue.ReadUsers = inboundProvisioningUsersReadUsersValue
+		inboundProvisioningUsersWriteUsersValue := client.WriteUsers{}
+		inboundProvisioningUsersWriteUsersAttrs := inboundProvisioningUsersAttrs["write_users"].(types.Object).Attributes()
+		inboundProvisioningUsersWriteUsersValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+		for key, attributeFulfillmentElement := range inboundProvisioningUsersWriteUsersAttrs["attribute_fulfillment"].(types.Map).Elements() {
+			attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+			attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+			attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+			attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+			attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+			attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+			attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+			attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+			inboundProvisioningUsersWriteUsersValue.AttributeFulfillment[key] = attributeFulfillmentValue
+		}
+		inboundProvisioningUsersValue.WriteUsers = inboundProvisioningUsersWriteUsersValue
+		inboundProvisioningValue.Users = inboundProvisioningUsersValue
+		addRequest.InboundProvisioning = inboundProvisioningValue
 	}
 
-	return nil
+	return respDiags
 }
 
 // Metadata returns the resource type name.
