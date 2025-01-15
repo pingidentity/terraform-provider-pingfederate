@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourceattributecontractfulfillment "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
@@ -16,9 +17,13 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	datasourceissuancecriteria "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/issuancecriteria"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -1339,32 +1344,137 @@ func (r *idpSpConnectionDataSource) Configure(_ context.Context, req datasource.
 }
 
 func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.ConnectionId = types.StringPointerValue(r.Id)
-	state.Id = types.StringPointerValue(r.Id)
-	state.EntityId = types.StringValue(r.EntityId)
-	state.Name = types.StringValue(r.Name)
+	var respDiags, diags diag.Diagnostics
+	// active
 	state.Active = types.BoolPointerValue(r.Active)
-	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
-	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
-	state.LicenseConnectionGroup = types.StringPointerValue(r.LicenseConnectionGroup)
-	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
-	state.ApplicationName = types.StringPointerValue(r.ApplicationName)
-	state.ApplicationIconUrl = types.StringPointerValue(r.ApplicationIconUrl)
-	state.ConnectionTargetType = types.StringPointerValue(r.ConnectionTargetType)
-
-	if r.CreationDate != nil {
-		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
+	// additional_allowed_entities_configuration
+	additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesAttrTypes := map[string]attr.Type{
+		"entity_description": types.StringType,
+		"entity_id":          types.StringType,
+	}
+	additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType := types.ObjectType{AttrTypes: additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesAttrTypes}
+	additionalAllowedEntitiesConfigurationAttrTypes := map[string]attr.Type{
+		"additional_allowed_entities": types.SetType{ElemType: additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType},
+		"allow_additional_entities":   types.BoolType,
+		"allow_all_entities":          types.BoolType,
+	}
+	var additionalAllowedEntitiesConfigurationValue types.Object
+	if r.AdditionalAllowedEntitiesConfiguration == nil {
+		additionalAllowedEntitiesConfigurationValue = types.ObjectNull(additionalAllowedEntitiesConfigurationAttrTypes)
 	} else {
-		state.CreationDate = types.StringNull()
+		var additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues []attr.Value
+		for _, additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesResponseValue := range r.AdditionalAllowedEntitiesConfiguration.AdditionalAllowedEntities {
+			additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue, diags := types.ObjectValue(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesAttrTypes, map[string]attr.Value{
+				"entity_description": types.StringPointerValue(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesResponseValue.EntityDescription),
+				"entity_id":          types.StringPointerValue(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesResponseValue.EntityId),
+			})
+			respDiags.Append(diags...)
+			additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues = append(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues, additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue)
+		}
+		additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue, diags := types.SetValue(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType, additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues)
+		respDiags.Append(diags...)
+		additionalAllowedEntitiesConfigurationValue, diags = types.ObjectValue(additionalAllowedEntitiesConfigurationAttrTypes, map[string]attr.Value{
+			"additional_allowed_entities": additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue,
+			"allow_additional_entities":   types.BoolPointerValue(r.AdditionalAllowedEntitiesConfiguration.AllowAdditionalEntities),
+			"allow_all_entities":          types.BoolPointerValue(r.AdditionalAllowedEntitiesConfiguration.AllowAllEntities),
+		})
+		respDiags.Append(diags...)
 	}
 
-	state.VirtualEntityIds, respDiags = types.SetValueFrom(ctx, types.StringType, r.VirtualEntityIds)
-	diags.Append(respDiags...)
+	state.AdditionalAllowedEntitiesConfiguration = additionalAllowedEntitiesConfigurationValue
+	// application_icon_url
+	state.ApplicationIconUrl = types.StringPointerValue(r.ApplicationIconUrl)
+	// application_name
+	state.ApplicationName = types.StringPointerValue(r.ApplicationName)
+	// attribute_query
+	attributeQueryAttributeContractFulfillmentAttrTypes := attributecontractfulfillment.AttrTypes()
+	attributeQueryAttributeContractFulfillmentElementType := types.ObjectType{AttrTypes: attributeQueryAttributeContractFulfillmentAttrTypes}
+	attributeQueryAttributeSourcesAttrTypes := attributesources.AttrTypes()
+	attributeQueryAttributeSourcesElementType := types.ObjectType{AttrTypes: attributeQueryAttributeSourcesAttrTypes}
+	attributeQueryIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
+	attributeQueryPolicyAttrTypes := map[string]attr.Type{
+		"encrypt_assertion":              types.BoolType,
+		"require_encrypted_name_id":      types.BoolType,
+		"require_signed_attribute_query": types.BoolType,
+		"sign_assertion":                 types.BoolType,
+		"sign_response":                  types.BoolType,
+	}
+	attributeQueryAttrTypes := map[string]attr.Type{
+		"attribute_contract_fulfillment": types.MapType{ElemType: attributeQueryAttributeContractFulfillmentElementType},
+		"attribute_sources":              types.SetType{ElemType: attributeQueryAttributeSourcesElementType},
+		"attributes":                     types.SetType{ElemType: types.StringType},
+		"issuance_criteria":              types.ObjectType{AttrTypes: attributeQueryIssuanceCriteriaAttrTypes},
+		"policy":                         types.ObjectType{AttrTypes: attributeQueryPolicyAttrTypes},
+	}
+	var attributeQueryValue types.Object
+	if r.AttributeQuery == nil {
+		attributeQueryValue = types.ObjectNull(attributeQueryAttrTypes)
+	} else {
+		attributeQueryAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &r.AttributeQuery.AttributeContractFulfillment)
+		respDiags.Append(diags...)
+		attributeQueryAttributeSourcesValue, diags := attributesources.ToState(context.Background(), r.AttributeQuery.AttributeSources)
+		respDiags.Append(diags...)
+		attributeQueryAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, r.AttributeQuery.Attributes)
+		respDiags.Append(diags...)
+		attributeQueryIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), r.AttributeQuery.IssuanceCriteria)
+		respDiags.Append(diags...)
+		var attributeQueryPolicyValue types.Object
+		if r.AttributeQuery.Policy == nil {
+			attributeQueryPolicyValue = types.ObjectNull(attributeQueryPolicyAttrTypes)
+		} else {
+			attributeQueryPolicyValue, diags = types.ObjectValue(attributeQueryPolicyAttrTypes, map[string]attr.Value{
+				"encrypt_assertion":              types.BoolPointerValue(r.AttributeQuery.Policy.EncryptAssertion),
+				"require_encrypted_name_id":      types.BoolPointerValue(r.AttributeQuery.Policy.RequireEncryptedNameId),
+				"require_signed_attribute_query": types.BoolPointerValue(r.AttributeQuery.Policy.RequireSignedAttributeQuery),
+				"sign_assertion":                 types.BoolPointerValue(r.AttributeQuery.Policy.SignAssertion),
+				"sign_response":                  types.BoolPointerValue(r.AttributeQuery.Policy.SignResponse),
+			})
+			respDiags.Append(diags...)
+		}
+		attributeQueryValue, diags = types.ObjectValue(attributeQueryAttrTypes, map[string]attr.Value{
+			"attribute_contract_fulfillment": attributeQueryAttributeContractFulfillmentValue,
+			"attribute_sources":              attributeQueryAttributeSourcesValue,
+			"attributes":                     attributeQueryAttributesValue,
+			"issuance_criteria":              attributeQueryIssuanceCriteriaValue,
+			"policy":                         attributeQueryPolicyValue,
+		})
+		respDiags.Append(diags...)
+	}
 
-	state.MetadataReloadSettings, respDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
-	diags.Append(respDiags...)
+	state.AttributeQuery = attributeQueryValue
+	// base_url
+	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
+	// connection_id
+	state.ConnectionId = types.StringPointerValue(r.Id)
+	state.Id = types.StringPointerValue(r.Id)
+	// connection_target_type
+	state.ConnectionTargetType = types.StringPointerValue(r.ConnectionTargetType)
+	// contact_info
+	contactInfoAttrTypes := map[string]attr.Type{
+		"company":    types.StringType,
+		"email":      types.StringType,
+		"first_name": types.StringType,
+		"last_name":  types.StringType,
+		"phone":      types.StringType,
+	}
+	var contactInfoValue types.Object
+	if r.ContactInfo == nil {
+		contactInfoValue = types.ObjectNull(contactInfoAttrTypes)
+	} else {
+		contactInfoValue, diags = types.ObjectValue(contactInfoAttrTypes, map[string]attr.Value{
+			"company":    types.StringPointerValue(r.ContactInfo.Company),
+			"email":      types.StringPointerValue(r.ContactInfo.Email),
+			"first_name": types.StringPointerValue(r.ContactInfo.FirstName),
+			"last_name":  types.StringPointerValue(r.ContactInfo.LastName),
+			"phone":      types.StringPointerValue(r.ContactInfo.Phone),
+		})
+		respDiags.Append(diags...)
+	}
 
+	state.ContactInfo = contactInfoValue
+	// creation_date
+	state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
+	// credentials
 	var credentialsCertsValues []attr.Value
 	for _, cert := range r.Credentials.Certs {
 		credentailsCert, respDiags := connectioncert.ToStateDataSource(ctx, cert, &diags)
@@ -1430,29 +1540,965 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 		"verification_subject_dn":           types.StringPointerValue(r.Credentials.VerificationSubjectDN),
 	})
 	diags.Append(respDiags...)
+	// default_virtual_entity_id
+	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
+	// entity_id
+	state.EntityId = types.StringValue(r.EntityId)
+	// extended_properties
+	extendedPropertiesAttrTypes := map[string]attr.Type{
+		"values": types.SetType{ElemType: types.StringType},
+	}
+	extendedPropertiesElementType := types.ObjectType{AttrTypes: extendedPropertiesAttrTypes}
+	var extendedPropertiesValue types.Map
+	if r.ExtendedProperties == nil {
+		extendedPropertiesValue = types.MapNull(extendedPropertiesElementType)
+	} else {
+		extendedPropertiesValues := make(map[string]attr.Value)
+		for key, extendedPropertiesResponseValue := range *r.ExtendedProperties {
+			extendedPropertiesValuesValue, diags := types.SetValueFrom(context.Background(), types.StringType, extendedPropertiesResponseValue.Values)
+			respDiags.Append(diags...)
+			extendedPropertiesValue, diags := types.ObjectValue(extendedPropertiesAttrTypes, map[string]attr.Value{
+				"values": extendedPropertiesValuesValue,
+			})
+			respDiags.Append(diags...)
+			extendedPropertiesValues[key] = extendedPropertiesValue
+		}
+		extendedPropertiesValue, diags = types.MapValue(extendedPropertiesElementType, extendedPropertiesValues)
+		respDiags.Append(diags...)
+	}
 
-	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
-	diags.Append(respDiags...)
+	state.ExtendedProperties = extendedPropertiesValue
+	// license_connection_group
+	state.LicenseConnectionGroup = types.StringPointerValue(r.LicenseConnectionGroup)
+	// logging_mode
+	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
+	// by the `server_settings_general` resource
+	if r.LoggingMode != nil && state.LoggingMode.ValueString() != *r.LoggingMode {
+		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
+			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
+				"If `sp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
+				" `logging_mode` should be configured to the same value in this resource.")
+	}
+	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
+	// metadata_reload_settings
+	metadataReloadSettingsMetadataUrlRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	metadataReloadSettingsAttrTypes := map[string]attr.Type{
+		"enable_auto_metadata_update": types.BoolType,
+		"metadata_url_ref":            types.ObjectType{AttrTypes: metadataReloadSettingsMetadataUrlRefAttrTypes},
+	}
+	var metadataReloadSettingsValue types.Object
+	if r.MetadataReloadSettings == nil {
+		metadataReloadSettingsValue = types.ObjectNull(metadataReloadSettingsAttrTypes)
+	} else {
+		metadataReloadSettingsMetadataUrlRefValue, diags := types.ObjectValue(metadataReloadSettingsMetadataUrlRefAttrTypes, map[string]attr.Value{
+			"id": types.StringValue(r.MetadataReloadSettings.MetadataUrlRef.Id),
+		})
+		respDiags.Append(diags...)
+		metadataReloadSettingsValue, diags = types.ObjectValue(metadataReloadSettingsAttrTypes, map[string]attr.Value{
+			"enable_auto_metadata_update": types.BoolPointerValue(r.MetadataReloadSettings.EnableAutoMetadataUpdate),
+			"metadata_url_ref":            metadataReloadSettingsMetadataUrlRefValue,
+		})
+		respDiags.Append(diags...)
+	}
 
-	state.AdditionalAllowedEntitiesConfiguration, respDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
-	diags.Append(respDiags...)
+	state.MetadataReloadSettings = metadataReloadSettingsValue
+	// name
+	state.Name = types.StringValue(r.Name)
+	// outbound_provision
+	outboundProvisionChannelsAttributeMappingSaasFieldInfoAttrTypes := map[string]attr.Type{
+		"attribute_names": types.ListType{ElemType: types.StringType},
+		"character_case":  types.StringType,
+		"create_only":     types.BoolType,
+		"default_value":   types.StringType,
+		"expression":      types.StringType,
+		"masked":          types.BoolType,
+		"parser":          types.StringType,
+		"trim":            types.BoolType,
+	}
+	outboundProvisionChannelsAttributeMappingAttrTypes := map[string]attr.Type{
+		"field_name":      types.StringType,
+		"saas_field_info": types.ObjectType{AttrTypes: outboundProvisionChannelsAttributeMappingSaasFieldInfoAttrTypes},
+	}
+	outboundProvisionChannelsAttributeMappingElementType := types.ObjectType{AttrTypes: outboundProvisionChannelsAttributeMappingAttrTypes}
+	outboundProvisionChannelsChannelSourceAccountManagementSettingsAttrTypes := map[string]attr.Type{
+		"account_status_algorithm":      types.StringType,
+		"account_status_attribute_name": types.StringType,
+		"default_status":                types.BoolType,
+		"flag_comparison_status":        types.BoolType,
+		"flag_comparison_value":         types.StringType,
+	}
+	outboundProvisionChannelsChannelSourceChangeDetectionSettingsAttrTypes := map[string]attr.Type{
+		"changed_users_algorithm":   types.StringType,
+		"group_object_class":        types.StringType,
+		"time_stamp_attribute_name": types.StringType,
+		"user_object_class":         types.StringType,
+		"usn_attribute_name":        types.StringType,
+	}
+	outboundProvisionChannelsChannelSourceDataSourceAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	outboundProvisionChannelsChannelSourceGroupMembershipDetectionAttrTypes := map[string]attr.Type{
+		"group_member_attribute_name":    types.StringType,
+		"member_of_group_attribute_name": types.StringType,
+	}
+	outboundProvisionChannelsChannelSourceGroupSourceLocationAttrTypes := map[string]attr.Type{
+		"filter":        types.StringType,
+		"group_dn":      types.StringType,
+		"nested_search": types.BoolType,
+	}
+	outboundProvisionChannelsChannelSourceUserSourceLocationAttrTypes := map[string]attr.Type{
+		"filter":        types.StringType,
+		"group_dn":      types.StringType,
+		"nested_search": types.BoolType,
+	}
+	outboundProvisionChannelsChannelSourceAttrTypes := map[string]attr.Type{
+		"account_management_settings": types.ObjectType{AttrTypes: outboundProvisionChannelsChannelSourceAccountManagementSettingsAttrTypes},
+		"base_dn":                     types.StringType,
+		"change_detection_settings":   types.ObjectType{AttrTypes: outboundProvisionChannelsChannelSourceChangeDetectionSettingsAttrTypes},
+		"data_source":                 types.ObjectType{AttrTypes: outboundProvisionChannelsChannelSourceDataSourceAttrTypes},
+		"group_membership_detection":  types.ObjectType{AttrTypes: outboundProvisionChannelsChannelSourceGroupMembershipDetectionAttrTypes},
+		"group_source_location":       types.ObjectType{AttrTypes: outboundProvisionChannelsChannelSourceGroupSourceLocationAttrTypes},
+		"guid_attribute_name":         types.StringType,
+		"guid_binary":                 types.BoolType,
+		"user_source_location":        types.ObjectType{AttrTypes: outboundProvisionChannelsChannelSourceUserSourceLocationAttrTypes},
+	}
+	outboundProvisionChannelsAttrTypes := map[string]attr.Type{
+		"active":            types.BoolType,
+		"attribute_mapping": types.SetType{ElemType: outboundProvisionChannelsAttributeMappingElementType},
+		"channel_source":    types.ObjectType{AttrTypes: outboundProvisionChannelsChannelSourceAttrTypes},
+		"max_threads":       types.Int64Type,
+		"name":              types.StringType,
+		"timeout":           types.Int64Type,
+	}
+	outboundProvisionChannelsElementType := types.ObjectType{AttrTypes: outboundProvisionChannelsAttrTypes}
+	outboundProvisionCustomSchemaAttributesAttrTypes := map[string]attr.Type{
+		"multi_valued":   types.BoolType,
+		"name":           types.StringType,
+		"sub_attributes": types.SetType{ElemType: types.StringType},
+		"types":          types.SetType{ElemType: types.StringType},
+	}
+	outboundProvisionCustomSchemaAttributesElementType := types.ObjectType{AttrTypes: outboundProvisionCustomSchemaAttributesAttrTypes}
+	outboundProvisionCustomSchemaAttrTypes := map[string]attr.Type{
+		"attributes": types.SetType{ElemType: outboundProvisionCustomSchemaAttributesElementType},
+		"namespace":  types.StringType,
+	}
+	outboundProvisionTargetSettingsAttrTypes := map[string]attr.Type{
+		"name":            types.StringType,
+		"value":           types.StringType,
+		"encrypted_value": types.StringType,
+	}
+	outboundProvisionTargetSettingsElementType := types.ObjectType{AttrTypes: outboundProvisionTargetSettingsAttrTypes}
+	outboundProvisionAttrTypes := map[string]attr.Type{
+		"channels":        types.ListType{ElemType: outboundProvisionChannelsElementType},
+		"custom_schema":   types.ObjectType{AttrTypes: outboundProvisionCustomSchemaAttrTypes},
+		"target_settings": types.SetType{ElemType: outboundProvisionTargetSettingsElementType},
+		"type":            types.StringType,
+	}
+	var outboundProvisionValue types.Object
+	if r.OutboundProvision == nil {
+		outboundProvisionValue = types.ObjectNull(outboundProvisionAttrTypes)
+	} else {
+		var outboundProvisionChannelsValues []attr.Value
+		for _, outboundProvisionChannelsResponseValue := range r.OutboundProvision.Channels {
+			var outboundProvisionChannelsAttributeMappingValues []attr.Value
+			for _, outboundProvisionChannelsAttributeMappingResponseValue := range outboundProvisionChannelsResponseValue.AttributeMapping {
+				outboundProvisionChannelsAttributeMappingSaasFieldInfoAttributeNamesValue, diags := types.ListValueFrom(context.Background(), types.StringType, outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.AttributeNames)
+				respDiags.Append(diags...)
+				outboundProvisionChannelsAttributeMappingSaasFieldInfoValue, diags := types.ObjectValue(outboundProvisionChannelsAttributeMappingSaasFieldInfoAttrTypes, map[string]attr.Value{
+					"attribute_names": outboundProvisionChannelsAttributeMappingSaasFieldInfoAttributeNamesValue,
+					"character_case":  types.StringPointerValue(outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.CharacterCase),
+					"create_only":     types.BoolPointerValue(outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.CreateOnly),
+					"default_value":   types.StringPointerValue(outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.DefaultValue),
+					"expression":      types.StringPointerValue(outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.Expression),
+					"masked":          types.BoolPointerValue(outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.Masked),
+					"parser":          types.StringPointerValue(outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.Parser),
+					"trim":            types.BoolPointerValue(outboundProvisionChannelsAttributeMappingResponseValue.SaasFieldInfo.Trim),
+				})
+				respDiags.Append(diags...)
+				outboundProvisionChannelsAttributeMappingValue, diags := types.ObjectValue(outboundProvisionChannelsAttributeMappingAttrTypes, map[string]attr.Value{
+					"field_name":      types.StringValue(outboundProvisionChannelsAttributeMappingResponseValue.FieldName),
+					"saas_field_info": outboundProvisionChannelsAttributeMappingSaasFieldInfoValue,
+				})
+				respDiags.Append(diags...)
+				outboundProvisionChannelsAttributeMappingValues = append(outboundProvisionChannelsAttributeMappingValues, outboundProvisionChannelsAttributeMappingValue)
+			}
+			outboundProvisionChannelsAttributeMappingValue, diags := types.SetValue(outboundProvisionChannelsAttributeMappingElementType, outboundProvisionChannelsAttributeMappingValues)
+			respDiags.Append(diags...)
+			outboundProvisionChannelsChannelSourceAccountManagementSettingsValue, diags := types.ObjectValue(outboundProvisionChannelsChannelSourceAccountManagementSettingsAttrTypes, map[string]attr.Value{
+				"account_status_algorithm":      types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.AccountManagementSettings.AccountStatusAlgorithm),
+				"account_status_attribute_name": types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.AccountManagementSettings.AccountStatusAttributeName),
+				"default_status":                types.BoolPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.AccountManagementSettings.DefaultStatus),
+				"flag_comparison_status":        types.BoolPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.AccountManagementSettings.FlagComparisonStatus),
+				"flag_comparison_value":         types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.AccountManagementSettings.FlagComparisonValue),
+			})
+			respDiags.Append(diags...)
+			outboundProvisionChannelsChannelSourceChangeDetectionSettingsValue, diags := types.ObjectValue(outboundProvisionChannelsChannelSourceChangeDetectionSettingsAttrTypes, map[string]attr.Value{
+				"changed_users_algorithm":   types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.ChangeDetectionSettings.ChangedUsersAlgorithm),
+				"group_object_class":        types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.ChangeDetectionSettings.GroupObjectClass),
+				"time_stamp_attribute_name": types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.ChangeDetectionSettings.TimeStampAttributeName),
+				"user_object_class":         types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.ChangeDetectionSettings.UserObjectClass),
+				"usn_attribute_name":        types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.ChangeDetectionSettings.UsnAttributeName),
+			})
+			respDiags.Append(diags...)
+			outboundProvisionChannelsChannelSourceDataSourceValue, diags := types.ObjectValue(outboundProvisionChannelsChannelSourceDataSourceAttrTypes, map[string]attr.Value{
+				"id": types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.DataSource.Id),
+			})
+			respDiags.Append(diags...)
+			outboundProvisionChannelsChannelSourceGroupMembershipDetectionValue, diags := types.ObjectValue(outboundProvisionChannelsChannelSourceGroupMembershipDetectionAttrTypes, map[string]attr.Value{
+				"group_member_attribute_name":    types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.GroupMembershipDetection.GroupMemberAttributeName),
+				"member_of_group_attribute_name": types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.GroupMembershipDetection.MemberOfGroupAttributeName),
+			})
+			respDiags.Append(diags...)
+			var outboundProvisionChannelsChannelSourceGroupSourceLocationValue types.Object
+			if outboundProvisionChannelsResponseValue.ChannelSource.GroupSourceLocation == nil {
+				outboundProvisionChannelsChannelSourceGroupSourceLocationValue = types.ObjectNull(outboundProvisionChannelsChannelSourceGroupSourceLocationAttrTypes)
+			} else {
+				outboundProvisionChannelsChannelSourceGroupSourceLocationValue, diags = types.ObjectValue(outboundProvisionChannelsChannelSourceGroupSourceLocationAttrTypes, map[string]attr.Value{
+					"filter":        types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.GroupSourceLocation.Filter),
+					"group_dn":      types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.GroupSourceLocation.GroupDN),
+					"nested_search": types.BoolPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.GroupSourceLocation.NestedSearch),
+				})
+				respDiags.Append(diags...)
+			}
+			outboundProvisionChannelsChannelSourceUserSourceLocationValue, diags := types.ObjectValue(outboundProvisionChannelsChannelSourceUserSourceLocationAttrTypes, map[string]attr.Value{
+				"filter":        types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.UserSourceLocation.Filter),
+				"group_dn":      types.StringPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.UserSourceLocation.GroupDN),
+				"nested_search": types.BoolPointerValue(outboundProvisionChannelsResponseValue.ChannelSource.UserSourceLocation.NestedSearch),
+			})
+			respDiags.Append(diags...)
+			outboundProvisionChannelsChannelSourceValue, diags := types.ObjectValue(outboundProvisionChannelsChannelSourceAttrTypes, map[string]attr.Value{
+				"account_management_settings": outboundProvisionChannelsChannelSourceAccountManagementSettingsValue,
+				"base_dn":                     types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.BaseDn),
+				"change_detection_settings":   outboundProvisionChannelsChannelSourceChangeDetectionSettingsValue,
+				"data_source":                 outboundProvisionChannelsChannelSourceDataSourceValue,
+				"group_membership_detection":  outboundProvisionChannelsChannelSourceGroupMembershipDetectionValue,
+				"group_source_location":       outboundProvisionChannelsChannelSourceGroupSourceLocationValue,
+				"guid_attribute_name":         types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.GuidAttributeName),
+				"guid_binary":                 types.BoolValue(outboundProvisionChannelsResponseValue.ChannelSource.GuidBinary),
+				"user_source_location":        outboundProvisionChannelsChannelSourceUserSourceLocationValue,
+			})
+			respDiags.Append(diags...)
+			outboundProvisionChannelsValue, diags := types.ObjectValue(outboundProvisionChannelsAttrTypes, map[string]attr.Value{
+				"active":            types.BoolValue(outboundProvisionChannelsResponseValue.Active),
+				"attribute_mapping": outboundProvisionChannelsAttributeMappingValue,
+				"channel_source":    outboundProvisionChannelsChannelSourceValue,
+				"max_threads":       types.Int64Value(outboundProvisionChannelsResponseValue.MaxThreads),
+				"name":              types.StringValue(outboundProvisionChannelsResponseValue.Name),
+				"timeout":           types.Int64Value(outboundProvisionChannelsResponseValue.Timeout),
+			})
+			respDiags.Append(diags...)
+			outboundProvisionChannelsValues = append(outboundProvisionChannelsValues, outboundProvisionChannelsValue)
+		}
+		outboundProvisionChannelsValue, diags := types.ListValue(outboundProvisionChannelsElementType, outboundProvisionChannelsValues)
+		respDiags.Append(diags...)
+		var outboundProvisionCustomSchemaValue types.Object
+		if r.OutboundProvision.CustomSchema == nil {
+			outboundProvisionCustomSchemaValue = types.ObjectNull(outboundProvisionCustomSchemaAttrTypes)
+		} else {
+			var outboundProvisionCustomSchemaAttributesValues []attr.Value
+			for _, outboundProvisionCustomSchemaAttributesResponseValue := range r.OutboundProvision.CustomSchema.Attributes {
+				outboundProvisionCustomSchemaAttributesSubAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, outboundProvisionCustomSchemaAttributesResponseValue.SubAttributes)
+				respDiags.Append(diags...)
+				outboundProvisionCustomSchemaAttributesTypesValue, diags := types.SetValueFrom(context.Background(), types.StringType, outboundProvisionCustomSchemaAttributesResponseValue.Types)
+				respDiags.Append(diags...)
+				outboundProvisionCustomSchemaAttributesValue, diags := types.ObjectValue(outboundProvisionCustomSchemaAttributesAttrTypes, map[string]attr.Value{
+					"multi_valued":   types.BoolPointerValue(outboundProvisionCustomSchemaAttributesResponseValue.MultiValued),
+					"name":           types.StringPointerValue(outboundProvisionCustomSchemaAttributesResponseValue.Name),
+					"sub_attributes": outboundProvisionCustomSchemaAttributesSubAttributesValue,
+					"types":          outboundProvisionCustomSchemaAttributesTypesValue,
+				})
+				respDiags.Append(diags...)
+				outboundProvisionCustomSchemaAttributesValues = append(outboundProvisionCustomSchemaAttributesValues, outboundProvisionCustomSchemaAttributesValue)
+			}
+			outboundProvisionCustomSchemaAttributesValue, diags := types.SetValue(outboundProvisionCustomSchemaAttributesElementType, outboundProvisionCustomSchemaAttributesValues)
+			respDiags.Append(diags...)
+			outboundProvisionCustomSchemaValue, diags = types.ObjectValue(outboundProvisionCustomSchemaAttrTypes, map[string]attr.Value{
+				"attributes": outboundProvisionCustomSchemaAttributesValue,
+				"namespace":  types.StringPointerValue(r.OutboundProvision.CustomSchema.Namespace),
+			})
+			respDiags.Append(diags...)
+		}
+		var outboundProvisionTargetSettingsValues []attr.Value
+		for _, outboundProvisionTargetSettingsResponseValue := range r.OutboundProvision.TargetSettings {
+			outboundProvisionTargetSettingsValue, diags := types.ObjectValue(outboundProvisionTargetSettingsAttrTypes, map[string]attr.Value{
+				"name":            types.StringValue(outboundProvisionTargetSettingsResponseValue.Name),
+				"value":           types.StringPointerValue(outboundProvisionTargetSettingsResponseValue.Value),
+				"encrypted_value": types.StringPointerValue(outboundProvisionTargetSettingsResponseValue.EncryptedValue),
+			})
+			respDiags.Append(diags...)
+			outboundProvisionTargetSettingsValues = append(outboundProvisionTargetSettingsValues, outboundProvisionTargetSettingsValue)
+		}
+		outboundProvisionTargetSettingsValue, diags := types.SetValue(outboundProvisionTargetSettingsElementType, outboundProvisionTargetSettingsValues)
+		respDiags.Append(diags...)
+		outboundProvisionValue, diags = types.ObjectValue(outboundProvisionAttrTypes, map[string]attr.Value{
+			"channels":        outboundProvisionChannelsValue,
+			"custom_schema":   outboundProvisionCustomSchemaValue,
+			"target_settings": outboundProvisionTargetSettingsValue,
+			"type":            types.StringValue(r.OutboundProvision.Type),
+		})
+		respDiags.Append(diags...)
+	}
 
-	state.ExtendedProperties, respDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
-	diags.Append(respDiags...)
+	state.OutboundProvision = outboundProvisionValue
+	// sp_browser_sso
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes := map[string]attr.Type{
+		"masked":    types.BoolType,
+		"name":      types.StringType,
+		"pseudonym": types.BoolType,
+	}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes := map[string]attr.Type{
+		"masked":    types.BoolType,
+		"name":      types.StringType,
+		"pseudonym": types.BoolType,
+	}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes := map[string]attr.Type{
+		"core_attributes":           types.SetType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType},
+		"extended_attributes":       types.SetType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType},
+		"mask_ognl_values":          types.BoolType,
+		"unique_user_key_attribute": types.StringType,
+	}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentAttrTypes := attributecontractfulfillment.AttrTypes()
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentAttrTypes}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesAttrTypes := attributesources.AttrTypes()
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesAttrTypes}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttrTypes := map[string]attr.Type{
+		"attribute_contract_fulfillment": types.MapType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentElementType},
+		"attribute_sources":              types.SetType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesElementType},
+		"issuance_criteria":              types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaAttrTypes},
+	}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationAttrTypes := pluginconfiguration.AttrTypes()
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes := map[string]attr.Type{
+		"attribute_contract":    types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes},
+		"attribute_mapping":     types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttrTypes},
+		"authn_ctx_class_ref":   types.StringType,
+		"configuration":         types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationAttrTypes},
+		"id":                    types.StringType,
+		"name":                  types.StringType,
+		"parent_ref":            types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefAttrTypes},
+		"plugin_descriptor_ref": types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrTypes},
+	}
+	spBrowserSsoAdapterMappingsAttributeContractFulfillmentAttrTypes := attributecontractfulfillment.AttrTypes()
+	spBrowserSsoAdapterMappingsAttributeContractFulfillmentElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAttributeContractFulfillmentAttrTypes}
+	spBrowserSsoAdapterMappingsAttributeSourcesAttrTypes := attributesources.AttrTypes()
+	spBrowserSsoAdapterMappingsAttributeSourcesElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAttributeSourcesAttrTypes}
+	spBrowserSsoAdapterMappingsIdpAdapterRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	spBrowserSsoAdapterMappingsIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
+	spBrowserSsoAdapterMappingsAttrTypes := map[string]attr.Type{
+		"abort_sso_transaction_as_fail_safe": types.BoolType,
+		"adapter_override_settings":          types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes},
+		"attribute_contract_fulfillment":     types.MapType{ElemType: spBrowserSsoAdapterMappingsAttributeContractFulfillmentElementType},
+		"attribute_sources":                  types.SetType{ElemType: spBrowserSsoAdapterMappingsAttributeSourcesElementType},
+		"idp_adapter_ref":                    types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIdpAdapterRefAttrTypes},
+		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIssuanceCriteriaAttrTypes},
+		"restrict_virtual_entity_ids":        types.BoolType,
+		"restricted_virtual_entity_ids":      types.SetType{ElemType: types.StringType},
+	}
+	spBrowserSsoAdapterMappingsElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAttrTypes}
+	spBrowserSsoArtifactResolverLocationsAttrTypes := map[string]attr.Type{
+		"index": types.Int64Type,
+		"url":   types.StringType,
+	}
+	spBrowserSsoArtifactResolverLocationsElementType := types.ObjectType{AttrTypes: spBrowserSsoArtifactResolverLocationsAttrTypes}
+	spBrowserSsoArtifactAttrTypes := map[string]attr.Type{
+		"lifetime":           types.Int64Type,
+		"resolver_locations": types.SetType{ElemType: spBrowserSsoArtifactResolverLocationsElementType},
+		"source_id":          types.StringType,
+	}
+	spBrowserSsoAssertionLifetimeAttrTypes := map[string]attr.Type{
+		"minutes_after":  types.Int64Type,
+		"minutes_before": types.Int64Type,
+	}
+	spBrowserSsoAttributeContractCoreAttributesAttrTypes := map[string]attr.Type{
+		"name":        types.StringType,
+		"name_format": types.StringType,
+	}
+	spBrowserSsoAttributeContractCoreAttributesElementType := types.ObjectType{AttrTypes: spBrowserSsoAttributeContractCoreAttributesAttrTypes}
+	spBrowserSsoAttributeContractExtendedAttributesAttrTypes := map[string]attr.Type{
+		"name":        types.StringType,
+		"name_format": types.StringType,
+	}
+	spBrowserSsoAttributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: spBrowserSsoAttributeContractExtendedAttributesAttrTypes}
+	spBrowserSsoAttributeContractAttrTypes := map[string]attr.Type{
+		"core_attributes":     types.SetType{ElemType: spBrowserSsoAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: spBrowserSsoAttributeContractExtendedAttributesElementType},
+	}
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentAttrTypes := attributecontractfulfillment.AttrTypes()
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentElementType := types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentAttrTypes}
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesAttrTypes := attributesources.AttrTypes()
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesElementType := types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesAttrTypes}
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttrTypes := map[string]attr.Type{
+		"abort_sso_transaction_as_fail_safe": types.BoolType,
+		"attribute_contract_fulfillment":     types.MapType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentElementType},
+		"attribute_sources":                  types.SetType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesElementType},
+		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrTypes},
+		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaAttrTypes},
+		"restrict_virtual_entity_ids":        types.BoolType,
+		"restricted_virtual_entity_ids":      types.SetType{ElemType: types.StringType},
+	}
+	spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType := types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttrTypes}
+	spBrowserSsoEncryptionPolicyAttrTypes := map[string]attr.Type{
+		"encrypt_assertion":             types.BoolType,
+		"encrypt_slo_subject_name_id":   types.BoolType,
+		"encrypted_attributes":          types.SetType{ElemType: types.StringType},
+		"slo_subject_name_id_encrypted": types.BoolType,
+	}
+	spBrowserSsoMessageCustomizationsAttrTypes := map[string]attr.Type{
+		"context_name":       types.StringType,
+		"message_expression": types.StringType,
+	}
+	spBrowserSsoMessageCustomizationsElementType := types.ObjectType{AttrTypes: spBrowserSsoMessageCustomizationsAttrTypes}
+	spBrowserSsoSloServiceEndpointsAttrTypes := map[string]attr.Type{
+		"binding":      types.StringType,
+		"response_url": types.StringType,
+		"url":          types.StringType,
+	}
+	spBrowserSsoSloServiceEndpointsElementType := types.ObjectType{AttrTypes: spBrowserSsoSloServiceEndpointsAttrTypes}
+	spBrowserSsoSsoServiceEndpointsAttrTypes := map[string]attr.Type{
+		"binding":    types.StringType,
+		"index":      types.Int64Type,
+		"is_default": types.BoolType,
+		"url":        types.StringType,
+	}
+	spBrowserSsoSsoServiceEndpointsElementType := types.ObjectType{AttrTypes: spBrowserSsoSsoServiceEndpointsAttrTypes}
+	spBrowserSsoUrlWhitelistEntriesAttrTypes := map[string]attr.Type{
+		"allow_query_and_fragment": types.BoolType,
+		"require_https":            types.BoolType,
+		"valid_domain":             types.StringType,
+		"valid_path":               types.StringType,
+	}
+	spBrowserSsoUrlWhitelistEntriesElementType := types.ObjectType{AttrTypes: spBrowserSsoUrlWhitelistEntriesAttrTypes}
+	spBrowserSsoAttrTypes := map[string]attr.Type{
+		"adapter_mappings":              types.SetType{ElemType: spBrowserSsoAdapterMappingsElementType},
+		"always_sign_artifact_response": types.BoolType,
+		"artifact":                      types.ObjectType{AttrTypes: spBrowserSsoArtifactAttrTypes},
+		"assertion_lifetime":            types.ObjectType{AttrTypes: spBrowserSsoAssertionLifetimeAttrTypes},
+		"attribute_contract":            types.ObjectType{AttrTypes: spBrowserSsoAttributeContractAttrTypes},
+		"authentication_policy_contract_assertion_mappings": types.SetType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType},
+		"default_target_url":            types.StringType,
+		"enabled_profiles":              types.SetType{ElemType: types.StringType},
+		"encryption_policy":             types.ObjectType{AttrTypes: spBrowserSsoEncryptionPolicyAttrTypes},
+		"incoming_bindings":             types.SetType{ElemType: types.StringType},
+		"message_customizations":        types.SetType{ElemType: spBrowserSsoMessageCustomizationsElementType},
+		"protocol":                      types.StringType,
+		"require_signed_authn_requests": types.BoolType,
+		"sign_assertions":               types.BoolType,
+		"sign_response_as_required":     types.BoolType,
+		"slo_service_endpoints":         types.SetType{ElemType: spBrowserSsoSloServiceEndpointsElementType},
+		"sp_saml_identity_mapping":      types.StringType,
+		"sp_ws_fed_identity_mapping":    types.StringType,
+		"sso_application_endpoint":      types.StringType,
+		"sso_service_endpoints":         types.SetType{ElemType: spBrowserSsoSsoServiceEndpointsElementType},
+		"url_whitelist_entries":         types.SetType{ElemType: spBrowserSsoUrlWhitelistEntriesElementType},
+		"ws_fed_token_type":             types.StringType,
+		"ws_trust_version":              types.StringType,
+	}
+	var spBrowserSsoValue types.Object
+	if r.SpBrowserSso == nil {
+		spBrowserSsoValue = types.ObjectNull(spBrowserSsoAttrTypes)
+	} else {
+		var spBrowserSsoAdapterMappingsValues []attr.Value
+		for adapterMappingIndex, spBrowserSsoAdapterMappingsResponseValue := range r.SpBrowserSso.AdapterMappings {
+			var spBrowserSsoAdapterMappingsAdapterOverrideSettingsValue types.Object
+			if spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings == nil {
+				spBrowserSsoAdapterMappingsAdapterOverrideSettingsValue = types.ObjectNull(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes)
+			} else {
+				var spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue types.Object
+				if spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract == nil {
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue = types.ObjectNull(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes)
+				} else {
+					var spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues []attr.Value
+					for _, spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue := range spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.CoreAttributes {
+						spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, diags := types.ObjectValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+							"masked":    types.BoolPointerValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue.Masked),
+							"name":      types.StringValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue.Name),
+							"pseudonym": types.BoolPointerValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue.Pseudonym),
+						})
+						respDiags.Append(diags...)
+						spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues = append(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues, spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue)
+					}
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, diags := types.SetValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType, spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues)
+					respDiags.Append(diags...)
+					var spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues []attr.Value
+					for _, spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue := range spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.ExtendedAttributes {
+						spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, diags := types.ObjectValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+							"masked":    types.BoolPointerValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue.Masked),
+							"name":      types.StringValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue.Name),
+							"pseudonym": types.BoolPointerValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue.Pseudonym),
+						})
+						respDiags.Append(diags...)
+						spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues = append(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues, spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue)
+					}
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, diags := types.SetValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType, spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues)
+					respDiags.Append(diags...)
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue, diags = types.ObjectValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes, map[string]attr.Value{
+						"core_attributes":           spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue,
+						"extended_attributes":       spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue,
+						"mask_ognl_values":          types.BoolPointerValue(spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.MaskOgnlValues),
+						"unique_user_key_attribute": types.StringPointerValue(spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.UniqueUserKeyAttribute),
+					})
+					respDiags.Append(diags...)
+				}
+				var spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingValue types.Object
+				if spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping == nil {
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingValue = types.ObjectNull(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttrTypes)
+				} else {
+					contractFulfillment := spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping.AttributeContractFulfillment
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
+					respDiags.Append(diags...)
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesValue, diags := attributesources.ToState(context.Background(), spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping.AttributeSources)
+					respDiags.Append(diags...)
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping.IssuanceCriteria)
+					respDiags.Append(diags...)
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingValue, diags = types.ObjectValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttrTypes, map[string]attr.Value{
+						"attribute_contract_fulfillment": spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentValue,
+						"attribute_sources":              spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesValue,
+						"issuance_criteria":              spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaValue,
+					})
+					respDiags.Append(diags...)
+				}
+				overrideSettingsConfiguration := spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
+				spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(state.getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex), &overrideSettingsConfiguration, true)
+				respDiags.Append(diags...)
+				var spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
+				if spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue = types.ObjectNull(spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefAttrTypes)
+				} else {
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue, diags = types.ObjectValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefAttrTypes, map[string]attr.Value{
+						"id": types.StringValue(spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef.Id),
+					})
+					respDiags.Append(diags...)
+				}
+				spBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue, diags := types.ObjectValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrTypes, map[string]attr.Value{
+					"id": types.StringValue(spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.PluginDescriptorRef.Id),
+				})
+				respDiags.Append(diags...)
+				spBrowserSsoAdapterMappingsAdapterOverrideSettingsValue, diags = types.ObjectValue(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes, map[string]attr.Value{
+					"attribute_contract":    spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue,
+					"attribute_mapping":     spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingValue,
+					"authn_ctx_class_ref":   types.StringPointerValue(spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AuthnCtxClassRef),
+					"configuration":         spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue,
+					"id":                    types.StringValue(spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Id),
+					"name":                  types.StringValue(spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Name),
+					"parent_ref":            spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue,
+					"plugin_descriptor_ref": spBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue,
+				})
+				respDiags.Append(diags...)
+			}
+			contractFulfillment := spBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment
+			spBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
+			respDiags.Append(diags...)
+			spBrowserSsoAdapterMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), spBrowserSsoAdapterMappingsResponseValue.AttributeSources)
+			respDiags.Append(diags...)
+			var spBrowserSsoAdapterMappingsIdpAdapterRefValue types.Object
+			if spBrowserSsoAdapterMappingsResponseValue.IdpAdapterRef == nil {
+				spBrowserSsoAdapterMappingsIdpAdapterRefValue = types.ObjectNull(spBrowserSsoAdapterMappingsIdpAdapterRefAttrTypes)
+			} else {
+				spBrowserSsoAdapterMappingsIdpAdapterRefValue, diags = types.ObjectValue(spBrowserSsoAdapterMappingsIdpAdapterRefAttrTypes, map[string]attr.Value{
+					"id": types.StringValue(spBrowserSsoAdapterMappingsResponseValue.IdpAdapterRef.Id),
+				})
+				respDiags.Append(diags...)
+			}
+			spBrowserSsoAdapterMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), spBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
+			respDiags.Append(diags...)
+			spBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, spBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
+			respDiags.Append(diags...)
+			spBrowserSsoAdapterMappingsValue, diags := types.ObjectValue(spBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
+				"abort_sso_transaction_as_fail_safe": types.BoolPointerValue(spBrowserSsoAdapterMappingsResponseValue.AbortSsoTransactionAsFailSafe),
+				"adapter_override_settings":          spBrowserSsoAdapterMappingsAdapterOverrideSettingsValue,
+				"attribute_contract_fulfillment":     spBrowserSsoAdapterMappingsAttributeContractFulfillmentValue,
+				"attribute_sources":                  spBrowserSsoAdapterMappingsAttributeSourcesValue,
+				"idp_adapter_ref":                    spBrowserSsoAdapterMappingsIdpAdapterRefValue,
+				"issuance_criteria":                  spBrowserSsoAdapterMappingsIssuanceCriteriaValue,
+				"restrict_virtual_entity_ids":        types.BoolPointerValue(spBrowserSsoAdapterMappingsResponseValue.RestrictVirtualEntityIds),
+				"restricted_virtual_entity_ids":      spBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue,
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoAdapterMappingsValues = append(spBrowserSsoAdapterMappingsValues, spBrowserSsoAdapterMappingsValue)
+		}
+		spBrowserSsoAdapterMappingsValue, diags := types.SetValue(spBrowserSsoAdapterMappingsElementType, spBrowserSsoAdapterMappingsValues)
+		respDiags.Append(diags...)
+		var spBrowserSsoArtifactValue types.Object
+		if r.SpBrowserSso.Artifact == nil {
+			spBrowserSsoArtifactValue = types.ObjectNull(spBrowserSsoArtifactAttrTypes)
+		} else {
+			var spBrowserSsoArtifactResolverLocationsValues []attr.Value
+			for _, spBrowserSsoArtifactResolverLocationsResponseValue := range r.SpBrowserSso.Artifact.ResolverLocations {
+				spBrowserSsoArtifactResolverLocationsValue, diags := types.ObjectValue(spBrowserSsoArtifactResolverLocationsAttrTypes, map[string]attr.Value{
+					"index": types.Int64Value(spBrowserSsoArtifactResolverLocationsResponseValue.Index),
+					"url":   types.StringValue(spBrowserSsoArtifactResolverLocationsResponseValue.Url),
+				})
+				respDiags.Append(diags...)
+				spBrowserSsoArtifactResolverLocationsValues = append(spBrowserSsoArtifactResolverLocationsValues, spBrowserSsoArtifactResolverLocationsValue)
+			}
+			spBrowserSsoArtifactResolverLocationsValue, diags := types.SetValue(spBrowserSsoArtifactResolverLocationsElementType, spBrowserSsoArtifactResolverLocationsValues)
+			respDiags.Append(diags...)
+			spBrowserSsoArtifactValue, diags = types.ObjectValue(spBrowserSsoArtifactAttrTypes, map[string]attr.Value{
+				"lifetime":           types.Int64PointerValue(r.SpBrowserSso.Artifact.Lifetime),
+				"resolver_locations": spBrowserSsoArtifactResolverLocationsValue,
+				"source_id":          types.StringPointerValue(r.SpBrowserSso.Artifact.SourceId),
+			})
+			respDiags.Append(diags...)
+		}
+		spBrowserSsoAssertionLifetimeValue, diags := types.ObjectValue(spBrowserSsoAssertionLifetimeAttrTypes, map[string]attr.Value{
+			"minutes_after":  types.Int64Value(r.SpBrowserSso.AssertionLifetime.MinutesAfter),
+			"minutes_before": types.Int64Value(r.SpBrowserSso.AssertionLifetime.MinutesBefore),
+		})
+		respDiags.Append(diags...)
+		var spBrowserSsoAttributeContractCoreAttributesValues []attr.Value
+		for _, spBrowserSsoAttributeContractCoreAttributesResponseValue := range r.SpBrowserSso.AttributeContract.CoreAttributes {
+			spBrowserSsoAttributeContractCoreAttributesValue, diags := types.ObjectValue(spBrowserSsoAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+				"name":        types.StringValue(spBrowserSsoAttributeContractCoreAttributesResponseValue.Name),
+				"name_format": types.StringPointerValue(spBrowserSsoAttributeContractCoreAttributesResponseValue.NameFormat),
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoAttributeContractCoreAttributesValues = append(spBrowserSsoAttributeContractCoreAttributesValues, spBrowserSsoAttributeContractCoreAttributesValue)
+		}
+		spBrowserSsoAttributeContractCoreAttributesValue, diags := types.SetValue(spBrowserSsoAttributeContractCoreAttributesElementType, spBrowserSsoAttributeContractCoreAttributesValues)
+		respDiags.Append(diags...)
+		var spBrowserSsoAttributeContractExtendedAttributesValues []attr.Value
+		for _, spBrowserSsoAttributeContractExtendedAttributesResponseValue := range r.SpBrowserSso.AttributeContract.ExtendedAttributes {
+			spBrowserSsoAttributeContractExtendedAttributesValue, diags := types.ObjectValue(spBrowserSsoAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+				"name":        types.StringValue(spBrowserSsoAttributeContractExtendedAttributesResponseValue.Name),
+				"name_format": types.StringPointerValue(spBrowserSsoAttributeContractExtendedAttributesResponseValue.NameFormat),
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoAttributeContractExtendedAttributesValues = append(spBrowserSsoAttributeContractExtendedAttributesValues, spBrowserSsoAttributeContractExtendedAttributesValue)
+		}
+		spBrowserSsoAttributeContractExtendedAttributesValue, diags := types.SetValue(spBrowserSsoAttributeContractExtendedAttributesElementType, spBrowserSsoAttributeContractExtendedAttributesValues)
+		respDiags.Append(diags...)
+		spBrowserSsoAttributeContractValue, diags := types.ObjectValue(spBrowserSsoAttributeContractAttrTypes, map[string]attr.Value{
+			"core_attributes":     spBrowserSsoAttributeContractCoreAttributesValue,
+			"extended_attributes": spBrowserSsoAttributeContractExtendedAttributesValue,
+		})
+		respDiags.Append(diags...)
+		var spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues []attr.Value
+		for _, spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue := range r.SpBrowserSso.AuthenticationPolicyContractAssertionMappings {
+			contractFulfillment := spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AttributeContractFulfillment
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
+			respDiags.Append(diags...)
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AttributeSources)
+			respDiags.Append(diags...)
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue, diags := types.ObjectValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrTypes, map[string]attr.Value{
+				"id": types.StringValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AuthenticationPolicyContractRef.Id),
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.IssuanceCriteria)
+			respDiags.Append(diags...)
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.RestrictedVirtualEntityIds)
+			respDiags.Append(diags...)
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue, diags := types.ObjectValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttrTypes, map[string]attr.Value{
+				"abort_sso_transaction_as_fail_safe": types.BoolPointerValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AbortSsoTransactionAsFailSafe),
+				"attribute_contract_fulfillment":     spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentValue,
+				"attribute_sources":                  spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesValue,
+				"authentication_policy_contract_ref": spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue,
+				"issuance_criteria":                  spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaValue,
+				"restrict_virtual_entity_ids":        types.BoolPointerValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.RestrictVirtualEntityIds),
+				"restricted_virtual_entity_ids":      spBrowserSsoAuthenticationPolicyContractAssertionMappingsRestrictedVirtualEntityIdsValue,
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues = append(spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue)
+		}
+		spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue, diags := types.SetValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues)
+		respDiags.Append(diags...)
+		spBrowserSsoEnabledProfilesValue, diags := types.SetValueFrom(context.Background(), types.StringType, r.SpBrowserSso.EnabledProfiles)
+		respDiags.Append(diags...)
+		var spBrowserSsoEncryptionPolicyValue types.Object
+		if r.SpBrowserSso.EncryptionPolicy == nil {
+			spBrowserSsoEncryptionPolicyValue = types.ObjectNull(spBrowserSsoEncryptionPolicyAttrTypes)
+		} else {
+			spBrowserSsoEncryptionPolicyEncryptedAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, r.SpBrowserSso.EncryptionPolicy.EncryptedAttributes)
+			respDiags.Append(diags...)
+			spBrowserSsoEncryptionPolicyValue, diags = types.ObjectValue(spBrowserSsoEncryptionPolicyAttrTypes, map[string]attr.Value{
+				"encrypt_assertion":             types.BoolPointerValue(r.SpBrowserSso.EncryptionPolicy.EncryptAssertion),
+				"encrypt_slo_subject_name_id":   types.BoolPointerValue(r.SpBrowserSso.EncryptionPolicy.EncryptSloSubjectNameId),
+				"encrypted_attributes":          spBrowserSsoEncryptionPolicyEncryptedAttributesValue,
+				"slo_subject_name_id_encrypted": types.BoolPointerValue(r.SpBrowserSso.EncryptionPolicy.SloSubjectNameIDEncrypted),
+			})
+			respDiags.Append(diags...)
+		}
+		spBrowserSsoIncomingBindingsValue, diags := types.SetValueFrom(context.Background(), types.StringType, r.SpBrowserSso.IncomingBindings)
+		respDiags.Append(diags...)
+		var spBrowserSsoMessageCustomizationsValues []attr.Value
+		for _, spBrowserSsoMessageCustomizationsResponseValue := range r.SpBrowserSso.MessageCustomizations {
+			spBrowserSsoMessageCustomizationsValue, diags := types.ObjectValue(spBrowserSsoMessageCustomizationsAttrTypes, map[string]attr.Value{
+				"context_name":       types.StringPointerValue(spBrowserSsoMessageCustomizationsResponseValue.ContextName),
+				"message_expression": types.StringPointerValue(spBrowserSsoMessageCustomizationsResponseValue.MessageExpression),
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoMessageCustomizationsValues = append(spBrowserSsoMessageCustomizationsValues, spBrowserSsoMessageCustomizationsValue)
+		}
+		spBrowserSsoMessageCustomizationsValue, diags := types.SetValue(spBrowserSsoMessageCustomizationsElementType, spBrowserSsoMessageCustomizationsValues)
+		respDiags.Append(diags...)
+		var spBrowserSsoSloServiceEndpointsValues []attr.Value
+		for _, spBrowserSsoSloServiceEndpointsResponseValue := range r.SpBrowserSso.SloServiceEndpoints {
+			spBrowserSsoSloServiceEndpointsValue, diags := types.ObjectValue(spBrowserSsoSloServiceEndpointsAttrTypes, map[string]attr.Value{
+				"binding":      types.StringPointerValue(spBrowserSsoSloServiceEndpointsResponseValue.Binding),
+				"response_url": types.StringPointerValue(spBrowserSsoSloServiceEndpointsResponseValue.ResponseUrl),
+				"url":          types.StringValue(spBrowserSsoSloServiceEndpointsResponseValue.Url),
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoSloServiceEndpointsValues = append(spBrowserSsoSloServiceEndpointsValues, spBrowserSsoSloServiceEndpointsValue)
+		}
+		spBrowserSsoSloServiceEndpointsValue, diags := types.SetValue(spBrowserSsoSloServiceEndpointsElementType, spBrowserSsoSloServiceEndpointsValues)
+		respDiags.Append(diags...)
+		var spBrowserSsoSsoServiceEndpointsValues []attr.Value
+		for _, spBrowserSsoSsoServiceEndpointsResponseValue := range r.SpBrowserSso.SsoServiceEndpoints {
+			// PF will return nil for false for the is_default boolean
+			isDefault := types.BoolValue(false)
+			if spBrowserSsoSsoServiceEndpointsResponseValue.IsDefault != nil {
+				isDefault = types.BoolPointerValue(spBrowserSsoSsoServiceEndpointsResponseValue.IsDefault)
+			}
+			spBrowserSsoSsoServiceEndpointsValue, diags := types.ObjectValue(spBrowserSsoSsoServiceEndpointsAttrTypes, map[string]attr.Value{
+				"binding":    types.StringPointerValue(spBrowserSsoSsoServiceEndpointsResponseValue.Binding),
+				"index":      types.Int64PointerValue(spBrowserSsoSsoServiceEndpointsResponseValue.Index),
+				"is_default": isDefault,
+				"url":        types.StringValue(spBrowserSsoSsoServiceEndpointsResponseValue.Url),
+			})
+			respDiags.Append(diags...)
+			spBrowserSsoSsoServiceEndpointsValues = append(spBrowserSsoSsoServiceEndpointsValues, spBrowserSsoSsoServiceEndpointsValue)
+		}
+		spBrowserSsoSsoServiceEndpointsValue, diags := types.SetValue(spBrowserSsoSsoServiceEndpointsElementType, spBrowserSsoSsoServiceEndpointsValues)
+		respDiags.Append(diags...)
+		var spBrowserSsoUrlWhitelistEntriesValue types.Set
+		if r.SpBrowserSso.UrlWhitelistEntries == nil {
+			spBrowserSsoUrlWhitelistEntriesValue = types.SetNull(spBrowserSsoUrlWhitelistEntriesElementType)
+		} else {
+			var spBrowserSsoUrlWhitelistEntriesValues []attr.Value
+			for _, spBrowserSsoUrlWhitelistEntriesResponseValue := range r.SpBrowserSso.UrlWhitelistEntries {
+				spBrowserSsoUrlWhitelistEntriesValue, diags := types.ObjectValue(spBrowserSsoUrlWhitelistEntriesAttrTypes, map[string]attr.Value{
+					"allow_query_and_fragment": types.BoolPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.AllowQueryAndFragment),
+					"require_https":            types.BoolPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.RequireHttps),
+					"valid_domain":             types.StringPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.ValidDomain),
+					"valid_path":               types.StringPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.ValidPath),
+				})
+				respDiags.Append(diags...)
+				spBrowserSsoUrlWhitelistEntriesValues = append(spBrowserSsoUrlWhitelistEntriesValues, spBrowserSsoUrlWhitelistEntriesValue)
+			}
+			spBrowserSsoUrlWhitelistEntriesValue, diags = types.SetValue(spBrowserSsoUrlWhitelistEntriesElementType, spBrowserSsoUrlWhitelistEntriesValues)
+			respDiags.Append(diags...)
+		}
 
-	state.SpBrowserSso, respDiags = types.ObjectValueFrom(ctx, spBrowserSSOAttrTypes, r.SpBrowserSso)
-	diags.Append(respDiags...)
+		// always_sign_artifact_response, sign_assertions, require_signed_authn_requests can be returned as nil when set to false
+		var alwaysSignArtifactResponse, signAssertions, requireSignedAuthnRequests bool
+		if r.SpBrowserSso.AlwaysSignArtifactResponse != nil {
+			alwaysSignArtifactResponse = *r.SpBrowserSso.AlwaysSignArtifactResponse
+		}
+		if r.SpBrowserSso.SignAssertions != nil {
+			signAssertions = *r.SpBrowserSso.SignAssertions
+		}
+		if r.SpBrowserSso.RequireSignedAuthnRequests != nil {
+			requireSignedAuthnRequests = *r.SpBrowserSso.RequireSignedAuthnRequests
+		}
 
-	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
-	diags.Append(respDiags...)
+		spBrowserSsoValue, diags = types.ObjectValue(spBrowserSsoAttrTypes, map[string]attr.Value{
+			"adapter_mappings":              spBrowserSsoAdapterMappingsValue,
+			"always_sign_artifact_response": types.BoolValue(alwaysSignArtifactResponse),
+			"artifact":                      spBrowserSsoArtifactValue,
+			"assertion_lifetime":            spBrowserSsoAssertionLifetimeValue,
+			"attribute_contract":            spBrowserSsoAttributeContractValue,
+			"authentication_policy_contract_assertion_mappings": spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue,
+			"default_target_url":            types.StringPointerValue(r.SpBrowserSso.DefaultTargetUrl),
+			"enabled_profiles":              spBrowserSsoEnabledProfilesValue,
+			"encryption_policy":             spBrowserSsoEncryptionPolicyValue,
+			"incoming_bindings":             spBrowserSsoIncomingBindingsValue,
+			"message_customizations":        spBrowserSsoMessageCustomizationsValue,
+			"protocol":                      types.StringValue(r.SpBrowserSso.Protocol),
+			"require_signed_authn_requests": types.BoolValue(requireSignedAuthnRequests),
+			"sign_assertions":               types.BoolValue(signAssertions),
+			"sign_response_as_required":     types.BoolPointerValue(r.SpBrowserSso.SignResponseAsRequired),
+			"slo_service_endpoints":         spBrowserSsoSloServiceEndpointsValue,
+			"sp_saml_identity_mapping":      types.StringPointerValue(r.SpBrowserSso.SpSamlIdentityMapping),
+			"sp_ws_fed_identity_mapping":    types.StringPointerValue(r.SpBrowserSso.SpWsFedIdentityMapping),
+			"sso_application_endpoint":      types.StringPointerValue(r.SpBrowserSso.SsoApplicationEndpoint),
+			"sso_service_endpoints":         spBrowserSsoSsoServiceEndpointsValue,
+			"url_whitelist_entries":         spBrowserSsoUrlWhitelistEntriesValue,
+			"ws_fed_token_type":             types.StringPointerValue(r.SpBrowserSso.WsFedTokenType),
+			"ws_trust_version":              types.StringPointerValue(r.SpBrowserSso.WsTrustVersion),
+		})
+		respDiags.Append(diags...)
+	}
 
-	state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
-	diags.Append(respDiags...)
+	state.SpBrowserSso = spBrowserSsoValue
+	// virtual_entity_ids
+	state.VirtualEntityIds, diags = types.SetValueFrom(context.Background(), types.StringType, r.VirtualEntityIds)
+	respDiags.Append(diags...)
+	// ws_trust
+	wsTrustAttributeContractCoreAttributesAttrTypes := map[string]attr.Type{
+		"name":      types.StringType,
+		"namespace": types.StringType,
+	}
+	wsTrustAttributeContractCoreAttributesElementType := types.ObjectType{AttrTypes: wsTrustAttributeContractCoreAttributesAttrTypes}
+	wsTrustAttributeContractExtendedAttributesAttrTypes := map[string]attr.Type{
+		"name":      types.StringType,
+		"namespace": types.StringType,
+	}
+	wsTrustAttributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: wsTrustAttributeContractExtendedAttributesAttrTypes}
+	wsTrustAttributeContractAttrTypes := map[string]attr.Type{
+		"core_attributes":     types.SetType{ElemType: wsTrustAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: wsTrustAttributeContractExtendedAttributesElementType},
+	}
+	wsTrustMessageCustomizationsAttrTypes := map[string]attr.Type{
+		"context_name":       types.StringType,
+		"message_expression": types.StringType,
+	}
+	wsTrustMessageCustomizationsElementType := types.ObjectType{AttrTypes: wsTrustMessageCustomizationsAttrTypes}
+	wsTrustRequestContractRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	wsTrustTokenProcessorMappingsAttributeContractFulfillmentAttrTypes := attributecontractfulfillment.AttrTypes()
+	wsTrustTokenProcessorMappingsAttributeContractFulfillmentElementType := types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsAttributeContractFulfillmentAttrTypes}
+	wsTrustTokenProcessorMappingsAttributeSourcesAttrTypes := attributesources.AttrTypes()
+	wsTrustTokenProcessorMappingsAttributeSourcesElementType := types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsAttributeSourcesAttrTypes}
+	wsTrustTokenProcessorMappingsIdpTokenProcessorRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	wsTrustTokenProcessorMappingsIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
+	wsTrustTokenProcessorMappingsAttrTypes := map[string]attr.Type{
+		"attribute_contract_fulfillment": types.MapType{ElemType: wsTrustTokenProcessorMappingsAttributeContractFulfillmentElementType},
+		"attribute_sources":              types.SetType{ElemType: wsTrustTokenProcessorMappingsAttributeSourcesElementType},
+		"idp_token_processor_ref":        types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIdpTokenProcessorRefAttrTypes},
+		"issuance_criteria":              types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIssuanceCriteriaAttrTypes},
+		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
+	}
+	wsTrustTokenProcessorMappingsElementType := types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsAttrTypes}
+	wsTrustAttrTypes := map[string]attr.Type{
+		"abort_if_not_fulfilled_from_request": types.BoolType,
+		"attribute_contract":                  types.ObjectType{AttrTypes: wsTrustAttributeContractAttrTypes},
+		"default_token_type":                  types.StringType,
+		"encrypt_saml2_assertion":             types.BoolType,
+		"generate_key":                        types.BoolType,
+		"message_customizations":              types.SetType{ElemType: wsTrustMessageCustomizationsElementType},
+		"minutes_after":                       types.Int64Type,
+		"minutes_before":                      types.Int64Type,
+		"oauth_assertion_profiles":            types.BoolType,
+		"partner_service_ids":                 types.SetType{ElemType: types.StringType},
+		"request_contract_ref":                types.ObjectType{AttrTypes: wsTrustRequestContractRefAttrTypes},
+		"token_processor_mappings":            types.SetType{ElemType: wsTrustTokenProcessorMappingsElementType},
+	}
+	var wsTrustValue types.Object
+	if r.WsTrust == nil {
+		wsTrustValue = types.ObjectNull(wsTrustAttrTypes)
+	} else {
+		var wsTrustAttributeContractCoreAttributesValues []attr.Value
+		for _, wsTrustAttributeContractCoreAttributesResponseValue := range r.WsTrust.AttributeContract.CoreAttributes {
+			wsTrustAttributeContractCoreAttributesValue, diags := types.ObjectValue(wsTrustAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+				"name":      types.StringValue(wsTrustAttributeContractCoreAttributesResponseValue.Name),
+				"namespace": types.StringValue(wsTrustAttributeContractCoreAttributesResponseValue.Namespace),
+			})
+			respDiags.Append(diags...)
+			wsTrustAttributeContractCoreAttributesValues = append(wsTrustAttributeContractCoreAttributesValues, wsTrustAttributeContractCoreAttributesValue)
+		}
+		wsTrustAttributeContractCoreAttributesValue, diags := types.SetValue(wsTrustAttributeContractCoreAttributesElementType, wsTrustAttributeContractCoreAttributesValues)
+		respDiags.Append(diags...)
+		var wsTrustAttributeContractExtendedAttributesValues []attr.Value
+		for _, wsTrustAttributeContractExtendedAttributesResponseValue := range r.WsTrust.AttributeContract.ExtendedAttributes {
+			wsTrustAttributeContractExtendedAttributesValue, diags := types.ObjectValue(wsTrustAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+				"name":      types.StringValue(wsTrustAttributeContractExtendedAttributesResponseValue.Name),
+				"namespace": types.StringValue(wsTrustAttributeContractExtendedAttributesResponseValue.Namespace),
+			})
+			respDiags.Append(diags...)
+			wsTrustAttributeContractExtendedAttributesValues = append(wsTrustAttributeContractExtendedAttributesValues, wsTrustAttributeContractExtendedAttributesValue)
+		}
+		wsTrustAttributeContractExtendedAttributesValue, diags := types.SetValue(wsTrustAttributeContractExtendedAttributesElementType, wsTrustAttributeContractExtendedAttributesValues)
+		respDiags.Append(diags...)
+		wsTrustAttributeContractValue, diags := types.ObjectValue(wsTrustAttributeContractAttrTypes, map[string]attr.Value{
+			"core_attributes":     wsTrustAttributeContractCoreAttributesValue,
+			"extended_attributes": wsTrustAttributeContractExtendedAttributesValue,
+		})
+		respDiags.Append(diags...)
+		var wsTrustMessageCustomizationsValues []attr.Value
+		for _, wsTrustMessageCustomizationsResponseValue := range r.WsTrust.MessageCustomizations {
+			wsTrustMessageCustomizationsValue, diags := types.ObjectValue(wsTrustMessageCustomizationsAttrTypes, map[string]attr.Value{
+				"context_name":       types.StringPointerValue(wsTrustMessageCustomizationsResponseValue.ContextName),
+				"message_expression": types.StringPointerValue(wsTrustMessageCustomizationsResponseValue.MessageExpression),
+			})
+			respDiags.Append(diags...)
+			wsTrustMessageCustomizationsValues = append(wsTrustMessageCustomizationsValues, wsTrustMessageCustomizationsValue)
+		}
+		wsTrustMessageCustomizationsValue, diags := types.SetValue(wsTrustMessageCustomizationsElementType, wsTrustMessageCustomizationsValues)
+		respDiags.Append(diags...)
+		wsTrustPartnerServiceIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, r.WsTrust.PartnerServiceIds)
+		respDiags.Append(diags...)
+		var wsTrustRequestContractRefValue types.Object
+		if r.WsTrust.RequestContractRef == nil {
+			wsTrustRequestContractRefValue = types.ObjectNull(wsTrustRequestContractRefAttrTypes)
+		} else {
+			wsTrustRequestContractRefValue, diags = types.ObjectValue(wsTrustRequestContractRefAttrTypes, map[string]attr.Value{
+				"id": types.StringValue(r.WsTrust.RequestContractRef.Id),
+			})
+			respDiags.Append(diags...)
+		}
+		var wsTrustTokenProcessorMappingsValues []attr.Value
+		for _, wsTrustTokenProcessorMappingsResponseValue := range r.WsTrust.TokenProcessorMappings {
+			contractFulfillment := wsTrustTokenProcessorMappingsResponseValue.AttributeContractFulfillment
+			wsTrustTokenProcessorMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
+			respDiags.Append(diags...)
+			wsTrustTokenProcessorMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), wsTrustTokenProcessorMappingsResponseValue.AttributeSources)
+			respDiags.Append(diags...)
+			wsTrustTokenProcessorMappingsIdpTokenProcessorRefValue, diags := types.ObjectValue(wsTrustTokenProcessorMappingsIdpTokenProcessorRefAttrTypes, map[string]attr.Value{
+				"id": types.StringValue(wsTrustTokenProcessorMappingsResponseValue.IdpTokenProcessorRef.Id),
+			})
+			respDiags.Append(diags...)
+			wsTrustTokenProcessorMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), wsTrustTokenProcessorMappingsResponseValue.IssuanceCriteria)
+			respDiags.Append(diags...)
+			wsTrustTokenProcessorMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, wsTrustTokenProcessorMappingsResponseValue.RestrictedVirtualEntityIds)
+			respDiags.Append(diags...)
+			wsTrustTokenProcessorMappingsValue, diags := types.ObjectValue(wsTrustTokenProcessorMappingsAttrTypes, map[string]attr.Value{
+				"attribute_contract_fulfillment": wsTrustTokenProcessorMappingsAttributeContractFulfillmentValue,
+				"attribute_sources":              wsTrustTokenProcessorMappingsAttributeSourcesValue,
+				"idp_token_processor_ref":        wsTrustTokenProcessorMappingsIdpTokenProcessorRefValue,
+				"issuance_criteria":              wsTrustTokenProcessorMappingsIssuanceCriteriaValue,
+				"restricted_virtual_entity_ids":  wsTrustTokenProcessorMappingsRestrictedVirtualEntityIdsValue,
+			})
+			respDiags.Append(diags...)
+			wsTrustTokenProcessorMappingsValues = append(wsTrustTokenProcessorMappingsValues, wsTrustTokenProcessorMappingsValue)
+		}
+		wsTrustTokenProcessorMappingsValue, diags := types.SetValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
+		respDiags.Append(diags...)
+		// Ensure that nil values are handled as false for encrypt_saml2_assertion and generate_key
+		var encryptSaml2Assertion, generateKey bool
+		if r.WsTrust.EncryptSaml2Assertion != nil {
+			encryptSaml2Assertion = *r.WsTrust.EncryptSaml2Assertion
+		}
+		if r.WsTrust.GenerateKey != nil {
+			generateKey = *r.WsTrust.GenerateKey
+		}
+		wsTrustValue, diags = types.ObjectValue(wsTrustAttrTypes, map[string]attr.Value{
+			"abort_if_not_fulfilled_from_request": types.BoolPointerValue(r.WsTrust.AbortIfNotFulfilledFromRequest),
+			"attribute_contract":                  wsTrustAttributeContractValue,
+			"default_token_type":                  types.StringPointerValue(r.WsTrust.DefaultTokenType),
+			"encrypt_saml2_assertion":             types.BoolValue(encryptSaml2Assertion),
+			"generate_key":                        types.BoolValue(generateKey),
+			"message_customizations":              wsTrustMessageCustomizationsValue,
+			"minutes_after":                       types.Int64PointerValue(r.WsTrust.MinutesAfter),
+			"minutes_before":                      types.Int64PointerValue(r.WsTrust.MinutesBefore),
+			"oauth_assertion_profiles":            types.BoolPointerValue(r.WsTrust.OAuthAssertionProfiles),
+			"partner_service_ids":                 wsTrustPartnerServiceIdsValue,
+			"request_contract_ref":                wsTrustRequestContractRefValue,
+			"token_processor_mappings":            wsTrustTokenProcessorMappingsValue,
+		})
+		respDiags.Append(diags...)
+	}
 
-	state.OutboundProvision, respDiags = types.ObjectValueFrom(ctx, outboundProvisionDataSourceAttrTypes, r.OutboundProvision)
-	diags.Append(respDiags...)
-
-	return diags
+	state.WsTrust = wsTrustValue
+	return respDiags
 }
 
 func (r *idpSpConnectionDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

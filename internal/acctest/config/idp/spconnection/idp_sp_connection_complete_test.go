@@ -343,7 +343,7 @@ sp_browser_sso = {
             id = "ProvisionerDS"
           }
           description = "JDBC"
-          filter      = "$${SAML_SUBJECT}"
+          filter      = "example"
           id          = "jdbcattrsource"
           schema      = "INFORMATION_SCHEMA"
           table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"

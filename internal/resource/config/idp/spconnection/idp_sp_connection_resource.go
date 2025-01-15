@@ -2148,7 +2148,6 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.MetadataReloadSettings = metadataReloadSettingsValue
 	}
 
-	//TODO replace?
 	if internaltypes.IsDefined(plan.Credentials) {
 		addRequest.Credentials = &client.ConnectionCredentials{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), &addRequest.Credentials)
@@ -2180,7 +2179,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		additionalAllowedEntitiesConfigurationValue := &client.AdditionalAllowedEntitiesConfiguration{}
 		additionalAllowedEntitiesConfigurationAttrs := plan.AdditionalAllowedEntitiesConfiguration.Attributes()
 		additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = []client.Entity{}
-		for _, additionalAllowedEntitiesElement := range additionalAllowedEntitiesConfigurationAttrs["additional_allowed_entities"].(types.List).Elements() {
+		for _, additionalAllowedEntitiesElement := range additionalAllowedEntitiesConfigurationAttrs["additional_allowed_entities"].(types.Set).Elements() {
 			additionalAllowedEntitiesValue := client.Entity{}
 			additionalAllowedEntitiesAttrs := additionalAllowedEntitiesElement.(types.Object).Attributes()
 			additionalAllowedEntitiesValue.EntityDescription = additionalAllowedEntitiesAttrs["entity_description"].(types.String).ValueStringPointer()
@@ -2208,13 +2207,252 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		}
 	}
 
-	//TODO fix
-	if internaltypes.IsDefined(plan.SpBrowserSso) {
-		addRequest.SpBrowserSso = &client.SpBrowserSso{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, true)), &addRequest.SpBrowserSso)
-		if err != nil {
-			respDiags.AddError("Error building client struct for sp_browser_sso", err.Error())
+	// sp_browser_sso
+	if !plan.SpBrowserSso.IsNull() {
+		spBrowserSsoValue := &client.SpBrowserSso{}
+		spBrowserSsoAttrs := plan.SpBrowserSso.Attributes()
+		spBrowserSsoValue.AdapterMappings = []client.IdpAdapterAssertionMapping{}
+		for _, adapterMappingsElement := range spBrowserSsoAttrs["adapter_mappings"].(types.Set).Elements() {
+			adapterMappingsValue := client.IdpAdapterAssertionMapping{}
+			adapterMappingsAttrs := adapterMappingsElement.(types.Object).Attributes()
+			adapterMappingsValue.AbortSsoTransactionAsFailSafe = adapterMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
+			if !adapterMappingsAttrs["adapter_override_settings"].IsNull() {
+				adapterMappingsAdapterOverrideSettingsValue := &client.IdpAdapter{}
+				adapterMappingsAdapterOverrideSettingsAttrs := adapterMappingsAttrs["adapter_override_settings"].(types.Object).Attributes()
+				if !adapterMappingsAdapterOverrideSettingsAttrs["attribute_contract"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue := &client.IdpAdapterAttributeContract{}
+					adapterMappingsAdapterOverrideSettingsAttributeContractAttrs := adapterMappingsAdapterOverrideSettingsAttrs["attribute_contract"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes = []client.IdpAdapterAttribute{}
+					for _, coreAttributesElement := range adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+						coreAttributesValue := client.IdpAdapterAttribute{}
+						coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+						coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+						coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+						coreAttributesValue.Pseudonym = coreAttributesAttrs["pseudonym"].(types.Bool).ValueBoolPointer()
+						adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes = append(adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes, coreAttributesValue)
+					}
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes = []client.IdpAdapterAttribute{}
+					for _, extendedAttributesElement := range adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+						extendedAttributesValue := client.IdpAdapterAttribute{}
+						extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+						extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+						extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+						extendedAttributesValue.Pseudonym = extendedAttributesAttrs["pseudonym"].(types.Bool).ValueBoolPointer()
+						adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes = append(adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+					}
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.MaskOgnlValues = adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["mask_ognl_values"].(types.Bool).ValueBoolPointer()
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.UniqueUserKeyAttribute = adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["unique_user_key_attribute"].(types.String).ValueStringPointer()
+					adapterMappingsAdapterOverrideSettingsValue.AttributeContract = adapterMappingsAdapterOverrideSettingsAttributeContractValue
+				}
+				if !adapterMappingsAdapterOverrideSettingsAttrs["attribute_mapping"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue := &client.IdpAdapterContractMapping{}
+					adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs := adapterMappingsAdapterOverrideSettingsAttrs["attribute_mapping"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
+					if err != nil {
+						respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+					}
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeSources, err = attributesources.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_sources"].(types.Set))
+					if err != nil {
+						respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+					}
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["issuance_criteria"].(types.Object))
+					if err != nil {
+						respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+					}
+					adapterMappingsAdapterOverrideSettingsValue.AttributeMapping = adapterMappingsAdapterOverrideSettingsAttributeMappingValue
+				}
+				adapterMappingsAdapterOverrideSettingsValue.AuthnCtxClassRef = adapterMappingsAdapterOverrideSettingsAttrs["authn_ctx_class_ref"].(types.String).ValueStringPointer()
+				adapterMappingsAdapterOverrideSettingsConfigurationValue, err := pluginconfiguration.ClientStruct(adapterMappingsAdapterOverrideSettingsAttrs["configuration"].(types.Object))
+				if err != nil {
+					respDiags.AddError("Error building client struct for configuration", err.Error())
+				} else {
+					adapterMappingsAdapterOverrideSettingsValue.Configuration = *adapterMappingsAdapterOverrideSettingsConfigurationValue
+				}
+				adapterMappingsAdapterOverrideSettingsValue.Id = adapterMappingsAdapterOverrideSettingsAttrs["id"].(types.String).ValueString()
+				adapterMappingsAdapterOverrideSettingsValue.Name = adapterMappingsAdapterOverrideSettingsAttrs["name"].(types.String).ValueString()
+				if !adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsParentRefValue := &client.ResourceLink{}
+					adapterMappingsAdapterOverrideSettingsParentRefAttrs := adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsParentRefValue.Id = adapterMappingsAdapterOverrideSettingsParentRefAttrs["id"].(types.String).ValueString()
+					adapterMappingsAdapterOverrideSettingsValue.ParentRef = adapterMappingsAdapterOverrideSettingsParentRefValue
+				}
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue := client.ResourceLink{}
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrs := adapterMappingsAdapterOverrideSettingsAttrs["plugin_descriptor_ref"].(types.Object).Attributes()
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue.Id = adapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrs["id"].(types.String).ValueString()
+				adapterMappingsAdapterOverrideSettingsValue.PluginDescriptorRef = adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue
+				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
+			}
+			adapterMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			adapterMappingsValue.AttributeSources, err = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			if !adapterMappingsAttrs["idp_adapter_ref"].IsNull() {
+				adapterMappingsIdpAdapterRefValue := &client.ResourceLink{}
+				adapterMappingsIdpAdapterRefAttrs := adapterMappingsAttrs["idp_adapter_ref"].(types.Object).Attributes()
+				adapterMappingsIdpAdapterRefValue.Id = adapterMappingsIdpAdapterRefAttrs["id"].(types.String).ValueString()
+				adapterMappingsValue.IdpAdapterRef = adapterMappingsIdpAdapterRefValue
+			}
+			adapterMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(adapterMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			adapterMappingsValue.RestrictVirtualEntityIds = adapterMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
+			if !adapterMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				adapterMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range adapterMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					adapterMappingsValue.RestrictedVirtualEntityIds = append(adapterMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			spBrowserSsoValue.AdapterMappings = append(spBrowserSsoValue.AdapterMappings, adapterMappingsValue)
 		}
+		spBrowserSsoValue.AlwaysSignArtifactResponse = spBrowserSsoAttrs["always_sign_artifact_response"].(types.Bool).ValueBoolPointer()
+		if !spBrowserSsoAttrs["artifact"].IsNull() {
+			spBrowserSsoArtifactValue := &client.ArtifactSettings{}
+			spBrowserSsoArtifactAttrs := spBrowserSsoAttrs["artifact"].(types.Object).Attributes()
+			spBrowserSsoArtifactValue.Lifetime = spBrowserSsoArtifactAttrs["lifetime"].(types.Int64).ValueInt64Pointer()
+			spBrowserSsoArtifactValue.ResolverLocations = []client.ArtifactResolverLocation{}
+			for _, resolverLocationsElement := range spBrowserSsoArtifactAttrs["resolver_locations"].(types.Set).Elements() {
+				resolverLocationsValue := client.ArtifactResolverLocation{}
+				resolverLocationsAttrs := resolverLocationsElement.(types.Object).Attributes()
+				resolverLocationsValue.Index = resolverLocationsAttrs["index"].(types.Int64).ValueInt64()
+				resolverLocationsValue.Url = resolverLocationsAttrs["url"].(types.String).ValueString()
+				spBrowserSsoArtifactValue.ResolverLocations = append(spBrowserSsoArtifactValue.ResolverLocations, resolverLocationsValue)
+			}
+			spBrowserSsoArtifactValue.SourceId = spBrowserSsoArtifactAttrs["source_id"].(types.String).ValueStringPointer()
+			spBrowserSsoValue.Artifact = spBrowserSsoArtifactValue
+		}
+		spBrowserSsoAssertionLifetimeValue := client.AssertionLifetime{}
+		spBrowserSsoAssertionLifetimeAttrs := spBrowserSsoAttrs["assertion_lifetime"].(types.Object).Attributes()
+		spBrowserSsoAssertionLifetimeValue.MinutesAfter = spBrowserSsoAssertionLifetimeAttrs["minutes_after"].(types.Int64).ValueInt64()
+		spBrowserSsoAssertionLifetimeValue.MinutesBefore = spBrowserSsoAssertionLifetimeAttrs["minutes_before"].(types.Int64).ValueInt64()
+		spBrowserSsoValue.AssertionLifetime = spBrowserSsoAssertionLifetimeValue
+		spBrowserSsoAttributeContractValue := client.SpBrowserSsoAttributeContract{}
+		spBrowserSsoAttributeContractAttrs := spBrowserSsoAttrs["attribute_contract"].(types.Object).Attributes()
+		spBrowserSsoAttributeContractValue.CoreAttributes = []client.SpBrowserSsoAttribute{}
+		for _, coreAttributesElement := range spBrowserSsoAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.SpBrowserSsoAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			coreAttributesValue.NameFormat = coreAttributesAttrs["name_format"].(types.String).ValueStringPointer()
+			spBrowserSsoAttributeContractValue.CoreAttributes = append(spBrowserSsoAttributeContractValue.CoreAttributes, coreAttributesValue)
+		}
+		spBrowserSsoAttributeContractValue.ExtendedAttributes = []client.SpBrowserSsoAttribute{}
+		for _, extendedAttributesElement := range spBrowserSsoAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.SpBrowserSsoAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			extendedAttributesValue.NameFormat = extendedAttributesAttrs["name_format"].(types.String).ValueStringPointer()
+			spBrowserSsoAttributeContractValue.ExtendedAttributes = append(spBrowserSsoAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		spBrowserSsoValue.AttributeContract = spBrowserSsoAttributeContractValue
+		spBrowserSsoValue.AuthenticationPolicyContractAssertionMappings = []client.AuthenticationPolicyContractAssertionMapping{}
+		for _, authenticationPolicyContractAssertionMappingsElement := range spBrowserSsoAttrs["authentication_policy_contract_assertion_mappings"].(types.Set).Elements() {
+			authenticationPolicyContractAssertionMappingsValue := client.AuthenticationPolicyContractAssertionMapping{}
+			authenticationPolicyContractAssertionMappingsAttrs := authenticationPolicyContractAssertionMappingsElement.(types.Object).Attributes()
+			authenticationPolicyContractAssertionMappingsValue.AbortSsoTransactionAsFailSafe = authenticationPolicyContractAssertionMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
+			authenticationPolicyContractAssertionMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			authenticationPolicyContractAssertionMappingsValue.AttributeSources, err = attributesources.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue := client.ResourceLink{}
+			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs := authenticationPolicyContractAssertionMappingsAttrs["authentication_policy_contract_ref"].(types.Object).Attributes()
+			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue.Id = authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
+			authenticationPolicyContractAssertionMappingsValue.AuthenticationPolicyContractRef = authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue
+			authenticationPolicyContractAssertionMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			authenticationPolicyContractAssertionMappingsValue.RestrictVirtualEntityIds = authenticationPolicyContractAssertionMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
+			if !authenticationPolicyContractAssertionMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				authenticationPolicyContractAssertionMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range authenticationPolicyContractAssertionMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					authenticationPolicyContractAssertionMappingsValue.RestrictedVirtualEntityIds = append(authenticationPolicyContractAssertionMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			spBrowserSsoValue.AuthenticationPolicyContractAssertionMappings = append(spBrowserSsoValue.AuthenticationPolicyContractAssertionMappings, authenticationPolicyContractAssertionMappingsValue)
+		}
+		spBrowserSsoValue.DefaultTargetUrl = spBrowserSsoAttrs["default_target_url"].(types.String).ValueStringPointer()
+		if !spBrowserSsoAttrs["enabled_profiles"].IsNull() {
+			spBrowserSsoValue.EnabledProfiles = []string{}
+			for _, enabledProfilesElement := range spBrowserSsoAttrs["enabled_profiles"].(types.Set).Elements() {
+				spBrowserSsoValue.EnabledProfiles = append(spBrowserSsoValue.EnabledProfiles, enabledProfilesElement.(types.String).ValueString())
+			}
+		}
+		if !spBrowserSsoAttrs["encryption_policy"].IsNull() {
+			spBrowserSsoEncryptionPolicyValue := &client.EncryptionPolicy{}
+			spBrowserSsoEncryptionPolicyAttrs := spBrowserSsoAttrs["encryption_policy"].(types.Object).Attributes()
+			spBrowserSsoEncryptionPolicyValue.EncryptAssertion = spBrowserSsoEncryptionPolicyAttrs["encrypt_assertion"].(types.Bool).ValueBoolPointer()
+			spBrowserSsoEncryptionPolicyValue.EncryptSloSubjectNameId = spBrowserSsoEncryptionPolicyAttrs["encrypt_slo_subject_name_id"].(types.Bool).ValueBoolPointer()
+			if !spBrowserSsoEncryptionPolicyAttrs["encrypted_attributes"].IsNull() {
+				spBrowserSsoEncryptionPolicyValue.EncryptedAttributes = []string{}
+				for _, encryptedAttributesElement := range spBrowserSsoEncryptionPolicyAttrs["encrypted_attributes"].(types.Set).Elements() {
+					spBrowserSsoEncryptionPolicyValue.EncryptedAttributes = append(spBrowserSsoEncryptionPolicyValue.EncryptedAttributes, encryptedAttributesElement.(types.String).ValueString())
+				}
+			}
+			spBrowserSsoEncryptionPolicyValue.SloSubjectNameIDEncrypted = spBrowserSsoEncryptionPolicyAttrs["slo_subject_name_id_encrypted"].(types.Bool).ValueBoolPointer()
+			spBrowserSsoValue.EncryptionPolicy = spBrowserSsoEncryptionPolicyValue
+		}
+		if !spBrowserSsoAttrs["incoming_bindings"].IsNull() {
+			spBrowserSsoValue.IncomingBindings = []string{}
+			for _, incomingBindingsElement := range spBrowserSsoAttrs["incoming_bindings"].(types.Set).Elements() {
+				spBrowserSsoValue.IncomingBindings = append(spBrowserSsoValue.IncomingBindings, incomingBindingsElement.(types.String).ValueString())
+			}
+		}
+		spBrowserSsoValue.MessageCustomizations = []client.ProtocolMessageCustomization{}
+		for _, messageCustomizationsElement := range spBrowserSsoAttrs["message_customizations"].(types.Set).Elements() {
+			messageCustomizationsValue := client.ProtocolMessageCustomization{}
+			messageCustomizationsAttrs := messageCustomizationsElement.(types.Object).Attributes()
+			messageCustomizationsValue.ContextName = messageCustomizationsAttrs["context_name"].(types.String).ValueStringPointer()
+			messageCustomizationsValue.MessageExpression = messageCustomizationsAttrs["message_expression"].(types.String).ValueStringPointer()
+			spBrowserSsoValue.MessageCustomizations = append(spBrowserSsoValue.MessageCustomizations, messageCustomizationsValue)
+		}
+		spBrowserSsoValue.Protocol = spBrowserSsoAttrs["protocol"].(types.String).ValueString()
+		spBrowserSsoValue.RequireSignedAuthnRequests = spBrowserSsoAttrs["require_signed_authn_requests"].(types.Bool).ValueBoolPointer()
+		spBrowserSsoValue.SignAssertions = spBrowserSsoAttrs["sign_assertions"].(types.Bool).ValueBoolPointer()
+		spBrowserSsoValue.SignResponseAsRequired = spBrowserSsoAttrs["sign_response_as_required"].(types.Bool).ValueBoolPointer()
+		spBrowserSsoValue.SloServiceEndpoints = []client.SloServiceEndpoint{}
+		for _, sloServiceEndpointsElement := range spBrowserSsoAttrs["slo_service_endpoints"].(types.Set).Elements() {
+			sloServiceEndpointsValue := client.SloServiceEndpoint{}
+			sloServiceEndpointsAttrs := sloServiceEndpointsElement.(types.Object).Attributes()
+			sloServiceEndpointsValue.Binding = sloServiceEndpointsAttrs["binding"].(types.String).ValueStringPointer()
+			sloServiceEndpointsValue.ResponseUrl = sloServiceEndpointsAttrs["response_url"].(types.String).ValueStringPointer()
+			sloServiceEndpointsValue.Url = sloServiceEndpointsAttrs["url"].(types.String).ValueString()
+			spBrowserSsoValue.SloServiceEndpoints = append(spBrowserSsoValue.SloServiceEndpoints, sloServiceEndpointsValue)
+		}
+		spBrowserSsoValue.SpSamlIdentityMapping = spBrowserSsoAttrs["sp_saml_identity_mapping"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.SpWsFedIdentityMapping = spBrowserSsoAttrs["sp_ws_fed_identity_mapping"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.SsoApplicationEndpoint = spBrowserSsoAttrs["sso_application_endpoint"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.SsoServiceEndpoints = []client.SpSsoServiceEndpoint{}
+		for _, ssoServiceEndpointsElement := range spBrowserSsoAttrs["sso_service_endpoints"].(types.Set).Elements() {
+			ssoServiceEndpointsValue := client.SpSsoServiceEndpoint{}
+			ssoServiceEndpointsAttrs := ssoServiceEndpointsElement.(types.Object).Attributes()
+			ssoServiceEndpointsValue.Binding = ssoServiceEndpointsAttrs["binding"].(types.String).ValueStringPointer()
+			ssoServiceEndpointsValue.Index = ssoServiceEndpointsAttrs["index"].(types.Int64).ValueInt64Pointer()
+			ssoServiceEndpointsValue.IsDefault = ssoServiceEndpointsAttrs["is_default"].(types.Bool).ValueBoolPointer()
+			ssoServiceEndpointsValue.Url = ssoServiceEndpointsAttrs["url"].(types.String).ValueString()
+			spBrowserSsoValue.SsoServiceEndpoints = append(spBrowserSsoValue.SsoServiceEndpoints, ssoServiceEndpointsValue)
+		}
+		//spBrowserSsoValue.UrlWhitelistEntries = []client.UrlWhitelistEntry{}
+		for _, urlWhitelistEntriesElement := range spBrowserSsoAttrs["url_whitelist_entries"].(types.Set).Elements() {
+			urlWhitelistEntriesValue := client.UrlWhitelistEntry{}
+			urlWhitelistEntriesAttrs := urlWhitelistEntriesElement.(types.Object).Attributes()
+			urlWhitelistEntriesValue.AllowQueryAndFragment = urlWhitelistEntriesAttrs["allow_query_and_fragment"].(types.Bool).ValueBoolPointer()
+			urlWhitelistEntriesValue.RequireHttps = urlWhitelistEntriesAttrs["require_https"].(types.Bool).ValueBoolPointer()
+			urlWhitelistEntriesValue.ValidDomain = urlWhitelistEntriesAttrs["valid_domain"].(types.String).ValueStringPointer()
+			urlWhitelistEntriesValue.ValidPath = urlWhitelistEntriesAttrs["valid_path"].(types.String).ValueStringPointer()
+			spBrowserSsoValue.UrlWhitelistEntries = append(spBrowserSsoValue.UrlWhitelistEntries, urlWhitelistEntriesValue)
+		}
+		spBrowserSsoValue.WsFedTokenType = spBrowserSsoAttrs["ws_fed_token_type"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.WsTrustVersion = spBrowserSsoAttrs["ws_trust_version"].(types.String).ValueStringPointer()
+		addRequest.SpBrowserSso = spBrowserSsoValue
 	}
 
 	if internaltypes.IsDefined(plan.AttributeQuery) {
@@ -2226,9 +2464,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 			addRequest.AttributeQuery.Attributes = append(addRequest.AttributeQuery.Attributes, attribute.(types.String).ValueString())
 		}
 
-		//TODO replace?
-		addRequest.AttributeQuery.AttributeContractFulfillment = map[string]client.AttributeFulfillmentValue{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(attributeQueryAttrs["attribute_contract_fulfillment"], true)), &addRequest.AttributeQuery.AttributeContractFulfillment)
+		addRequest.AttributeQuery.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attributeQueryAttrs["attribute_contract_fulfillment"].(types.Map))
 		if err != nil {
 			respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
 		}
