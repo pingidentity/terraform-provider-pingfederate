@@ -171,6 +171,23 @@ resource "pingfederate_sp_idp_connection" "example" {
           }
         }
         attribute_sources = [
+          {
+            ldap_attribute_source = {
+              attribute_contract_fulfillment = null
+              base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
+              binary_attribute_settings      = null
+              data_store_ref = {
+                id = "pingdirectory"
+              }
+              description            = "PingDirectory"
+              id                     = "LDAP"
+              member_of_nested_group = false
+              search_attributes      = ["Subject DN"]
+              search_filter          = "(&(memberUid=uid)(cn=Postman))"
+              search_scope           = "SUBTREE"
+              type                   = "LDAP"
+            }
+          },
         ]
         issuance_criteria = {
           conditional_criteria = [
