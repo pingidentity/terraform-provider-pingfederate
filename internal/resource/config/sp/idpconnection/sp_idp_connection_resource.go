@@ -418,31 +418,6 @@ var (
 		"policy":        idpAttributeQueryPolicyAttrTypes,
 	}
 
-	accessTokenManagerMappingAttrTypes = map[string]attr.Type{
-		"access_token_manager_ref":       types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
-	}
-
-	idpOAuthGrantAttributeMappingAttrTypes = map[string]attr.Type{
-		"access_token_manager_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: accessTokenManagerMappingAttrTypes}},
-		"idp_oauth_attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes": types.SetType{ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"name":   types.StringType,
-					"masked": types.BoolType,
-				},
-			}},
-			"extended_attributes": types.SetType{ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"name":   types.StringType,
-					"masked": types.BoolType,
-				},
-			}},
-		}},
-	}
-
 	spTokenGeneratorMappingAttrTypes = map[string]attr.Type{
 		"sp_token_generator_ref":         types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
@@ -4508,40 +4483,40 @@ func (r *spIdpConnectionResource) Configure(_ context.Context, req resource.Conf
 }
 
 func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, plan, state *spIdpConnectionResourceModel, isImportRead bool) diag.Diagnostics {
-	var diags, objDiags diag.Diagnostics
+	var respDiags, diags diag.Diagnostics
 
 	state.Active = types.BoolPointerValue(r.Active)
-	state.AdditionalAllowedEntitiesConfiguration, objDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
-	diags.Append(objDiags...)
-	state.AttributeQuery, objDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
-	diags.Append(objDiags...)
+	state.AdditionalAllowedEntitiesConfiguration, diags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
+	respDiags.Append(diags...)
+	state.AttributeQuery, diags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
+	respDiags.Append(diags...)
 	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
-	diags.Append(objDiags...)
+	respDiags.Append(diags...)
 	state.ConnectionId = types.StringPointerValue(r.Id)
-	state.ContactInfo, objDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
-	diags.Append(objDiags...)
+	state.ContactInfo, diags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
+	respDiags.Append(diags...)
 	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
 	state.EntityId = types.StringValue(r.EntityId)
 	state.ErrorPageMsgId = types.StringPointerValue(r.ErrorPageMsgId)
-	state.ExtendedProperties, objDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
-	diags.Append(objDiags...)
+	state.ExtendedProperties, diags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
+	respDiags.Append(diags...)
 	state.Id = types.StringPointerValue(r.Id)
 	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
 	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
 	// by the `server_settings_general` resource
 	if plan != nil && plan.LoggingMode.ValueString() != state.LoggingMode.ValueString() {
-		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
+		respDiags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
 			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
 				"If `idp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
 				" `logging_mode` should be configured to the same value in this resource.")
 	}
-	state.MetadataReloadSettings, objDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
-	diags.Append(objDiags...)
+	state.MetadataReloadSettings, diags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
+	respDiags.Append(diags...)
 	state.Name = types.StringValue(r.Name)
 	if r.VirtualEntityIds == nil {
 		if plan != nil && internaltypes.IsDefined(plan.VirtualEntityIds) && len(plan.VirtualEntityIds.Elements()) == 0 {
-			state.VirtualEntityIds, objDiags = types.SetValue(types.StringType, nil)
-			diags.Append(objDiags...)
+			state.VirtualEntityIds, diags = types.SetValue(types.StringType, nil)
+			respDiags.Append(diags...)
 		} else {
 			state.VirtualEntityIds = types.SetNull(types.StringType)
 		}
@@ -4565,32 +4540,32 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
 					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
-						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &respDiags, isImportRead)
+						respDiags.Append(objDiags...)
 						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 						certMatchFound = true
 						break
 					}
 				}
 				if !certMatchFound {
-					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
-					diags.Append(objDiags...)
+					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &respDiags, isImportRead)
+					respDiags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
 			} else {
-				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
-				diags.Append(objDiags...)
+				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &respDiags, isImportRead)
+				respDiags.Append(objDiags...)
 				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
 		}
 		credentialsCertsValue, objDiags := types.ListValue(connectioncert.ObjType(), credentialsCertsValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var credentialsDecryptionKeyPairRefValue types.Object
 		if r.Credentials.DecryptionKeyPairRef == nil {
 			credentialsDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.DecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsInboundBackChannelAuthValue types.Object
 		if r.Credentials.InboundBackChannelAuth == nil {
@@ -4607,26 +4582,26 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
 							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
-								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
-								diags.Append(objDiags...)
+								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &respDiags, isImportRead)
+								respDiags.Append(objDiags...)
 								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 								ibaCertMatch = true
 								break
 							}
 						}
 						if !ibaCertMatch {
-							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
-							diags.Append(objDiags...)
+							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &respDiags, isImportRead)
+							respDiags.Append(objDiags...)
 							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 						}
 					} else {
-						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &respDiags, isImportRead)
+						respDiags.Append(objDiags...)
 						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 					}
 				}
 				credentialsInboundBackChannelAuthCertsValue, objDiags = types.ListValue(connectioncert.ObjType(), credentialsInboundBackChannelAuthCertsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsInboundBackChannelAuthCertsValue = types.ListNull(connectioncert.ObjType())
 			}
@@ -4657,7 +4632,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsInboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"certs":                   credentialsInboundBackChannelAuthCertsValue,
@@ -4667,7 +4642,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"verification_issuer_dn":  types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
 				"verification_subject_dn": types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsOutboundBackChannelAuthValue types.Object
 		if r.Credentials.OutboundBackChannelAuth == nil {
@@ -4700,14 +4675,14 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			var credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue types.Object
 			if r.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef == nil {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 			} else {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsOutboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"digital_signature":      types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.DigitalSignature),
@@ -4715,14 +4690,14 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
 				"validate_partner_cert":  types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSecondaryDecryptionKeyPairRefValue types.Object
 		if r.Credentials.SecondaryDecryptionKeyPairRef == nil {
 			credentialsSecondaryDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsSecondaryDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.SecondaryDecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSigningSettingsValue types.Object
 		if r.Credentials.SigningSettings == nil {
@@ -4733,19 +4708,19 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink := &client.ResourceLink{}
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink.Id = credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue.Id
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(ctx, credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
 			}
 			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValue types.Set
 			if len(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues) > 0 {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags = types.SetValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue = types.SetNull(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType)
 			}
 
 			credentialsSigningSettingsSigningKeyPairRefValue, objDiags := resourcelink.ToState(ctx, &r.Credentials.SigningSettings.SigningKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			includeCertInSignature := r.Credentials.SigningSettings.IncludeCertInSignature
 			planSigningSettings := plan.Credentials.Attributes()["signing_settings"]
@@ -4763,7 +4738,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"include_raw_key_in_signature":      types.BoolPointerValue(r.Credentials.SigningSettings.IncludeRawKeyInSignature),
 				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		credentialsValue, objDiags = types.ObjectValue(credentialsAttrTypes, map[string]attr.Value{
 			"block_encryption_algorithm":        types.StringPointerValue(r.Credentials.BlockEncryptionAlgorithm),
@@ -4777,7 +4752,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"verification_issuer_dn":            types.StringPointerValue(r.Credentials.VerificationIssuerDN),
 			"verification_subject_dn":           types.StringPointerValue(r.Credentials.VerificationSubjectDN),
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	} else {
 		credentialsValue = types.ObjectNull(credentialsAttrTypes)
 	}
@@ -4806,8 +4781,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"encrypted_secret": types.StringPointerValue(encryptedSecretToState),
 		}
 
-		state.OidcClientCredentials, objDiags = types.ObjectValue(oidcClientCredentialsAttrTypes, oidcClientCredentialsAttrValues)
-		diags.Append(objDiags...)
+		state.OidcClientCredentials, diags = types.ObjectValue(oidcClientCredentialsAttrTypes, oidcClientCredentialsAttrValues)
+		respDiags.Append(diags...)
 	} else {
 		state.OidcClientCredentials = types.ObjectNull(oidcClientCredentialsAttrTypes)
 	}
@@ -4831,29 +4806,29 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					} else {
 						var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues []attr.Value
 						for _, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue := range idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.CoreAttributes {
-							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, diags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, objDiags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
 								"name": types.StringValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue.Name),
 							})
-							diags.Append(objDiags...)
+							respDiags.Append(objDiags...)
 							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues = append(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue)
 						}
-						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, diags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues)
-						diags.Append(objDiags...)
+						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, objDiags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues)
+						respDiags.Append(objDiags...)
 						var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues []attr.Value
 						for _, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue := range idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.ExtendedAttributes {
-							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, diags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
 								"name": types.StringValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue.Name),
 							})
-							diags.Append(objDiags...)
+							respDiags.Append(objDiags...)
 							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues = append(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue)
 						}
-						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, diags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues)
-						diags.Append(objDiags...)
+						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, objDiags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues)
+						respDiags.Append(objDiags...)
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes, map[string]attr.Value{
 							"core_attributes":     idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue,
 							"extended_attributes": idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue,
 						})
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 					}
 					var planAdapterMappingOverrideConfiguration types.Object
 					if internaltypes.IsDefined(plan.IdpBrowserSso) && internaltypes.IsDefined(plan.IdpBrowserSso.Attributes()["adapter_mappings"]) {
@@ -4869,8 +4844,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						}
 					}
 					adapterOverrideSettingsConfiguration := idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(planAdapterMappingOverrideConfiguration, &adapterOverrideSettingsConfiguration, isImportRead)
-					diags.Append(objDiags...)
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, objDiags := pluginconfiguration.ToState(planAdapterMappingOverrideConfiguration, &adapterOverrideSettingsConfiguration, isImportRead)
+					respDiags.Append(objDiags...)
 					var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue = types.ObjectNull(resourcelink.AttrType())
@@ -4878,12 +4853,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue, objDiags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 							"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef.Id),
 						})
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 					}
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue, diags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue, objDiags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 						"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.PluginDescriptorRef.Id),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue types.Object
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo == nil {
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue = types.ObjectNull(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes)
@@ -4892,7 +4867,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 							"application_icon_url": types.StringPointerValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo.ApplicationIconUrl),
 							"application_name":     types.StringPointerValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo.ApplicationName),
 						})
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 					}
 					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes, map[string]attr.Value{
 						"attribute_contract":      idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue,
@@ -4903,35 +4878,35 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						"plugin_descriptor_ref":   idpBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue,
 						"target_application_info": idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue,
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 				}
 				idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment := idpBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment
-				idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment)
-				diags.Append(objDiags...)
+				idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment)
+				respDiags.Append(objDiags...)
 
-				idpBrowserSsoAdapterMappingsAttributeSourcesValue, diags := attributesources.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
-				diags.Append(objDiags...)
+				idpBrowserSsoAdapterMappingsAttributeSourcesValue, objDiags := attributesources.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
+				respDiags.Append(objDiags...)
 
 				var idpBrowserSsoAdapterMappingsIssuanceCriteriaValue types.Object
 				if idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria != nil {
 					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue, objDiags = issuancecriteria.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 				} else {
 					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue = types.ObjectNull(issuancecriteria.AttrTypes())
 				}
 
-				idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(ctx, types.StringType, idpBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
-				diags.Append(objDiags...)
+				idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, objDiags := types.SetValueFrom(ctx, types.StringType, idpBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
+				respDiags.Append(objDiags...)
 				var idpBrowserSsoAdapterMappingsSpAdapterRefValue types.Object
 				if idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef == nil {
 					idpBrowserSsoAdapterMappingsSpAdapterRefValue = types.ObjectNull(resourcelink.AttrType())
 				} else {
-					idpBrowserSsoAdapterMappingsSpAdapterRefValue, diags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+					idpBrowserSsoAdapterMappingsSpAdapterRefValue, objDiags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 						"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef.Id),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 				}
-				idpBrowserSsoAdapterMappingsValue, diags := types.ObjectValue(idpBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
+				idpBrowserSsoAdapterMappingsValue, objDiags := types.ObjectValue(idpBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
 					"adapter_override_settings":      idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue,
 					"attribute_contract_fulfillment": idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue,
 					"attribute_sources":              idpBrowserSsoAdapterMappingsAttributeSourcesValue,
@@ -4940,11 +4915,11 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					"restricted_virtual_entity_ids":  idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue,
 					"sp_adapter_ref":                 idpBrowserSsoAdapterMappingsSpAdapterRefValue,
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				idpBrowserSsoAdapterMappingsValues = append(idpBrowserSsoAdapterMappingsValues, idpBrowserSsoAdapterMappingsValue)
 			}
-			idpBrowserSsoAdapterMappingsValue, objDiags = types.ListValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
-			diags.Append(objDiags...)
+			idpBrowserSsoAdapterMappingsValue, diags = types.ListValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
+			respDiags.Append(diags...)
 		}
 
 		// IdpBrowserSSO Always Sign Artifact Response
@@ -4957,31 +4932,56 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 		// IdpBrowserSSO Artifact
 		idpBrowserSsoArtifactValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoArtifactAttrTypes, r.IdpBrowserSso.Artifact)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Attribute Contract
 		idpBrowserSsoAttributeContractValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoAttributeContractAttrTypes, r.IdpBrowserSso.AttributeContract)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Authentication Policy Contract Mappings
-		idpBrowserSsoAuthenticationPolicyContractMappingsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoAuthenticationPolicyContractMappingsElementType, r.IdpBrowserSso.AuthenticationPolicyContractMappings)
-		diags.Append(objDiags...)
+		var idpBrowserSsoAuthenticationPolicyContractMappingsValues []attr.Value
+		for _, idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue := range r.IdpBrowserSso.AuthenticationPolicyContractMappings {
+			idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.AttributeContractFulfillment)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.AttributeSources)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefValue, diags := types.ObjectValue(idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrTypes, map[string]attr.Value{
+				"id": types.StringValue(idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.AuthenticationPolicyContractRef.Id),
+			})
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.IssuanceCriteria)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsRestrictedVirtualServerIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.RestrictedVirtualServerIds)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsValue, diags := types.ObjectValue(idpBrowserSsoAuthenticationPolicyContractMappingsAttrTypes, map[string]attr.Value{
+				"attribute_contract_fulfillment":     idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentValue,
+				"attribute_sources":                  idpBrowserSsoAuthenticationPolicyContractMappingsAttributeSourcesValue,
+				"authentication_policy_contract_ref": idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefValue,
+				"issuance_criteria":                  idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaValue,
+				"restrict_virtual_server_ids":        types.BoolPointerValue(idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.RestrictVirtualServerIds),
+				"restricted_virtual_server_ids":      idpBrowserSsoAuthenticationPolicyContractMappingsRestrictedVirtualServerIdsValue,
+			})
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsValues = append(idpBrowserSsoAuthenticationPolicyContractMappingsValues, idpBrowserSsoAuthenticationPolicyContractMappingsValue)
+		}
+		idpBrowserSsoAuthenticationPolicyContractMappingsValue, diags := types.ListValue(idpBrowserSsoAuthenticationPolicyContractMappingsElementType, idpBrowserSsoAuthenticationPolicyContractMappingsValues)
+		respDiags.Append(diags...)
 
 		// IdpBrowserSSO AuthnContextMappings
 		idpBrowserSsoAuthnContextMappingsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoAuthnContextMappingsElementType, r.IdpBrowserSso.AuthnContextMappings)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Decryption Policy
 		idpBrowserSsoDecryptionPolicyValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoDecryptionPolicyAttrTypes, r.IdpBrowserSso.DecryptionPolicy)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Enabled Profiles
 		idpBrowserSsoEnabledProfilesValue, objDiags := types.SetValueFrom(ctx, types.StringType, r.IdpBrowserSso.EnabledProfiles)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Incoming Bindings
 		idpBrowserSsoIncomingBindingsValue, objDiags := types.SetValueFrom(ctx, types.StringType, r.IdpBrowserSso.IncomingBindings)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO JIT Provisioning
 		var idpBrowserSsoJitProvisioningValue types.Object
@@ -5016,16 +5016,16 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					"masked": types.BoolPointerValue(idpBrowserSsoJitProvisioningUserAttributesAttributeContractResponseValue.Masked),
 					"name":   types.StringValue(idpBrowserSsoJitProvisioningUserAttributesAttributeContractResponseValue.Name),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				idpBrowserSsoJitProvisioningUserAttributesAttributeContractValues = append(idpBrowserSsoJitProvisioningUserAttributesAttributeContractValues, idpBrowserSsoJitProvisioningUserAttributesAttributeContractValue)
 			}
 			idpBrowserSsoJitProvisioningUserAttributesAttributeContractValue, objDiags := types.SetValue(idpBrowserSsoJitProvisioningUserAttributesAttributeContractElementType, idpBrowserSsoJitProvisioningUserAttributesAttributeContractValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			idpBrowserSsoJitProvisioningUserAttributesValue, objDiags := types.ObjectValue(idpBrowserSsoJitProvisioningUserAttributesAttrTypes, map[string]attr.Value{
 				"attribute_contract": idpBrowserSsoJitProvisioningUserAttributesAttributeContractValue,
 				"do_attribute_query": types.BoolPointerValue(r.IdpBrowserSso.JitProvisioning.UserAttributes.DoAttributeQuery),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			var idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue types.Object
 			if r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository == nil {
 				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue = types.ObjectNull(datastorerepository.JdbcDataStoreRepositoryAttrType())
@@ -5033,23 +5033,23 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefValue, objDiags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 					"id": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.DataStoreRef.Id),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValues := make(map[string]attr.Value)
 				for key, idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue := range r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.JitRepositoryAttributeMapping {
 					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingSourceValue, objDiags := types.ObjectValue(attributeMappingSourceAttrTypes, map[string]attr.Value{
 						"id":   types.StringPointerValue(idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Id),
 						"type": types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Type),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.ObjectValue(attributeMappingAttrTypes, map[string]attr.Value{
 						"source": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingSourceValue,
 						"value":  types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Value),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValues[key] = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue
 				}
 				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.MapValue(types.ObjectType{AttrTypes: attributeMappingAttrTypes}, idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				var idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue types.Object
 				if r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.StoredProcedure == nil {
 					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue = types.ObjectNull(sqlMethodStoredProcedureAttrTypes)
@@ -5058,7 +5058,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						"schema":           types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.StoredProcedure.Schema),
 						"stored_procedure": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.StoredProcedure.StoredProcedure),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 				}
 				var idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue types.Object
 				if r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.Table == nil {
@@ -5069,19 +5069,19 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						"table_name":       types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.Table.TableName),
 						"unique_id_column": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.Table.UniqueIdColumn),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 				}
 				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue, objDiags := types.ObjectValue(sqlMethodAttrTypes, map[string]attr.Value{
 					"stored_procedure": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue,
 					"table":            idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue,
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue, objDiags = types.ObjectValue(datastorerepository.JdbcDataStoreRepositoryAttrType(), map[string]attr.Value{
 					"data_store_ref":                   idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefValue,
 					"jit_repository_attribute_mapping": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue,
 					"sql_method":                       idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue,
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			var idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue types.Object
 			if r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository == nil {
@@ -5090,71 +5090,71 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefValue, objDiags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 					"id": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.DataStoreRef.Id),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValues := make(map[string]attr.Value)
 				for key, idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue := range r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.JitRepositoryAttributeMapping {
 					idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingSourceValue, objDiags := types.ObjectValue(attributeMappingSourceAttrTypes, map[string]attr.Value{
 						"id":   types.StringPointerValue(idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Id),
 						"type": types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Type),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.ObjectValue(attributeMappingAttrTypes, map[string]attr.Value{
 						"source": idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingSourceValue,
 						"value":  types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Value),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValues[key] = idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue
 				}
 				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.MapValue(types.ObjectType{AttrTypes: attributeMappingAttrTypes}, idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue, objDiags = types.ObjectValue(datastorerepository.LdapDataStoreRepositoryAttrType(), map[string]attr.Value{
 					"base_dn":                          types.StringPointerValue(r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.BaseDn),
 					"data_store_ref":                   idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefValue,
 					"jit_repository_attribute_mapping": idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue,
 					"unique_user_id_filter":            types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.UniqueUserIdFilter),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			idpBrowserSsoJitProvisioningUserRepositoryValue, objDiags := types.ObjectValue(datastorerepository.ElemAttrType(), map[string]attr.Value{
 				"jdbc": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue,
 				"ldap": idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			idpBrowserSsoJitProvisioningValue, objDiags = types.ObjectValue(idpBrowserSsoJitProvisioningAttrTypes, map[string]attr.Value{
 				"error_handling":  types.StringPointerValue(r.IdpBrowserSso.JitProvisioning.ErrorHandling),
 				"event_trigger":   types.StringPointerValue(r.IdpBrowserSso.JitProvisioning.EventTrigger),
 				"user_attributes": idpBrowserSsoJitProvisioningUserAttributesValue,
 				"user_repository": idpBrowserSsoJitProvisioningUserRepositoryValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 
 		// IdpBrowserSSO Message Customizations
 		idpBrowserSsoMessageCustomizationsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoMessageCustomizationsElementType, r.IdpBrowserSso.MessageCustomizations)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO OAuth Authentication Policy Contract Ref
 		idpBrowserSsoOauthAuthenticationPolicyContractRefValue, objDiags := resourcelink.ToState(ctx, r.IdpBrowserSso.OauthAuthenticationPolicyContractRef)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO OIDC Provider Settings
 		idpBrowserSsoOidcProviderSettingsValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoOidcProviderSettingsAttrTypes, r.IdpBrowserSso.OidcProviderSettings)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO SLO Service Endpoints
 		idpBrowserSsoSloServiceEndpointsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoSloServiceEndpointsElementType, r.IdpBrowserSso.SloServiceEndpoints)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO SSO Service Endpoints
 		idpBrowserSsoSsoServiceEndpointsValue := types.SetNull(idpBrowserSsoSsoServiceEndpointsElementType)
 		if len(r.IdpBrowserSso.SsoServiceEndpoints) > 0 {
 			idpBrowserSsoSsoServiceEndpointsValue, objDiags = types.SetValueFrom(ctx, idpBrowserSsoSsoServiceEndpointsElementType, r.IdpBrowserSso.SsoServiceEndpoints)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 
 		// IdpBrowserSSO URL Whitelist Entries
 		idpBrowserSsoUrlWhitelistEntriesValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoUrlWhitelistEntriesElementType, r.IdpBrowserSso.UrlWhitelistEntries)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO SSO OAuth Mapping
 		var idpBrowserSsoSsoOauthMappingValue types.Object
@@ -5162,18 +5162,18 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			idpBrowserSsoSsoOauthMappingValue = types.ObjectNull(idpBrowserSsoSsoOauthMappingAttrTypes)
 		} else {
 			idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &r.IdpBrowserSso.SsoOAuthMapping.AttributeContractFulfillment)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			idpBrowserSsoSsoOauthMappingAttributeSourcesValue := types.SetNull(types.ObjectType{AttrTypes: attributesources.AttrTypes()})
 			if r.IdpBrowserSso.SsoOAuthMapping.AttributeSources != nil {
 				idpBrowserSsoSsoOauthMappingAttributeSourcesValue, objDiags = attributesources.ToState(ctx, r.IdpBrowserSso.SsoOAuthMapping.AttributeSources)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 
 			idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue := types.ObjectNull(issuancecriteria.AttrTypes())
 			if r.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria != nil {
 				idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue, objDiags = issuancecriteria.ToState(ctx, r.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 
 			idpBrowserSsoSsoOauthMappingValue, objDiags = types.ObjectValue(idpBrowserSsoSsoOauthMappingAttrTypes, map[string]attr.Value{
@@ -5181,7 +5181,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"attribute_sources":              idpBrowserSsoSsoOauthMappingAttributeSourcesValue,
 				"issuance_criteria":              idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 
 		signAuthnRequest := r.IdpBrowserSso.SignAuthnRequests
@@ -5225,16 +5225,119 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"sso_service_endpoints":                    idpBrowserSsoSsoServiceEndpointsValue,
 			"url_whitelist_entries":                    idpBrowserSsoUrlWhitelistEntriesValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	}
 	state.IdpBrowserSso = idpBrowserSsoValue
 
-	// IdpOAuthGrantAttributeMapping
-	state.IdpOAuthGrantAttributeMapping, objDiags = types.ObjectValueFrom(ctx, idpOAuthGrantAttributeMappingAttrTypes, r.IdpOAuthGrantAttributeMapping)
-	diags.Append(objDiags...)
-	var inboundProvisioningValue types.Object
+	// idp_oauth_grant_attribute_mapping
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentAttrTypes := attributecontractfulfillment.AttrTypes()
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentAttrTypes}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesAttrTypes := attributesources.AttrTypes()
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesAttrTypes}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes := map[string]attr.Type{
+		"access_token_manager_ref":       types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes},
+		"attribute_contract_fulfillment": types.MapType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentElementType},
+		"attribute_sources":              types.SetType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesElementType},
+		"issuance_criteria":              types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaAttrTypes},
+	}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesAttrTypes := map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesAttrTypes}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesAttrTypes := map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesAttrTypes}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes := map[string]attr.Type{
+		"core_attributes":     types.SetType{ElemType: idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesElementType},
+	}
+	idpOauthGrantAttributeMappingAttrTypes := map[string]attr.Type{
+		"access_token_manager_mappings": types.SetType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsElementType},
+		"idp_oauth_attribute_contract":  types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes},
+	}
+	var idpOauthGrantAttributeMappingValue types.Object
+	if r.IdpOAuthGrantAttributeMapping == nil {
+		idpOauthGrantAttributeMappingValue = types.ObjectNull(idpOauthGrantAttributeMappingAttrTypes)
+	} else {
+		var idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues []attr.Value
+		for _, idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue := range r.IdpOAuthGrantAttributeMapping.AccessTokenManagerMappings {
+			var idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue types.Object
+			if idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AccessTokenManagerRef == nil {
+				idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue = types.ObjectNull(idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes)
+			} else {
+				idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue, diags = types.ObjectValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes, map[string]attr.Value{
+					"id": types.StringValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AccessTokenManagerRef.Id),
+				})
+				respDiags.Append(diags...)
+			}
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AttributeContractFulfillment)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AttributeSources)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.IssuanceCriteria)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue, diags := types.ObjectValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes, map[string]attr.Value{
+				"access_token_manager_ref":       idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue,
+				"attribute_contract_fulfillment": idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentValue,
+				"attribute_sources":              idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesValue,
+				"issuance_criteria":              idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaValue,
+			})
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues = append(idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues, idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue)
+		}
+		idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue, diags := types.SetValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsElementType, idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues)
+		respDiags.Append(diags...)
+		var idpOauthGrantAttributeMappingIdpOauthAttributeContractValue types.Object
+		if r.IdpOAuthGrantAttributeMapping.IdpOAuthAttributeContract == nil {
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractValue = types.ObjectNull(idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes)
+		} else {
+			var idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues []attr.Value
+			for _, idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesResponseValue := range r.IdpOAuthGrantAttributeMapping.IdpOAuthAttributeContract.CoreAttributes {
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue, diags := types.ObjectValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+					"masked": types.BoolPointerValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesResponseValue.Masked),
+					"name":   types.StringValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesResponseValue.Name),
+				})
+				respDiags.Append(diags...)
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues = append(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues, idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue)
+			}
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue, diags := types.SetValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesElementType, idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues)
+			respDiags.Append(diags...)
+			var idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues []attr.Value
+			for _, idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesResponseValue := range r.IdpOAuthGrantAttributeMapping.IdpOAuthAttributeContract.ExtendedAttributes {
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue, diags := types.ObjectValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+					"masked": types.BoolPointerValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesResponseValue.Masked),
+					"name":   types.StringValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesResponseValue.Name),
+				})
+				respDiags.Append(diags...)
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues = append(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues, idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue)
+			}
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue, diags := types.SetValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesElementType, idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractValue, diags = types.ObjectValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes, map[string]attr.Value{
+				"core_attributes":     idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue,
+				"extended_attributes": idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue,
+			})
+			respDiags.Append(diags...)
+		}
+		idpOauthGrantAttributeMappingValue, diags = types.ObjectValue(idpOauthGrantAttributeMappingAttrTypes, map[string]attr.Value{
+			"access_token_manager_mappings": idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue,
+			"idp_oauth_attribute_contract":  idpOauthGrantAttributeMappingIdpOauthAttributeContractValue,
+		})
+		respDiags.Append(diags...)
+	}
+
+	state.IdpOAuthGrantAttributeMapping = idpOauthGrantAttributeMappingValue
 
 	// InboundProvisioning
+	var inboundProvisioningValue types.Object
 	var inboundProvisioningGroupsValue types.Object
 	if r.InboundProvisioning == nil {
 		inboundProvisioningValue = types.ObjectNull(inboundProvisioningAttrTypes)
@@ -5242,25 +5345,25 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		var inboundProvisioningCustomSchemaAttributesValues []attr.Value
 		for _, inboundProvisioningCustomSchemaAttributesResponseValue := range r.InboundProvisioning.CustomSchema.Attributes {
 			inboundProvisioningCustomSchemaAttributesSubAttributesValue, objDiags := types.SetValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.SubAttributes)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningCustomSchemaAttributesTypesValue, objDiags := types.SetValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.Types)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningCustomSchemaAttributesValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttributesAttrTypes, map[string]attr.Value{
 				"multi_valued":   types.BoolPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.MultiValued),
 				"name":           types.StringPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.Name),
 				"sub_attributes": inboundProvisioningCustomSchemaAttributesSubAttributesValue,
 				"types":          inboundProvisioningCustomSchemaAttributesTypesValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningCustomSchemaAttributesValues = append(inboundProvisioningCustomSchemaAttributesValues, inboundProvisioningCustomSchemaAttributesValue)
 		}
 		inboundProvisioningCustomSchemaAttributesValue, objDiags := types.SetValue(inboundProvisioningCustomSchemaAttributesElementType, inboundProvisioningCustomSchemaAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningCustomSchemaValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttrTypes, map[string]attr.Value{
 			"attributes": inboundProvisioningCustomSchemaAttributesValue,
 			"namespace":  types.StringPointerValue(r.InboundProvisioning.CustomSchema.Namespace),
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		if r.InboundProvisioning.Groups != nil {
 			var inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues []attr.Value
 			for _, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeContract.CoreAttributes {
@@ -5268,84 +5371,84 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					"masked": types.BoolPointerValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue.Masked),
 					"name":   types.StringValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue.Name),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue)
 			}
 			inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue, objDiags := types.SetValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesElementType, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			var inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues []attr.Value
 			for _, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeContract.ExtendedAttributes {
 				inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
 					"masked": types.BoolPointerValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue.Masked),
 					"name":   types.StringValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue.Name),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue)
 			}
 			inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue, objDiags := types.SetValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesElementType, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsReadGroupsAttributeContractValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeContractAttrTypes, map[string]attr.Value{
 				"core_attributes":     inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue,
 				"extended_attributes": inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues := make(map[string]attr.Value)
 			for key, inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeFulfillment {
 				inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
 					"id":   types.StringPointerValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Source.Id),
 					"type": types.StringValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Source.Type),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentAttrTypes, map[string]attr.Value{
 					"source": inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceValue,
 					"value":  types.StringValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Value),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues[key] = inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue
 			}
 			inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentElementType, inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			var inboundProvisioningGroupsReadGroupsAttributesValues []attr.Value
 			for _, inboundProvisioningGroupsReadGroupsAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.Attributes {
 				inboundProvisioningGroupsReadGroupsAttributesValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributesAttrTypes, map[string]attr.Value{
 					"name": types.StringValue(inboundProvisioningGroupsReadGroupsAttributesResponseValue.Name),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributesValues, inboundProvisioningGroupsReadGroupsAttributesValue)
 			}
 			inboundProvisioningGroupsReadGroupsAttributesValue, objDiags := types.SetValue(inboundProvisioningGroupsReadGroupsAttributesElementType, inboundProvisioningGroupsReadGroupsAttributesValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsReadGroupsValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttrTypes, map[string]attr.Value{
 				"attribute_contract":    inboundProvisioningGroupsReadGroupsAttributeContractValue,
 				"attribute_fulfillment": inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue,
 				"attributes":            inboundProvisioningGroupsReadGroupsAttributesValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues := make(map[string]attr.Value)
 			for key, inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue := range r.InboundProvisioning.Groups.WriteGroups.AttributeFulfillment {
 				inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
 					"id":   types.StringPointerValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Source.Id),
 					"type": types.StringValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Source.Type),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentAttrTypes, map[string]attr.Value{
 					"source": inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceValue,
 					"value":  types.StringValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Value),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues[key] = inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue
 			}
 			inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentElementType, inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsWriteGroupsValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttrTypes, map[string]attr.Value{
 				"attribute_fulfillment": inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsValue, objDiags = types.ObjectValue(inboundProvisioningGroupsAttrTypes, map[string]attr.Value{
 				"read_groups":  inboundProvisioningGroupsReadGroupsValue,
 				"write_groups": inboundProvisioningGroupsWriteGroupsValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		} else {
 			inboundProvisioningGroupsValue = types.ObjectNull(inboundProvisioningGroupsAttrTypes)
 		}
@@ -5353,23 +5456,23 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		var identityStoreInboundProvisioningUserRepository, ldapInboundProvisioningUserRepository types.Object
 		if r.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository != nil {
 			identityStoreProvisionerRef, objDiags := resourcelink.ToState(ctx, &r.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.IdentityStoreProvisionerRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			identityStoreInboundProvisioningUserRepository, objDiags = types.ObjectValue(inboundprovisioninguserrepository.IdentityStoreInboundProvisioningUserRepositoryAttrType(), map[string]attr.Value{
 				"identity_store_provisioner_ref": identityStoreProvisionerRef,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			ldapInboundProvisioningUserRepository = types.ObjectNull(inboundprovisioninguserrepository.LdapInboundProvisioningUserRepositoryAttrType())
 		} else if r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository != nil {
 			dataStoreRef, objDiags := resourcelink.ToState(ctx, &r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.DataStoreRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			ldapInboundProvisioningUserRepository, objDiags = types.ObjectValue(inboundprovisioninguserrepository.LdapInboundProvisioningUserRepositoryAttrType(), map[string]attr.Value{
 				"base_dn":                types.StringPointerValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.BaseDn),
 				"data_store_ref":         dataStoreRef,
 				"unique_user_id_filter":  types.StringValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.UniqueUserIdFilter),
 				"unique_group_id_filter": types.StringValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.UniqueGroupIdFilter),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			identityStoreInboundProvisioningUserRepository = types.ObjectNull(inboundprovisioninguserrepository.IdentityStoreInboundProvisioningUserRepositoryAttrType())
 		}
 
@@ -5379,7 +5482,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		}
 
 		inboundProvisioningUserRepositoryValue, objDiags := types.ObjectValue(inboundprovisioninguserrepository.ElemAttrType(), inboundProvisioningUserRepositoryAttrValue)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		var inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues []attr.Value
 		for _, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeContract.CoreAttributes {
@@ -5387,71 +5490,71 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"masked": types.BoolPointerValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue.Masked),
 				"name":   types.StringValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue.Name),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues = append(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue)
 		}
 		inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue, objDiags := types.SetValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesElementType, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues []attr.Value
 		for _, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeContract.ExtendedAttributes {
 			inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
 				"masked": types.BoolPointerValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue.Masked),
 				"name":   types.StringValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue.Name),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues = append(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue)
 		}
 		inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue, objDiags := types.SetValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesElementType, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersReadUsersAttributeContractValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue,
 			"extended_attributes": inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersReadUsersAttributeFulfillmentValues := make(map[string]attr.Value)
 		for key, inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeFulfillment {
 			inboundProvisioningUsersReadUsersAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
 				"id":   types.StringPointerValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Source.Id),
 				"type": types.StringValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Source.Type),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeFulfillmentAttrTypes, map[string]attr.Value{
 				"source": inboundProvisioningUsersReadUsersAttributeFulfillmentSourceValue,
 				"value":  types.StringValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Value),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeFulfillmentValues[key] = inboundProvisioningUsersReadUsersAttributeFulfillmentValue
 		}
 		inboundProvisioningUsersReadUsersAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningUsersReadUsersAttributeFulfillmentElementType, inboundProvisioningUsersReadUsersAttributeFulfillmentValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var inboundProvisioningUsersReadUsersAttributesValues []attr.Value
 		for _, inboundProvisioningUsersReadUsersAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.Attributes {
 			inboundProvisioningUsersReadUsersAttributesValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributesAttrTypes, map[string]attr.Value{
 				"name": types.StringValue(inboundProvisioningUsersReadUsersAttributesResponseValue.Name),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributesValues = append(inboundProvisioningUsersReadUsersAttributesValues, inboundProvisioningUsersReadUsersAttributesValue)
 		}
 		inboundProvisioningUsersReadUsersAttributesValue, objDiags := types.SetValue(inboundProvisioningUsersReadUsersAttributesElementType, inboundProvisioningUsersReadUsersAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersReadUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttrTypes, map[string]attr.Value{
 			"attribute_contract":    inboundProvisioningUsersReadUsersAttributeContractValue,
 			"attribute_fulfillment": inboundProvisioningUsersReadUsersAttributeFulfillmentValue,
 			"attributes":            inboundProvisioningUsersReadUsersAttributesValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		inboundProvisioningUsersWriteUsersAttributeFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &r.InboundProvisioning.Users.WriteUsers.AttributeFulfillment)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersWriteUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersWriteUsersAttrTypes, map[string]attr.Value{
 			"attribute_fulfillment": inboundProvisioningUsersWriteUsersAttributeFulfillmentValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersAttrTypes, map[string]attr.Value{
 			"read_users":  inboundProvisioningUsersReadUsersValue,
 			"write_users": inboundProvisioningUsersWriteUsersValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningValue, objDiags = types.ObjectValue(inboundProvisioningAttrTypes, map[string]attr.Value{
 			"action_on_delete": types.StringPointerValue(r.InboundProvisioning.ActionOnDelete),
 			"custom_schema":    inboundProvisioningCustomSchemaValue,
@@ -5460,7 +5563,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"user_repository":  inboundProvisioningUserRepositoryValue,
 			"users":            inboundProvisioningUsersValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	}
 	state.InboundProvisioning = inboundProvisioningValue
 
@@ -5470,23 +5573,23 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		for _, tokenGeneratorMapping := range r.WsTrust.TokenGeneratorMappings {
 			tokenGeneratorMappingSpTokenGeneratorRef := tokenGeneratorMapping.SpTokenGeneratorRef
 			spTokenGeneratorRef, objDiags := resourcelink.ToState(ctx, &tokenGeneratorMappingSpTokenGeneratorRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			var attributeSources basetypes.SetValue
 			attributeSources, objDiags = attributesources.ToState(ctx, tokenGeneratorMapping.AttributeSources)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			tokenGeneratorMappingAttributeContractFulfillment := tokenGeneratorMapping.AttributeContractFulfillment
 			attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(ctx, &tokenGeneratorMappingAttributeContractFulfillment)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			issuanceCriteria, objDiags := issuancecriteria.ToState(ctx, tokenGeneratorMapping.IssuanceCriteria)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			var restrictedVirtualEntityIds types.Set
 			if len(tokenGeneratorMapping.RestrictedVirtualEntityIds) > 0 {
 				restrictedVirtualEntityIds, objDiags = types.SetValueFrom(ctx, types.StringType, tokenGeneratorMapping.RestrictedVirtualEntityIds)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				restrictedVirtualEntityIds = types.SetNull(types.StringType)
 			}
@@ -5501,7 +5604,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			}
 
 			tokenGeneratorMappingState, objDiags := types.ObjectValue(tokenGeneratorAttrTypes, tokenGeneratorAttrValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			tokenGeneratorMappings = append(tokenGeneratorMappings, tokenGeneratorMappingState)
 		}
 
@@ -5519,12 +5622,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				},
 			}},
 		}, r.WsTrust.AttributeContract)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		var tokenGeneratorMappingsSet types.Set
 		if tokenGeneratorMappings != nil {
 			tokenGeneratorMappingsSet, objDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}, tokenGeneratorMappings)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		} else {
 			tokenGeneratorMappingsSet = types.SetNull(types.ObjectType{AttrTypes: tokenGeneratorAttrTypes})
 		}
@@ -5536,12 +5639,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		}
 
 		state.WsTrust, objDiags = types.ObjectValue(wsTrustAttrTypes, wsTrustAttrValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	} else {
 		state.WsTrust = types.ObjectNull(wsTrustAttrTypes)
 	}
 
-	return diags
+	return respDiags
 }
 
 func (r *spIdpConnectionResource) warnFor500Err(httpResp *http.Response, diags *diag.Diagnostics) {
