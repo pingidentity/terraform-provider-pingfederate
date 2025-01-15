@@ -185,7 +185,24 @@ resource "pingfederate_sp_idp_connection" "example" {
     }
     adapter_mappings = [
       {
-        attribute_sources = []
+        attribute_sources = [
+          {
+            ldap_attribute_source = {
+              attribute_contract_fulfillment = null
+              base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
+              binary_attribute_settings      = null
+              data_store_ref = {
+                id = "pingdirectory"
+              }
+              description            = "PingDirectory"
+              member_of_nested_group = false
+              search_attributes      = ["Subject DN"]
+              search_filter          = "(&(memberUid=uid)(cn=Postman))"
+              search_scope           = "SUBTREE"
+              type                   = "LDAP"
+            }
+          },
+        ]
         attribute_contract_fulfillment = {
           subject = {
             source = {
@@ -202,7 +219,25 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
     authentication_policy_contract_mappings = [
       {
-        attribute_sources = []
+        attribute_sources = [
+          {
+            ldap_attribute_source = {
+              attribute_contract_fulfillment = null
+              base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
+              binary_attribute_settings      = null
+              data_store_ref = {
+                id = "pingdirectory"
+              }
+              description            = "PingDirectory"
+              id                     = "LDAP"
+              member_of_nested_group = false
+              search_attributes      = ["Subject DN"]
+              search_filter          = "(&(memberUid=uid)(cn=Postman))"
+              search_scope           = "SUBTREE"
+              type                   = "LDAP"
+            }
+          },
+        ]
         attribute_contract_fulfillment = {
           "firstName" : {
             source = {
@@ -345,7 +380,29 @@ resource "pingfederate_sp_idp_connection" "example" {
     }
     access_token_manager_mappings = [
       {
-        attribute_sources = []
+        attribute_sources = [
+          {
+            custom_attribute_source = {
+              data_store_ref = {
+                id = "customDataStore"
+              }
+              description = "APIStubs"
+              filter_fields = [
+                {
+                  name = "Authorization Header"
+                },
+                {
+                  name = "Body"
+                },
+                {
+                  name  = "Resource Path"
+                  value = "/users/extid"
+                },
+              ]
+              id = "APIStubs"
+            }
+          },
+        ]
         attribute_contract_fulfillment = {
           "Username" = {
             source = {
