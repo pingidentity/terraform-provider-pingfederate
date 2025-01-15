@@ -2310,7 +2310,6 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 			ssoServiceEndpointsValue.Url = ssoServiceEndpointsAttrs["url"].(types.String).ValueString()
 			spBrowserSsoValue.SsoServiceEndpoints = append(spBrowserSsoValue.SsoServiceEndpoints, ssoServiceEndpointsValue)
 		}
-		//spBrowserSsoValue.UrlWhitelistEntries = []client.UrlWhitelistEntry{}
 		for _, urlWhitelistEntriesElement := range spBrowserSsoAttrs["url_whitelist_entries"].(types.Set).Elements() {
 			urlWhitelistEntriesValue := client.UrlWhitelistEntry{}
 			urlWhitelistEntriesAttrs := urlWhitelistEntriesElement.(types.Object).Attributes()
