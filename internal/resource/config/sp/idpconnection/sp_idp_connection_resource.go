@@ -3949,13 +3949,60 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		addRequest.IdpOAuthGrantAttributeMapping = idpOauthGrantAttributeMappingValue
 	}
 
-	if internaltypes.IsDefined(plan.WsTrust) {
-		addRequest.WsTrust = &client.IdpWsTrust{}
-		//TODO replace?
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, true)), addRequest.WsTrust)
-		if err != nil {
-			respDiags.AddError("Error building client struct for ws_trust", err.Error())
+	// ws_trust
+	if !plan.WsTrust.IsNull() {
+		wsTrustValue := &client.IdpWsTrust{}
+		wsTrustAttrs := plan.WsTrust.Attributes()
+		wsTrustAttributeContractValue := client.IdpWsTrustAttributeContract{}
+		wsTrustAttributeContractAttrs := wsTrustAttrs["attribute_contract"].(types.Object).Attributes()
+		wsTrustAttributeContractValue.CoreAttributes = []client.IdpWsTrustAttribute{}
+		for _, coreAttributesElement := range wsTrustAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.IdpWsTrustAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			wsTrustAttributeContractValue.CoreAttributes = append(wsTrustAttributeContractValue.CoreAttributes, coreAttributesValue)
 		}
+		wsTrustAttributeContractValue.ExtendedAttributes = []client.IdpWsTrustAttribute{}
+		for _, extendedAttributesElement := range wsTrustAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.IdpWsTrustAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			wsTrustAttributeContractValue.ExtendedAttributes = append(wsTrustAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		wsTrustValue.AttributeContract = wsTrustAttributeContractValue
+		wsTrustValue.GenerateLocalToken = wsTrustAttrs["generate_local_token"].(types.Bool).ValueBool()
+		wsTrustValue.TokenGeneratorMappings = []client.SpTokenGeneratorMapping{}
+		for _, tokenGeneratorMappingsElement := range wsTrustAttrs["token_generator_mappings"].(types.Set).Elements() {
+			tokenGeneratorMappingsValue := client.SpTokenGeneratorMapping{}
+			tokenGeneratorMappingsAttrs := tokenGeneratorMappingsElement.(types.Object).Attributes()
+			tokenGeneratorMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(tokenGeneratorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			tokenGeneratorMappingsValue.AttributeSources, err = attributesources.ClientStruct(tokenGeneratorMappingsAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			tokenGeneratorMappingsValue.DefaultMapping = tokenGeneratorMappingsAttrs["default_mapping"].(types.Bool).ValueBoolPointer()
+			tokenGeneratorMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(tokenGeneratorMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			if !tokenGeneratorMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				tokenGeneratorMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range tokenGeneratorMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					tokenGeneratorMappingsValue.RestrictedVirtualEntityIds = append(tokenGeneratorMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			tokenGeneratorMappingsSpTokenGeneratorRefValue := client.ResourceLink{}
+			tokenGeneratorMappingsSpTokenGeneratorRefAttrs := tokenGeneratorMappingsAttrs["sp_token_generator_ref"].(types.Object).Attributes()
+			tokenGeneratorMappingsSpTokenGeneratorRefValue.Id = tokenGeneratorMappingsSpTokenGeneratorRefAttrs["id"].(types.String).ValueString()
+			tokenGeneratorMappingsValue.SpTokenGeneratorRef = tokenGeneratorMappingsSpTokenGeneratorRefValue
+			wsTrustValue.TokenGeneratorMappings = append(wsTrustValue.TokenGeneratorMappings, tokenGeneratorMappingsValue)
+		}
+		addRequest.WsTrust = wsTrustValue
 	}
 
 	if internaltypes.IsDefined(plan.InboundProvisioning) {
