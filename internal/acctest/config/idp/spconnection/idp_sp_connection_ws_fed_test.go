@@ -15,7 +15,6 @@ import (
 const spConnWsFedId = "wsfedspconn"
 
 func TestAccIdpSpConnection_WsFedMinimalMaximal(t *testing.T) {
-	t.SkipNow()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -199,7 +198,7 @@ resource "pingfederate_idp_sp_connection" "example" {
                 id = "ProvisionerDS"
               }
               description = "JDBC"
-              filter      = "$${SAML_SUBJECT}"
+              filter      = "example"
               id          = "jdbcattrsource"
               schema      = "INFORMATION_SCHEMA"
               table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
