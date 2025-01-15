@@ -6,6 +6,7 @@
   * Changed `idp_browser_sso.adapter_mappings` from a Set to a List to work around terraform set identity issues.
 
 ### Enhancements
+* Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source.
 * `sp_idp_connection` resource: Added additional validation that `inbound_provisioning` group attributes do not conflict.
 
 ### Bug fixes
