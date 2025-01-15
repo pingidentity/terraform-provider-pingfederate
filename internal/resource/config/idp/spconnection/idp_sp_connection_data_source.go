@@ -34,28 +34,6 @@ var (
 )
 
 var (
-	targetSettingsDataSourceElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"name":            types.StringType,
-		"value":           types.StringType,
-		"encrypted_value": types.StringType,
-	}}
-
-	channelsElemDataSourceAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"active":            types.BoolType,
-		"channel_source":    types.ObjectType{AttrTypes: channelSourceAttrTypes},
-		"attribute_mapping": types.SetType{ElemType: attributeMappingElemAttrTypes},
-		"name":              types.StringType,
-		"max_threads":       types.Int64Type,
-		"timeout":           types.Int64Type,
-	}}
-
-	outboundProvisionDataSourceAttrTypes = map[string]attr.Type{
-		"type":            types.StringType,
-		"target_settings": types.SetType{ElemType: targetSettingsDataSourceElemAttrType},
-		"custom_schema":   types.ObjectType{AttrTypes: customSchemaAttrTypes},
-		"channels":        types.ListType{ElemType: channelsElemDataSourceAttrType},
-	}
-
 	credentialsInboundBackChannelAuthHttpBasicCredentialsDataSourceAttrTypes = map[string]attr.Type{
 		"encrypted_password": types.StringType,
 		"username":           types.StringType,

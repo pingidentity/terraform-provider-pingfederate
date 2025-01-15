@@ -3,7 +3,6 @@ package idpspconnection
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 )
 
 type idpSpConnectionModel struct {
@@ -33,14 +32,6 @@ type idpSpConnectionModel struct {
 }
 
 var (
-	attributeQueryAttrTypes = map[string]attr.Type{
-		"attributes":                     types.SetType{ElemType: types.StringType},
-		"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
-		"issuance_criteria":              issuanceCriteriaAttrType,
-		"policy":                         types.ObjectType{AttrTypes: policyAttrTypes},
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-	}
-
 	attributesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"name":           types.StringType,
 		"multi_valued":   types.BoolType,

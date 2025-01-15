@@ -55,11 +55,6 @@ var (
 var (
 	resourceLinkObjectType = types.ObjectType{AttrTypes: resourcelink.AttrType()}
 
-	metadataReloadSettingsAttrTypes = map[string]attr.Type{
-		"enable_auto_metadata_update": types.BoolType,
-		"metadata_url_ref":            resourceLinkObjectType,
-	}
-
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
 		"password":           types.StringType,
 		"encrypted_password": types.StringType,
@@ -108,28 +103,10 @@ var (
 		"verification_subject_dn":           types.StringType,
 	}
 
-	contactInfoAttrTypes = map[string]attr.Type{
-		"company":    types.StringType,
-		"email":      types.StringType,
-		"first_name": types.StringType,
-		"last_name":  types.StringType,
-		"phone":      types.StringType,
-	}
-
 	additionalAllowedEntitiesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"entity_id":          types.StringType,
 		"entity_description": types.StringType,
 	}}
-
-	additionalAllowedEntitiesConfigurationAttrTypes = map[string]attr.Type{
-		"allow_additional_entities":   types.BoolType,
-		"allow_all_entities":          types.BoolType,
-		"additional_allowed_entities": types.SetType{ElemType: additionalAllowedEntitiesElemType},
-	}
-
-	extendedPropertiesElemAttrTypes = map[string]attr.Type{
-		"values": types.SetType{ElemType: types.StringType},
-	}
 
 	spBrowserSsoAttributeAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -168,90 +145,6 @@ var (
 		"url":          types.StringType,
 		"response_url": types.StringType,
 	}}
-	urlWhitelistEntriesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"valid_domain":             types.StringType,
-		"valid_path":               types.StringType,
-		"allow_query_and_fragment": types.BoolType,
-		"require_https":            types.BoolType,
-	}}
-	spBrowserSSOAttrTypes = map[string]attr.Type{
-		"protocol":          types.StringType,
-		"ws_fed_token_type": types.StringType,
-		"ws_trust_version":  types.StringType,
-		"enabled_profiles":  types.SetType{ElemType: types.StringType},
-		"incoming_bindings": types.SetType{ElemType: types.StringType},
-		"message_customizations": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"context_name":       types.StringType,
-			"message_expression": types.StringType,
-		}}},
-		"url_whitelist_entries": types.SetType{ElemType: urlWhitelistEntriesElemType},
-		"artifact": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"lifetime": types.Int64Type,
-			"resolver_locations": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-				"index": types.Int64Type,
-				"url":   types.StringType,
-			}}},
-			"source_id": types.StringType,
-		}},
-		"slo_service_endpoints":         types.SetType{ElemType: sloServiceEndpointsElemType},
-		"default_target_url":            types.StringType,
-		"always_sign_artifact_response": types.BoolType,
-		"sso_service_endpoints": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"binding":    types.StringType,
-			"url":        types.StringType,
-			"is_default": types.BoolType,
-			"index":      types.Int64Type,
-		}}},
-		"sp_saml_identity_mapping":      types.StringType,
-		"sp_ws_fed_identity_mapping":    types.StringType,
-		"sign_response_as_required":     types.BoolType,
-		"sign_assertions":               types.BoolType,
-		"require_signed_authn_requests": types.BoolType,
-		"encryption_policy": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"encrypt_assertion":             types.BoolType,
-			"encrypted_attributes":          types.SetType{ElemType: types.StringType},
-			"encrypt_slo_subject_name_id":   types.BoolType,
-			"slo_subject_name_id_encrypted": types.BoolType,
-		}},
-		"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes":     types.SetType{ElemType: spBrowserSsoAttributeAttrType},
-			"extended_attributes": types.SetType{ElemType: spBrowserSsoAttributeAttrType},
-		}},
-		"adapter_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"idp_adapter_ref":               resourceLinkObjectType,
-			"restrict_virtual_entity_ids":   types.BoolType,
-			"restricted_virtual_entity_ids": types.SetType{ElemType: types.StringType},
-			"adapter_override_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"id":                    types.StringType,
-				"name":                  types.StringType,
-				"plugin_descriptor_ref": resourceLinkObjectType,
-				"parent_ref":            resourceLinkObjectType,
-				"configuration":         types.ObjectType{AttrTypes: pluginconfiguration.AttrTypes()},
-				"authn_ctx_class_ref":   types.StringType,
-				"attribute_mapping": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-					"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
-					"issuance_criteria":              issuanceCriteriaAttrType,
-				}},
-				"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"core_attributes":           types.SetType{ElemType: idpAdapterAttributeAttrType},
-					"extended_attributes":       types.SetType{ElemType: idpAdapterAttributeAttrType},
-					"unique_user_key_attribute": types.StringType,
-					"mask_ognl_values":          types.BoolType,
-				}},
-			}},
-			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
-			"issuance_criteria":                  issuanceCriteriaAttrType,
-		}}},
-		"authentication_policy_contract_assertion_mappings": types.SetType{ElemType: authenticationPolicyContractAssertionMappingsElemType},
-		"assertion_lifetime": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"minutes_before": types.Int64Type,
-			"minutes_after":  types.Int64Type,
-		}},
-		"sso_application_endpoint": types.StringType,
-	}
 
 	policyAttrTypes = map[string]attr.Type{
 		"sign_response":                  types.BoolType,
@@ -271,29 +164,6 @@ var (
 		"context_name":       types.StringType,
 		"message_expression": types.StringType,
 	}}
-	wsTrustAttrTypes = map[string]attr.Type{
-		"partner_service_ids":      types.SetType{ElemType: types.StringType},
-		"oauth_assertion_profiles": types.BoolType,
-		"default_token_type":       types.StringType,
-		"generate_key":             types.BoolType,
-		"encrypt_saml2_assertion":  types.BoolType,
-		"minutes_before":           types.Int64Type,
-		"minutes_after":            types.Int64Type,
-		"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes":     types.SetType{ElemType: spWsTrustAttributeAttrType},
-			"extended_attributes": types.SetType{ElemType: spWsTrustAttributeAttrType},
-		}},
-		"token_processor_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"idp_token_processor_ref":        resourceLinkObjectType,
-			"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
-			"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-			"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
-			"issuance_criteria":              issuanceCriteriaAttrType,
-		}}},
-		"abort_if_not_fulfilled_from_request": types.BoolType,
-		"request_contract_ref":                resourceLinkObjectType,
-		"message_customizations":              types.SetType{ElemType: messageCustomizationsElemType},
-	}
 
 	channelSourceLocationAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -2114,7 +1984,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) diag.Diagnostics {
+func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) diag.Diagnostics {
 	var err error
 	var respDiags diag.Diagnostics
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()

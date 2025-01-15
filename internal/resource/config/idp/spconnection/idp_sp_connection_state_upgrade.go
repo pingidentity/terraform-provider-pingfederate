@@ -1200,7 +1200,7 @@ func (p *idpSpConnectionModel) schemaUpgradeCredentialsV0toV1(ctx context.Contex
 	}
 }
 
-func (p *idpSpConnectionModel) schemaUpgradeCertV0toV1(ctx context.Context, certv1 types.Object) (types.Object, diag.Diagnostics) {
+func (p *idpSpConnectionModel) schemaUpgradeCertV0toV1(_ context.Context, certv1 types.Object) (types.Object, diag.Diagnostics) {
 	var diags, respDiags diag.Diagnostics
 	finalAttrs := map[string]attr.Value{}
 	certAttrs := certv1.Attributes()
