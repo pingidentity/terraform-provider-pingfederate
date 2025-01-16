@@ -150,7 +150,24 @@ func optionalHcl(resourceModel oauthAccessTokenMappingResourceModel) string {
 					]
 					id = "APIStubs"
 				}
-			}
+			},
+			{
+      ldap_attribute_source = {
+        base_dn = "ou=Users,dc=bxretail,dc=org"
+        data_store_ref = {
+          id = "pingdirectory"
+        }
+        description            = "Directory"
+        id                     = "Directory"
+        member_of_nested_group = false
+        search_attributes = [
+          "Subject DN",
+        ]
+        search_filter = "(&(memberUid=example)(cn=Postman))"
+        search_scope  = "SUBTREE"
+        type          = "LDAP"
+      }
+    },
 		]
 		`, resourceModel.attributeSource.DataStoreRef.Id,
 			*resourceModel.attributeSource.Id,
@@ -242,6 +259,10 @@ resource "pingfederate_oauth_access_token_manager" "oauthAccessTokenManagerTest"
       {
         name         = "extended_contract"
         multi_valued = true
+      },
+      {
+        name         = "subject"
+        multi_valued = false
       }
     ]
   }
@@ -275,6 +296,12 @@ resource "pingfederate_oauth_access_token_mapping" "%[1]s" {
         type = "%[2]s"
       }
       value = "%[3]s"
+    }
+    "subject" = {
+      source = {
+        type = "TEXT"
+      },
+      value = "subject"
     }
   }
 

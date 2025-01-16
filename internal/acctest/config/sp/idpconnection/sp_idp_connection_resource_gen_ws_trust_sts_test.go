@@ -305,7 +305,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             description = "JDBC",
             schema      = "INFORMATION_SCHEMA",
             table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS",
-            filter      = "$${SAML_SUBJECT}",
+            filter      = "example",
             column_names = [
               "GRANTEE"
             ]

@@ -288,7 +288,25 @@ func wsTrustHcl() string {
 		}
 		token_processor_mappings = [
 		  {
-			attribute_sources = []
+			attribute_sources = [
+			{
+			ldap_attribute_source = {
+              attribute_contract_fulfillment = null
+              base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
+              binary_attribute_settings      = null
+              data_store_ref = {
+                id = "pingdirectory"
+              }
+              description            = "PingDirectory"
+              id                     = "LDAP"
+              member_of_nested_group = false
+              search_attributes      = ["Subject DN"]
+              search_filter          = "(&(memberUid=uid)(cn=Postman))"
+              search_scope           = "SUBTREE"
+              type                   = "LDAP"
+            }
+			}
+			]
 			attribute_contract_fulfillment = {
 			  "TOKEN_SUBJECT" : {
 				source = {
@@ -310,7 +328,7 @@ func wsTrustHcl() string {
 	`
 }
 
-func spBrowserSSOHcl(authenticationPolicyContractName string) string {
+func spBrowserSSOHcl() string {
 	return `
 sp_browser_sso = {
     protocol                      = "SAML20"
@@ -333,7 +351,24 @@ sp_browser_sso = {
           }
         }
         restrict_virtual_entity_ids = false
-        attribute_sources           = []
+    attribute_sources = [
+      {
+        custom_attribute_source = null
+        jdbc_attribute_source = {
+          attribute_contract_fulfillment = null
+          column_names                   = ["GRANTEE"]
+          data_store_ref = {
+            id = "ProvisionerDS"
+          }
+          description = "JDBC"
+          filter      = "example"
+          id          = "jdbcattrsource"
+          schema      = "INFORMATION_SCHEMA"
+          table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
+        }
+        ldap_attribute_source = null
+      },
+    ]
         issuance_criteria = {
           conditional_criteria = []
         }
@@ -375,7 +410,7 @@ sp_browser_sso = {
 `
 }
 
-func wsFedSpBrowserSSOHcl(authenticationPolicyContractName string) string {
+func wsFedSpBrowserSSOHcl() string {
 	return `
 sp_browser_sso = {
     protocol                      = "WSFED"
@@ -400,7 +435,29 @@ sp_browser_sso = {
     }
     adapter_mappings = [
       {
-        attribute_sources = []
+        attribute_sources = [
+		{
+				custom_attribute_source = {
+					data_store_ref = {
+					  	id = "customDataStore"
+					}
+					description = "APIStubs"
+					filter_fields = [
+					  	{
+					  	  	name = "Authorization Header"
+					  	},
+					  	{
+					  	  	name = "Body"
+					  	},
+					  	{
+					  	  	name  = "Resource Path"
+					  	  	value = "/users/external"
+					  	},
+					]
+					id = "APIStubs"
+				}
+			},
+		]
         attribute_contract_fulfillment = {
           "SAML_SUBJECT" = {
             source = {
@@ -446,9 +503,9 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 func testAccSpConnectionBrowserSso(resourceName string, useWsFed bool) string {
 	var browserHcl string
 	if useWsFed {
-		browserHcl = wsFedSpBrowserSSOHcl(resourceName)
+		browserHcl = wsFedSpBrowserSSOHcl()
 	} else {
-		browserHcl = spBrowserSSOHcl(resourceName)
+		browserHcl = spBrowserSSOHcl()
 	}
 
 	return fmt.Sprintf(`
@@ -575,12 +632,12 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 		baseHcl(resourceName),
 		fullCredentials(),
 		outboundProvisionHcl(),
-		spBrowserSSOHcl(resourceName),
+		spBrowserSSOHcl(),
 		wsTrustHcl(),
 	)
 }
 
-func testCommonExpectedSpConnectionAttributes(s *terraform.State) (*configurationapi.SpConnection, error) {
+func testCommonExpectedSpConnectionAttributes(_ *terraform.State) (*configurationapi.SpConnection, error) {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
 	spConn, _, err := testClient.IdpSpConnectionsAPI.GetSpConnection(ctx, spConnectionId).Execute()

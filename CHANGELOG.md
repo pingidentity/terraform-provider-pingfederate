@@ -12,8 +12,21 @@
 ### Bug fixes
 * Added missing empty default for some `certs` attributes.
 * Fixed incorrect length validation for certain resource link `id` attributes.
-* `idp_sp_connection` resource: Fixed `sp_browser_sso.artifact.lifetime` attribute incorrectly being marked as required.
-* `sp_idp_connection` and `idp_sp_connection` resources: Fixed `password` incorrectly defaulting to an empty string for `credentials.inbound_back_channel_auth.http_basic_credentials.password` and `credentials.outbound_back_channel_auth.http_basic_credentials.password`.
+* `sp_idp_connection` and `idp_sp_connection` resources
+  * Fixed `password` incorrectly defaulting to an empty string for `credentials.inbound_back_channel_auth.http_basic_credentials.password` and `credentials.outbound_back_channel_auth.http_basic_credentials.password`.
+  * Fixed JSON marshal errors when setting `attribute_sources` values.
+* `idp_sp_connection` resource
+  * Fixed `sp_browser_sso.artifact.lifetime` attribute incorrectly being marked as required.
+  * Fixed invalid validation requiring either `sp_browser_sso.sign_response_as_required` or `sp_browser_sso.sign_assertions` to be set to `true`.
+  * Fixed some booleans being left out of state when set to `false`.
+  * Added missing `false` default for `attribute_query.policy.encrypt_assertion`, `attribute_query.policy.require_encrypted_name_id`, `attribute_query.policy.require_signed_attribute_query`, `attribute_query.policy.sign_assertion`, and `attribute_query.policy.sign_response`.
+  * Added missing `false` default for `credentials.signing_settings.include_raw_key_in_signature`.
+  * Added missing `true` default for `outbound_provision.channels.#.channel_source.account_management_settings.default_status` and `outbound_provision.channels.#.channel_source.account_management_settings.flag_comparison_status`.
+  * Added missing `false` default for `sp_browser_sso.adapter_mappings.#.restrict_virtual_entity_ids` and `sp_browser_sso.authentication_policy_contract_assertion_mappings.#.restrict_virtual_entity_ids`.
+  * Added missing `false` default for `sp_browser_sso.always_sign_artifact_response`, `sp_browser_sso.require_signed_authn_requests`, and `sp_browser_sso.sign_assertions`.
+  * Added missing `false` default for `sp_browser_sso.encryption_policy.encrypt_assertion`, `sp_browser_sso.encryption_policy.encrypt_slo_subject_name_id`, and `sp_browser_sso.encryption_policy.slo_subject_name_id_encrypted`
+  * Added missing `false` default for `ws_trust.encrypt_saml2_assertion`, `ws_trust.generate_key`, and `ws_trust.oauth_assertion_profiles`.
+
 * `sp_idp_connection` resource
   * Fixed unexpected update plans that could occur when setting `credentials.certs`.
   * Added missing `oidc_client_credentials.encrypted_secret` attribute, to be used as an alternative to `oidc_client_credentials.client_secret`, and marked `oidc_client_credentials.client_secret` as sensitive.

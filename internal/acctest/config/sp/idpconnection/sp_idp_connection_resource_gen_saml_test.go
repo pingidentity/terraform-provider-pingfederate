@@ -582,7 +582,7 @@ resource "pingfederate_sp_idp_connection" "example" {
               id = "ProvisionerDS"
             }
             description = "JDBC"
-            filter      = "subject"
+            filter      = "$${SAML_SUBJECT}"
             id          = null
             schema      = "INFORMATION_SCHEMA"
             table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
