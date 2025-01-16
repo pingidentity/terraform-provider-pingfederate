@@ -2847,7 +2847,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
 						credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planFileData, cert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 						certMatchFound = true
 						break
@@ -2855,23 +2855,23 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				}
 				if !certMatchFound {
 					credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), cert, &diags, isImportRead)
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
 			} else {
 				credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), cert, &diags, isImportRead)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
 		}
 		credentialsCertsValue, objDiags := types.ListValue(connectioncert.ObjType(), credentialsCertsValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var credentialsDecryptionKeyPairRefValue types.Object
 		if response.Credentials.DecryptionKeyPairRef == nil {
 			credentialsDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.DecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsInboundBackChannelAuthValue types.Object
 		if response.Credentials.InboundBackChannelAuth == nil {
@@ -2889,7 +2889,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
 								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
-								diags.Append(objDiags...)
+								respDiags.Append(objDiags...)
 								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 								ibaCertMatch = true
 								break
@@ -2897,17 +2897,17 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 						}
 						if !ibaCertMatch {
 							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), ibcaCert, &diags, isImportRead)
-							diags.Append(objDiags...)
+							respDiags.Append(objDiags...)
 							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 						}
 					} else {
 						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), ibcaCert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 					}
 				}
 				credentialsInboundBackChannelAuthCertsValue, objDiags = types.ListValue(connectioncert.ObjType(), credentialsInboundBackChannelAuthCertsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsInboundBackChannelAuthCertsValue = types.ListNull(connectioncert.ObjType())
 			}
@@ -2932,7 +2932,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsInboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"certs":                   credentialsInboundBackChannelAuthCertsValue,
@@ -2942,7 +2942,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"verification_issuer_dn":  types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
 				"verification_subject_dn": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsOutboundBackChannelAuthValue types.Object
 		if response.Credentials.OutboundBackChannelAuth == nil {
@@ -2969,14 +2969,14 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			var credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue types.Object
 			if response.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef == nil {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 			} else {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsOutboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"digital_signature":      types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.DigitalSignature),
@@ -2984,14 +2984,14 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
 				"validate_partner_cert":  types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSecondaryDecryptionKeyPairRefValue types.Object
 		if response.Credentials.SecondaryDecryptionKeyPairRef == nil {
 			credentialsSecondaryDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsSecondaryDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.SecondaryDecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSigningSettingsValue types.Object
 		if response.Credentials.SigningSettings == nil {
@@ -3002,19 +3002,19 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink := &client.ResourceLink{}
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink.Id = credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue.Id
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(context.Background(), credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
 			}
 			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValue types.Set
 			if len(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues) > 0 {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags = types.SetValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue = types.SetNull(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType)
 			}
 
 			credentialsSigningSettingsSigningKeyPairRefValue, objDiags := resourcelink.ToState(context.Background(), &response.Credentials.SigningSettings.SigningKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			// PF will return false include_cert_in_signature as nil
 			includeCertInSignature := false
 			if response.Credentials.SigningSettings.IncludeCertInSignature != nil {
@@ -3027,7 +3027,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"include_raw_key_in_signature":      types.BoolPointerValue(response.Credentials.SigningSettings.IncludeRawKeyInSignature),
 				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		credentialsValue, objDiags = types.ObjectValue(credentialsAttrTypes, map[string]attr.Value{
 			"block_encryption_algorithm":        types.StringPointerValue(response.Credentials.BlockEncryptionAlgorithm),
@@ -3041,7 +3041,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			"verification_issuer_dn":            types.StringPointerValue(response.Credentials.VerificationIssuerDN),
 			"verification_subject_dn":           types.StringPointerValue(response.Credentials.VerificationSubjectDN),
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	} else {
 		credentialsValue = types.ObjectNull(credentialsAttrTypes)
 	}
@@ -3080,7 +3080,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
 	// by the `server_settings_general` resource
 	if response.LoggingMode != nil && state.LoggingMode.ValueString() != *response.LoggingMode {
-		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
+		respDiags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
 			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
 				"If `sp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
 				" `logging_mode` should be configured to the same value in this resource.")
