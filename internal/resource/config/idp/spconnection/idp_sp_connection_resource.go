@@ -3079,7 +3079,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	// logging_mode
 	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
 	// by the `server_settings_general` resource
-	if response.LoggingMode != nil && state.LoggingMode.ValueString() != *response.LoggingMode {
+	if response.LoggingMode != nil && internaltypes.IsDefined(state.LoggingMode) && state.LoggingMode.ValueString() != *response.LoggingMode {
 		respDiags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
 			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
 				"If `sp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
