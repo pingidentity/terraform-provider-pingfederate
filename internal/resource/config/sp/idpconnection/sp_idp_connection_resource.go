@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -14,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -34,7 +37,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -55,8 +57,9 @@ var (
 	}
 
 	oidcClientCredentialsAttrTypes = map[string]attr.Type{
-		"client_id":     types.StringType,
-		"client_secret": types.StringType,
+		"client_id":        types.StringType,
+		"client_secret":    types.StringType,
+		"encrypted_secret": types.StringType,
 	}
 
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
@@ -364,21 +367,9 @@ var (
 		"valid_path":               types.StringType,
 	}
 
-	conditionalCriteriaDefault, _ = types.SetValue(types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"source": types.ObjectType{
-				AttrTypes: sourcetypeidkey.AttrTypes(),
-			},
-			"attribute_name": types.StringType,
-			"condition":      types.StringType,
-			"value":          types.StringType,
-			"error_result":   types.StringType,
-		},
-	}, nil)
-
 	idpBrowserSsoUrlWhitelistEntriesElementType = types.ObjectType{AttrTypes: idpBrowserSsoUrlWhitelistEntriesAttrTypes}
 	idpBrowserSsoAttrTypes                      = map[string]attr.Type{
-		"adapter_mappings":                         types.SetType{ElemType: idpBrowserSsoAdapterMappingsElementType},
+		"adapter_mappings":                         types.ListType{ElemType: idpBrowserSsoAdapterMappingsElementType},
 		"always_sign_artifact_response":            types.BoolType,
 		"artifact":                                 types.ObjectType{AttrTypes: idpBrowserSsoArtifactAttrTypes},
 		"assertions_signed":                        types.BoolType,
@@ -425,31 +416,6 @@ var (
 		"url":           types.StringType,
 		"name_mappings": types.SetType{ElemType: attributeQueryNameMappingAttrTypes},
 		"policy":        idpAttributeQueryPolicyAttrTypes,
-	}
-
-	accessTokenManagerMappingAttrTypes = map[string]attr.Type{
-		"access_token_manager_ref":       types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
-	}
-
-	idpOAuthGrantAttributeMappingAttrTypes = map[string]attr.Type{
-		"access_token_manager_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: accessTokenManagerMappingAttrTypes}},
-		"idp_oauth_attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes": types.SetType{ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"name":   types.StringType,
-					"masked": types.BoolType,
-				},
-			}},
-			"extended_attributes": types.SetType{ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"name":   types.StringType,
-					"masked": types.BoolType,
-				},
-			}},
-		}},
 	}
 
 	spTokenGeneratorMappingAttrTypes = map[string]attr.Type{
@@ -874,7 +840,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", true),
 					"block_encryption_algorithm": schema.StringAttribute{
 						Optional:            true,
 						Description:         "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
@@ -979,8 +945,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"digital_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "If incoming or outgoing messages must be signed.",
-								MarkdownDescription: "If incoming or outgoing messages must be signed.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "If incoming or outgoing messages must be signed. The default value is `false`.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed. The default value is `false`.",
 							},
 							"ssl_auth_key_pair_ref": schema.SingleNestedAttribute{
 								Attributes:          resourcelink.ToSchema(),
@@ -1037,8 +1005,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"digital_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "If incoming or outgoing messages must be signed.",
-								MarkdownDescription: "If incoming or outgoing messages must be signed.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "If incoming or outgoing messages must be signed. The default value is `false`.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed. The default value is `false`.",
 							},
 							"verification_subject_dn": schema.StringAttribute{
 								Optional:            true,
@@ -1056,11 +1026,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
-							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", false),
 							"require_ssl": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Incoming HTTP transmissions must use a secure channel.",
-								MarkdownDescription: "Incoming HTTP transmissions must use a secure channel.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Incoming HTTP transmissions must use a secure channel. The default value is `false`.",
+								MarkdownDescription: "Incoming HTTP transmissions must use a secure channel. The default value is `false`.",
 							},
 						},
 						Optional:            true,
@@ -1090,8 +1062,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"error_page_msg_id": schema.StringAttribute{
 				Optional:            true,
-				Description:         "Identifier that specifies the message displayed on a user-facing error page.",
-				MarkdownDescription: "Identifier that specifies the message displayed on a user-facing error page.",
+				Computed:            true,
+				Description:         "Identifier that specifies the message displayed on a user-facing error page. Defaults to `errorDetail.spSsoFailure` for browser SSO connections, null otherwise.",
+				MarkdownDescription: "Identifier that specifies the message displayed on a user-facing error page. Defaults to `errorDetail.spSsoFailure` for browser SSO connections, null otherwise.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -1111,7 +1084,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"idp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.SetNestedAttribute{
+					"adapter_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"adapter_override_settings": schema.SingleNestedAttribute{
@@ -1128,16 +1101,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											},
 										},
 										"name": schema.StringAttribute{
-											Required:            true,
+											Optional:            true,
 											Description:         "The plugin instance name.",
 											MarkdownDescription: "The plugin instance name.",
-											Validators: []validator.String{
-												stringvalidator.LengthAtLeast(1),
-											},
 										},
 										"plugin_descriptor_ref": schema.SingleNestedAttribute{
-											Attributes:          resourcelink.ToSchema(),
-											Required:            true,
+											Attributes:          resourcelink.ToSchemaNoLengthValidator(),
+											Optional:            true,
 											Description:         "Reference to the plugin descriptor for this instance.",
 											MarkdownDescription: "Reference to the plugin descriptor for this instance.",
 										},
@@ -1194,6 +1164,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 										"target_application_info": schema.SingleNestedAttribute{
 											Optional: true,
+											Computed: true,
+											Default: objectdefault.StaticValue(types.ObjectValueMust(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes, map[string]attr.Value{
+												"application_name":     types.StringNull(),
+												"application_icon_url": types.StringNull(),
+											})),
 											Attributes: map[string]schema.Attribute{
 												"application_name": schema.StringAttribute{
 													Optional:            true,
@@ -1214,72 +1189,25 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 								"attribute_sources":              attributesources.ToSchema(0, false),
-								"issuance_criteria": schema.SingleNestedAttribute{
-									Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
-									Optional:    true,
-									Attributes: map[string]schema.Attribute{
-										"conditional_criteria": schema.SetNestedAttribute{
-											Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-											Computed:    true,
-											Optional:    true,
-											Default:     setdefault.StaticValue(conditionalCriteriaDefault),
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"source": sourcetypeidkey.ToSchema(false),
-													"attribute_name": schema.StringAttribute{
-														Description: "The name of the attribute to use in this issuance criterion.",
-														Required:    true,
-													},
-													"condition": schema.StringAttribute{
-														Description: "The condition that will be applied to the source attribute's value and the expected value. Options are `EQUALS`, `EQUALS_CASE_INSENSITIVE`, `EQUALS_DN`, `NOT_EQUAL`, `NOT_EQUAL_CASE_INSENSITIVE`, `NOT_EQUAL_DN`, `MULTIVALUE_CONTAINS`, `MULTIVALUE_CONTAINS_CASE_INSENSITIVE`, `MULTIVALUE_CONTAINS_DN`, `MULTIVALUE_DOES_NOT_CONTAIN`, `MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE`, `MULTIVALUE_DOES_NOT_CONTAIN_DN`.",
-														Required:    true,
-														Validators: []validator.String{
-															stringvalidator.OneOf([]string{"EQUALS", "EQUALS_CASE_INSENSITIVE", "EQUALS_DN", "NOT_EQUAL", "NOT_EQUAL_CASE_INSENSITIVE", "NOT_EQUAL_DN", "MULTIVALUE_CONTAINS", "MULTIVALUE_CONTAINS_CASE_INSENSITIVE", "MULTIVALUE_CONTAINS_DN", "MULTIVALUE_DOES_NOT_CONTAIN", "MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE", "MULTIVALUE_DOES_NOT_CONTAIN_DN"}...),
-														},
-													},
-													"value": schema.StringAttribute{
-														Required:    true,
-														Description: "The expected value of this issuance criterion.",
-													},
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-												},
-											},
-										},
-										"expression_criteria": schema.SetNestedAttribute{
-											Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria.",
-											Optional:    true,
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"expression": schema.StringAttribute{
-														Required:    true,
-														Description: "The OGNL expression to evaluate.",
-													},
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-												},
-											},
-										},
-									},
-								},
+								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:            true,
-									Description:         "Restricts this mapping to specific virtual entity IDs.",
-									MarkdownDescription: "Restricts this mapping to specific virtual entity IDs.",
+									Computed:            true,
+									Default:             booldefault.StaticBool(false),
+									Description:         "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
+									MarkdownDescription: "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
 								},
 								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType:         types.StringType,
 									Optional:            true,
+									Computed:            true,
+									Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, nil)),
 									Description:         "The list of virtual server IDs that this mapping is restricted to.",
 									MarkdownDescription: "The list of virtual server IDs that this mapping is restricted to.",
 								},
 								"sp_adapter_ref": schema.SingleNestedAttribute{
-									Attributes:          resourcelink.ToSchema(),
-									Required:            true,
+									Attributes:          resourcelink.ToSchemaNoLengthValidator(),
+									Optional:            true,
 									Description:         "A reference to a resource.",
 									MarkdownDescription: "A reference to a resource.",
 								},
@@ -1288,8 +1216,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "A list of adapters that map to incoming assertions.",
 						MarkdownDescription: "A list of adapters that map to incoming assertions.",
-						Validators: []validator.Set{
-							setvalidator.SizeAtLeast(1),
+						Validators: []validator.List{
+							listvalidator.SizeAtLeast(1),
 						},
 					},
 					"always_sign_artifact_response": schema.BoolAttribute{
@@ -1343,8 +1271,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"assertions_signed": schema.BoolAttribute{
 						Optional:            true,
-						Description:         "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed.",
-						MarkdownDescription: "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed.",
+						Computed:            true,
+						Default:             booldefault.StaticBool(false),
+						Description:         "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed. The default value is `false`.",
+						MarkdownDescription: "Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed. The default value is `false`.",
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -1439,6 +1369,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 						},
 						Optional:            true,
+						Computed:            true,
+						Default:             listdefault.StaticValue(types.ListValueMust(idpBrowserSsoAuthenticationPolicyContractMappingsElementType, nil)),
 						Description:         "A list of Authentication Policy Contracts that map to incoming assertions.",
 						MarkdownDescription: "A list of Authentication Policy Contracts that map to incoming assertions.",
 					},
@@ -1471,31 +1403,42 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"assertion_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Specify whether the incoming SAML assertion is encrypted for an IdP connection.",
-								MarkdownDescription: "Specify whether the incoming SAML assertion is encrypted for an IdP connection.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Specify whether the incoming SAML assertion is encrypted for an IdP connection. The default value is `false`.",
+								MarkdownDescription: "Specify whether the incoming SAML assertion is encrypted for an IdP connection. The default value is `false`.",
 							},
 							"attributes_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection.",
-								MarkdownDescription: "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection. The default value is `false`.",
+								MarkdownDescription: "Specify whether one or more incoming SAML attributes are encrypted for an IdP connection. The default value is `false`.",
 							},
 							"slo_encrypt_subject_name_id": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Encrypt the Subject Name ID in SLO messages to the IdP.",
-								MarkdownDescription: "Encrypt the Subject Name ID in SLO messages to the IdP.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Encrypt the Subject Name ID in SLO messages to the IdP. The default value is `false`.",
+								MarkdownDescription: "Encrypt the Subject Name ID in SLO messages to the IdP. The default value is `false`.",
 							},
 							"slo_subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Allow encrypted Subject Name ID in SLO messages from the IdP.",
-								MarkdownDescription: "Allow encrypted Subject Name ID in SLO messages from the IdP.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Allow encrypted Subject Name ID in SLO messages from the IdP. The default value is `false`.",
+								MarkdownDescription: "Allow encrypted Subject Name ID in SLO messages from the IdP. The default value is `false`.",
 							},
 							"subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Specify whether the incoming Subject Name ID is encrypted for an IdP connection.",
-								MarkdownDescription: "Specify whether the incoming Subject Name ID is encrypted for an IdP connection.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Specify whether the incoming Subject Name ID is encrypted for an IdP connection. The default value is `false`.",
+								MarkdownDescription: "Specify whether the incoming Subject Name ID is encrypted for an IdP connection. The default value is `false`.",
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Defines what to decrypt in the browser-based SSO profile.",
 						MarkdownDescription: "Defines what to decrypt in the browser-based SSO profile.",
 					},
@@ -1564,14 +1507,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										NestedObject: schema.NestedAttributeObject{
 											Attributes: map[string]schema.Attribute{
 												"masked": schema.BoolAttribute{
-													Optional:            true,
 													Computed:            true,
 													Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 													MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
-													Default:             booldefault.StaticBool(false),
 												},
 												"name": schema.StringAttribute{
-													Required:            true,
+													Computed:            true,
 													Description:         "The name of this attribute.",
 													MarkdownDescription: "The name of this attribute.",
 													Validators: []validator.String{
@@ -1580,14 +1521,19 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												},
 											},
 										},
-										Optional:            true,
+										Computed: true,
+										PlanModifiers: []planmodifier.Set{
+											setplanmodifier.UseStateForUnknown(),
+										},
 										Description:         "A list of user attributes that the IdP sends in the SAML assertion.",
 										MarkdownDescription: "A list of user attributes that the IdP sends in the SAML assertion.",
 									},
 									"do_attribute_query": schema.BoolAttribute{
 										Optional:            true,
-										Description:         "Specify whether to use only attributes from the SAML Assertion or retrieve additional attributes from the IdP. The default is false.",
-										MarkdownDescription: "Specify whether to use only attributes from the SAML Assertion or retrieve additional attributes from the IdP. The default is false.",
+										Computed:            true,
+										Default:             booldefault.StaticBool(false),
+										Description:         "Specify whether to use only attributes from the SAML Assertion or retrieve additional attributes from the IdP. The default is `false`.",
+										MarkdownDescription: "Specify whether to use only attributes from the SAML Assertion or retrieve additional attributes from the IdP. The default is `false`.",
 									},
 								},
 								Required: true,
@@ -1663,12 +1609,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
 														},
 														"value": schema.StringAttribute{
-															Required:            true,
+															Optional:            true,
+															Computed:            true,
+															Default:             stringdefault.StaticString(""),
 															Description:         "The value for this attribute.",
 															MarkdownDescription: "The value for this attribute.",
-															Validators: []validator.String{
-																stringvalidator.LengthAtLeast(1),
-															},
 														},
 													},
 												},
@@ -1810,12 +1755,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
 														},
 														"value": schema.StringAttribute{
-															Required:            true,
+															Optional:            true,
+															Computed:            true,
+															Default:             stringdefault.StaticString(""),
 															Description:         "The value for this attribute.",
 															MarkdownDescription: "The value for this attribute.",
-															Validators: []validator.String{
-																stringvalidator.LengthAtLeast(1),
-															},
 														},
 													},
 												},
@@ -1935,24 +1879,20 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"back_channel_logout_uri": schema.StringAttribute{
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Computed:            true,
 								Description:         "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 								MarkdownDescription: "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 							},
 							"enable_pkce": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.",
-								MarkdownDescription: "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow. The default value is `false`.",
+								MarkdownDescription: "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow. The default value is `false`.",
 							},
 							"front_channel_logout_uri": schema.StringAttribute{
-								Optional: false,
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Optional:            false,
+								Computed:            true,
 								Description:         "The Front-Channel Logout URI. This is a read-only parameter.",
 								MarkdownDescription: "The Front-Channel Logout URI. This is a read-only parameter.",
 							},
@@ -1966,6 +1906,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"jwt_secured_authorization_response_mode_type": schema.StringAttribute{
 								Optional:    true,
+								Computed:    true,
 								Description: "The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL. Supported in PingFederate `12.1` and later.",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
@@ -1993,11 +1934,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"post_logout_redirect_uri": schema.StringAttribute{
-								Optional: false,
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Computed:            true,
 								Description:         "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 								MarkdownDescription: "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 							},
@@ -2010,11 +1947,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"redirect_uri": schema.StringAttribute{
-								Optional: false,
-								Computed: true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
+								Computed:            true,
 								Description:         "The redirect URI. This is a read-only parameter.",
 								MarkdownDescription: "The redirect URI. This is a read-only parameter.",
 							},
@@ -2086,12 +2019,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
 												},
 												"value": schema.StringAttribute{
-													Required:            true,
+													Optional:            true,
+													Computed:            true,
+													Default:             stringdefault.StaticString(""),
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
-													Validators: []validator.String{
-														stringvalidator.LengthAtLeast(1),
-													},
 												},
 											},
 											Required:            true,
@@ -2162,8 +2094,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"track_user_sessions_for_logout": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO.",
-								MarkdownDescription: "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.",
+								MarkdownDescription: "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.",
 							},
 							"user_info_endpoint": schema.StringAttribute{
 								Optional:            true,
@@ -2195,6 +2129,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"sign_authn_requests": schema.BoolAttribute{
 						Optional:            true,
+						Computed:            true,
+						Default:             booldefault.StaticBool(false),
 						Description:         "Determines whether SAML authentication requests should be signed.",
 						MarkdownDescription: "Determines whether SAML authentication requests should be signed.",
 					},
@@ -2331,7 +2267,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
-									Required:            true,
+									Optional:            true,
 									Description:         "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
 									MarkdownDescription: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
 									Validators: []validator.String{
@@ -2383,11 +2319,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 								"valid_path": schema.StringAttribute{
 									Optional:            true,
+									Computed:            true,
+									Default:             stringdefault.StaticString(""),
 									Description:         "Valid Path (leave blank to allow any path)",
 									MarkdownDescription: "Valid Path (leave blank to allow any path)",
-									Validators: []validator.String{
-										stringvalidator.LengthAtLeast(1),
-									},
 								},
 							},
 						},
@@ -2488,9 +2423,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"issuance_criteria": issuancecriteria.ToSchema(),
 							},
 						},
-						Optional:            true,
+						Required:            true,
 						Description:         "A mapping in a connection that defines how access tokens are created.",
 						MarkdownDescription: "A mapping in a connection that defines how access tokens are created.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"idp_oauth_attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2544,11 +2482,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									},
 								},
 								Optional:            true,
+								Computed:            true,
+								Default:             setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: idpBrowserSsoAttributeContractExtendedAttributesAttrTypes}, nil)),
 								Description:         "A list of additional attributes that are present in the incoming assertion.",
 								MarkdownDescription: "A list of additional attributes that are present in the incoming assertion.",
 							},
 						},
-						Optional:            true,
+						Required:            true,
 						Description:         "A set of user attributes that the IdP sends in the OAuth Assertion Grant.",
 						MarkdownDescription: "A set of user attributes that the IdP sends in the OAuth Assertion Grant.",
 					},
@@ -2621,8 +2561,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"group_support": schema.BoolAttribute{
 						Required:            true,
-						Description:         "Specify support for provisioning of groups.",
-						MarkdownDescription: "Specify support for provisioning of groups.",
+						Description:         "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
+						MarkdownDescription: "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
 					},
 					"groups": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2655,9 +2595,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												Computed:            true,
 												Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 												MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
-												PlanModifiers: []planmodifier.Set{
-													setplanmodifier.UseStateForUnknown(),
-												},
 											},
 											"extended_attributes": schema.SetNestedAttribute{
 												NestedObject: schema.NestedAttributeObject{
@@ -2680,13 +2617,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													},
 												},
 												Optional:            true,
-												Description:         "A list of additional attributes that are added to the SCIM r.",
-												MarkdownDescription: "A list of additional attributes that are added to the SCIM r.",
+												Description:         "A list of additional attributes that are added to the SCIM response.",
+												MarkdownDescription: "A list of additional attributes that are added to the SCIM response.",
 											},
 										},
 										Required:            true,
-										Description:         "A set of user attributes that the IdP sends in the SCIM r.",
-										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM r.",
+										Description:         "A set of user attributes that the IdP sends in the SCIM response.",
+										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM response.",
 									},
 									"attribute_fulfillment": schema.MapNestedAttribute{
 										NestedObject: schema.NestedAttributeObject{
@@ -2749,12 +2686,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
 												},
 												"value": schema.StringAttribute{
-													Required:            true,
+													Optional:            true,
+													Computed:            true,
+													Default:             stringdefault.StaticString(""),
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
-													Validators: []validator.String{
-														stringvalidator.LengthAtLeast(1),
-													},
 												},
 											},
 										},
@@ -2847,12 +2783,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
 												},
 												"value": schema.StringAttribute{
-													Required:            true,
+													Optional:            true,
+													Computed:            true,
+													Default:             stringdefault.StaticString(""),
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
-													Validators: []validator.String{
-														stringvalidator.LengthAtLeast(1),
-													},
 												},
 											},
 										},
@@ -2867,8 +2802,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 						},
 						Optional:            true,
-						Description:         "Group creation and read configuration.",
-						MarkdownDescription: "Group creation and read configuration.",
+						Description:         "Group creation and read configuration. Requires `group_support` to be `true`.",
+						MarkdownDescription: "Group creation and read configuration. Requires `group_support` to be `true`.",
 					},
 					"user_repository": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2919,12 +2854,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 									"unique_group_id_filter": schema.StringAttribute{
-										Required:            true,
-										Description:         "The expression that results in a unique group identifier, when combined with the Base DN.",
-										MarkdownDescription: "The expression that results in a unique group identifier, when combined with the Base DN.",
-										Validators: []validator.String{
-											stringvalidator.LengthAtLeast(1),
-										},
+										Optional:            true,
+										Computed:            true,
+										Default:             stringdefault.StaticString(""),
+										Description:         "The expression that results in a unique group identifier, when combined with the Base DN. Only required when configuring the `inbound_provisioning.groups` attribute. Otherwise should not be set.",
+										MarkdownDescription: "The expression that results in a unique group identifier, when combined with the Base DN. Only required when configuring the `inbound_provisioning.groups` attribute. Otherwise should not be set.",
 									},
 								},
 							},
@@ -2960,9 +2894,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												Computed:            true,
 												Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 												MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
-												PlanModifiers: []planmodifier.Set{
-													setplanmodifier.UseStateForUnknown(),
-												},
 											},
 											"extended_attributes": schema.SetNestedAttribute{
 												NestedObject: schema.NestedAttributeObject{
@@ -2984,14 +2915,19 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 												},
-												Optional:            true,
-												Description:         "A list of additional attributes that are added to the SCIM r.",
-												MarkdownDescription: "A list of additional attributes that are added to the SCIM r.",
+												Optional: true,
+												Computed: true,
+												Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+													"name":   types.StringType,
+													"masked": types.BoolType,
+												}}, nil)),
+												Description:         "A list of additional attributes that are added to the SCIM response.",
+												MarkdownDescription: "A list of additional attributes that are added to the SCIM response.",
 											},
 										},
 										Required:            true,
-										Description:         "A set of user attributes that the IdP sends in the SCIM r.",
-										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM r.",
+										Description:         "A set of user attributes that the IdP sends in the SCIM response.",
+										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM response.",
 									},
 									"attribute_fulfillment": schema.MapNestedAttribute{
 										NestedObject: schema.NestedAttributeObject{
@@ -3054,12 +2990,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
 												},
 												"value": schema.StringAttribute{
-													Required:            true,
+													Optional:            true,
+													Computed:            true,
+													Default:             stringdefault.StaticString(""),
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
-													Validators: []validator.String{
-														stringvalidator.LengthAtLeast(1),
-													},
 												},
 											},
 										},
@@ -3152,12 +3087,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
 												},
 												"value": schema.StringAttribute{
-													Required:            true,
+													Optional:            true,
+													Computed:            true,
+													Default:             stringdefault.StaticString(""),
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
-													Validators: []validator.String{
-														stringvalidator.LengthAtLeast(1),
-													},
 												},
 											},
 										},
@@ -3238,10 +3172,22 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"client_secret": schema.StringAttribute{
 						Optional:            true,
-						Description:         "The OpenID Connect client secret.",
-						MarkdownDescription: "The OpenID Connect client secret.",
+						Sensitive:           true,
+						Description:         "The OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.",
+						MarkdownDescription: "The OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"encrypted_secret": schema.StringAttribute{
+						Description: "Encrypted OpenID Connect client secret. Only one of `client_secret` or `encrypted_secret` can be set.",
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("client_secret")),
 						},
 					},
 				},
@@ -3252,6 +3198,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
+				Computed:            true,
 				Description:         "List of alternate entity IDs that identifies the local server to this partner.",
 				MarkdownDescription: "List of alternate entity IDs that identifies the local server to this partner.",
 			},
@@ -3490,17 +3437,42 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		}
 	}
 
+	// Ensure that group attributes have appropriate values
+	if internaltypes.IsDefined(plan.InboundProvisioning) {
+		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
+		groupSupportEnabled := inboundProvisioningAttrs["group_support"].(types.Bool).ValueBool()
+		groupsConfigured := internaltypes.IsDefined(inboundProvisioningAttrs["groups"])
+		if !groupSupportEnabled && groupsConfigured {
+			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
+				providererror.InvalidAttributeConfiguration, "`inbound_provisioning.group_support` must be set to `true` to configure inbound provisioning groups.")
+		}
+		if groupSupportEnabled && !groupsConfigured {
+			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
+				providererror.InvalidAttributeConfiguration, "If `inbound_provisioning.group_support` is set to `true`, then `inbound_provisioning.groups` must be configured.")
+		}
+
+		userRepositoryLdap := inboundProvisioningAttrs["user_repository"].(types.Object).Attributes()["ldap"]
+		if internaltypes.IsDefined(userRepositoryLdap) && len(userRepositoryLdap.(types.Object).Attributes()["unique_group_id_filter"].(types.String).ValueString()) == 0 && groupSupportEnabled {
+			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning.user_repository.ldap"),
+				providererror.InvalidAttributeConfiguration, "`inbound_provisioning.user_repository.ldap.unique_group_id_filter` must be set if `inbound_provisioning.group_support` is set to `true`.")
+		}
+	}
+
 	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+
 	planModified := false
 	var diags diag.Diagnostics
-	if pfVersionAtLeast1210 && internaltypes.IsDefined(plan.IdpBrowserSso) {
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
 		browserSsoAttributes := plan.IdpBrowserSso.Attributes()
 		oidcProviderSettings := browserSsoAttributes["oidc_provider_settings"].(types.Object)
 		if internaltypes.IsDefined(oidcProviderSettings) {
 			oidcProviderSettingsAttributes := oidcProviderSettings.Attributes()
 			jwtSecuredAuthorizationResponseModeType := oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"]
 			if jwtSecuredAuthorizationResponseModeType.IsUnknown() {
-				oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringValue("DISABLED")
+				if pfVersionAtLeast1210 {
+					oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringValue("DISABLED")
+				} else {
+					oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringNull()
+				}
 				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
 				resp.Diagnostics.Append(diags...)
 				browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
@@ -3525,6 +3497,49 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			resp.Diagnostics.Append(diags...)
 		} else {
 			plan.AdditionalAllowedEntitiesConfiguration = types.ObjectNull(additionalAllowedEntitiesConfigurationAttrTypes)
+		}
+		planModified = true
+	}
+
+	// Set default for decryption_policy for non-OIDC connections
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
+		browserSsoAttrs := plan.IdpBrowserSso.Attributes()
+		if browserSsoAttrs["decryption_policy"].IsUnknown() {
+			if browserSsoAttrs["protocol"].(types.String).ValueString() != "OIDC" {
+				browserSsoAttrs["decryption_policy"], diags = types.ObjectValue(idpBrowserSsoDecryptionPolicyAttrTypes, map[string]attr.Value{
+					"assertion_encrypted":           types.BoolValue(false),
+					"attributes_encrypted":          types.BoolValue(false),
+					"slo_encrypt_subject_name_id":   types.BoolValue(false),
+					"slo_subject_name_id_encrypted": types.BoolValue(false),
+					"subject_name_id_encrypted":     types.BoolValue(false),
+				})
+				resp.Diagnostics.Append(diags...)
+			} else {
+				browserSsoAttrs["decryption_policy"] = types.ObjectNull(idpBrowserSsoDecryptionPolicyAttrTypes)
+			}
+			plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttrs)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		}
+	}
+
+	// Similar logic for virtual_entity_ids for non-OIDC connections
+	if plan.VirtualEntityIds.IsUnknown() {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) && plan.IdpBrowserSso.Attributes()["protocol"].(types.String).ValueString() == "OIDC" {
+			plan.VirtualEntityIds = types.SetNull(types.StringType)
+		} else {
+			plan.VirtualEntityIds, diags = types.SetValue(types.StringType, nil)
+			resp.Diagnostics.Append(diags...)
+		}
+		planModified = true
+	}
+
+	// Set default for error_page_msg_id
+	if plan.ErrorPageMsgId.IsUnknown() {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) {
+			plan.ErrorPageMsgId = types.StringValue("errorDetail.spSsoFailure")
+		} else {
+			plan.ErrorPageMsgId = types.StringNull()
 		}
 		planModified = true
 	}
@@ -3560,14 +3575,111 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		planModified = true
 	}
 
+	// If the attribute_contract changes, mark the jit_provisioning.user_attributes.attribute_contract as unknown
+	var planAttributeContract, stateAttributeContract attr.Value
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
+		planBrowserSsoAttributes := plan.IdpBrowserSso.Attributes()
+		planAttributeContract = planBrowserSsoAttributes["attribute_contract"]
+		if internaltypes.IsDefined(state.IdpBrowserSso) {
+			stateAttributeContract = state.IdpBrowserSso.Attributes()["attribute_contract"]
+		}
+
+		if (planAttributeContract != nil && !planAttributeContract.Equal(stateAttributeContract)) || (stateAttributeContract != nil && !stateAttributeContract.Equal(planAttributeContract)) {
+			planJitProvisioning := planBrowserSsoAttributes["jit_provisioning"]
+			if internaltypes.IsDefined(planJitProvisioning) {
+				userAttrs := planJitProvisioning.(types.Object).Attributes()["user_attributes"]
+				if internaltypes.IsDefined(userAttrs) {
+					userAttrsAttrs := userAttrs.(types.Object).Attributes()
+					userAttrsAttrs["attribute_contract"] = types.SetUnknown(idpBrowserSsoJitProvisioningUserAttributesAttributeContractElementType)
+					userAttrsUpdated, diags := types.ObjectValue(userAttrs.(types.Object).AttributeTypes(ctx), userAttrsAttrs)
+					resp.Diagnostics.Append(diags...)
+
+					jitProvisioningAttrs := planJitProvisioning.(types.Object).Attributes()
+					jitProvisioningAttrs["user_attributes"] = userAttrsUpdated
+					jitProvisioningUpdated, diags := types.ObjectValue(planJitProvisioning.(types.Object).AttributeTypes(ctx), jitProvisioningAttrs)
+					resp.Diagnostics.Append(diags...)
+
+					planBrowserSsoAttributes["jit_provisioning"] = jitProvisioningUpdated
+					plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), planBrowserSsoAttributes)
+					resp.Diagnostics.Append(diags...)
+
+					planModified = true
+				}
+			}
+		}
+	}
+
+	// Handle the encrypted OIDC client secret
+	if internaltypes.IsDefined(plan.OidcClientCredentials) {
+		planOidcClientCredentials := plan.OidcClientCredentials.Attributes()
+		stateOidcClientCredentials := state.OidcClientCredentials.Attributes()
+		if !internaltypes.IsDefined(planOidcClientCredentials["client_secret"]) && planOidcClientCredentials["encrypted_secret"].IsUnknown() {
+			planOidcClientCredentials["encrypted_secret"] = types.StringNull()
+			plan.OidcClientCredentials, diags = types.ObjectValue(plan.OidcClientCredentials.AttributeTypes(ctx), planOidcClientCredentials)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		} else if !planOidcClientCredentials["client_secret"].Equal(stateOidcClientCredentials["client_secret"]) {
+			planOidcClientCredentials["encrypted_secret"] = types.StringUnknown()
+			plan.OidcClientCredentials, diags = types.ObjectValue(plan.OidcClientCredentials.AttributeTypes(ctx), planOidcClientCredentials)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		}
+	}
+
+	// Handle the computed attributes within oidc_provider_settings
+	if internaltypes.IsDefined(plan.IdpBrowserSso) && internaltypes.IsDefined(state.IdpBrowserSso) {
+		planSsoAttrs := plan.IdpBrowserSso.Attributes()
+		stateSsoAttrs := state.IdpBrowserSso.Attributes()
+		if internaltypes.IsDefined(planSsoAttrs["oidc_provider_settings"]) && internaltypes.IsDefined(stateSsoAttrs["oidc_provider_settings"]) {
+			planOidcProviderSettings := planSsoAttrs["oidc_provider_settings"].(types.Object)
+			stateOidcProviderSettings := stateSsoAttrs["oidc_provider_settings"].(types.Object)
+			planOidcProviderSettingsAttrs := planOidcProviderSettings.Attributes()
+			stateOidcProviderSettingsAttrs := stateOidcProviderSettings.Attributes()
+
+			// Check if all the non-computed attributes are unchanged
+			if planOidcProviderSettingsAttrs["authentication_scheme"].Equal(stateOidcProviderSettingsAttrs["authentication_scheme"]) &&
+				planOidcProviderSettingsAttrs["authentication_signing_algorithm"].Equal(stateOidcProviderSettingsAttrs["authentication_signing_algorithm"]) &&
+				planOidcProviderSettingsAttrs["authorization_endpoint"].Equal(stateOidcProviderSettingsAttrs["authorization_endpoint"]) &&
+				planOidcProviderSettingsAttrs["enable_pkce"].Equal(stateOidcProviderSettingsAttrs["enable_pkce"]) &&
+				planOidcProviderSettingsAttrs["jwks_url"].Equal(stateOidcProviderSettingsAttrs["jwks_url"]) &&
+				planOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"].Equal(stateOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"]) &&
+				planOidcProviderSettingsAttrs["login_type"].Equal(stateOidcProviderSettingsAttrs["login_type"]) &&
+				planOidcProviderSettingsAttrs["logout_endpoint"].Equal(stateOidcProviderSettingsAttrs["logout_endpoint"]) &&
+				planOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"].Equal(stateOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"]) &&
+				planOidcProviderSettingsAttrs["request_parameters"].Equal(stateOidcProviderSettingsAttrs["request_parameters"]) &&
+				planOidcProviderSettingsAttrs["request_signing_algorithm"].Equal(stateOidcProviderSettingsAttrs["request_signing_algorithm"]) &&
+				planOidcProviderSettingsAttrs["scopes"].Equal(stateOidcProviderSettingsAttrs["scopes"]) &&
+				planOidcProviderSettingsAttrs["token_endpoint"].Equal(stateOidcProviderSettingsAttrs["token_endpoint"]) &&
+				planOidcProviderSettingsAttrs["track_user_sessions_for_logout"].Equal(stateOidcProviderSettingsAttrs["track_user_sessions_for_logout"]) &&
+				planOidcProviderSettingsAttrs["user_info_endpoint"].Equal(stateOidcProviderSettingsAttrs["user_info_endpoint"]) {
+				// Keep the state values for computed attributes
+				planOidcProviderSettingsAttrs["back_channel_logout_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["back_channel_logout_uri"].(types.String).ValueStringPointer())
+				planOidcProviderSettingsAttrs["front_channel_logout_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["front_channel_logout_uri"].(types.String).ValueStringPointer())
+				planOidcProviderSettingsAttrs["redirect_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["redirect_uri"].(types.String).ValueStringPointer())
+				planOidcProviderSettingsAttrs["post_logout_redirect_uri"] = types.StringPointerValue(stateOidcProviderSettingsAttrs["post_logout_redirect_uri"].(types.String).ValueStringPointer())
+
+				planOidcProviderSettings, diags := types.ObjectValue(planOidcProviderSettings.AttributeTypes(ctx), planOidcProviderSettingsAttrs)
+				resp.Diagnostics.Append(diags...)
+				planSsoAttrs["oidc_provider_settings"] = planOidcProviderSettings
+				plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), planSsoAttrs)
+				resp.Diagnostics.Append(diags...)
+				planModified = true
+			}
+		}
+	}
+
 	if planModified {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
-func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel) error {
+func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel) diag.Diagnostics {
+	var err error
+	var respDiags diag.Diagnostics
 	addRequest.ErrorPageMsgId = plan.ErrorPageMsgId.ValueStringPointer()
-	addRequest.Id = plan.ConnectionId.ValueStringPointer()
+	if !plan.ConnectionId.IsUnknown() {
+		addRequest.Id = plan.ConnectionId.ValueStringPointer()
+	}
 	addRequest.Type = utils.Pointer("IDP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
@@ -3585,27 +3697,32 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		addRequest.VirtualEntityIds = virtualIdentitySlice
 	}
 
-	if internaltypes.IsDefined(plan.OidcClientCredentials) {
-		addRequest.OidcClientCredentials = &client.OIDCClientCredentials{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OidcClientCredentials, true)), addRequest.OidcClientCredentials)
-		if err != nil {
-			return err
-		}
+	// oidc_client_credentials
+	if !plan.OidcClientCredentials.IsNull() {
+		oidcClientCredentialsValue := &client.OIDCClientCredentials{}
+		oidcClientCredentialsAttrs := plan.OidcClientCredentials.Attributes()
+		oidcClientCredentialsValue.ClientId = oidcClientCredentialsAttrs["client_id"].(types.String).ValueString()
+		oidcClientCredentialsValue.ClientSecret = oidcClientCredentialsAttrs["client_secret"].(types.String).ValueStringPointer()
+		addRequest.OidcClientCredentials = oidcClientCredentialsValue
 	}
 
-	if internaltypes.IsDefined(plan.MetadataReloadSettings) {
-		addRequest.MetadataReloadSettings = &client.ConnectionMetadataUrl{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.MetadataReloadSettings, false)), addRequest.MetadataReloadSettings)
-		if err != nil {
-			return err
-		}
+	// metadata_reload_settings
+	if !plan.MetadataReloadSettings.IsNull() {
+		metadataReloadSettingsValue := &client.ConnectionMetadataUrl{}
+		metadataReloadSettingsAttrs := plan.MetadataReloadSettings.Attributes()
+		metadataReloadSettingsValue.EnableAutoMetadataUpdate = metadataReloadSettingsAttrs["enable_auto_metadata_update"].(types.Bool).ValueBoolPointer()
+		metadataReloadSettingsMetadataUrlRefValue := client.ResourceLink{}
+		metadataReloadSettingsMetadataUrlRefAttrs := metadataReloadSettingsAttrs["metadata_url_ref"].(types.Object).Attributes()
+		metadataReloadSettingsMetadataUrlRefValue.Id = metadataReloadSettingsMetadataUrlRefAttrs["id"].(types.String).ValueString()
+		metadataReloadSettingsValue.MetadataUrlRef = metadataReloadSettingsMetadataUrlRefValue
+		addRequest.MetadataReloadSettings = metadataReloadSettingsValue
 	}
 
 	if internaltypes.IsDefined(plan.Credentials) {
 		addRequest.Credentials = &client.ConnectionCredentials{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), addRequest.Credentials)
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for credentials", err.Error())
 		}
 		if addRequest.Credentials.InboundBackChannelAuth != nil {
 			addRequest.Credentials.InboundBackChannelAuth.Type = "INBOUND"
@@ -3615,178 +3732,738 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ContactInfo) {
-		addRequest.ContactInfo = &client.ContactInfo{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, false)), addRequest.ContactInfo)
-		if err != nil {
-			return err
-		}
+	// contact_info
+	if !plan.ContactInfo.IsNull() {
+		contactInfoValue := &client.ContactInfo{}
+		contactInfoAttrs := plan.ContactInfo.Attributes()
+		contactInfoValue.Company = contactInfoAttrs["company"].(types.String).ValueStringPointer()
+		contactInfoValue.Email = contactInfoAttrs["email"].(types.String).ValueStringPointer()
+		contactInfoValue.FirstName = contactInfoAttrs["first_name"].(types.String).ValueStringPointer()
+		contactInfoValue.LastName = contactInfoAttrs["last_name"].(types.String).ValueStringPointer()
+		contactInfoValue.Phone = contactInfoAttrs["phone"].(types.String).ValueStringPointer()
+		addRequest.ContactInfo = contactInfoValue
 	}
 
+	// additional_allowed_entities_configuration
 	if internaltypes.IsDefined(plan.AdditionalAllowedEntitiesConfiguration) {
-		addRequest.AdditionalAllowedEntitiesConfiguration = &client.AdditionalAllowedEntitiesConfiguration{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdditionalAllowedEntitiesConfiguration, false)), addRequest.AdditionalAllowedEntitiesConfiguration)
-		if err != nil {
-			return err
+		additionalAllowedEntitiesConfigurationValue := &client.AdditionalAllowedEntitiesConfiguration{}
+		additionalAllowedEntitiesConfigurationAttrs := plan.AdditionalAllowedEntitiesConfiguration.Attributes()
+		additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = []client.Entity{}
+		for _, additionalAllowedEntitiesElement := range additionalAllowedEntitiesConfigurationAttrs["additional_allowed_entities"].(types.Set).Elements() {
+			additionalAllowedEntitiesValue := client.Entity{}
+			additionalAllowedEntitiesAttrs := additionalAllowedEntitiesElement.(types.Object).Attributes()
+			additionalAllowedEntitiesValue.EntityDescription = additionalAllowedEntitiesAttrs["entity_description"].(types.String).ValueStringPointer()
+			additionalAllowedEntitiesValue.EntityId = additionalAllowedEntitiesAttrs["entity_id"].(types.String).ValueStringPointer()
+			additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = append(additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities, additionalAllowedEntitiesValue)
 		}
+		additionalAllowedEntitiesConfigurationValue.AllowAdditionalEntities = additionalAllowedEntitiesConfigurationAttrs["allow_additional_entities"].(types.Bool).ValueBoolPointer()
+		additionalAllowedEntitiesConfigurationValue.AllowAllEntities = additionalAllowedEntitiesConfigurationAttrs["allow_all_entities"].(types.Bool).ValueBoolPointer()
+		addRequest.AdditionalAllowedEntitiesConfiguration = additionalAllowedEntitiesConfigurationValue
 	}
 
-	if internaltypes.IsDefined(plan.ExtendedProperties) {
+	// extended_properties
+	if !plan.ExtendedProperties.IsNull() {
 		addRequest.ExtendedProperties = &map[string]client.ParameterValues{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedProperties, true)), &addRequest.ExtendedProperties)
-		if err != nil {
-			return err
+		for key, extendedPropertiesElement := range plan.ExtendedProperties.Elements() {
+			extendedPropertiesValue := client.ParameterValues{}
+			extendedPropertiesAttrs := extendedPropertiesElement.(types.Object).Attributes()
+			if !extendedPropertiesAttrs["values"].IsNull() {
+				extendedPropertiesValue.Values = []string{}
+				for _, valuesElement := range extendedPropertiesAttrs["values"].(types.Set).Elements() {
+					extendedPropertiesValue.Values = append(extendedPropertiesValue.Values, valuesElement.(types.String).ValueString())
+				}
+			}
+			(*addRequest.ExtendedProperties)[key] = extendedPropertiesValue
 		}
 	}
 
-	if internaltypes.IsDefined(plan.IdpBrowserSso) {
-		addRequest.IdpBrowserSso = &client.IdpBrowserSso{}
-
-		userRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"]
-		if userRepository != nil && internaltypes.IsDefined(userRepository) {
-			jdbcDataStoreRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"].(types.Object).Attributes()["jdbc"]
-			ldapDataStoreRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"].(types.Object).Attributes()["ldap"]
-			if jdbcDataStoreRepository != nil {
-				addRequest.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository = &client.JdbcDataStoreRepository{}
-				err := json.Unmarshal([]byte(internaljson.FromValue(jdbcDataStoreRepository, false)), addRequest.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository)
+	// idp_browser_sso
+	if !plan.IdpBrowserSso.IsNull() {
+		idpBrowserSsoValue := &client.IdpBrowserSso{}
+		idpBrowserSsoAttrs := plan.IdpBrowserSso.Attributes()
+		idpBrowserSsoValue.AdapterMappings = []client.SpAdapterMapping{}
+		for _, adapterMappingsElement := range idpBrowserSsoAttrs["adapter_mappings"].(types.List).Elements() {
+			adapterMappingsValue := client.SpAdapterMapping{}
+			adapterMappingsAttrs := adapterMappingsElement.(types.Object).Attributes()
+			if !adapterMappingsAttrs["adapter_override_settings"].IsNull() {
+				adapterMappingsAdapterOverrideSettingsValue := &client.SpAdapter{}
+				adapterMappingsAdapterOverrideSettingsAttrs := adapterMappingsAttrs["adapter_override_settings"].(types.Object).Attributes()
+				if !adapterMappingsAdapterOverrideSettingsAttrs["attribute_contract"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue := &client.SpAdapterAttributeContract{}
+					adapterMappingsAdapterOverrideSettingsAttributeContractAttrs := adapterMappingsAdapterOverrideSettingsAttrs["attribute_contract"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes = []client.SpAdapterAttribute{}
+					for _, coreAttributesElement := range adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+						coreAttributesValue := client.SpAdapterAttribute{}
+						coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+						coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+						adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes = append(adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes, coreAttributesValue)
+					}
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes = []client.SpAdapterAttribute{}
+					for _, extendedAttributesElement := range adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+						extendedAttributesValue := client.SpAdapterAttribute{}
+						extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+						extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+						adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes = append(adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+					}
+					adapterMappingsAdapterOverrideSettingsValue.AttributeContract = adapterMappingsAdapterOverrideSettingsAttributeContractValue
+				}
+				adapterMappingsAdapterOverrideSettingsConfigurationValue, err := pluginconfiguration.ClientStruct(adapterMappingsAdapterOverrideSettingsAttrs["configuration"].(types.Object))
 				if err != nil {
-					return err
+					respDiags.AddError("Error building client struct for configuration", err.Error())
+				} else {
+					adapterMappingsAdapterOverrideSettingsValue.Configuration = *adapterMappingsAdapterOverrideSettingsConfigurationValue
 				}
-			} else if ldapDataStoreRepository != nil {
-				addRequest.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository = &client.LdapDataStoreRepository{}
-				err := json.Unmarshal([]byte(internaljson.FromValue(ldapDataStoreRepository, false)), addRequest.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository)
-				if err != nil {
-					return err
+				adapterMappingsAdapterOverrideSettingsValue.Id = adapterMappingsAdapterOverrideSettingsAttrs["id"].(types.String).ValueString()
+				adapterMappingsAdapterOverrideSettingsValue.Name = adapterMappingsAdapterOverrideSettingsAttrs["name"].(types.String).ValueString()
+				if !adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsParentRefValue := &client.ResourceLink{}
+					adapterMappingsAdapterOverrideSettingsParentRefAttrs := adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsParentRefValue.Id = adapterMappingsAdapterOverrideSettingsParentRefAttrs["id"].(types.String).ValueString()
+					adapterMappingsAdapterOverrideSettingsValue.ParentRef = adapterMappingsAdapterOverrideSettingsParentRefValue
 				}
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue := client.ResourceLink{}
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrs := adapterMappingsAdapterOverrideSettingsAttrs["plugin_descriptor_ref"].(types.Object).Attributes()
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue.Id = adapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrs["id"].(types.String).ValueString()
+				adapterMappingsAdapterOverrideSettingsValue.PluginDescriptorRef = adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue
+				if !adapterMappingsAdapterOverrideSettingsAttrs["target_application_info"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue := &client.SpAdapterTargetApplicationInfo{}
+					adapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrs := adapterMappingsAdapterOverrideSettingsAttrs["target_application_info"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue.ApplicationIconUrl = adapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrs["application_icon_url"].(types.String).ValueStringPointer()
+					adapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue.ApplicationName = adapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrs["application_name"].(types.String).ValueStringPointer()
+					adapterMappingsAdapterOverrideSettingsValue.TargetApplicationInfo = adapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue
+				}
+				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
 			}
-		}
-
-		ssoOAuthMapping := plan.IdpBrowserSso.Attributes()["sso_oauth_mapping"]
-		if internaltypes.IsDefined(ssoOAuthMapping) {
-			addRequest.IdpBrowserSso.SsoOAuthMapping = &client.SsoOAuthMapping{}
-
-			attributeSources := ssoOAuthMapping.(types.Object).Attributes()["attribute_sources"]
-			if internaltypes.IsDefined(attributeSources) {
-				attributeSourceClientStruct, attributeSourceClientStructErr := attributesources.ClientStruct(attributeSources.(types.Set))
-				if attributeSourceClientStructErr != nil {
-					return attributeSourceClientStructErr
-				}
-
-				addRequest.IdpBrowserSso.SsoOAuthMapping.AttributeSources = attributeSourceClientStruct
-			}
-
-			attributeContractFulfillment := ssoOAuthMapping.(types.Object).Attributes()["attribute_contract_fulfillment"]
-			if internaltypes.IsDefined(attributeContractFulfillment) {
-				attributeContractFulfillmentClientStruct, attributeContractFulfillmentClientStructErr := attributecontractfulfillment.ClientStruct(attributeContractFulfillment.(types.Map))
-				if attributeContractFulfillmentClientStructErr != nil {
-					return attributeContractFulfillmentClientStructErr
-				}
-				addRequest.IdpBrowserSso.SsoOAuthMapping.AttributeContractFulfillment = attributeContractFulfillmentClientStruct
-			}
-
-			issuanceCriteria := ssoOAuthMapping.(types.Object).Attributes()["issuance_criteria"]
-			if internaltypes.IsDefined(issuanceCriteria) {
-				issuanceCriteriaClientStruct, issuanceCriteriaClientStructErr := issuancecriteria.ClientStruct(issuanceCriteria.(types.Object))
-				if issuanceCriteriaClientStructErr != nil {
-					return issuanceCriteriaClientStructErr
-				}
-				addRequest.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria = issuanceCriteriaClientStruct
-			}
-		}
-
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.IdpBrowserSso, true)), addRequest.IdpBrowserSso)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.AttributeQuery) {
-		addRequest.AttributeQuery = &client.IdpAttributeQuery{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery, false)), addRequest.AttributeQuery)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.IdpOAuthGrantAttributeMapping) {
-		addRequest.IdpOAuthGrantAttributeMapping = &client.IdpOAuthGrantAttributeMapping{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.IdpOAuthGrantAttributeMapping, true)), addRequest.IdpOAuthGrantAttributeMapping)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.WsTrust) {
-		addRequest.WsTrust = &client.IdpWsTrust{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, true)), addRequest.WsTrust)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.InboundProvisioning) {
-		inboundProvisioningAttibutes := plan.InboundProvisioning.Attributes()
-		addRequest.InboundProvisioning = &client.IdpInboundProvisioning{}
-
-		// group support
-		addRequest.InboundProvisioning.GroupSupport = inboundProvisioningAttibutes["group_support"].(types.Bool).ValueBool()
-
-		// user repository
-		userRepository := inboundProvisioningAttibutes["user_repository"]
-		if userRepository != nil {
-			identityStoreDataStoreRepository := userRepository.(types.Object).Attributes()["identity_store"]
-			ldapDataStoreRepository := userRepository.(types.Object).Attributes()["ldap"]
-			if identityStoreDataStoreRepository != nil {
-				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository = &client.IdentityStoreInboundProvisioningUserRepository{}
-				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.Type = "IDENTITY_STORE"
-				err := json.Unmarshal([]byte(internaljson.FromValue(identityStoreDataStoreRepository, true)), addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository)
-				if err != nil {
-					return err
-				}
-			} else if ldapDataStoreRepository != nil {
-				addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository = &client.LdapInboundProvisioningUserRepository{}
-				addRequest.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.Type = "LDAP"
-				err := json.Unmarshal([]byte(internaljson.FromValue(ldapDataStoreRepository, true)), addRequest.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		// custom schema
-		customSchema := inboundProvisioningAttibutes["custom_schema"]
-		addRequest.InboundProvisioning.CustomSchema = client.Schema{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(customSchema, true)), &addRequest.InboundProvisioning.CustomSchema)
-		if err != nil {
-			return err
-		}
-
-		// users
-		if internaltypes.IsDefined(inboundProvisioningAttibutes["users"]) {
-			addRequest.InboundProvisioning.Users = client.Users{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(inboundProvisioningAttibutes["users"], true)), &addRequest.InboundProvisioning.Users)
+			adapterMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
 			if err != nil {
-				return err
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
 			}
-		}
-
-		// groups
-		if internaltypes.IsDefined(inboundProvisioningAttibutes["groups"]) {
-			addRequest.InboundProvisioning.Groups = &client.Groups{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(inboundProvisioningAttibutes["groups"], true)), &addRequest.InboundProvisioning.Groups)
+			adapterMappingsValue.AttributeSources, err = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
 			if err != nil {
-				return err
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			adapterMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(adapterMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			adapterMappingsValue.RestrictVirtualEntityIds = adapterMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
+			if !adapterMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				adapterMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range adapterMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					adapterMappingsValue.RestrictedVirtualEntityIds = append(adapterMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			if !adapterMappingsAttrs["sp_adapter_ref"].IsNull() {
+				adapterMappingsSpAdapterRefValue := &client.ResourceLink{}
+				adapterMappingsSpAdapterRefAttrs := adapterMappingsAttrs["sp_adapter_ref"].(types.Object).Attributes()
+				adapterMappingsSpAdapterRefValue.Id = adapterMappingsSpAdapterRefAttrs["id"].(types.String).ValueString()
+				adapterMappingsValue.SpAdapterRef = adapterMappingsSpAdapterRefValue
+			}
+			idpBrowserSsoValue.AdapterMappings = append(idpBrowserSsoValue.AdapterMappings, adapterMappingsValue)
+		}
+		idpBrowserSsoValue.AlwaysSignArtifactResponse = idpBrowserSsoAttrs["always_sign_artifact_response"].(types.Bool).ValueBoolPointer()
+		if !idpBrowserSsoAttrs["artifact"].IsNull() {
+			idpBrowserSsoArtifactValue := &client.ArtifactSettings{}
+			idpBrowserSsoArtifactAttrs := idpBrowserSsoAttrs["artifact"].(types.Object).Attributes()
+			idpBrowserSsoArtifactValue.Lifetime = idpBrowserSsoArtifactAttrs["lifetime"].(types.Int64).ValueInt64Pointer()
+			idpBrowserSsoArtifactValue.ResolverLocations = []client.ArtifactResolverLocation{}
+			for _, resolverLocationsElement := range idpBrowserSsoArtifactAttrs["resolver_locations"].(types.Set).Elements() {
+				resolverLocationsValue := client.ArtifactResolverLocation{}
+				resolverLocationsAttrs := resolverLocationsElement.(types.Object).Attributes()
+				resolverLocationsValue.Index = resolverLocationsAttrs["index"].(types.Int64).ValueInt64()
+				resolverLocationsValue.Url = resolverLocationsAttrs["url"].(types.String).ValueString()
+				idpBrowserSsoArtifactValue.ResolverLocations = append(idpBrowserSsoArtifactValue.ResolverLocations, resolverLocationsValue)
+			}
+			idpBrowserSsoArtifactValue.SourceId = idpBrowserSsoArtifactAttrs["source_id"].(types.String).ValueStringPointer()
+			idpBrowserSsoValue.Artifact = idpBrowserSsoArtifactValue
+		}
+		idpBrowserSsoValue.AssertionsSigned = idpBrowserSsoAttrs["assertions_signed"].(types.Bool).ValueBoolPointer()
+		if internaltypes.IsDefined(idpBrowserSsoAttrs["attribute_contract"]) {
+			idpBrowserSsoAttributeContractValue := &client.IdpBrowserSsoAttributeContract{}
+			idpBrowserSsoAttributeContractAttrs := idpBrowserSsoAttrs["attribute_contract"].(types.Object).Attributes()
+			idpBrowserSsoAttributeContractValue.CoreAttributes = []client.IdpBrowserSsoAttribute{}
+			for _, coreAttributesElement := range idpBrowserSsoAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+				coreAttributesValue := client.IdpBrowserSsoAttribute{}
+				coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+				coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+				coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+				idpBrowserSsoAttributeContractValue.CoreAttributes = append(idpBrowserSsoAttributeContractValue.CoreAttributes, coreAttributesValue)
+			}
+			idpBrowserSsoAttributeContractValue.ExtendedAttributes = []client.IdpBrowserSsoAttribute{}
+			for _, extendedAttributesElement := range idpBrowserSsoAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.IdpBrowserSsoAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				idpBrowserSsoAttributeContractValue.ExtendedAttributes = append(idpBrowserSsoAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
+			idpBrowserSsoValue.AttributeContract = idpBrowserSsoAttributeContractValue
+		}
+		idpBrowserSsoValue.AuthenticationPolicyContractMappings = []client.AuthenticationPolicyContractMapping{}
+		for _, authenticationPolicyContractMappingsElement := range idpBrowserSsoAttrs["authentication_policy_contract_mappings"].(types.List).Elements() {
+			authenticationPolicyContractMappingsValue := client.AuthenticationPolicyContractMapping{}
+			authenticationPolicyContractMappingsAttrs := authenticationPolicyContractMappingsElement.(types.Object).Attributes()
+			authenticationPolicyContractMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			authenticationPolicyContractMappingsValue.AttributeSources, err = attributesources.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue := client.ResourceLink{}
+			authenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrs := authenticationPolicyContractMappingsAttrs["authentication_policy_contract_ref"].(types.Object).Attributes()
+			authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue.Id = authenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
+			authenticationPolicyContractMappingsValue.AuthenticationPolicyContractRef = authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue
+			authenticationPolicyContractMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(authenticationPolicyContractMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			authenticationPolicyContractMappingsValue.RestrictVirtualServerIds = authenticationPolicyContractMappingsAttrs["restrict_virtual_server_ids"].(types.Bool).ValueBoolPointer()
+			if !authenticationPolicyContractMappingsAttrs["restricted_virtual_server_ids"].IsNull() {
+				authenticationPolicyContractMappingsValue.RestrictedVirtualServerIds = []string{}
+				for _, restrictedVirtualServerIdsElement := range authenticationPolicyContractMappingsAttrs["restricted_virtual_server_ids"].(types.Set).Elements() {
+					authenticationPolicyContractMappingsValue.RestrictedVirtualServerIds = append(authenticationPolicyContractMappingsValue.RestrictedVirtualServerIds, restrictedVirtualServerIdsElement.(types.String).ValueString())
+				}
+			}
+			idpBrowserSsoValue.AuthenticationPolicyContractMappings = append(idpBrowserSsoValue.AuthenticationPolicyContractMappings, authenticationPolicyContractMappingsValue)
+		}
+		for _, authnContextMappingsElement := range idpBrowserSsoAttrs["authn_context_mappings"].(types.Set).Elements() {
+			authnContextMappingsValue := client.AuthnContextMapping{}
+			authnContextMappingsAttrs := authnContextMappingsElement.(types.Object).Attributes()
+			authnContextMappingsValue.Local = authnContextMappingsAttrs["local"].(types.String).ValueStringPointer()
+			authnContextMappingsValue.Remote = authnContextMappingsAttrs["remote"].(types.String).ValueStringPointer()
+			idpBrowserSsoValue.AuthnContextMappings = append(idpBrowserSsoValue.AuthnContextMappings, authnContextMappingsValue)
+		}
+		if !idpBrowserSsoAttrs["decryption_policy"].IsNull() {
+			idpBrowserSsoDecryptionPolicyValue := &client.DecryptionPolicy{}
+			idpBrowserSsoDecryptionPolicyAttrs := idpBrowserSsoAttrs["decryption_policy"].(types.Object).Attributes()
+			idpBrowserSsoDecryptionPolicyValue.AssertionEncrypted = idpBrowserSsoDecryptionPolicyAttrs["assertion_encrypted"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoDecryptionPolicyValue.AttributesEncrypted = idpBrowserSsoDecryptionPolicyAttrs["attributes_encrypted"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoDecryptionPolicyValue.SloEncryptSubjectNameID = idpBrowserSsoDecryptionPolicyAttrs["slo_encrypt_subject_name_id"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoDecryptionPolicyValue.SloSubjectNameIDEncrypted = idpBrowserSsoDecryptionPolicyAttrs["slo_subject_name_id_encrypted"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoDecryptionPolicyValue.SubjectNameIdEncrypted = idpBrowserSsoDecryptionPolicyAttrs["subject_name_id_encrypted"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoValue.DecryptionPolicy = idpBrowserSsoDecryptionPolicyValue
+		}
+		idpBrowserSsoValue.DefaultTargetUrl = idpBrowserSsoAttrs["default_target_url"].(types.String).ValueStringPointer()
+		if !idpBrowserSsoAttrs["enabled_profiles"].IsNull() {
+			idpBrowserSsoValue.EnabledProfiles = []string{}
+			for _, enabledProfilesElement := range idpBrowserSsoAttrs["enabled_profiles"].(types.Set).Elements() {
+				idpBrowserSsoValue.EnabledProfiles = append(idpBrowserSsoValue.EnabledProfiles, enabledProfilesElement.(types.String).ValueString())
 			}
 		}
-
-		// action on delete
-		if internaltypes.IsDefined(inboundProvisioningAttibutes["action_on_delete"]) {
-			addRequest.InboundProvisioning.ActionOnDelete = inboundProvisioningAttibutes["action_on_delete"].(types.String).ValueStringPointer()
+		idpBrowserSsoValue.IdpIdentityMapping = idpBrowserSsoAttrs["idp_identity_mapping"].(types.String).ValueString()
+		if !idpBrowserSsoAttrs["incoming_bindings"].IsNull() {
+			idpBrowserSsoValue.IncomingBindings = []string{}
+			for _, incomingBindingsElement := range idpBrowserSsoAttrs["incoming_bindings"].(types.Set).Elements() {
+				idpBrowserSsoValue.IncomingBindings = append(idpBrowserSsoValue.IncomingBindings, incomingBindingsElement.(types.String).ValueString())
+			}
 		}
-
+		if !idpBrowserSsoAttrs["jit_provisioning"].IsNull() {
+			idpBrowserSsoJitProvisioningValue := &client.JitProvisioning{}
+			idpBrowserSsoJitProvisioningAttrs := idpBrowserSsoAttrs["jit_provisioning"].(types.Object).Attributes()
+			idpBrowserSsoJitProvisioningValue.ErrorHandling = idpBrowserSsoJitProvisioningAttrs["error_handling"].(types.String).ValueStringPointer()
+			idpBrowserSsoJitProvisioningValue.EventTrigger = idpBrowserSsoJitProvisioningAttrs["event_trigger"].(types.String).ValueStringPointer()
+			idpBrowserSsoJitProvisioningUserAttributesValue := client.JitProvisioningUserAttributes{}
+			idpBrowserSsoJitProvisioningUserAttributesAttrs := idpBrowserSsoJitProvisioningAttrs["user_attributes"].(types.Object).Attributes()
+			idpBrowserSsoJitProvisioningUserAttributesValue.AttributeContract = []client.IdpBrowserSsoAttribute{}
+			for _, attributeContractElement := range idpBrowserSsoJitProvisioningUserAttributesAttrs["attribute_contract"].(types.Set).Elements() {
+				attributeContractValue := client.IdpBrowserSsoAttribute{}
+				attributeContractAttrs := attributeContractElement.(types.Object).Attributes()
+				attributeContractValue.Masked = attributeContractAttrs["masked"].(types.Bool).ValueBoolPointer()
+				attributeContractValue.Name = attributeContractAttrs["name"].(types.String).ValueString()
+				idpBrowserSsoJitProvisioningUserAttributesValue.AttributeContract = append(idpBrowserSsoJitProvisioningUserAttributesValue.AttributeContract, attributeContractValue)
+			}
+			idpBrowserSsoJitProvisioningUserAttributesValue.DoAttributeQuery = idpBrowserSsoJitProvisioningUserAttributesAttrs["do_attribute_query"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoJitProvisioningValue.UserAttributes = idpBrowserSsoJitProvisioningUserAttributesValue
+			idpBrowserSsoJitProvisioningUserRepositoryValue := client.DataStoreRepositoryAggregation{}
+			idpBrowserSsoJitProvisioningUserRepositoryAttrs := idpBrowserSsoJitProvisioningAttrs["user_repository"].(types.Object).Attributes()
+			if !idpBrowserSsoJitProvisioningUserRepositoryAttrs["jdbc"].IsNull() {
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue := &client.JdbcDataStoreRepository{}
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryAttrs := idpBrowserSsoJitProvisioningUserRepositoryAttrs["jdbc"].(types.Object).Attributes()
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefValue := client.ResourceLink{}
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefAttrs := idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryAttrs["data_store_ref"].(types.Object).Attributes()
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefValue.Id = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefAttrs["id"].(types.String).ValueString()
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue.DataStoreRef = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefValue
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue.JitRepositoryAttributeMapping = map[string]client.AttributeFulfillmentValue{}
+				for key, jitRepositoryAttributeMappingElement := range idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryAttrs["jit_repository_attribute_mapping"].(types.Map).Elements() {
+					jitRepositoryAttributeMappingValue := client.AttributeFulfillmentValue{}
+					jitRepositoryAttributeMappingAttrs := jitRepositoryAttributeMappingElement.(types.Object).Attributes()
+					jitRepositoryAttributeMappingSourceValue := client.SourceTypeIdKey{}
+					jitRepositoryAttributeMappingSourceAttrs := jitRepositoryAttributeMappingAttrs["source"].(types.Object).Attributes()
+					jitRepositoryAttributeMappingSourceValue.Id = jitRepositoryAttributeMappingSourceAttrs["id"].(types.String).ValueStringPointer()
+					jitRepositoryAttributeMappingSourceValue.Type = jitRepositoryAttributeMappingSourceAttrs["type"].(types.String).ValueString()
+					jitRepositoryAttributeMappingValue.Source = jitRepositoryAttributeMappingSourceValue
+					jitRepositoryAttributeMappingValue.Value = jitRepositoryAttributeMappingAttrs["value"].(types.String).ValueString()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue.JitRepositoryAttributeMapping[key] = jitRepositoryAttributeMappingValue
+				}
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue := client.SqlMethod{}
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodAttrs := idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryAttrs["sql_method"].(types.Object).Attributes()
+				if !idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodAttrs["stored_procedure"].IsNull() {
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue := &client.StoredProcedure{}
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureAttrs := idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodAttrs["stored_procedure"].(types.Object).Attributes()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue.Schema = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureAttrs["schema"].(types.String).ValueString()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue.StoredProcedure = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureAttrs["stored_procedure"].(types.String).ValueString()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue.StoredProcedure = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue
+				}
+				if !idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodAttrs["table"].IsNull() {
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue := &client.Table{}
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableAttrs := idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodAttrs["table"].(types.Object).Attributes()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue.Schema = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableAttrs["schema"].(types.String).ValueString()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue.TableName = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableAttrs["table_name"].(types.String).ValueString()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue.UniqueIdColumn = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableAttrs["unique_id_column"].(types.String).ValueString()
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue.Table = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue
+				}
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue.SqlMethod = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue.Type = "JDBC"
+				idpBrowserSsoJitProvisioningUserRepositoryValue.JdbcDataStoreRepository = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue
+			}
+			if !idpBrowserSsoJitProvisioningUserRepositoryAttrs["ldap"].IsNull() {
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue := &client.LdapDataStoreRepository{}
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryAttrs := idpBrowserSsoJitProvisioningUserRepositoryAttrs["ldap"].(types.Object).Attributes()
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue.BaseDn = idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryAttrs["base_dn"].(types.String).ValueStringPointer()
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefValue := client.ResourceLink{}
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefAttrs := idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryAttrs["data_store_ref"].(types.Object).Attributes()
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefValue.Id = idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefAttrs["id"].(types.String).ValueString()
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue.DataStoreRef = idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefValue
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue.JitRepositoryAttributeMapping = map[string]client.AttributeFulfillmentValue{}
+				for key, jitRepositoryAttributeMappingElement := range idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryAttrs["jit_repository_attribute_mapping"].(types.Map).Elements() {
+					jitRepositoryAttributeMappingValue := client.AttributeFulfillmentValue{}
+					jitRepositoryAttributeMappingAttrs := jitRepositoryAttributeMappingElement.(types.Object).Attributes()
+					jitRepositoryAttributeMappingSourceValue := client.SourceTypeIdKey{}
+					jitRepositoryAttributeMappingSourceAttrs := jitRepositoryAttributeMappingAttrs["source"].(types.Object).Attributes()
+					jitRepositoryAttributeMappingSourceValue.Id = jitRepositoryAttributeMappingSourceAttrs["id"].(types.String).ValueStringPointer()
+					jitRepositoryAttributeMappingSourceValue.Type = jitRepositoryAttributeMappingSourceAttrs["type"].(types.String).ValueString()
+					jitRepositoryAttributeMappingValue.Source = jitRepositoryAttributeMappingSourceValue
+					jitRepositoryAttributeMappingValue.Value = jitRepositoryAttributeMappingAttrs["value"].(types.String).ValueString()
+					idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue.JitRepositoryAttributeMapping[key] = jitRepositoryAttributeMappingValue
+				}
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue.Type = "LDAP"
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue.UniqueUserIdFilter = idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryAttrs["unique_user_id_filter"].(types.String).ValueString()
+				idpBrowserSsoJitProvisioningUserRepositoryValue.LdapDataStoreRepository = idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue
+			}
+			idpBrowserSsoJitProvisioningValue.UserRepository = idpBrowserSsoJitProvisioningUserRepositoryValue
+			idpBrowserSsoValue.JitProvisioning = idpBrowserSsoJitProvisioningValue
+		}
+		idpBrowserSsoValue.MessageCustomizations = []client.ProtocolMessageCustomization{}
+		for _, messageCustomizationsElement := range idpBrowserSsoAttrs["message_customizations"].(types.Set).Elements() {
+			messageCustomizationsValue := client.ProtocolMessageCustomization{}
+			messageCustomizationsAttrs := messageCustomizationsElement.(types.Object).Attributes()
+			messageCustomizationsValue.ContextName = messageCustomizationsAttrs["context_name"].(types.String).ValueStringPointer()
+			messageCustomizationsValue.MessageExpression = messageCustomizationsAttrs["message_expression"].(types.String).ValueStringPointer()
+			idpBrowserSsoValue.MessageCustomizations = append(idpBrowserSsoValue.MessageCustomizations, messageCustomizationsValue)
+		}
+		if !idpBrowserSsoAttrs["oauth_authentication_policy_contract_ref"].IsNull() {
+			idpBrowserSsoOauthAuthenticationPolicyContractRefValue := &client.ResourceLink{}
+			idpBrowserSsoOauthAuthenticationPolicyContractRefAttrs := idpBrowserSsoAttrs["oauth_authentication_policy_contract_ref"].(types.Object).Attributes()
+			idpBrowserSsoOauthAuthenticationPolicyContractRefValue.Id = idpBrowserSsoOauthAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
+			idpBrowserSsoValue.OauthAuthenticationPolicyContractRef = idpBrowserSsoOauthAuthenticationPolicyContractRefValue
+		}
+		if !idpBrowserSsoAttrs["oidc_provider_settings"].IsNull() {
+			idpBrowserSsoOidcProviderSettingsValue := &client.OIDCProviderSettings{}
+			idpBrowserSsoOidcProviderSettingsAttrs := idpBrowserSsoAttrs["oidc_provider_settings"].(types.Object).Attributes()
+			idpBrowserSsoOidcProviderSettingsValue.AuthenticationScheme = idpBrowserSsoOidcProviderSettingsAttrs["authentication_scheme"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.AuthenticationSigningAlgorithm = idpBrowserSsoOidcProviderSettingsAttrs["authentication_signing_algorithm"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.AuthorizationEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["authorization_endpoint"].(types.String).ValueString()
+			idpBrowserSsoOidcProviderSettingsValue.BackChannelLogoutUri = idpBrowserSsoOidcProviderSettingsAttrs["back_channel_logout_uri"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.EnablePKCE = idpBrowserSsoOidcProviderSettingsAttrs["enable_pkce"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoOidcProviderSettingsValue.FrontChannelLogoutUri = idpBrowserSsoOidcProviderSettingsAttrs["front_channel_logout_uri"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.JwksURL = idpBrowserSsoOidcProviderSettingsAttrs["jwks_url"].(types.String).ValueString()
+			idpBrowserSsoOidcProviderSettingsValue.JwtSecuredAuthorizationResponseModeType = idpBrowserSsoOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.LoginType = idpBrowserSsoOidcProviderSettingsAttrs["login_type"].(types.String).ValueString()
+			idpBrowserSsoOidcProviderSettingsValue.LogoutEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["logout_endpoint"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.PostLogoutRedirectUri = idpBrowserSsoOidcProviderSettingsAttrs["post_logout_redirect_uri"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.PushedAuthorizationRequestEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.RedirectUri = idpBrowserSsoOidcProviderSettingsAttrs["redirect_uri"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.RequestParameters = []client.OIDCRequestParameter{}
+			for _, requestParametersElement := range idpBrowserSsoOidcProviderSettingsAttrs["request_parameters"].(types.Set).Elements() {
+				requestParametersValue := client.OIDCRequestParameter{}
+				requestParametersAttrs := requestParametersElement.(types.Object).Attributes()
+				requestParametersValue.ApplicationEndpointOverride = requestParametersAttrs["application_endpoint_override"].(types.Bool).ValueBool()
+				requestParametersAttributeValueValue := client.AttributeFulfillmentValue{}
+				requestParametersAttributeValueAttrs := requestParametersAttrs["attribute_value"].(types.Object).Attributes()
+				requestParametersAttributeValueSourceValue := client.SourceTypeIdKey{}
+				requestParametersAttributeValueSourceAttrs := requestParametersAttributeValueAttrs["source"].(types.Object).Attributes()
+				requestParametersAttributeValueSourceValue.Id = requestParametersAttributeValueSourceAttrs["id"].(types.String).ValueStringPointer()
+				requestParametersAttributeValueSourceValue.Type = requestParametersAttributeValueSourceAttrs["type"].(types.String).ValueString()
+				requestParametersAttributeValueValue.Source = requestParametersAttributeValueSourceValue
+				requestParametersAttributeValueValue.Value = requestParametersAttributeValueAttrs["value"].(types.String).ValueString()
+				requestParametersValue.AttributeValue = requestParametersAttributeValueValue
+				requestParametersValue.Name = requestParametersAttrs["name"].(types.String).ValueString()
+				requestParametersValue.Value = requestParametersAttrs["value"].(types.String).ValueStringPointer()
+				idpBrowserSsoOidcProviderSettingsValue.RequestParameters = append(idpBrowserSsoOidcProviderSettingsValue.RequestParameters, requestParametersValue)
+			}
+			idpBrowserSsoOidcProviderSettingsValue.RequestSigningAlgorithm = idpBrowserSsoOidcProviderSettingsAttrs["request_signing_algorithm"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.Scopes = idpBrowserSsoOidcProviderSettingsAttrs["scopes"].(types.String).ValueString()
+			idpBrowserSsoOidcProviderSettingsValue.TokenEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["token_endpoint"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.TrackUserSessionsForLogout = idpBrowserSsoOidcProviderSettingsAttrs["track_user_sessions_for_logout"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoOidcProviderSettingsValue.UserInfoEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["user_info_endpoint"].(types.String).ValueStringPointer()
+			idpBrowserSsoValue.OidcProviderSettings = idpBrowserSsoOidcProviderSettingsValue
+		}
+		idpBrowserSsoValue.Protocol = idpBrowserSsoAttrs["protocol"].(types.String).ValueString()
+		idpBrowserSsoValue.SignAuthnRequests = idpBrowserSsoAttrs["sign_authn_requests"].(types.Bool).ValueBoolPointer()
+		idpBrowserSsoValue.SloServiceEndpoints = []client.SloServiceEndpoint{}
+		for _, sloServiceEndpointsElement := range idpBrowserSsoAttrs["slo_service_endpoints"].(types.Set).Elements() {
+			sloServiceEndpointsValue := client.SloServiceEndpoint{}
+			sloServiceEndpointsAttrs := sloServiceEndpointsElement.(types.Object).Attributes()
+			sloServiceEndpointsValue.Binding = sloServiceEndpointsAttrs["binding"].(types.String).ValueStringPointer()
+			sloServiceEndpointsValue.ResponseUrl = sloServiceEndpointsAttrs["response_url"].(types.String).ValueStringPointer()
+			sloServiceEndpointsValue.Url = sloServiceEndpointsAttrs["url"].(types.String).ValueString()
+			idpBrowserSsoValue.SloServiceEndpoints = append(idpBrowserSsoValue.SloServiceEndpoints, sloServiceEndpointsValue)
+		}
+		idpBrowserSsoValue.SsoApplicationEndpoint = idpBrowserSsoAttrs["sso_application_endpoint"].(types.String).ValueStringPointer()
+		if !idpBrowserSsoAttrs["sso_oauth_mapping"].IsNull() {
+			idpBrowserSsoSsoOauthMappingValue := &client.SsoOAuthMapping{}
+			idpBrowserSsoSsoOauthMappingAttrs := idpBrowserSsoAttrs["sso_oauth_mapping"].(types.Object).Attributes()
+			idpBrowserSsoSsoOauthMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			idpBrowserSsoSsoOauthMappingValue.AttributeSources, err = attributesources.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			idpBrowserSsoSsoOauthMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			idpBrowserSsoValue.SsoOAuthMapping = idpBrowserSsoSsoOauthMappingValue
+		}
+		idpBrowserSsoValue.SsoServiceEndpoints = []client.IdpSsoServiceEndpoint{}
+		for _, ssoServiceEndpointsElement := range idpBrowserSsoAttrs["sso_service_endpoints"].(types.Set).Elements() {
+			ssoServiceEndpointsValue := client.IdpSsoServiceEndpoint{}
+			ssoServiceEndpointsAttrs := ssoServiceEndpointsElement.(types.Object).Attributes()
+			ssoServiceEndpointsValue.Binding = ssoServiceEndpointsAttrs["binding"].(types.String).ValueStringPointer()
+			ssoServiceEndpointsValue.Url = ssoServiceEndpointsAttrs["url"].(types.String).ValueString()
+			idpBrowserSsoValue.SsoServiceEndpoints = append(idpBrowserSsoValue.SsoServiceEndpoints, ssoServiceEndpointsValue)
+		}
+		for _, urlWhitelistEntriesElement := range idpBrowserSsoAttrs["url_whitelist_entries"].(types.Set).Elements() {
+			urlWhitelistEntriesValue := client.UrlWhitelistEntry{}
+			urlWhitelistEntriesAttrs := urlWhitelistEntriesElement.(types.Object).Attributes()
+			urlWhitelistEntriesValue.AllowQueryAndFragment = urlWhitelistEntriesAttrs["allow_query_and_fragment"].(types.Bool).ValueBoolPointer()
+			urlWhitelistEntriesValue.RequireHttps = urlWhitelistEntriesAttrs["require_https"].(types.Bool).ValueBoolPointer()
+			urlWhitelistEntriesValue.ValidDomain = urlWhitelistEntriesAttrs["valid_domain"].(types.String).ValueStringPointer()
+			urlWhitelistEntriesValue.ValidPath = urlWhitelistEntriesAttrs["valid_path"].(types.String).ValueStringPointer()
+			idpBrowserSsoValue.UrlWhitelistEntries = append(idpBrowserSsoValue.UrlWhitelistEntries, urlWhitelistEntriesValue)
+		}
+		addRequest.IdpBrowserSso = idpBrowserSsoValue
 	}
 
-	return nil
+	// attribute_query
+	if !plan.AttributeQuery.IsNull() {
+		attributeQueryValue := &client.IdpAttributeQuery{}
+		attributeQueryAttrs := plan.AttributeQuery.Attributes()
+		attributeQueryValue.NameMappings = []client.AttributeQueryNameMapping{}
+		for _, nameMappingsElement := range attributeQueryAttrs["name_mappings"].(types.Set).Elements() {
+			nameMappingsValue := client.AttributeQueryNameMapping{}
+			nameMappingsAttrs := nameMappingsElement.(types.Object).Attributes()
+			nameMappingsValue.LocalName = nameMappingsAttrs["local_name"].(types.String).ValueString()
+			nameMappingsValue.RemoteName = nameMappingsAttrs["remote_name"].(types.String).ValueString()
+			attributeQueryValue.NameMappings = append(attributeQueryValue.NameMappings, nameMappingsValue)
+		}
+		if !attributeQueryAttrs["policy"].IsNull() {
+			attributeQueryPolicyValue := &client.IdpAttributeQueryPolicy{}
+			attributeQueryPolicyAttrs := attributeQueryAttrs["policy"].(types.Object).Attributes()
+			attributeQueryPolicyValue.EncryptNameId = attributeQueryPolicyAttrs["encrypt_name_id"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.MaskAttributeValues = attributeQueryPolicyAttrs["mask_attribute_values"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.RequireEncryptedAssertion = attributeQueryPolicyAttrs["require_encrypted_assertion"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.RequireSignedAssertion = attributeQueryPolicyAttrs["require_signed_assertion"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.RequireSignedResponse = attributeQueryPolicyAttrs["require_signed_response"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.SignAttributeQuery = attributeQueryPolicyAttrs["sign_attribute_query"].(types.Bool).ValueBoolPointer()
+			attributeQueryValue.Policy = attributeQueryPolicyValue
+		}
+		attributeQueryValue.Url = attributeQueryAttrs["url"].(types.String).ValueString()
+		addRequest.AttributeQuery = attributeQueryValue
+	}
+
+	// idp_oauth_grant_attribute_mapping
+	if !plan.IdpOAuthGrantAttributeMapping.IsNull() {
+		idpOauthGrantAttributeMappingValue := &client.IdpOAuthGrantAttributeMapping{}
+		idpOauthGrantAttributeMappingAttrs := plan.IdpOAuthGrantAttributeMapping.Attributes()
+		idpOauthGrantAttributeMappingValue.AccessTokenManagerMappings = []client.AccessTokenManagerMapping{}
+		for _, accessTokenManagerMappingsElement := range idpOauthGrantAttributeMappingAttrs["access_token_manager_mappings"].(types.Set).Elements() {
+			accessTokenManagerMappingsValue := client.AccessTokenManagerMapping{}
+			accessTokenManagerMappingsAttrs := accessTokenManagerMappingsElement.(types.Object).Attributes()
+			if !accessTokenManagerMappingsAttrs["access_token_manager_ref"].IsNull() {
+				accessTokenManagerMappingsAccessTokenManagerRefValue := &client.ResourceLink{}
+				accessTokenManagerMappingsAccessTokenManagerRefAttrs := accessTokenManagerMappingsAttrs["access_token_manager_ref"].(types.Object).Attributes()
+				accessTokenManagerMappingsAccessTokenManagerRefValue.Id = accessTokenManagerMappingsAccessTokenManagerRefAttrs["id"].(types.String).ValueString()
+				accessTokenManagerMappingsValue.AccessTokenManagerRef = accessTokenManagerMappingsAccessTokenManagerRefValue
+			}
+			accessTokenManagerMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(accessTokenManagerMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			accessTokenManagerMappingsValue.AttributeSources, err = attributesources.ClientStruct(accessTokenManagerMappingsAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			accessTokenManagerMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(accessTokenManagerMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			idpOauthGrantAttributeMappingValue.AccessTokenManagerMappings = append(idpOauthGrantAttributeMappingValue.AccessTokenManagerMappings, accessTokenManagerMappingsValue)
+		}
+		if !idpOauthGrantAttributeMappingAttrs["idp_oauth_attribute_contract"].IsNull() {
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractValue := &client.IdpOAuthAttributeContract{}
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrs := idpOauthGrantAttributeMappingAttrs["idp_oauth_attribute_contract"].(types.Object).Attributes()
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractValue.CoreAttributes = []client.IdpBrowserSsoAttribute{}
+			for _, coreAttributesElement := range idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+				coreAttributesValue := client.IdpBrowserSsoAttribute{}
+				coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+				coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+				coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractValue.CoreAttributes = append(idpOauthGrantAttributeMappingIdpOauthAttributeContractValue.CoreAttributes, coreAttributesValue)
+			}
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractValue.ExtendedAttributes = []client.IdpBrowserSsoAttribute{}
+			for _, extendedAttributesElement := range idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.IdpBrowserSsoAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractValue.ExtendedAttributes = append(idpOauthGrantAttributeMappingIdpOauthAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
+			idpOauthGrantAttributeMappingValue.IdpOAuthAttributeContract = idpOauthGrantAttributeMappingIdpOauthAttributeContractValue
+		}
+		addRequest.IdpOAuthGrantAttributeMapping = idpOauthGrantAttributeMappingValue
+	}
+
+	// ws_trust
+	if !plan.WsTrust.IsNull() {
+		wsTrustValue := &client.IdpWsTrust{}
+		wsTrustAttrs := plan.WsTrust.Attributes()
+		wsTrustAttributeContractValue := client.IdpWsTrustAttributeContract{}
+		wsTrustAttributeContractAttrs := wsTrustAttrs["attribute_contract"].(types.Object).Attributes()
+		wsTrustAttributeContractValue.CoreAttributes = []client.IdpWsTrustAttribute{}
+		for _, coreAttributesElement := range wsTrustAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.IdpWsTrustAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			wsTrustAttributeContractValue.CoreAttributes = append(wsTrustAttributeContractValue.CoreAttributes, coreAttributesValue)
+		}
+		wsTrustAttributeContractValue.ExtendedAttributes = []client.IdpWsTrustAttribute{}
+		for _, extendedAttributesElement := range wsTrustAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.IdpWsTrustAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			wsTrustAttributeContractValue.ExtendedAttributes = append(wsTrustAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		wsTrustValue.AttributeContract = wsTrustAttributeContractValue
+		wsTrustValue.GenerateLocalToken = wsTrustAttrs["generate_local_token"].(types.Bool).ValueBool()
+		wsTrustValue.TokenGeneratorMappings = []client.SpTokenGeneratorMapping{}
+		for _, tokenGeneratorMappingsElement := range wsTrustAttrs["token_generator_mappings"].(types.Set).Elements() {
+			tokenGeneratorMappingsValue := client.SpTokenGeneratorMapping{}
+			tokenGeneratorMappingsAttrs := tokenGeneratorMappingsElement.(types.Object).Attributes()
+			tokenGeneratorMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(tokenGeneratorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
+			}
+			tokenGeneratorMappingsValue.AttributeSources, err = attributesources.ClientStruct(tokenGeneratorMappingsAttrs["attribute_sources"].(types.Set))
+			if err != nil {
+				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
+			}
+			tokenGeneratorMappingsValue.DefaultMapping = tokenGeneratorMappingsAttrs["default_mapping"].(types.Bool).ValueBoolPointer()
+			tokenGeneratorMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(tokenGeneratorMappingsAttrs["issuance_criteria"].(types.Object))
+			if err != nil {
+				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
+			}
+			if !tokenGeneratorMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				tokenGeneratorMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range tokenGeneratorMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					tokenGeneratorMappingsValue.RestrictedVirtualEntityIds = append(tokenGeneratorMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			tokenGeneratorMappingsSpTokenGeneratorRefValue := client.ResourceLink{}
+			tokenGeneratorMappingsSpTokenGeneratorRefAttrs := tokenGeneratorMappingsAttrs["sp_token_generator_ref"].(types.Object).Attributes()
+			tokenGeneratorMappingsSpTokenGeneratorRefValue.Id = tokenGeneratorMappingsSpTokenGeneratorRefAttrs["id"].(types.String).ValueString()
+			tokenGeneratorMappingsValue.SpTokenGeneratorRef = tokenGeneratorMappingsSpTokenGeneratorRefValue
+			wsTrustValue.TokenGeneratorMappings = append(wsTrustValue.TokenGeneratorMappings, tokenGeneratorMappingsValue)
+		}
+		addRequest.WsTrust = wsTrustValue
+	}
+
+	// inbound_provisioning
+	if !plan.InboundProvisioning.IsNull() {
+		inboundProvisioningValue := &client.IdpInboundProvisioning{}
+		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
+		inboundProvisioningValue.ActionOnDelete = inboundProvisioningAttrs["action_on_delete"].(types.String).ValueStringPointer()
+		inboundProvisioningCustomSchemaValue := client.Schema{}
+		inboundProvisioningCustomSchemaAttrs := inboundProvisioningAttrs["custom_schema"].(types.Object).Attributes()
+		inboundProvisioningCustomSchemaValue.Attributes = []client.SchemaAttribute{}
+		for _, attributesElement := range inboundProvisioningCustomSchemaAttrs["attributes"].(types.Set).Elements() {
+			attributesValue := client.SchemaAttribute{}
+			attributesAttrs := attributesElement.(types.Object).Attributes()
+			attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+			attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
+			if !attributesAttrs["sub_attributes"].IsNull() {
+				attributesValue.SubAttributes = []string{}
+				for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
+					attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesElement.(types.String).ValueString())
+				}
+			}
+			if !attributesAttrs["types"].IsNull() {
+				attributesValue.Types = []string{}
+				for _, typesElement := range attributesAttrs["types"].(types.Set).Elements() {
+					attributesValue.Types = append(attributesValue.Types, typesElement.(types.String).ValueString())
+				}
+			}
+			inboundProvisioningCustomSchemaValue.Attributes = append(inboundProvisioningCustomSchemaValue.Attributes, attributesValue)
+		}
+		if !inboundProvisioningCustomSchemaAttrs["namespace"].IsUnknown() {
+			inboundProvisioningCustomSchemaValue.Namespace = inboundProvisioningCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
+		}
+		inboundProvisioningValue.CustomSchema = inboundProvisioningCustomSchemaValue
+		inboundProvisioningValue.GroupSupport = inboundProvisioningAttrs["group_support"].(types.Bool).ValueBool()
+		if !inboundProvisioningAttrs["groups"].IsNull() {
+			inboundProvisioningGroupsValue := &client.Groups{}
+			inboundProvisioningGroupsAttrs := inboundProvisioningAttrs["groups"].(types.Object).Attributes()
+			inboundProvisioningGroupsReadGroupsValue := client.ReadGroups{}
+			inboundProvisioningGroupsReadGroupsAttrs := inboundProvisioningGroupsAttrs["read_groups"].(types.Object).Attributes()
+			inboundProvisioningGroupsReadGroupsAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
+			inboundProvisioningGroupsReadGroupsAttributeContractAttrs := inboundProvisioningGroupsReadGroupsAttrs["attribute_contract"].(types.Object).Attributes()
+			// PF requires core_attributes to be set, even though the property is read-only.
+			// Provide a placeholder value here to prevent the API from returning an error.
+			inboundProvisioningGroupsReadGroupsAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+				{
+					Name: "placeholder",
+				},
+			}
+			inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
+			for _, extendedAttributesElement := range inboundProvisioningGroupsReadGroupsAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.IdpInboundProvisioningAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes = append(inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
+			inboundProvisioningGroupsReadGroupsValue.AttributeContract = inboundProvisioningGroupsReadGroupsAttributeContractValue
+			inboundProvisioningGroupsReadGroupsValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+			for key, attributeFulfillmentElement := range inboundProvisioningGroupsReadGroupsAttrs["attribute_fulfillment"].(types.Map).Elements() {
+				attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+				attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+				attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+				attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+				attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+				attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+				attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+				attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+				inboundProvisioningGroupsReadGroupsValue.AttributeFulfillment[key] = attributeFulfillmentValue
+			}
+			inboundProvisioningGroupsReadGroupsValue.Attributes = []client.Attribute{}
+			for _, attributesElement := range inboundProvisioningGroupsReadGroupsAttrs["attributes"].(types.Set).Elements() {
+				attributesValue := client.Attribute{}
+				attributesAttrs := attributesElement.(types.Object).Attributes()
+				attributesValue.Name = attributesAttrs["name"].(types.String).ValueString()
+				inboundProvisioningGroupsReadGroupsValue.Attributes = append(inboundProvisioningGroupsReadGroupsValue.Attributes, attributesValue)
+			}
+			inboundProvisioningGroupsValue.ReadGroups = inboundProvisioningGroupsReadGroupsValue
+			inboundProvisioningGroupsWriteGroupsValue := client.WriteGroups{}
+			inboundProvisioningGroupsWriteGroupsAttrs := inboundProvisioningGroupsAttrs["write_groups"].(types.Object).Attributes()
+			inboundProvisioningGroupsWriteGroupsValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+			for key, attributeFulfillmentElement := range inboundProvisioningGroupsWriteGroupsAttrs["attribute_fulfillment"].(types.Map).Elements() {
+				attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+				attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+				attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+				attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+				attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+				attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+				attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+				attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+				inboundProvisioningGroupsWriteGroupsValue.AttributeFulfillment[key] = attributeFulfillmentValue
+			}
+			inboundProvisioningGroupsValue.WriteGroups = inboundProvisioningGroupsWriteGroupsValue
+			inboundProvisioningValue.Groups = inboundProvisioningGroupsValue
+		}
+		inboundProvisioningUserRepositoryValue := client.InboundProvisioningUserRepositoryAggregation{}
+		inboundProvisioningUserRepositoryAttrs := inboundProvisioningAttrs["user_repository"].(types.Object).Attributes()
+		if !inboundProvisioningUserRepositoryAttrs["identity_store"].IsNull() {
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue := &client.IdentityStoreInboundProvisioningUserRepository{}
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryAttrs := inboundProvisioningUserRepositoryAttrs["identity_store"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefValue := client.ResourceLink{}
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefAttrs := inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryAttrs["identity_store_provisioner_ref"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefValue.Id = inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefAttrs["id"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue.IdentityStoreProvisionerRef = inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryIdentityStoreProvisionerRefValue
+			inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue.Type = "IDENTITY_STORE"
+			inboundProvisioningUserRepositoryValue.IdentityStoreInboundProvisioningUserRepository = inboundProvisioningUserRepositoryIdentityStoreInboundProvisioningUserRepositoryValue
+		}
+		if !inboundProvisioningUserRepositoryAttrs["ldap"].IsNull() {
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue := &client.LdapInboundProvisioningUserRepository{}
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs := inboundProvisioningUserRepositoryAttrs["ldap"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.BaseDn = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["base_dn"].(types.String).ValueStringPointer()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefValue := client.ResourceLink{}
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefAttrs := inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["data_store_ref"].(types.Object).Attributes()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefValue.Id = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefAttrs["id"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.DataStoreRef = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryDataStoreRefValue
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.Type = "LDAP"
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.UniqueGroupIdFilter = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["unique_group_id_filter"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue.UniqueUserIdFilter = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryAttrs["unique_user_id_filter"].(types.String).ValueString()
+			inboundProvisioningUserRepositoryValue.LdapInboundProvisioningUserRepository = inboundProvisioningUserRepositoryLdapInboundProvisioningUserRepositoryValue
+		}
+		inboundProvisioningValue.UserRepository = inboundProvisioningUserRepositoryValue
+		inboundProvisioningUsersValue := client.Users{}
+		inboundProvisioningUsersAttrs := inboundProvisioningAttrs["users"].(types.Object).Attributes()
+		inboundProvisioningUsersReadUsersValue := client.ReadUsers{}
+		inboundProvisioningUsersReadUsersAttrs := inboundProvisioningUsersAttrs["read_users"].(types.Object).Attributes()
+		inboundProvisioningUsersReadUsersAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
+		inboundProvisioningUsersReadUsersAttributeContractAttrs := inboundProvisioningUsersReadUsersAttrs["attribute_contract"].(types.Object).Attributes()
+		// PF requires core_attributes to be set, even though the property is read-only.
+		// Provide a placeholder value here to prevent the API from returning an error.
+		inboundProvisioningUsersReadUsersAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+			{
+				Name: "placeholder",
+			},
+		}
+		inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
+		for _, extendedAttributesElement := range inboundProvisioningUsersReadUsersAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.IdpInboundProvisioningAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes = append(inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		inboundProvisioningUsersReadUsersValue.AttributeContract = inboundProvisioningUsersReadUsersAttributeContractValue
+		inboundProvisioningUsersReadUsersValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+		for key, attributeFulfillmentElement := range inboundProvisioningUsersReadUsersAttrs["attribute_fulfillment"].(types.Map).Elements() {
+			attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+			attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+			attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+			attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+			attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+			attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+			attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+			attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+			inboundProvisioningUsersReadUsersValue.AttributeFulfillment[key] = attributeFulfillmentValue
+		}
+		inboundProvisioningUsersReadUsersValue.Attributes = []client.Attribute{}
+		for _, attributesElement := range inboundProvisioningUsersReadUsersAttrs["attributes"].(types.Set).Elements() {
+			attributesValue := client.Attribute{}
+			attributesAttrs := attributesElement.(types.Object).Attributes()
+			attributesValue.Name = attributesAttrs["name"].(types.String).ValueString()
+			inboundProvisioningUsersReadUsersValue.Attributes = append(inboundProvisioningUsersReadUsersValue.Attributes, attributesValue)
+		}
+		inboundProvisioningUsersValue.ReadUsers = inboundProvisioningUsersReadUsersValue
+		inboundProvisioningUsersWriteUsersValue := client.WriteUsers{}
+		inboundProvisioningUsersWriteUsersAttrs := inboundProvisioningUsersAttrs["write_users"].(types.Object).Attributes()
+		inboundProvisioningUsersWriteUsersValue.AttributeFulfillment = map[string]client.AttributeFulfillmentValue{}
+		for key, attributeFulfillmentElement := range inboundProvisioningUsersWriteUsersAttrs["attribute_fulfillment"].(types.Map).Elements() {
+			attributeFulfillmentValue := client.AttributeFulfillmentValue{}
+			attributeFulfillmentAttrs := attributeFulfillmentElement.(types.Object).Attributes()
+			attributeFulfillmentSourceValue := client.SourceTypeIdKey{}
+			attributeFulfillmentSourceAttrs := attributeFulfillmentAttrs["source"].(types.Object).Attributes()
+			attributeFulfillmentSourceValue.Id = attributeFulfillmentSourceAttrs["id"].(types.String).ValueStringPointer()
+			attributeFulfillmentSourceValue.Type = attributeFulfillmentSourceAttrs["type"].(types.String).ValueString()
+			attributeFulfillmentValue.Source = attributeFulfillmentSourceValue
+			attributeFulfillmentValue.Value = attributeFulfillmentAttrs["value"].(types.String).ValueString()
+			inboundProvisioningUsersWriteUsersValue.AttributeFulfillment[key] = attributeFulfillmentValue
+		}
+		inboundProvisioningUsersValue.WriteUsers = inboundProvisioningUsersWriteUsersValue
+		inboundProvisioningValue.Users = inboundProvisioningUsersValue
+		addRequest.InboundProvisioning = inboundProvisioningValue
+	}
+
+	return respDiags
 }
 
 // Metadata returns the resource type name.
@@ -3806,40 +4483,40 @@ func (r *spIdpConnectionResource) Configure(_ context.Context, req resource.Conf
 }
 
 func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, plan, state *spIdpConnectionResourceModel, isImportRead bool) diag.Diagnostics {
-	var diags, objDiags diag.Diagnostics
+	var respDiags, diags diag.Diagnostics
 
 	state.Active = types.BoolPointerValue(r.Active)
-	state.AdditionalAllowedEntitiesConfiguration, objDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
-	diags.Append(objDiags...)
-	state.AttributeQuery, objDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
-	diags.Append(objDiags...)
+	state.AdditionalAllowedEntitiesConfiguration, diags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
+	respDiags.Append(diags...)
+	state.AttributeQuery, diags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
+	respDiags.Append(diags...)
 	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
-	diags.Append(objDiags...)
+	respDiags.Append(diags...)
 	state.ConnectionId = types.StringPointerValue(r.Id)
-	state.ContactInfo, objDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
-	diags.Append(objDiags...)
+	state.ContactInfo, diags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
+	respDiags.Append(diags...)
 	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
 	state.EntityId = types.StringValue(r.EntityId)
 	state.ErrorPageMsgId = types.StringPointerValue(r.ErrorPageMsgId)
-	state.ExtendedProperties, objDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
-	diags.Append(objDiags...)
+	state.ExtendedProperties, diags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
+	respDiags.Append(diags...)
 	state.Id = types.StringPointerValue(r.Id)
 	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
 	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
 	// by the `server_settings_general` resource
 	if plan != nil && plan.LoggingMode.ValueString() != state.LoggingMode.ValueString() {
-		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
+		respDiags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
 			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
 				"If `idp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
 				" `logging_mode` should be configured to the same value in this resource.")
 	}
-	state.MetadataReloadSettings, objDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
-	diags.Append(objDiags...)
+	state.MetadataReloadSettings, diags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
+	respDiags.Append(diags...)
 	state.Name = types.StringValue(r.Name)
 	if r.VirtualEntityIds == nil {
 		if plan != nil && internaltypes.IsDefined(plan.VirtualEntityIds) && len(plan.VirtualEntityIds.Elements()) == 0 {
-			state.VirtualEntityIds, objDiags = types.SetValue(types.StringType, nil)
-			diags.Append(objDiags...)
+			state.VirtualEntityIds, diags = types.SetValue(types.StringType, nil)
+			respDiags.Append(diags...)
 		} else {
 			state.VirtualEntityIds = types.SetNull(types.StringType)
 		}
@@ -3863,32 +4540,32 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
 					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
-						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &respDiags, isImportRead)
+						respDiags.Append(objDiags...)
 						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 						certMatchFound = true
 						break
 					}
 				}
 				if !certMatchFound {
-					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
-					diags.Append(objDiags...)
+					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &respDiags, isImportRead)
+					respDiags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
 			} else {
-				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags, isImportRead)
-				diags.Append(objDiags...)
+				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &respDiags, isImportRead)
+				respDiags.Append(objDiags...)
 				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
 		}
 		credentialsCertsValue, objDiags := types.ListValue(connectioncert.ObjType(), credentialsCertsValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var credentialsDecryptionKeyPairRefValue types.Object
 		if r.Credentials.DecryptionKeyPairRef == nil {
 			credentialsDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.DecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsInboundBackChannelAuthValue types.Object
 		if r.Credentials.InboundBackChannelAuth == nil {
@@ -3905,26 +4582,26 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
 							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
-								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
-								diags.Append(objDiags...)
+								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &respDiags, isImportRead)
+								respDiags.Append(objDiags...)
 								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 								ibaCertMatch = true
 								break
 							}
 						}
 						if !ibaCertMatch {
-							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
-							diags.Append(objDiags...)
+							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &respDiags, isImportRead)
+							respDiags.Append(objDiags...)
 							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 						}
 					} else {
-						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &respDiags, isImportRead)
+						respDiags.Append(objDiags...)
 						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 					}
 				}
 				credentialsInboundBackChannelAuthCertsValue, objDiags = types.ListValue(connectioncert.ObjType(), credentialsInboundBackChannelAuthCertsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsInboundBackChannelAuthCertsValue = types.ListNull(connectioncert.ObjType())
 			}
@@ -3932,16 +4609,16 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+						password = passwordFromPlan.ValueStringPointer()
+					} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -3951,11 +4628,11 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					}
 				}
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringValue(password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsInboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"certs":                   credentialsInboundBackChannelAuthCertsValue,
@@ -3965,7 +4642,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"verification_issuer_dn":  types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
 				"verification_subject_dn": types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsOutboundBackChannelAuthValue types.Object
 		if r.Credentials.OutboundBackChannelAuth == nil {
@@ -3975,16 +4652,16 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+						password = passwordFromPlan.ValueStringPointer()
+					} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+						password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				} else if state != nil && internaltypes.IsDefined(state.Credentials) && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
+					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -3994,18 +4671,18 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					}
 				}
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(&password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			var credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue types.Object
 			if r.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef == nil {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 			} else {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsOutboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"digital_signature":      types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.DigitalSignature),
@@ -4013,14 +4690,14 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
 				"validate_partner_cert":  types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSecondaryDecryptionKeyPairRefValue types.Object
 		if r.Credentials.SecondaryDecryptionKeyPairRef == nil {
 			credentialsSecondaryDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsSecondaryDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.SecondaryDecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSigningSettingsValue types.Object
 		if r.Credentials.SigningSettings == nil {
@@ -4031,27 +4708,37 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink := &client.ResourceLink{}
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink.Id = credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue.Id
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(ctx, credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
 			}
 			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValue types.Set
 			if len(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues) > 0 {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags = types.SetValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue = types.SetNull(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType)
 			}
 
 			credentialsSigningSettingsSigningKeyPairRefValue, objDiags := resourcelink.ToState(ctx, &r.Credentials.SigningSettings.SigningKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
+
+			includeCertInSignature := r.Credentials.SigningSettings.IncludeCertInSignature
+			planSigningSettings := plan.Credentials.Attributes()["signing_settings"]
+			if includeCertInSignature == nil && plan != nil && internaltypes.IsDefined(planSigningSettings) {
+				planIncludeCertInSignature := planSigningSettings.(types.Object).Attributes()["include_cert_in_signature"]
+				if internaltypes.IsDefined(planIncludeCertInSignature) && !planIncludeCertInSignature.(types.Bool).ValueBool() {
+					includeCertInSignature = utils.Pointer(false)
+				}
+			}
+
 			credentialsSigningSettingsValue, objDiags = types.ObjectValue(credentialsSigningSettingsAttrTypes, map[string]attr.Value{
 				"algorithm":                         types.StringPointerValue(r.Credentials.SigningSettings.Algorithm),
 				"alternative_signing_key_pair_refs": credentialsSigningSettingsAlternativeSigningKeyPairRefsValue,
-				"include_cert_in_signature":         types.BoolPointerValue(r.Credentials.SigningSettings.IncludeCertInSignature),
+				"include_cert_in_signature":         types.BoolPointerValue(includeCertInSignature),
 				"include_raw_key_in_signature":      types.BoolPointerValue(r.Credentials.SigningSettings.IncludeRawKeyInSignature),
 				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		credentialsValue, objDiags = types.ObjectValue(credentialsAttrTypes, map[string]attr.Value{
 			"block_encryption_algorithm":        types.StringPointerValue(r.Credentials.BlockEncryptionAlgorithm),
@@ -4065,7 +4752,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"verification_issuer_dn":            types.StringPointerValue(r.Credentials.VerificationIssuerDN),
 			"verification_subject_dn":           types.StringPointerValue(r.Credentials.VerificationSubjectDN),
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	} else {
 		credentialsValue = types.ObjectNull(credentialsAttrTypes)
 	}
@@ -4075,16 +4762,27 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	if r.OidcClientCredentials != nil {
 		var oidcClientCredentialsAttrValues map[string]attr.Value
 		var clientSecret *string
-		if len(plan.OidcClientCredentials.Attributes()) > 0 && plan.OidcClientCredentials.Attributes()["client_secret"] != nil {
+		planOidcCredentialsAttrs := plan.OidcClientCredentials.Attributes()
+		if planOidcCredentialsAttrs["client_secret"] != nil {
 			clientSecret = plan.OidcClientCredentials.Attributes()["client_secret"].(types.String).ValueStringPointer()
 		}
-		oidcClientCredentialsAttrValues = map[string]attr.Value{
-			"client_id":     types.StringValue(r.OidcClientCredentials.ClientId),
-			"client_secret": types.StringPointerValue(clientSecret),
+
+		encryptedSecretVal := planOidcCredentialsAttrs["encrypted_secret"]
+		var encryptedSecretToState *string
+		if encryptedSecretVal != nil && internaltypes.IsDefined(encryptedSecretVal) {
+			encryptedSecretToState = encryptedSecretVal.(types.String).ValueStringPointer()
+		} else {
+			encryptedSecretToState = r.OidcClientCredentials.EncryptedSecret
 		}
 
-		state.OidcClientCredentials, objDiags = types.ObjectValue(oidcClientCredentialsAttrTypes, oidcClientCredentialsAttrValues)
-		diags.Append(objDiags...)
+		oidcClientCredentialsAttrValues = map[string]attr.Value{
+			"client_id":        types.StringValue(r.OidcClientCredentials.ClientId),
+			"client_secret":    types.StringPointerValue(clientSecret),
+			"encrypted_secret": types.StringPointerValue(encryptedSecretToState),
+		}
+
+		state.OidcClientCredentials, diags = types.ObjectValue(oidcClientCredentialsAttrTypes, oidcClientCredentialsAttrValues)
+		respDiags.Append(diags...)
 	} else {
 		state.OidcClientCredentials = types.ObjectNull(oidcClientCredentialsAttrTypes)
 	}
@@ -4095,7 +4793,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		idpBrowserSsoValue = types.ObjectNull(idpBrowserSsoAttrTypes)
 	} else {
 		var idpBrowserSsoAdapterMappingsValues []attr.Value
-		idpBrowserSsoAdapterMappingsValue := types.SetNull(idpBrowserSsoAdapterMappingsElementType)
+		idpBrowserSsoAdapterMappingsValue := types.ListNull(idpBrowserSsoAdapterMappingsElementType)
 		if len(r.IdpBrowserSso.AdapterMappings) > 0 {
 			for i, idpBrowserSsoAdapterMappingsResponseValue := range r.IdpBrowserSso.AdapterMappings {
 				var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue types.Object
@@ -4108,34 +4806,46 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					} else {
 						var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues []attr.Value
 						for _, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue := range idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.CoreAttributes {
-							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, diags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, objDiags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
 								"name": types.StringValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesResponseValue.Name),
 							})
-							diags.Append(objDiags...)
+							respDiags.Append(objDiags...)
 							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues = append(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue)
 						}
-						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, diags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues)
-						diags.Append(objDiags...)
+						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue, objDiags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValues)
+						respDiags.Append(objDiags...)
 						var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues []attr.Value
 						for _, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue := range idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract.ExtendedAttributes {
-							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, diags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
 								"name": types.StringValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesResponseValue.Name),
 							})
-							diags.Append(objDiags...)
+							respDiags.Append(objDiags...)
 							idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues = append(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue)
 						}
-						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, diags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues)
-						diags.Append(objDiags...)
+						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue, objDiags := types.SetValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValues)
+						respDiags.Append(objDiags...)
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes, map[string]attr.Value{
 							"core_attributes":     idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesValue,
 							"extended_attributes": idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesValue,
 						})
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 					}
-					adapterMapping := plan.IdpBrowserSso.Attributes()["adapter_mappings"].(types.Set).Elements()[i].(types.Object).Attributes()
+					var planAdapterMappingOverrideConfiguration types.Object
+					if internaltypes.IsDefined(plan.IdpBrowserSso) && internaltypes.IsDefined(plan.IdpBrowserSso.Attributes()["adapter_mappings"]) {
+						adapterMappingsList, ok := plan.IdpBrowserSso.Attributes()["adapter_mappings"]
+						if ok && len(adapterMappingsList.(types.List).Elements()) > i {
+							overrideSettings, ok := adapterMappingsList.(types.List).Elements()[i].(types.Object).Attributes()["adapter_override_settings"]
+							if ok {
+								configValue, ok := overrideSettings.(types.Object).Attributes()["configuration"]
+								if ok {
+									planAdapterMappingOverrideConfiguration = configValue.(types.Object)
+								}
+							}
+						}
+					}
 					adapterOverrideSettingsConfiguration := idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(adapterMapping["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object), &adapterOverrideSettingsConfiguration, isImportRead)
-					diags.Append(objDiags...)
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, objDiags := pluginconfiguration.ToState(planAdapterMappingOverrideConfiguration, &adapterOverrideSettingsConfiguration, isImportRead)
+					respDiags.Append(objDiags...)
 					var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue = types.ObjectNull(resourcelink.AttrType())
@@ -4143,12 +4853,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue, objDiags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 							"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef.Id),
 						})
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 					}
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue, diags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue, objDiags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
 						"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.PluginDescriptorRef.Id),
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue types.Object
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo == nil {
 						idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue = types.ObjectNull(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes)
@@ -4157,7 +4867,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 							"application_icon_url": types.StringPointerValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo.ApplicationIconUrl),
 							"application_name":     types.StringPointerValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo.ApplicationName),
 						})
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 					}
 					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes, map[string]attr.Value{
 						"attribute_contract":      idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractValue,
@@ -4168,30 +4878,35 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						"plugin_descriptor_ref":   idpBrowserSsoAdapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue,
 						"target_application_info": idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue,
 					})
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 				}
 				idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment := idpBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment
-				idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment)
-				diags.Append(objDiags...)
+				idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment)
+				respDiags.Append(objDiags...)
 
-				idpBrowserSsoAdapterMappingsAttributeSourcesValue, diags := attributesources.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
-				diags.Append(objDiags...)
+				idpBrowserSsoAdapterMappingsAttributeSourcesValue, objDiags := attributesources.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
+				respDiags.Append(objDiags...)
 
 				var idpBrowserSsoAdapterMappingsIssuanceCriteriaValue types.Object
-				if idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria != nil && (len(idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria.ConditionalCriteria) > 0 || len(idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria.ExpressionCriteria) > 0) {
+				if idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria != nil {
 					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue, objDiags = issuancecriteria.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 				} else {
 					idpBrowserSsoAdapterMappingsIssuanceCriteriaValue = types.ObjectNull(issuancecriteria.AttrTypes())
 				}
 
-				idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(ctx, types.StringType, idpBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
-				diags.Append(objDiags...)
-				idpBrowserSsoAdapterMappingsSpAdapterRefValue, diags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
-					"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef.Id),
-				})
-				diags.Append(objDiags...)
-				idpBrowserSsoAdapterMappingsValue, diags := types.ObjectValue(idpBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
+				idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, objDiags := types.SetValueFrom(ctx, types.StringType, idpBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
+				respDiags.Append(objDiags...)
+				var idpBrowserSsoAdapterMappingsSpAdapterRefValue types.Object
+				if idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef == nil {
+					idpBrowserSsoAdapterMappingsSpAdapterRefValue = types.ObjectNull(resourcelink.AttrType())
+				} else {
+					idpBrowserSsoAdapterMappingsSpAdapterRefValue, objDiags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+						"id": types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef.Id),
+					})
+					respDiags.Append(objDiags...)
+				}
+				idpBrowserSsoAdapterMappingsValue, objDiags := types.ObjectValue(idpBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
 					"adapter_override_settings":      idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue,
 					"attribute_contract_fulfillment": idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue,
 					"attribute_sources":              idpBrowserSsoAdapterMappingsAttributeSourcesValue,
@@ -4200,11 +4915,11 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					"restricted_virtual_entity_ids":  idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue,
 					"sp_adapter_ref":                 idpBrowserSsoAdapterMappingsSpAdapterRefValue,
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				idpBrowserSsoAdapterMappingsValues = append(idpBrowserSsoAdapterMappingsValues, idpBrowserSsoAdapterMappingsValue)
 			}
-			idpBrowserSsoAdapterMappingsValue, objDiags = types.SetValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
-			diags.Append(objDiags...)
+			idpBrowserSsoAdapterMappingsValue, diags = types.ListValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
+			respDiags.Append(diags...)
 		}
 
 		// IdpBrowserSSO Always Sign Artifact Response
@@ -4217,67 +4932,229 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 		// IdpBrowserSSO Artifact
 		idpBrowserSsoArtifactValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoArtifactAttrTypes, r.IdpBrowserSso.Artifact)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Attribute Contract
 		idpBrowserSsoAttributeContractValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoAttributeContractAttrTypes, r.IdpBrowserSso.AttributeContract)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Authentication Policy Contract Mappings
-		idpBrowserSsoAuthenticationPolicyContractMappingsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoAuthenticationPolicyContractMappingsElementType, r.IdpBrowserSso.AuthenticationPolicyContractMappings)
-		diags.Append(objDiags...)
+		var idpBrowserSsoAuthenticationPolicyContractMappingsValues []attr.Value
+		for _, idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue := range r.IdpBrowserSso.AuthenticationPolicyContractMappings {
+			idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.AttributeContractFulfillment)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.AttributeSources)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefValue, diags := types.ObjectValue(idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrTypes, map[string]attr.Value{
+				"id": types.StringValue(idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.AuthenticationPolicyContractRef.Id),
+			})
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.IssuanceCriteria)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsRestrictedVirtualServerIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.RestrictedVirtualServerIds)
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsValue, diags := types.ObjectValue(idpBrowserSsoAuthenticationPolicyContractMappingsAttrTypes, map[string]attr.Value{
+				"attribute_contract_fulfillment":     idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentValue,
+				"attribute_sources":                  idpBrowserSsoAuthenticationPolicyContractMappingsAttributeSourcesValue,
+				"authentication_policy_contract_ref": idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefValue,
+				"issuance_criteria":                  idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaValue,
+				"restrict_virtual_server_ids":        types.BoolPointerValue(idpBrowserSsoAuthenticationPolicyContractMappingsResponseValue.RestrictVirtualServerIds),
+				"restricted_virtual_server_ids":      idpBrowserSsoAuthenticationPolicyContractMappingsRestrictedVirtualServerIdsValue,
+			})
+			respDiags.Append(diags...)
+			idpBrowserSsoAuthenticationPolicyContractMappingsValues = append(idpBrowserSsoAuthenticationPolicyContractMappingsValues, idpBrowserSsoAuthenticationPolicyContractMappingsValue)
+		}
+		idpBrowserSsoAuthenticationPolicyContractMappingsValue, diags := types.ListValue(idpBrowserSsoAuthenticationPolicyContractMappingsElementType, idpBrowserSsoAuthenticationPolicyContractMappingsValues)
+		respDiags.Append(diags...)
 
 		// IdpBrowserSSO AuthnContextMappings
 		idpBrowserSsoAuthnContextMappingsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoAuthnContextMappingsElementType, r.IdpBrowserSso.AuthnContextMappings)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Decryption Policy
 		idpBrowserSsoDecryptionPolicyValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoDecryptionPolicyAttrTypes, r.IdpBrowserSso.DecryptionPolicy)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Enabled Profiles
 		idpBrowserSsoEnabledProfilesValue, objDiags := types.SetValueFrom(ctx, types.StringType, r.IdpBrowserSso.EnabledProfiles)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO Incoming Bindings
 		idpBrowserSsoIncomingBindingsValue, objDiags := types.SetValueFrom(ctx, types.StringType, r.IdpBrowserSso.IncomingBindings)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO JIT Provisioning
 		var idpBrowserSsoJitProvisioningValue types.Object
 		if r.IdpBrowserSso.JitProvisioning == nil {
 			idpBrowserSsoJitProvisioningValue = types.ObjectNull(idpBrowserSsoJitProvisioningAttrTypes)
 		} else {
-			idpBrowserSsoJitProvisioningValue, objDiags = types.ObjectValueFrom(ctx, idpBrowserSsoJitProvisioningAttrTypes, r.IdpBrowserSso.JitProvisioning)
-			diags.Append(objDiags...)
+			attributeMappingSourceAttrTypes := map[string]attr.Type{
+				"id":   types.StringType,
+				"type": types.StringType,
+			}
+			attributeMappingAttrTypes := map[string]attr.Type{
+				"source": types.ObjectType{AttrTypes: attributeMappingSourceAttrTypes},
+				"value":  types.StringType,
+			}
+			sqlMethodStoredProcedureAttrTypes := map[string]attr.Type{
+				"schema":           types.StringType,
+				"stored_procedure": types.StringType,
+			}
+			sqlMethodTableAttrTypes := map[string]attr.Type{
+				"schema":           types.StringType,
+				"table_name":       types.StringType,
+				"unique_id_column": types.StringType,
+			}
+			sqlMethodAttrTypes := map[string]attr.Type{
+				"stored_procedure": types.ObjectType{AttrTypes: sqlMethodStoredProcedureAttrTypes},
+				"table":            types.ObjectType{AttrTypes: sqlMethodTableAttrTypes},
+			}
+
+			var idpBrowserSsoJitProvisioningUserAttributesAttributeContractValues []attr.Value
+			for _, idpBrowserSsoJitProvisioningUserAttributesAttributeContractResponseValue := range r.IdpBrowserSso.JitProvisioning.UserAttributes.AttributeContract {
+				idpBrowserSsoJitProvisioningUserAttributesAttributeContractValue, objDiags := types.ObjectValue(idpBrowserSsoJitProvisioningUserAttributesAttributeContractAttrTypes, map[string]attr.Value{
+					"masked": types.BoolPointerValue(idpBrowserSsoJitProvisioningUserAttributesAttributeContractResponseValue.Masked),
+					"name":   types.StringValue(idpBrowserSsoJitProvisioningUserAttributesAttributeContractResponseValue.Name),
+				})
+				respDiags.Append(objDiags...)
+				idpBrowserSsoJitProvisioningUserAttributesAttributeContractValues = append(idpBrowserSsoJitProvisioningUserAttributesAttributeContractValues, idpBrowserSsoJitProvisioningUserAttributesAttributeContractValue)
+			}
+			idpBrowserSsoJitProvisioningUserAttributesAttributeContractValue, objDiags := types.SetValue(idpBrowserSsoJitProvisioningUserAttributesAttributeContractElementType, idpBrowserSsoJitProvisioningUserAttributesAttributeContractValues)
+			respDiags.Append(objDiags...)
+			idpBrowserSsoJitProvisioningUserAttributesValue, objDiags := types.ObjectValue(idpBrowserSsoJitProvisioningUserAttributesAttrTypes, map[string]attr.Value{
+				"attribute_contract": idpBrowserSsoJitProvisioningUserAttributesAttributeContractValue,
+				"do_attribute_query": types.BoolPointerValue(r.IdpBrowserSso.JitProvisioning.UserAttributes.DoAttributeQuery),
+			})
+			respDiags.Append(objDiags...)
+			var idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue types.Object
+			if r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository == nil {
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue = types.ObjectNull(datastorerepository.JdbcDataStoreRepositoryAttrType())
+			} else {
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefValue, objDiags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+					"id": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.DataStoreRef.Id),
+				})
+				respDiags.Append(objDiags...)
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValues := make(map[string]attr.Value)
+				for key, idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue := range r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.JitRepositoryAttributeMapping {
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingSourceValue, objDiags := types.ObjectValue(attributeMappingSourceAttrTypes, map[string]attr.Value{
+						"id":   types.StringPointerValue(idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Id),
+						"type": types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Type),
+					})
+					respDiags.Append(objDiags...)
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.ObjectValue(attributeMappingAttrTypes, map[string]attr.Value{
+						"source": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingSourceValue,
+						"value":  types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Value),
+					})
+					respDiags.Append(objDiags...)
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValues[key] = idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue
+				}
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.MapValue(types.ObjectType{AttrTypes: attributeMappingAttrTypes}, idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValues)
+				respDiags.Append(objDiags...)
+				var idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue types.Object
+				if r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.StoredProcedure == nil {
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue = types.ObjectNull(sqlMethodStoredProcedureAttrTypes)
+				} else {
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue, objDiags = types.ObjectValue(sqlMethodStoredProcedureAttrTypes, map[string]attr.Value{
+						"schema":           types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.StoredProcedure.Schema),
+						"stored_procedure": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.StoredProcedure.StoredProcedure),
+					})
+					respDiags.Append(objDiags...)
+				}
+				var idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue types.Object
+				if r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.Table == nil {
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue = types.ObjectNull(sqlMethodTableAttrTypes)
+				} else {
+					idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue, objDiags = types.ObjectValue(sqlMethodTableAttrTypes, map[string]attr.Value{
+						"schema":           types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.Table.Schema),
+						"table_name":       types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.Table.TableName),
+						"unique_id_column": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository.SqlMethod.Table.UniqueIdColumn),
+					})
+					respDiags.Append(objDiags...)
+				}
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue, objDiags := types.ObjectValue(sqlMethodAttrTypes, map[string]attr.Value{
+					"stored_procedure": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodStoredProcedureValue,
+					"table":            idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodTableValue,
+				})
+				respDiags.Append(objDiags...)
+				idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue, objDiags = types.ObjectValue(datastorerepository.JdbcDataStoreRepositoryAttrType(), map[string]attr.Value{
+					"data_store_ref":                   idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryDataStoreRefValue,
+					"jit_repository_attribute_mapping": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryJitRepositoryAttributeMappingValue,
+					"sql_method":                       idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositorySqlMethodValue,
+				})
+				respDiags.Append(objDiags...)
+			}
+			var idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue types.Object
+			if r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository == nil {
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue = types.ObjectNull(datastorerepository.LdapDataStoreRepositoryAttrType())
+			} else {
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefValue, objDiags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+					"id": types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.DataStoreRef.Id),
+				})
+				respDiags.Append(objDiags...)
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValues := make(map[string]attr.Value)
+				for key, idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue := range r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.JitRepositoryAttributeMapping {
+					idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingSourceValue, objDiags := types.ObjectValue(attributeMappingSourceAttrTypes, map[string]attr.Value{
+						"id":   types.StringPointerValue(idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Id),
+						"type": types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Source.Type),
+					})
+					respDiags.Append(objDiags...)
+					idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.ObjectValue(attributeMappingAttrTypes, map[string]attr.Value{
+						"source": idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingSourceValue,
+						"value":  types.StringValue(idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingResponseValue.Value),
+					})
+					respDiags.Append(objDiags...)
+					idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValues[key] = idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue
+				}
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue, objDiags := types.MapValue(types.ObjectType{AttrTypes: attributeMappingAttrTypes}, idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValues)
+				respDiags.Append(objDiags...)
+				idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue, objDiags = types.ObjectValue(datastorerepository.LdapDataStoreRepositoryAttrType(), map[string]attr.Value{
+					"base_dn":                          types.StringPointerValue(r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.BaseDn),
+					"data_store_ref":                   idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryDataStoreRefValue,
+					"jit_repository_attribute_mapping": idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryJitRepositoryAttributeMappingValue,
+					"unique_user_id_filter":            types.StringValue(r.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository.UniqueUserIdFilter),
+				})
+				respDiags.Append(objDiags...)
+			}
+			idpBrowserSsoJitProvisioningUserRepositoryValue, objDiags := types.ObjectValue(datastorerepository.ElemAttrType(), map[string]attr.Value{
+				"jdbc": idpBrowserSsoJitProvisioningUserRepositoryJdbcDataStoreRepositoryValue,
+				"ldap": idpBrowserSsoJitProvisioningUserRepositoryLdapDataStoreRepositoryValue,
+			})
+			respDiags.Append(objDiags...)
+			idpBrowserSsoJitProvisioningValue, objDiags = types.ObjectValue(idpBrowserSsoJitProvisioningAttrTypes, map[string]attr.Value{
+				"error_handling":  types.StringPointerValue(r.IdpBrowserSso.JitProvisioning.ErrorHandling),
+				"event_trigger":   types.StringPointerValue(r.IdpBrowserSso.JitProvisioning.EventTrigger),
+				"user_attributes": idpBrowserSsoJitProvisioningUserAttributesValue,
+				"user_repository": idpBrowserSsoJitProvisioningUserRepositoryValue,
+			})
+			respDiags.Append(objDiags...)
 		}
 
 		// IdpBrowserSSO Message Customizations
 		idpBrowserSsoMessageCustomizationsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoMessageCustomizationsElementType, r.IdpBrowserSso.MessageCustomizations)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO OAuth Authentication Policy Contract Ref
 		idpBrowserSsoOauthAuthenticationPolicyContractRefValue, objDiags := resourcelink.ToState(ctx, r.IdpBrowserSso.OauthAuthenticationPolicyContractRef)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO OIDC Provider Settings
 		idpBrowserSsoOidcProviderSettingsValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoOidcProviderSettingsAttrTypes, r.IdpBrowserSso.OidcProviderSettings)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO SLO Service Endpoints
 		idpBrowserSsoSloServiceEndpointsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoSloServiceEndpointsElementType, r.IdpBrowserSso.SloServiceEndpoints)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO SSO Service Endpoints
 		idpBrowserSsoSsoServiceEndpointsValue := types.SetNull(idpBrowserSsoSsoServiceEndpointsElementType)
 		if len(r.IdpBrowserSso.SsoServiceEndpoints) > 0 {
 			idpBrowserSsoSsoServiceEndpointsValue, objDiags = types.SetValueFrom(ctx, idpBrowserSsoSsoServiceEndpointsElementType, r.IdpBrowserSso.SsoServiceEndpoints)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 
 		// IdpBrowserSSO URL Whitelist Entries
 		idpBrowserSsoUrlWhitelistEntriesValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoUrlWhitelistEntriesElementType, r.IdpBrowserSso.UrlWhitelistEntries)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		// IdpBrowserSSO SSO OAuth Mapping
 		var idpBrowserSsoSsoOauthMappingValue types.Object
@@ -4285,18 +5162,18 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			idpBrowserSsoSsoOauthMappingValue = types.ObjectNull(idpBrowserSsoSsoOauthMappingAttrTypes)
 		} else {
 			idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &r.IdpBrowserSso.SsoOAuthMapping.AttributeContractFulfillment)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			idpBrowserSsoSsoOauthMappingAttributeSourcesValue := types.SetNull(types.ObjectType{AttrTypes: attributesources.AttrTypes()})
 			if r.IdpBrowserSso.SsoOAuthMapping.AttributeSources != nil {
 				idpBrowserSsoSsoOauthMappingAttributeSourcesValue, objDiags = attributesources.ToState(ctx, r.IdpBrowserSso.SsoOAuthMapping.AttributeSources)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 
 			idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue := types.ObjectNull(issuancecriteria.AttrTypes())
 			if r.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria != nil {
 				idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue, objDiags = issuancecriteria.ToState(ctx, r.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 
 			idpBrowserSsoSsoOauthMappingValue, objDiags = types.ObjectValue(idpBrowserSsoSsoOauthMappingAttrTypes, map[string]attr.Value{
@@ -4304,14 +5181,30 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"attribute_sources":              idpBrowserSsoSsoOauthMappingAttributeSourcesValue,
 				"issuance_criteria":              idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
+		}
+
+		signAuthnRequest := r.IdpBrowserSso.SignAuthnRequests
+		if signAuthnRequest == nil && plan != nil && internaltypes.IsDefined(plan.IdpBrowserSso) {
+			planSignAuthnRequest := plan.IdpBrowserSso.Attributes()["sign_authn_requests"].(types.Bool)
+			if internaltypes.IsDefined(planSignAuthnRequest) && !planSignAuthnRequest.ValueBool() {
+				signAuthnRequest = utils.Pointer(false)
+			}
+		}
+
+		assertionsSigned := r.IdpBrowserSso.AssertionsSigned
+		if assertionsSigned == nil && plan != nil && internaltypes.IsDefined(plan.IdpBrowserSso) {
+			planAssertionsSigned := plan.IdpBrowserSso.Attributes()["assertions_signed"].(types.Bool)
+			if internaltypes.IsDefined(planAssertionsSigned) && !planAssertionsSigned.ValueBool() {
+				assertionsSigned = utils.Pointer(false)
+			}
 		}
 
 		idpBrowserSsoValue, objDiags = types.ObjectValue(idpBrowserSsoAttrTypes, map[string]attr.Value{
 			"adapter_mappings":                         idpBrowserSsoAdapterMappingsValue,
 			"always_sign_artifact_response":            idpBrowserSsoAlwaysSignArtifactResponse,
 			"artifact":                                 idpBrowserSsoArtifactValue,
-			"assertions_signed":                        types.BoolPointerValue(r.IdpBrowserSso.AssertionsSigned),
+			"assertions_signed":                        types.BoolPointerValue(assertionsSigned),
 			"attribute_contract":                       idpBrowserSsoAttributeContractValue,
 			"authentication_policy_contract_mappings":  idpBrowserSsoAuthenticationPolicyContractMappingsValue,
 			"authn_context_mappings":                   idpBrowserSsoAuthnContextMappingsValue,
@@ -4325,23 +5218,126 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"oauth_authentication_policy_contract_ref": idpBrowserSsoOauthAuthenticationPolicyContractRefValue,
 			"oidc_provider_settings":                   idpBrowserSsoOidcProviderSettingsValue,
 			"protocol":                                 types.StringValue(r.IdpBrowserSso.Protocol),
-			"sign_authn_requests":                      types.BoolPointerValue(r.IdpBrowserSso.SignAuthnRequests),
+			"sign_authn_requests":                      types.BoolPointerValue(signAuthnRequest),
 			"slo_service_endpoints":                    idpBrowserSsoSloServiceEndpointsValue,
 			"sso_application_endpoint":                 types.StringPointerValue(r.IdpBrowserSso.SsoApplicationEndpoint),
 			"sso_oauth_mapping":                        idpBrowserSsoSsoOauthMappingValue,
 			"sso_service_endpoints":                    idpBrowserSsoSsoServiceEndpointsValue,
 			"url_whitelist_entries":                    idpBrowserSsoUrlWhitelistEntriesValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	}
 	state.IdpBrowserSso = idpBrowserSsoValue
 
-	// IdpOAuthGrantAttributeMapping
-	state.IdpOAuthGrantAttributeMapping, objDiags = types.ObjectValueFrom(ctx, idpOAuthGrantAttributeMappingAttrTypes, r.IdpOAuthGrantAttributeMapping)
-	diags.Append(objDiags...)
-	var inboundProvisioningValue types.Object
+	// idp_oauth_grant_attribute_mapping
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentAttrTypes := attributecontractfulfillment.AttrTypes()
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentAttrTypes}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesAttrTypes := attributesources.AttrTypes()
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesAttrTypes}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes := map[string]attr.Type{
+		"access_token_manager_ref":       types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes},
+		"attribute_contract_fulfillment": types.MapType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentElementType},
+		"attribute_sources":              types.SetType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesElementType},
+		"issuance_criteria":              types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaAttrTypes},
+	}
+	idpOauthGrantAttributeMappingAccessTokenManagerMappingsElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesAttrTypes := map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesAttrTypes}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesAttrTypes := map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesAttrTypes}
+	idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes := map[string]attr.Type{
+		"core_attributes":     types.SetType{ElemType: idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesElementType},
+	}
+	idpOauthGrantAttributeMappingAttrTypes := map[string]attr.Type{
+		"access_token_manager_mappings": types.SetType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsElementType},
+		"idp_oauth_attribute_contract":  types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes},
+	}
+	var idpOauthGrantAttributeMappingValue types.Object
+	if r.IdpOAuthGrantAttributeMapping == nil {
+		idpOauthGrantAttributeMappingValue = types.ObjectNull(idpOauthGrantAttributeMappingAttrTypes)
+	} else {
+		var idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues []attr.Value
+		for _, idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue := range r.IdpOAuthGrantAttributeMapping.AccessTokenManagerMappings {
+			var idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue types.Object
+			if idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AccessTokenManagerRef == nil {
+				idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue = types.ObjectNull(idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes)
+			} else {
+				idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue, diags = types.ObjectValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes, map[string]attr.Value{
+					"id": types.StringValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AccessTokenManagerRef.Id),
+				})
+				respDiags.Append(diags...)
+			}
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AttributeContractFulfillment)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.AttributeSources)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), idpOauthGrantAttributeMappingAccessTokenManagerMappingsResponseValue.IssuanceCriteria)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue, diags := types.ObjectValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes, map[string]attr.Value{
+				"access_token_manager_ref":       idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefValue,
+				"attribute_contract_fulfillment": idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentValue,
+				"attribute_sources":              idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesValue,
+				"issuance_criteria":              idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaValue,
+			})
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues = append(idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues, idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue)
+		}
+		idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue, diags := types.SetValue(idpOauthGrantAttributeMappingAccessTokenManagerMappingsElementType, idpOauthGrantAttributeMappingAccessTokenManagerMappingsValues)
+		respDiags.Append(diags...)
+		var idpOauthGrantAttributeMappingIdpOauthAttributeContractValue types.Object
+		if r.IdpOAuthGrantAttributeMapping.IdpOAuthAttributeContract == nil {
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractValue = types.ObjectNull(idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes)
+		} else {
+			var idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues []attr.Value
+			for _, idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesResponseValue := range r.IdpOAuthGrantAttributeMapping.IdpOAuthAttributeContract.CoreAttributes {
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue, diags := types.ObjectValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+					"masked": types.BoolPointerValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesResponseValue.Masked),
+					"name":   types.StringValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesResponseValue.Name),
+				})
+				respDiags.Append(diags...)
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues = append(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues, idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue)
+			}
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue, diags := types.SetValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesElementType, idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValues)
+			respDiags.Append(diags...)
+			var idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues []attr.Value
+			for _, idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesResponseValue := range r.IdpOAuthGrantAttributeMapping.IdpOAuthAttributeContract.ExtendedAttributes {
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue, diags := types.ObjectValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+					"masked": types.BoolPointerValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesResponseValue.Masked),
+					"name":   types.StringValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesResponseValue.Name),
+				})
+				respDiags.Append(diags...)
+				idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues = append(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues, idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue)
+			}
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue, diags := types.SetValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesElementType, idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValues)
+			respDiags.Append(diags...)
+			idpOauthGrantAttributeMappingIdpOauthAttributeContractValue, diags = types.ObjectValue(idpOauthGrantAttributeMappingIdpOauthAttributeContractAttrTypes, map[string]attr.Value{
+				"core_attributes":     idpOauthGrantAttributeMappingIdpOauthAttributeContractCoreAttributesValue,
+				"extended_attributes": idpOauthGrantAttributeMappingIdpOauthAttributeContractExtendedAttributesValue,
+			})
+			respDiags.Append(diags...)
+		}
+		idpOauthGrantAttributeMappingValue, diags = types.ObjectValue(idpOauthGrantAttributeMappingAttrTypes, map[string]attr.Value{
+			"access_token_manager_mappings": idpOauthGrantAttributeMappingAccessTokenManagerMappingsValue,
+			"idp_oauth_attribute_contract":  idpOauthGrantAttributeMappingIdpOauthAttributeContractValue,
+		})
+		respDiags.Append(diags...)
+	}
+
+	state.IdpOAuthGrantAttributeMapping = idpOauthGrantAttributeMappingValue
 
 	// InboundProvisioning
+	var inboundProvisioningValue types.Object
 	var inboundProvisioningGroupsValue types.Object
 	if r.InboundProvisioning == nil {
 		inboundProvisioningValue = types.ObjectNull(inboundProvisioningAttrTypes)
@@ -4349,25 +5345,25 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		var inboundProvisioningCustomSchemaAttributesValues []attr.Value
 		for _, inboundProvisioningCustomSchemaAttributesResponseValue := range r.InboundProvisioning.CustomSchema.Attributes {
 			inboundProvisioningCustomSchemaAttributesSubAttributesValue, objDiags := types.SetValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.SubAttributes)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningCustomSchemaAttributesTypesValue, objDiags := types.SetValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.Types)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningCustomSchemaAttributesValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttributesAttrTypes, map[string]attr.Value{
 				"multi_valued":   types.BoolPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.MultiValued),
 				"name":           types.StringPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.Name),
 				"sub_attributes": inboundProvisioningCustomSchemaAttributesSubAttributesValue,
 				"types":          inboundProvisioningCustomSchemaAttributesTypesValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningCustomSchemaAttributesValues = append(inboundProvisioningCustomSchemaAttributesValues, inboundProvisioningCustomSchemaAttributesValue)
 		}
 		inboundProvisioningCustomSchemaAttributesValue, objDiags := types.SetValue(inboundProvisioningCustomSchemaAttributesElementType, inboundProvisioningCustomSchemaAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningCustomSchemaValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttrTypes, map[string]attr.Value{
 			"attributes": inboundProvisioningCustomSchemaAttributesValue,
 			"namespace":  types.StringPointerValue(r.InboundProvisioning.CustomSchema.Namespace),
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		if r.InboundProvisioning.Groups != nil {
 			var inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues []attr.Value
 			for _, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeContract.CoreAttributes {
@@ -4375,84 +5371,84 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					"masked": types.BoolPointerValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue.Masked),
 					"name":   types.StringValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue.Name),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue)
 			}
 			inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue, objDiags := types.SetValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesElementType, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			var inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues []attr.Value
 			for _, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeContract.ExtendedAttributes {
 				inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
 					"masked": types.BoolPointerValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue.Masked),
 					"name":   types.StringValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue.Name),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue)
 			}
 			inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue, objDiags := types.SetValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesElementType, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsReadGroupsAttributeContractValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeContractAttrTypes, map[string]attr.Value{
 				"core_attributes":     inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue,
 				"extended_attributes": inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues := make(map[string]attr.Value)
 			for key, inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeFulfillment {
 				inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
 					"id":   types.StringPointerValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Source.Id),
 					"type": types.StringValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Source.Type),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentAttrTypes, map[string]attr.Value{
 					"source": inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceValue,
 					"value":  types.StringValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Value),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues[key] = inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue
 			}
 			inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentElementType, inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			var inboundProvisioningGroupsReadGroupsAttributesValues []attr.Value
 			for _, inboundProvisioningGroupsReadGroupsAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.Attributes {
 				inboundProvisioningGroupsReadGroupsAttributesValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributesAttrTypes, map[string]attr.Value{
 					"name": types.StringValue(inboundProvisioningGroupsReadGroupsAttributesResponseValue.Name),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsReadGroupsAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributesValues, inboundProvisioningGroupsReadGroupsAttributesValue)
 			}
 			inboundProvisioningGroupsReadGroupsAttributesValue, objDiags := types.SetValue(inboundProvisioningGroupsReadGroupsAttributesElementType, inboundProvisioningGroupsReadGroupsAttributesValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsReadGroupsValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttrTypes, map[string]attr.Value{
 				"attribute_contract":    inboundProvisioningGroupsReadGroupsAttributeContractValue,
 				"attribute_fulfillment": inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue,
 				"attributes":            inboundProvisioningGroupsReadGroupsAttributesValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues := make(map[string]attr.Value)
 			for key, inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue := range r.InboundProvisioning.Groups.WriteGroups.AttributeFulfillment {
 				inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
 					"id":   types.StringPointerValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Source.Id),
 					"type": types.StringValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Source.Type),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentAttrTypes, map[string]attr.Value{
 					"source": inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceValue,
 					"value":  types.StringValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Value),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues[key] = inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue
 			}
 			inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentElementType, inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsWriteGroupsValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttrTypes, map[string]attr.Value{
 				"attribute_fulfillment": inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningGroupsValue, objDiags = types.ObjectValue(inboundProvisioningGroupsAttrTypes, map[string]attr.Value{
 				"read_groups":  inboundProvisioningGroupsReadGroupsValue,
 				"write_groups": inboundProvisioningGroupsWriteGroupsValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		} else {
 			inboundProvisioningGroupsValue = types.ObjectNull(inboundProvisioningGroupsAttrTypes)
 		}
@@ -4460,23 +5456,23 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		var identityStoreInboundProvisioningUserRepository, ldapInboundProvisioningUserRepository types.Object
 		if r.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository != nil {
 			identityStoreProvisionerRef, objDiags := resourcelink.ToState(ctx, &r.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.IdentityStoreProvisionerRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			identityStoreInboundProvisioningUserRepository, objDiags = types.ObjectValue(inboundprovisioninguserrepository.IdentityStoreInboundProvisioningUserRepositoryAttrType(), map[string]attr.Value{
 				"identity_store_provisioner_ref": identityStoreProvisionerRef,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			ldapInboundProvisioningUserRepository = types.ObjectNull(inboundprovisioninguserrepository.LdapInboundProvisioningUserRepositoryAttrType())
 		} else if r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository != nil {
 			dataStoreRef, objDiags := resourcelink.ToState(ctx, &r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.DataStoreRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			ldapInboundProvisioningUserRepository, objDiags = types.ObjectValue(inboundprovisioninguserrepository.LdapInboundProvisioningUserRepositoryAttrType(), map[string]attr.Value{
 				"base_dn":                types.StringPointerValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.BaseDn),
 				"data_store_ref":         dataStoreRef,
 				"unique_user_id_filter":  types.StringValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.UniqueUserIdFilter),
 				"unique_group_id_filter": types.StringValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.UniqueGroupIdFilter),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			identityStoreInboundProvisioningUserRepository = types.ObjectNull(inboundprovisioninguserrepository.IdentityStoreInboundProvisioningUserRepositoryAttrType())
 		}
 
@@ -4486,7 +5482,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		}
 
 		inboundProvisioningUserRepositoryValue, objDiags := types.ObjectValue(inboundprovisioninguserrepository.ElemAttrType(), inboundProvisioningUserRepositoryAttrValue)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		var inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues []attr.Value
 		for _, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeContract.CoreAttributes {
@@ -4494,71 +5490,71 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"masked": types.BoolPointerValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue.Masked),
 				"name":   types.StringValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue.Name),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues = append(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue)
 		}
 		inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue, objDiags := types.SetValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesElementType, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues []attr.Value
 		for _, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeContract.ExtendedAttributes {
 			inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
 				"masked": types.BoolPointerValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue.Masked),
 				"name":   types.StringValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue.Name),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues = append(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue)
 		}
 		inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue, objDiags := types.SetValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesElementType, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersReadUsersAttributeContractValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue,
 			"extended_attributes": inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersReadUsersAttributeFulfillmentValues := make(map[string]attr.Value)
 		for key, inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeFulfillment {
 			inboundProvisioningUsersReadUsersAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
 				"id":   types.StringPointerValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Source.Id),
 				"type": types.StringValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Source.Type),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeFulfillmentAttrTypes, map[string]attr.Value{
 				"source": inboundProvisioningUsersReadUsersAttributeFulfillmentSourceValue,
 				"value":  types.StringValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Value),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributeFulfillmentValues[key] = inboundProvisioningUsersReadUsersAttributeFulfillmentValue
 		}
 		inboundProvisioningUsersReadUsersAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningUsersReadUsersAttributeFulfillmentElementType, inboundProvisioningUsersReadUsersAttributeFulfillmentValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var inboundProvisioningUsersReadUsersAttributesValues []attr.Value
 		for _, inboundProvisioningUsersReadUsersAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.Attributes {
 			inboundProvisioningUsersReadUsersAttributesValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributesAttrTypes, map[string]attr.Value{
 				"name": types.StringValue(inboundProvisioningUsersReadUsersAttributesResponseValue.Name),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			inboundProvisioningUsersReadUsersAttributesValues = append(inboundProvisioningUsersReadUsersAttributesValues, inboundProvisioningUsersReadUsersAttributesValue)
 		}
 		inboundProvisioningUsersReadUsersAttributesValue, objDiags := types.SetValue(inboundProvisioningUsersReadUsersAttributesElementType, inboundProvisioningUsersReadUsersAttributesValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersReadUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttrTypes, map[string]attr.Value{
 			"attribute_contract":    inboundProvisioningUsersReadUsersAttributeContractValue,
 			"attribute_fulfillment": inboundProvisioningUsersReadUsersAttributeFulfillmentValue,
 			"attributes":            inboundProvisioningUsersReadUsersAttributesValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		inboundProvisioningUsersWriteUsersAttributeFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &r.InboundProvisioning.Users.WriteUsers.AttributeFulfillment)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersWriteUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersWriteUsersAttrTypes, map[string]attr.Value{
 			"attribute_fulfillment": inboundProvisioningUsersWriteUsersAttributeFulfillmentValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersAttrTypes, map[string]attr.Value{
 			"read_users":  inboundProvisioningUsersReadUsersValue,
 			"write_users": inboundProvisioningUsersWriteUsersValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		inboundProvisioningValue, objDiags = types.ObjectValue(inboundProvisioningAttrTypes, map[string]attr.Value{
 			"action_on_delete": types.StringPointerValue(r.InboundProvisioning.ActionOnDelete),
 			"custom_schema":    inboundProvisioningCustomSchemaValue,
@@ -4567,7 +5563,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"user_repository":  inboundProvisioningUserRepositoryValue,
 			"users":            inboundProvisioningUsersValue,
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	}
 	state.InboundProvisioning = inboundProvisioningValue
 
@@ -4577,23 +5573,23 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		for _, tokenGeneratorMapping := range r.WsTrust.TokenGeneratorMappings {
 			tokenGeneratorMappingSpTokenGeneratorRef := tokenGeneratorMapping.SpTokenGeneratorRef
 			spTokenGeneratorRef, objDiags := resourcelink.ToState(ctx, &tokenGeneratorMappingSpTokenGeneratorRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			var attributeSources basetypes.SetValue
 			attributeSources, objDiags = attributesources.ToState(ctx, tokenGeneratorMapping.AttributeSources)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			tokenGeneratorMappingAttributeContractFulfillment := tokenGeneratorMapping.AttributeContractFulfillment
 			attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(ctx, &tokenGeneratorMappingAttributeContractFulfillment)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			issuanceCriteria, objDiags := issuancecriteria.ToState(ctx, tokenGeneratorMapping.IssuanceCriteria)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 
 			var restrictedVirtualEntityIds types.Set
 			if len(tokenGeneratorMapping.RestrictedVirtualEntityIds) > 0 {
 				restrictedVirtualEntityIds, objDiags = types.SetValueFrom(ctx, types.StringType, tokenGeneratorMapping.RestrictedVirtualEntityIds)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				restrictedVirtualEntityIds = types.SetNull(types.StringType)
 			}
@@ -4608,7 +5604,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			}
 
 			tokenGeneratorMappingState, objDiags := types.ObjectValue(tokenGeneratorAttrTypes, tokenGeneratorAttrValues)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			tokenGeneratorMappings = append(tokenGeneratorMappings, tokenGeneratorMappingState)
 		}
 
@@ -4626,12 +5622,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				},
 			}},
 		}, r.WsTrust.AttributeContract)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 
 		var tokenGeneratorMappingsSet types.Set
 		if tokenGeneratorMappings != nil {
 			tokenGeneratorMappingsSet, objDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}, tokenGeneratorMappings)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		} else {
 			tokenGeneratorMappingsSet = types.SetNull(types.ObjectType{AttrTypes: tokenGeneratorAttrTypes})
 		}
@@ -4643,12 +5639,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		}
 
 		state.WsTrust, objDiags = types.ObjectValue(wsTrustAttrTypes, wsTrustAttrValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	} else {
 		state.WsTrust = types.ObjectNull(wsTrustAttrTypes)
 	}
 
-	return diags
+	return respDiags
 }
 
 func (r *spIdpConnectionResource) warnFor500Err(httpResp *http.Response, diags *diag.Diagnostics) {
@@ -4667,9 +5663,8 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	createSpIdpConnection := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	err := addOptionalSpIdpConnectionFields(ctx, createSpIdpConnection, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for SpIdpConnection: "+err.Error())
+	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createSpIdpConnection, plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -4732,9 +5727,8 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	updateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.UpdateConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	err := addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Sp Idp Connection: "+err.Error())
+	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

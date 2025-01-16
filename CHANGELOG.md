@@ -1,3 +1,62 @@
+# v1.4.0 (Unreleased)
+### Breaking changes
+* `sp_idp_connection` resource
+  * Marked `idp_oauth_grant_attribute_mapping.access_token_manager_mappings` as required and with minimum size of 1. Previously not including this attribute would have been allowed by the provider, but rejected by PingFederate. Now the provider itself will require at least one access token manager mapping when setting `idp_oauth_grant_attribute_mapping`.
+  * Marked `idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract` as required. Previously not including this attribute would have been allowed by the provider, but rejected by PingFederate. Now the provider itself will require this attribute when setting `idp_oauth_grant_attribute_mapping`.
+  * Changed `idp_browser_sso.adapter_mappings` from a Set to a List to work around terraform set identity issues.
+
+### Enhancements
+* Added missing `ldap_data_store.ldaps_dns_srv_prefix` attribute to the `pingfederate_data_store` resource and data source.
+* `sp_idp_connection` resource: Added additional validation that `inbound_provisioning` group attributes do not conflict.
+
+### Bug fixes
+* Added missing empty default for some `certs` attributes.
+* Fixed incorrect length validation for certain resource link `id` attributes.
+* `sp_idp_connection` and `idp_sp_connection` resources
+  * Fixed `password` incorrectly defaulting to an empty string for `credentials.inbound_back_channel_auth.http_basic_credentials.password` and `credentials.outbound_back_channel_auth.http_basic_credentials.password`.
+  * Fixed JSON marshal errors when setting `attribute_sources` values.
+* `idp_sp_connection` resource
+  * Fixed `sp_browser_sso.artifact.lifetime` attribute incorrectly being marked as required.
+  * Fixed invalid validation requiring either `sp_browser_sso.sign_response_as_required` or `sp_browser_sso.sign_assertions` to be set to `true`.
+  * Fixed some booleans being left out of state when set to `false`.
+  * Added missing `false` default for `attribute_query.policy.encrypt_assertion`, `attribute_query.policy.require_encrypted_name_id`, `attribute_query.policy.require_signed_attribute_query`, `attribute_query.policy.sign_assertion`, and `attribute_query.policy.sign_response`.
+  * Added missing `false` default for `credentials.signing_settings.include_raw_key_in_signature`.
+  * Added missing `true` default for `outbound_provision.channels.#.channel_source.account_management_settings.default_status` and `outbound_provision.channels.#.channel_source.account_management_settings.flag_comparison_status`.
+  * Added missing `false` default for `sp_browser_sso.adapter_mappings.#.restrict_virtual_entity_ids` and `sp_browser_sso.authentication_policy_contract_assertion_mappings.#.restrict_virtual_entity_ids`.
+  * Added missing `false` default for `sp_browser_sso.always_sign_artifact_response`, `sp_browser_sso.require_signed_authn_requests`, and `sp_browser_sso.sign_assertions`.
+  * Added missing `false` default for `sp_browser_sso.encryption_policy.encrypt_assertion`, `sp_browser_sso.encryption_policy.encrypt_slo_subject_name_id`, and `sp_browser_sso.encryption_policy.slo_subject_name_id_encrypted`
+  * Added missing `false` default for `ws_trust.encrypt_saml2_assertion`, `ws_trust.generate_key`, and `ws_trust.oauth_assertion_profiles`.
+
+* `sp_idp_connection` resource
+  * Fixed unexpected update plans that could occur when setting `credentials.certs`.
+  * Added missing `oidc_client_credentials.encrypted_secret` attribute, to be used as an alternative to `oidc_client_credentials.client_secret`, and marked `oidc_client_credentials.client_secret` as sensitive.
+  * Added missing `false` default for `credentials.inbound_back_channel_auth.digital_signature` and `credentials.outbound_back_channel_auth.digital_signature`.
+  * Added missing `false` default for `credentials.inbound_back_channel_auth.require_ssl`.
+  * Added missing default for `error_page_msg_id`. Defaults to `errorDetail.spSsoFailure` for browser SSO connections, null otherwise.
+  * Fixed `idp_browser_sso.adapter_mappings.#.adapter_override_settings.plugin_descriptor_ref`, `idp_browser_sso.adapter_mappings.#.adapter_override_settings.name`, and `idp_browser_sso.adapter_mappings.#.sp_adapter_ref` incorrectly being marked as required.
+  * Added missing empty default for `idp_browser_sso.adapter_mappings.#.adapter_override_settings.target_application_info`.
+  * Added missing defaults for `idp_browser_sso.adapter_mappings.#.issuance_criteria`, `idp_browser_sso.adapter_mappings.#.restrict_virtual_entity_ids`, and `idp_browser_sso.adapter_mappings.#.restricted_virtual_entity_ids`.
+  * Added missing default for `idp_browser_sso.assertions_signed`, `idp_browser_sso.authentication_policy_contract_mappings`, and `idp_browser_sso.sign_authn_requests`.
+  * Added missing `false` defaults for each boolean attribute in `idp_browser_sso.decryption_policy`.
+  * Fixed provider failures when configuring `idp_browser_sso.jit_provisioning`.
+  * Fixed unexpected new value errors for `oidc_provider_settings.back_channel_logout_uri`, `oidc_provider_settings.front_channel_logout_uri`, `oidc_provider_settings.post_logout_redirect_uri`, and `oidc_provider_settings.redirect_uri`.
+  * Added missing `false` default for `oidc_provider_settings.enable_pkce` and `oidc_provider_settings.track_user_sessions_for_logout`.
+  * Fixed unexpected new value error for `oidc_provider_settings.jwt_secured_authorization_response_mode_type`.
+  * Fixed incorrectly required `oidc_provider_settings.request_parameters.#.attribute_value.value` attribute.
+  * Fixed `idp_browser_sso.sso_service_endpoints.#.binding` incorrectly being marked as required.
+  * Updated to allow blank path for `idp_browser_sso.url_whitelist_entries.#.valid_path`, and defaulted to an empty string.
+  * Added missing empty default for `idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.extended_attributes`.
+  * Fixed failures when configuring `inbound_provisioning.users` and `inbound_provisioning.groups`.
+  * Fixed failures related to `core_attributes` when configuring `inbound_provisioning.user_repository`.
+  * Fixed unexpected new value errors for `inbound_provisioning.groups.read_groups.attribute_contract.core_attributes` and `inbound_provisioning.users.read_users.attribute_contract.core_attributes`.
+  * Added missing empty default for `inbound_provisioning.groups.read_groups.attribute_fulfillment.#.source.value` and `inbound_provisioning.groups.write_groups.attribute_fulfillment.#.source.value` and marked as optional rather than required.
+  * Added empty default for `inbound_provisioning.user_repository.ldap.unique_group_id_filter` and marked as optional rather than required.
+  * Added missing empty default for `inbound_provisioning.users.read_users.attribute_contract.extended_attributes`.
+  * Added missing empty default for `inbound_provisioning.users.read_users.attribute_fulfillment.#.source.value` and `inbound_provisioning.users.write_users.attribute_fulfillment.#.source.value` and marked as optional rather than required.
+  * Added empty or null default for `virtual_entity_ids`, depending on the type of connection
+  * Added null default for `jwt_secured_authorization_response_mode_type` for PingFederate versions prior to `12.1`.
+  * Fixed errors with `false` values being returned as `null` for `credentials.signing_settings.include_cert_in_signature`, `idp_browser_sso.sign_authn_request`, and `idp_browser_sso.assertions_signed`.
+
 # v1.3.0 January 9, 2024
 ### Enhancements
 * Added support for PingFederate `12.2.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, `12.0`, and `12.1`. This will be the last release with support for PingFederate `11.2` in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#440]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/440)))

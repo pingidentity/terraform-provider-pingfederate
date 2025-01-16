@@ -14,8 +14,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const configStoreMinimalBundle = "org.sourceid.common.ExpressionManager"
-const configStoreMinimalId = "evaluateExpressions"
+const configStoreMinimalBundle = "org.sourceid.saml20.domain.mgmt.AdminUserManager"
+const configStoreMinimalId = "isEaRoleUpdated"
 const configStoreBundle = "org.sourceid.oauth20.handlers.process.exchange.execution.SecurityTokenCreator"
 const configStoreSettingId = "base64-required-plugins"
 const configStoreMapBundle = "com.pingidentity.crypto.SignatureAlgorithms"
@@ -148,10 +148,12 @@ func configStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_config_store.example", "list_value.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_config_store.example", "id", configStoreMinimalId),
-		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.#", "1"),
-		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.id", configStoreMinimalId),
-		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.type", "STRING"),
-		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.string_value", "true"),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.#", "2"),
+		resource.TestCheckTypeSetElemNestedAttrs("data.pingfederate_config_store.dataexample", "items.*", map[string]string{
+			"id":           configStoreMinimalId,
+			"type":         "STRING",
+			"string_value": "true",
+		}),
 		resource.TestCheckNoResourceAttr("data.pingfederate_config_store.dataexample", "items.0.map_value"),
 		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.0.list_value.#", "0"),
 	)

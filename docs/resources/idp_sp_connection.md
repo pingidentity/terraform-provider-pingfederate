@@ -667,11 +667,11 @@ Optional:
 
 Optional:
 
-- `encrypt_assertion` (Boolean) Encrypt the assertion.
-- `require_encrypted_name_id` (Boolean) Require an encrypted name identifier.
-- `require_signed_attribute_query` (Boolean) Require signed attribute query.
-- `sign_assertion` (Boolean) Sign the assertion.
-- `sign_response` (Boolean) Sign the response.
+- `encrypt_assertion` (Boolean) Encrypt the assertion. The default value is `false`.
+- `require_encrypted_name_id` (Boolean) Require an encrypted name identifier. The default value is `false`.
+- `require_signed_attribute_query` (Boolean) Require signed attribute query. The default value is `false`.
+- `sign_assertion` (Boolean) Sign the assertion. The default value is `false`.
+- `sign_response` (Boolean) Sign the response. The default value is `false`.
 
 
 
@@ -895,7 +895,7 @@ Optional:
 - `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
 - `alternative_signing_key_pair_refs` (Attributes Set) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
 - `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element. The default value is `false`.
-- `include_raw_key_in_signature` (Boolean) Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.
+- `include_raw_key_in_signature` (Boolean) Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element. The default value is `false`.
 - `signing_key_pair_ref` (Attributes) A reference to a signing key pair. (see [below for nested schema](#nestedatt--credentials--signing_settings--signing_key_pair_ref))
 
 <a id="nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs"></a>
@@ -1029,8 +1029,8 @@ Required:
 
 Optional:
 
-- `default_status` (Boolean) The default status of the account.
-- `flag_comparison_status` (Boolean) The flag that represents comparison status.
+- `default_status` (Boolean) The default status of the account. The default value is `true`.
+- `flag_comparison_status` (Boolean) The flag that represents comparison status. The default value is `true`.
 - `flag_comparison_value` (String) The flag that represents comparison value.
 
 
@@ -1172,7 +1172,7 @@ Required:
 
 Optional:
 
-- `always_sign_artifact_response` (Boolean) Specify to always sign the SAML ArtifactResponse.
+- `always_sign_artifact_response` (Boolean) Specify to always sign the SAML ArtifactResponse. The default value is `false`.
 - `artifact` (Attributes) The settings for an Artifact binding. (see [below for nested schema](#nestedatt--sp_browser_sso--artifact))
 - `authentication_policy_contract_assertion_mappings` (Attributes Set) A list of authentication policy contracts that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings))
 - `default_target_url` (String) Default Target URL for SAML1.x connections. This default URL represents the destination on the SP where the user will be directed.
@@ -1180,8 +1180,8 @@ Optional:
 - `encryption_policy` (Attributes) Defines what to encrypt in the browser-based SSO profile. (see [below for nested schema](#nestedatt--sp_browser_sso--encryption_policy))
 - `incoming_bindings` (Set of String) The SAML bindings that are enabled for browser-based SSO. This is required for SAML 2.0 connections when the enabled profiles contain the SP-initiated SSO profile or either SLO profile. For SAML 1.x based connections, it is not used for SP Connections.
 - `message_customizations` (Attributes Set) The message customizations for browser-based SSO. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--sp_browser_sso--message_customizations))
-- `require_signed_authn_requests` (Boolean) Require AuthN requests to be signed when received via the POST or Redirect bindings.
-- `sign_assertions` (Boolean) Always sign the SAML Assertion.
+- `require_signed_authn_requests` (Boolean) Require AuthN requests to be signed when received via the POST or Redirect bindings. The default value is `false`.
+- `sign_assertions` (Boolean) Always sign the SAML Assertion. The default value is `false`.
 - `sign_response_as_required` (Boolean) Sign SAML Response as required by the associated binding and encryption policy. Applicable to SAML2.0 only and is defaulted to `true`. It can be set to `false` only on SAML2.0 connections when `sign_assertions` is set to `true`.
 - `slo_service_endpoints` (Attributes Set) A list of possible endpoints to send SLO requests and responses. (see [below for nested schema](#nestedatt--sp_browser_sso--slo_service_endpoints))
 - `sp_saml_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP. Options are `PSEUDONYM`, `STANDARD`, `TRANSIENT`.
@@ -1208,7 +1208,7 @@ Optional:
 - `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
 - `idp_adapter_ref` (Attributes) Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria))
-- `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
+- `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment"></a>
@@ -2008,11 +2008,11 @@ Optional:
 
 Required:
 
-- `lifetime` (Number) The lifetime of the artifact in seconds.
 - `resolver_locations` (Attributes Set) Remote party URLs that you will use to resolve/translate the artifact and get the actual protocol message (see [below for nested schema](#nestedatt--sp_browser_sso--artifact--resolver_locations))
 
 Optional:
 
+- `lifetime` (Number) The lifetime of the artifact in seconds.
 - `source_id` (String) Source ID for SAML1.x connections
 
 <a id="nestedatt--sp_browser_sso--artifact--resolver_locations"></a>
@@ -2038,7 +2038,7 @@ Optional:
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is `false`.
 - `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria))
-- `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
+- `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment"></a>
@@ -2315,10 +2315,10 @@ Optional:
 
 Optional:
 
-- `encrypt_assertion` (Boolean) Whether the outgoing SAML assertion will be encrypted.
-- `encrypt_slo_subject_name_id` (Boolean) Encrypt the name-identifier attribute in outbound SLO messages. This can be set if the name id is encrypted.
+- `encrypt_assertion` (Boolean) Whether the outgoing SAML assertion will be encrypted. The default value is `false`.
+- `encrypt_slo_subject_name_id` (Boolean) Encrypt the name-identifier attribute in outbound SLO messages. This can be set if the name id is encrypted. The default value is `false`.
 - `encrypted_attributes` (Set of String) The list of outgoing SAML assertion attributes that will be encrypted. The `encrypt_assertion` property takes precedence over this.
-- `slo_subject_name_id_encrypted` (Boolean) Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled.
+- `slo_subject_name_id_encrypted` (Boolean) Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled. The default value is `false`.
 
 
 <a id="nestedatt--sp_browser_sso--message_customizations"></a>
@@ -2368,12 +2368,12 @@ Optional:
 
 - `abort_if_not_fulfilled_from_request` (Boolean) If the attribute contract cannot be fulfilled using data from the Request, abort the transaction.
 - `default_token_type` (String) The default token type when a web service client (WSC) does not specify in the token request which token type the STS should issue. Options are `SAML20`, `SAML11`, `SAML11_O365`. Defaults to `SAML20`.
-- `encrypt_saml2_assertion` (Boolean) When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles.
-- `generate_key` (Boolean) When selected, the STS generates a symmetric key to be used in conjunction with the "Holder of Key" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.
+- `encrypt_saml2_assertion` (Boolean) When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles. The default value is `false`.
+- `generate_key` (Boolean) When selected, the STS generates a symmetric key to be used in conjunction with the "Holder of Key" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles. The default value is `false`.
 - `message_customizations` (Attributes Set) The message customizations for WS-Trust. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--ws_trust--message_customizations))
 - `minutes_after` (Number) The amount of time after the SAML token was issued during which it is to be considered valid. The default value is `30`.
 - `minutes_before` (Number) The amount of time before the SAML token was issued during which it is to be considered valid. The default value is `5`.
-- `oauth_assertion_profiles` (Boolean) When selected, four additional token-type requests become available.
+- `oauth_assertion_profiles` (Boolean) When selected, four additional token-type requests become available. The default value is `false`.
 - `request_contract_ref` (Attributes) Request Contract to be used to map attribute values into the security token. (see [below for nested schema](#nestedatt--ws_trust--request_contract_ref))
 
 <a id="nestedatt--ws_trust--attribute_contract"></a>
