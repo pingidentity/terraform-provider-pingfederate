@@ -4067,7 +4067,6 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			idpBrowserSsoOidcProviderSettingsValue.AuthorizationEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["authorization_endpoint"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.BackChannelLogoutUri = idpBrowserSsoOidcProviderSettingsAttrs["back_channel_logout_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.EnablePKCE = idpBrowserSsoOidcProviderSettingsAttrs["enable_pkce"].(types.Bool).ValueBoolPointer()
-			idpBrowserSsoOidcProviderSettingsValue.FrontChannelLogoutUri = idpBrowserSsoOidcProviderSettingsAttrs["front_channel_logout_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.JwksURL = idpBrowserSsoOidcProviderSettingsAttrs["jwks_url"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.JwtSecuredAuthorizationResponseModeType = idpBrowserSsoOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.LoginType = idpBrowserSsoOidcProviderSettingsAttrs["login_type"].(types.String).ValueString()
