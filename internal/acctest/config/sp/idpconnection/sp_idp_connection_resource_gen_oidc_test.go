@@ -444,13 +444,13 @@ resource "pingfederate_sp_idp_connection" "example" {
       id = pingfederate_authentication_policy_contract.apc1.id
     }
     oidc_provider_settings = {
-      authentication_scheme                        = "PRIVATE_KEY_JWT"
-      authentication_signing_algorithm             = "RS256"
-      authorization_endpoint                       = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/authorize"
-      enable_pkce                                  = true
-      jwks_url                                     = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/jwks"
-      login_type                                   = "CODE"
-      pushed_authorization_request_endpoint        = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/par"
+      authentication_scheme                 = "PRIVATE_KEY_JWT"
+      authentication_signing_algorithm      = "RS256"
+      authorization_endpoint                = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/authorize"
+      enable_pkce                           = true
+      jwks_url                              = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/jwks"
+      login_type                            = "CODE"
+      pushed_authorization_request_endpoint = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/par"
       request_parameters = [
         {
           application_endpoint_override = false
