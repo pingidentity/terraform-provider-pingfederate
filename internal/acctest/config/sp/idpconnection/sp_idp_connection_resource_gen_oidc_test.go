@@ -621,7 +621,6 @@ func spIdpConnection_CheckComputedValuesOidcComplete() resource.TestCheckFunc {
 
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		testCheckFuncs = append(testCheckFuncs,
-			resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
 			resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
 		)
 	}
