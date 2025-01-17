@@ -4071,7 +4071,6 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			idpBrowserSsoOidcProviderSettingsValue.JwtSecuredAuthorizationResponseModeType = idpBrowserSsoOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.LoginType = idpBrowserSsoOidcProviderSettingsAttrs["login_type"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.LogoutEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["logout_endpoint"].(types.String).ValueStringPointer()
-			idpBrowserSsoOidcProviderSettingsValue.PostLogoutRedirectUri = idpBrowserSsoOidcProviderSettingsAttrs["post_logout_redirect_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.PushedAuthorizationRequestEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.RedirectUri = idpBrowserSsoOidcProviderSettingsAttrs["redirect_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.RequestParameters = []client.OIDCRequestParameter{}

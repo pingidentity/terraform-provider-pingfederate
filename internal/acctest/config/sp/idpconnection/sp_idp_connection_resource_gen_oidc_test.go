@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const idpConnOidcId = "oidcconn"
@@ -182,6 +183,18 @@ resource "pingfederate_sp_idp_connection" "example" {
 
 // Maximal HCL with all values set where possible
 func spIdpConnection_OidcCompleteHCL() string {
+	versionedOidcProviderSettingsHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		versionedOidcProviderSettingsHcl += `
+      logout_endpoint                              = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/signoff"
+    `
+	}
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		versionedOidcProviderSettingsHcl += `
+      jwt_secured_authorization_response_mode_type = "DISABLED"
+    `
+	}
+
 	return fmt.Sprintf(`
 %s
 
@@ -436,9 +449,7 @@ resource "pingfederate_sp_idp_connection" "example" {
       authorization_endpoint                       = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/authorize"
       enable_pkce                                  = true
       jwks_url                                     = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/jwks"
-      jwt_secured_authorization_response_mode_type = "DISABLED"
       login_type                                   = "CODE"
-      logout_endpoint                              = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/signoff"
       pushed_authorization_request_endpoint        = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/par"
       request_parameters = [
         {
@@ -550,7 +561,7 @@ resource "pingfederate_sp_idp_connection" "example" {
 
 // Validate any computed values when applying minimal HCL
 func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
+	testCheckFuncs := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "active", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.addtional_allowed_entities.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "additional_allowed_entities_configuration.allow_additional_entities", "false"),
@@ -567,9 +578,6 @@ func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.default_target_url", ""),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.enable_pkce", "false"),
 		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.back_channel_logout_uri"),
-		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
-		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type", "DISABLED"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.redirect_uri"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.request_parameters.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.track_user_sessions_for_logout", "false"),
@@ -578,26 +586,47 @@ func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "logging_mode", "STANDARD"),
 		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "oidc_client_credentials.client_secret"),
 		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "oidc_client_credentials.encrypted_secret"),
-	)
+	}
+
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		testCheckFuncs = append(testCheckFuncs,
+			resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
+			resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
+		)
+	}
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		testCheckFuncs = append(testCheckFuncs,
+			resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type", "DISABLED"),
+		)
+	}
+
+	return resource.ComposeTestCheckFunc(testCheckFuncs...)
 }
 
 // Validate any computed values when applying complete HCL
 func spIdpConnection_CheckComputedValuesOidcComplete() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
+	testCheckFuncs := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnOidcId),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "sub"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.jit_provisioning.user_attributes.attribute_contract.#", "15"),
-		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.back_channel_logout_uri"),
-		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.redirect_uri"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.0.name", "TOKEN_SUBJECT"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "oidc_client_credentials.encrypted_secret"),
-	)
+	}
+
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		testCheckFuncs = append(testCheckFuncs,
+			resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
+			resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
+		)
+	}
+
+	return resource.ComposeTestCheckFunc(testCheckFuncs...)
 }
 
 // Test that any objects created by the test are destroyed
