@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const idpConnInboundProvisioningId = "inboundproconn"
@@ -68,7 +69,13 @@ func TestAccSpIdpConnection_InboundProvisioningMinimalMaximal(t *testing.T) {
 }
 
 func spIdpConnection_InboundProvisioningDependencyHCL() string {
-	return `
+	ldapDataStoreVersionDependentHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		ldapDataStoreVersionDependentHcl = `
+    use_start_tls           = false
+    `
+	}
+	return fmt.Sprintf(`
 resource "pingfederate_data_store" "example" {
   data_store_id = "addatastore"
   ldap_data_store = {
@@ -99,13 +106,13 @@ resource "pingfederate_data_store" "example" {
     time_between_evictions  = -1
     use_dns_srv_records     = false
     use_ssl                 = true
-    use_start_tls           = false
     user_dn                 = "cn=localadmin,cn=users,dc=ldaps2,dc=com"
     verify_host             = false
+    %s
   }
   mask_attribute_values = false
 }
-  `
+  `, ldapDataStoreVersionDependentHcl)
 }
 
 // Minimal HCL with only required values set
