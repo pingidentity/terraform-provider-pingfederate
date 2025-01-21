@@ -4065,16 +4065,12 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			idpBrowserSsoOidcProviderSettingsValue.AuthenticationScheme = idpBrowserSsoOidcProviderSettingsAttrs["authentication_scheme"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.AuthenticationSigningAlgorithm = idpBrowserSsoOidcProviderSettingsAttrs["authentication_signing_algorithm"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.AuthorizationEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["authorization_endpoint"].(types.String).ValueString()
-			idpBrowserSsoOidcProviderSettingsValue.BackChannelLogoutUri = idpBrowserSsoOidcProviderSettingsAttrs["back_channel_logout_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.EnablePKCE = idpBrowserSsoOidcProviderSettingsAttrs["enable_pkce"].(types.Bool).ValueBoolPointer()
-			idpBrowserSsoOidcProviderSettingsValue.FrontChannelLogoutUri = idpBrowserSsoOidcProviderSettingsAttrs["front_channel_logout_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.JwksURL = idpBrowserSsoOidcProviderSettingsAttrs["jwks_url"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.JwtSecuredAuthorizationResponseModeType = idpBrowserSsoOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.LoginType = idpBrowserSsoOidcProviderSettingsAttrs["login_type"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.LogoutEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["logout_endpoint"].(types.String).ValueStringPointer()
-			idpBrowserSsoOidcProviderSettingsValue.PostLogoutRedirectUri = idpBrowserSsoOidcProviderSettingsAttrs["post_logout_redirect_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.PushedAuthorizationRequestEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"].(types.String).ValueStringPointer()
-			idpBrowserSsoOidcProviderSettingsValue.RedirectUri = idpBrowserSsoOidcProviderSettingsAttrs["redirect_uri"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.RequestParameters = []client.OIDCRequestParameter{}
 			for _, requestParametersElement := range idpBrowserSsoOidcProviderSettingsAttrs["request_parameters"].(types.Set).Elements() {
 				requestParametersValue := client.OIDCRequestParameter{}
@@ -4111,7 +4107,6 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			sloServiceEndpointsValue.Url = sloServiceEndpointsAttrs["url"].(types.String).ValueString()
 			idpBrowserSsoValue.SloServiceEndpoints = append(idpBrowserSsoValue.SloServiceEndpoints, sloServiceEndpointsValue)
 		}
-		idpBrowserSsoValue.SsoApplicationEndpoint = idpBrowserSsoAttrs["sso_application_endpoint"].(types.String).ValueStringPointer()
 		if !idpBrowserSsoAttrs["sso_oauth_mapping"].IsNull() {
 			idpBrowserSsoSsoOauthMappingValue := &client.SsoOAuthMapping{}
 			idpBrowserSsoSsoOauthMappingAttrs := idpBrowserSsoAttrs["sso_oauth_mapping"].(types.Object).Attributes()

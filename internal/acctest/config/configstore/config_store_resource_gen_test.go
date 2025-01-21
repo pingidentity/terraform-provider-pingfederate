@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const configStoreMinimalBundle = "org.sourceid.saml20.domain.mgmt.AdminUserManager"
@@ -145,10 +146,14 @@ resource "pingfederate_config_store" "example" {
 
 // Validate any computed values when applying minimal HCL
 func configStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
+	expectedItems := "1"
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		expectedItems = "2"
+	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_config_store.example", "list_value.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_config_store.example", "id", configStoreMinimalId),
-		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.#", "2"),
+		resource.TestCheckResourceAttr("data.pingfederate_config_store.dataexample", "items.#", expectedItems),
 		resource.TestCheckTypeSetElemNestedAttrs("data.pingfederate_config_store.dataexample", "items.*", map[string]string{
 			"id":           configStoreMinimalId,
 			"type":         "STRING",
