@@ -446,6 +446,29 @@ resource "pingfederate_sp_idp_connection" "example" {
             }
           }
         }
+        attribute_sources = [
+          {
+            custom_attribute_source = {
+              data_store_ref = {
+                id = "customDataStore"
+              }
+              description = "APIStubs"
+              filter_fields = [
+                {
+                  name = "Authorization Header"
+                },
+                {
+                  name = "Body"
+                },
+                {
+                  name  = "Resource Path"
+                  value = "/users/extid"
+                },
+              ]
+              id = "APIStubs"
+            }
+          },
+        ]
         sp_token_generator_ref = {
           id = "tokengenerator"
         }
