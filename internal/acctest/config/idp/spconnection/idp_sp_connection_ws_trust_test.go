@@ -236,8 +236,16 @@ resource "pingfederate_idp_sp_connection" "example" {
           id = "UsernameTokenProcessor"
         }
         issuance_criteria = {
-          conditional_criteria = [
-          ]
+      conditional_criteria = [
+            {
+              attribute_name = "TOKEN_SUBJECT"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
+      ]
           expression_criteria = null
         }
         restricted_virtual_entity_ids = []
