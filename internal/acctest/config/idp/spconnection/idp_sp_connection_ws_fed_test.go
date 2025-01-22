@@ -211,6 +211,15 @@ resource "pingfederate_idp_sp_connection" "example" {
         }
         issuance_criteria = {
           conditional_criteria = [
+            {
+              attribute_name = "SAML_SUBJECT"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              error_result   = "myerrorresult"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
           ]
           expression_criteria = null
         }

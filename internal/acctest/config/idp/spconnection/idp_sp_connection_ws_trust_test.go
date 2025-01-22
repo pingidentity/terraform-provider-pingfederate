@@ -237,6 +237,14 @@ resource "pingfederate_idp_sp_connection" "example" {
         }
         issuance_criteria = {
           conditional_criteria = [
+            {
+              attribute_name = "TOKEN_SUBJECT"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
           ]
           expression_criteria = null
         }

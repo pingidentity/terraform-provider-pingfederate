@@ -556,7 +556,6 @@ resource "pingfederate_sp_idp_connection" "example" {
             {
               attribute_name = "SAML_SUBJECT"
               condition      = "EQUALS"
-              error_result   = "error"
               source = {
                 id   = null
                 type = "ASSERTION"
@@ -756,6 +755,14 @@ resource "pingfederate_sp_idp_connection" "example" {
         attribute_sources = []
         issuance_criteria = {
           conditional_criteria = [
+            {
+              attribute_name = "Username"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
           ]
           expression_criteria = null
         }

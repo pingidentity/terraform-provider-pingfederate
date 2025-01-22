@@ -296,7 +296,17 @@ resource "pingfederate_sp_idp_connection" "example" {
           }
         }
         issuance_criteria = {
-          conditional_criteria = []
+          conditional_criteria = [
+            {
+              attribute_name = "subject"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              error_result   = "myerrorresult"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
+          ]
         }
         restrict_virtual_entity_ids   = false
         restricted_virtual_entity_ids = []
@@ -592,6 +602,15 @@ resource "pingfederate_sp_idp_connection" "example" {
       ]
       issuance_criteria = {
         conditional_criteria = [
+          {
+            attribute_name = "USER_NAME"
+            condition      = "MULTIVALUE_CONTAINS_DN"
+            error_result   = "myerrorresult"
+            source = {
+              type = "MAPPED_ATTRIBUTES"
+            }
+            value = "cn=Example,dc=example,dc=com"
+          },
         ]
         expression_criteria = null
       }
