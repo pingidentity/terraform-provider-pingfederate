@@ -259,7 +259,16 @@ resource "pingfederate_sp_idp_connection" "example" {
           }
         }
         issuance_criteria = {
-          conditional_criteria = []
+      conditional_criteria = [
+            {
+              attribute_name = "subject"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
+      ]
         }
         restrict_virtual_entity_ids   = false
         restricted_virtual_entity_ids = []
@@ -388,8 +397,17 @@ resource "pingfederate_sp_idp_connection" "example" {
           id = pingfederate_authentication_policy_contract.apc1.id
         }
         issuance_criteria = {
-          conditional_criteria = [
-          ]
+      conditional_criteria = [
+            {
+              attribute_name = "email"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              error_result   = "myerrorresult"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
+      ]
           expression_criteria = null
         }
         restrict_virtual_server_ids   = false
@@ -527,8 +545,17 @@ resource "pingfederate_sp_idp_connection" "example" {
           },
         ]
         issuance_criteria = {
-          conditional_criteria = [
-          ]
+      conditional_criteria = [
+            {
+              attribute_name = "OrgName"
+              condition      = "MULTIVALUE_CONTAINS_DN"
+              error_result   = "myerrorresult"
+              source = {
+                type = "MAPPED_ATTRIBUTES"
+              }
+              value = "cn=Example,dc=example,dc=com"
+            },
+      ]
           expression_criteria = null
         }
         access_token_manager_ref = {
