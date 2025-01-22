@@ -754,7 +754,7 @@ resource "pingfederate_sp_idp_connection" "example" {
         }
         attribute_sources = []
         issuance_criteria = {
-      conditional_criteria = [
+          conditional_criteria = [
             {
               attribute_name = "Username"
               condition      = "MULTIVALUE_CONTAINS_DN"
@@ -763,7 +763,7 @@ resource "pingfederate_sp_idp_connection" "example" {
               }
               value = "cn=Example,dc=example,dc=com"
             },
-      ]
+          ]
           expression_criteria = null
         }
         access_token_manager_ref = {
