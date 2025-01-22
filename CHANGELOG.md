@@ -1,4 +1,4 @@
-# v1.4.0 (Unreleased)
+# v1.4.0 January 22, 2024
 ### Breaking changes
 * `sp_idp_connection` resource
   * Marked `idp_oauth_grant_attribute_mapping.access_token_manager_mappings` as required and with minimum size of 1. Previously not including this attribute would have been allowed by the provider, but rejected by PingFederate. Now the provider itself will require at least one access token manager mapping when setting `idp_oauth_grant_attribute_mapping`.
