@@ -1,4 +1,4 @@
-# v1.4.1 (Unreleased)
+# v1.4.1 January 23, 2024
 ### Bug fixes
 * Fixed inconsistent result errors when `error_result` is set to `null` within `issuance_criteria` attributes. ([#452]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/452)))
 
