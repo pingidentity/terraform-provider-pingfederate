@@ -1218,7 +1218,7 @@ func (r *localIdentityProfileResource) Read(ctx context.Context, req resource.Re
 	}
 	apiReadLocalIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.AuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil {
-		if httpResp.StatusCode == 404 {
+		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Local Identity Profile", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
