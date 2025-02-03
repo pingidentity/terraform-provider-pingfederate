@@ -1,3 +1,7 @@
+# v1.4.2 (Unreleased)
+### Bug fixes
+* Fixed a panic that could occur as a result of HTTP connection errors when using the `pingfederate_local_identity_profile` resource ([#456](https://github.com/pingidentity/terraform-provider-pingfederate/pull/456))
+
 # v1.4.1 January 23, 2024
 ### Bug fixes
 * Fixed inconsistent result errors when `error_result` is set to `null` within `issuance_criteria` attributes. ([#452]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/452)))
