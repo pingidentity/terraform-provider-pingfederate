@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package datastore
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
