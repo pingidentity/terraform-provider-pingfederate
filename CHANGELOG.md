@@ -2,6 +2,9 @@
 ### Bug fixes
 * Fixed a panic that could occur as a result of HTTP connection errors when using the `pingfederate_local_identity_profile` resource ([#456](https://github.com/pingidentity/terraform-provider-pingfederate/pull/456))
 
+### Notes
+* bump Go 1.22.2 => 1.23.5 ([#460](https://github.com/pingidentity/terraform-provider-pingfederate/pull/460))
+
 # v1.4.1 January 23, 2024
 ### Bug fixes
 * Fixed inconsistent result errors when `error_result` is set to `null` within `issuance_criteria` attributes. ([#452]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/452)))
