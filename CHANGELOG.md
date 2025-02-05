@@ -1,15 +1,16 @@
-# v1.4.2 (Unreleased)
+# v1.4.2 February 5, 2025
 ### Bug fixes
 * Fixed a panic that could occur as a result of HTTP connection errors when using the `pingfederate_local_identity_profile` resource ([#456](https://github.com/pingidentity/terraform-provider-pingfederate/pull/456))
 
 ### Notes
 * bump Go 1.22.2 => 1.23.5 ([#460](https://github.com/pingidentity/terraform-provider-pingfederate/pull/460))
+* bump `github.com/hashicorp/terraform-plugin-go` 0.25.0 => 0.26.0 ([#454](https://github.com/pingidentity/terraform-provider-pingfederate/pull/454))
 
-# v1.4.1 January 23, 2024
+# v1.4.1 January 23, 2025
 ### Bug fixes
 * Fixed inconsistent result errors when `error_result` is set to `null` within `issuance_criteria` attributes. ([#452]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/452)))
 
-# v1.4.0 January 22, 2024
+# v1.4.0 January 22, 2025
 ### Breaking changes
 * `sp_idp_connection` resource
   * Marked `idp_oauth_grant_attribute_mapping.access_token_manager_mappings` as required and with minimum size of 1. Previously not including this attribute would have been allowed by the provider, but rejected by PingFederate. Now the provider itself will require at least one access token manager mapping when setting `idp_oauth_grant_attribute_mapping`.
@@ -68,7 +69,7 @@
   * Added null default for `jwt_secured_authorization_response_mode_type` for PingFederate versions prior to `12.1`.
   * Fixed errors with `false` values being returned as `null` for `credentials.signing_settings.include_cert_in_signature`, `idp_browser_sso.sign_authn_request`, and `idp_browser_sso.assertions_signed`.
 
-# v1.3.0 January 9, 2024
+# v1.3.0 January 9, 2025
 ### Enhancements
 * Added support for PingFederate `12.2.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, `12.0`, and `12.1`. This will be the last release with support for PingFederate `11.2` in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#440]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/440)))
 
