@@ -103,7 +103,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   }
   name = "docker"
 }
-`, accesstokenmanager.TestAccessTokenManagerHCL("idpConnOauthGrantAtm"),
+`, accesstokenmanager.AccessTokenManagerTestHCL("idpConnOauthGrantAtm"),
 		idpConnOAuthAssertionGrantId)
 }
 
@@ -230,7 +230,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   name               = "docker"
   virtual_entity_ids = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
 }
-`, accesstokenmanager.TestAccessTokenManagerHCL("idpConnOauthGrantAtm"),
+`, accesstokenmanager.AccessTokenManagerTestHCL("idpConnOauthGrantAtm"),
 		idpConnOAuthAssertionGrantId)
 }
 

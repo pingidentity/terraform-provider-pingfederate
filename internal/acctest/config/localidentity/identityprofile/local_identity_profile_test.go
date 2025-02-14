@@ -469,12 +469,12 @@ resource "pingfederate_captcha_provider" "%[1]sCapPro" {
     ]
     sensitive_fields = [
       {
-        name            = "Secret Key"
-        value           = "asdf"
+        name  = "Secret Key"
+        value = "asdf"
       },
     ]
   }
-  name       = "%[1]sCapPro"
+  name = "%[1]sCapPro"
   plugin_descriptor_ref = {
     id = "com.pingidentity.captcha.recaptchaV3.ReCaptchaV3Plugin"
   }
@@ -522,7 +522,7 @@ resource "pingfederate_notification_publisher" "%[1]sPub" {
       },
     ]
   }
-  name       = "%[1]sPub"
+  name = "%[1]sPub"
   plugin_descriptor_ref = {
     id = "com.pingidentity.email.SmtpNotificationPlugin"
   }

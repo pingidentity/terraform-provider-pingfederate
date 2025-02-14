@@ -279,7 +279,7 @@ resource "pingfederate_oauth_client_settings" "example" {
   }
 }
 `, oauthClientSettings_DependencyHcl(),
-		accesstokenmanager.TestAccessTokenManagerHCL("oauthClientSettingsAtm"),
+		accesstokenmanager.AccessTokenManagerTestHCL("oauthClientSettingsAtm"),
 		versionSpecificHcl)
 }
 

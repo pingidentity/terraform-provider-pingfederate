@@ -537,7 +537,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     create_before_destroy = true
   }
 }
-`, accesstokenmanager.TestAccessTokenManagerHCL("idpConnWsTrustAtm"),
+`, accesstokenmanager.AccessTokenManagerTestHCL("idpConnWsTrustAtm"),
 		wsTrustStsConnId)
 }
 

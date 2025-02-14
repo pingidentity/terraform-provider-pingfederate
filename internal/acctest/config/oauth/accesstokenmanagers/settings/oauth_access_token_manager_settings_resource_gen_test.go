@@ -66,5 +66,5 @@ resource "pingfederate_oauth_access_token_manager_settings" "example" {
     id = pingfederate_oauth_access_token_manager.%s.id
   }
 }
-`, accesstokenmanager.TestAccessTokenManagerHCL(atmName), atmName)
+`, accesstokenmanager.AccessTokenManagerTestHCL(atmName), atmName)
 }

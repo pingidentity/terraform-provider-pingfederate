@@ -2,7 +2,7 @@ package accesstokenmanager
 
 import "fmt"
 
-func TestAccessTokenManagerHCL(id string) string {
+func AccessTokenManagerTestHCL(id string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "%[1]s" {
   access_control_settings = {

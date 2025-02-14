@@ -53,53 +53,53 @@ resource "pingfederate_notification_publisher_settings" "%[1]s" {
 
 func testAccNotificationPublisherSettingsWithDefault(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "pingfederate_notification_publisher" "%[1]sPub" {
-		configuration = {
-		  fields = [
-			{
-			  name  = "Connection Timeout"
-			  value = "30"
-			},
-			{
-			  name  = "Email Server"
-			  value = "example.com"
-			},
-			{
-			  name  = "Enable SMTP Debugging Messages"
-			  value = "false"
-			},
-			{
-			  name  = "Encryption Method"
-			  value = "NONE"
-			},
-			{
-			  name  = "From Address"
-			  value = "example@pingidentity.com"
-			},
-			{
-			  name  = "SMTP Port"
-			  value = "25"
-			},
-			{
-			  name  = "SMTPS Port"
-			  value = "465"
-			},
-			{
-			  name  = "UTF-8 Message Header Support"
-			  value = "false"
-			},
-			{
-			  name  = "Verify Hostname"
-			  value = "true"
-			},
-		  ]
-		}
-		name       = "%[1]sPub"
-		plugin_descriptor_ref = {
-		  id = "com.pingidentity.email.SmtpNotificationPlugin"
-		}
-		publisher_id = "%[1]sPub"
-	  }
+resource "pingfederate_notification_publisher" "%[1]sPub" {
+  configuration = {
+    fields = [
+      {
+        name  = "Connection Timeout"
+        value = "30"
+      },
+      {
+        name  = "Email Server"
+        value = "example.com"
+      },
+      {
+        name  = "Enable SMTP Debugging Messages"
+        value = "false"
+      },
+      {
+        name  = "Encryption Method"
+        value = "NONE"
+      },
+      {
+        name  = "From Address"
+        value = "example@pingidentity.com"
+      },
+      {
+        name  = "SMTP Port"
+        value = "25"
+      },
+      {
+        name  = "SMTPS Port"
+        value = "465"
+      },
+      {
+        name  = "UTF-8 Message Header Support"
+        value = "false"
+      },
+      {
+        name  = "Verify Hostname"
+        value = "true"
+      },
+    ]
+  }
+  name = "%[1]sPub"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.email.SmtpNotificationPlugin"
+  }
+  publisher_id = "%[1]sPub"
+}
 
 resource "pingfederate_notification_publisher_settings" "%[1]s" {
   default_notification_publisher_ref = {

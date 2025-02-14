@@ -798,7 +798,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   }
 }
 `, spIdpConnection_WsFedDependencyHCL(),
-		accesstokenmanager.TestAccessTokenManagerHCL("idpConnWsFedAtm"),
+		accesstokenmanager.AccessTokenManagerTestHCL("idpConnWsFedAtm"),
 		idpConnWsFedId)
 }
 

@@ -163,53 +163,54 @@ func testAccServerSettingsComplete(resourceName string, resourceModel serverSett
 	}
 	return fmt.Sprintf(`
 
-	resource "pingfederate_notification_publisher" "%[1]sPub" {
-		configuration = {
-		  fields = [
-			{
-			  name  = "Connection Timeout"
-			  value = "30"
-			},
-			{
-			  name  = "Email Server"
-			  value = "example.com"
-			},
-			{
-			  name  = "Enable SMTP Debugging Messages"
-			  value = "false"
-			},
-			{
-			  name  = "Encryption Method"
-			  value = "NONE"
-			},
-			{
-			  name  = "From Address"
-			  value = "example@pingidentity.com"
-			},
-			{
-			  name  = "SMTP Port"
-			  value = "25"
-			},
-			{
-			  name  = "SMTPS Port"
-			  value = "465"
-			},
-			{
-			  name  = "UTF-8 Message Header Support"
-			  value = "false"
-			},
-			{
-			  name  = "Verify Hostname"
-			  value = "true"
-			},
-		  ]
-		}
-		name       = "%[1]sPub"
-		plugin_descriptor_ref = {
-		  id = "com.pingidentity.email.SmtpNotificationPlugin"
-		}
-		publisher_id = "%[1]sPub"
-	  }
+
+resource "pingfederate_notification_publisher" "%[1]sPub" {
+  configuration = {
+    fields = [
+      {
+        name  = "Connection Timeout"
+        value = "30"
+      },
+      {
+        name  = "Email Server"
+        value = "example.com"
+      },
+      {
+        name  = "Enable SMTP Debugging Messages"
+        value = "false"
+      },
+      {
+        name  = "Encryption Method"
+        value = "NONE"
+      },
+      {
+        name  = "From Address"
+        value = "example@pingidentity.com"
+      },
+      {
+        name  = "SMTP Port"
+        value = "25"
+      },
+      {
+        name  = "SMTPS Port"
+        value = "465"
+      },
+      {
+        name  = "UTF-8 Message Header Support"
+        value = "false"
+      },
+      {
+        name  = "Verify Hostname"
+        value = "true"
+      },
+    ]
+  }
+  name = "%[1]sPub"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.email.SmtpNotificationPlugin"
+  }
+  publisher_id = "%[1]sPub"
+}
 
 
 resource "pingfederate_server_settings" "%[1]s" {
@@ -250,7 +251,7 @@ resource "pingfederate_server_settings" "%[1]s" {
     }
     notify_admin_user_password_changes = %[16]t
     account_changes_notification_publisher_ref = {
-        id = pingfederate_notification_publisher.%[1]sPub.id
+      id = pingfederate_notification_publisher.%[1]sPub.id
     }
     metadata_notification_settings = {
       email_address = "%[17]s"

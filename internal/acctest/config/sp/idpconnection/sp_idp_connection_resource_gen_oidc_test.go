@@ -593,7 +593,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   }
 }
 `, spIdpConnection_OidcDependencyHCL(),
-		accesstokenmanager.TestAccessTokenManagerHCL("idpConnOidcAtm"),
+		accesstokenmanager.AccessTokenManagerTestHCL("idpConnOidcAtm"),
 		idpConnOidcId)
 }
 

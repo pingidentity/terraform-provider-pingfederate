@@ -76,12 +76,12 @@ resource "pingfederate_captcha_provider" "%[1]sProvider" {
     ]
     sensitive_fields = [
       {
-        name            = "Secret Key"
-        value           = "asdf"
+        name  = "Secret Key"
+        value = "asdf"
       },
     ]
   }
-  name       = "%[1]sProvider"
+  name = "%[1]sProvider"
   plugin_descriptor_ref = {
     id = "com.pingidentity.captcha.recaptchaV3.ReCaptchaV3Plugin"
   }

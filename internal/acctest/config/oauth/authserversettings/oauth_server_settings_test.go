@@ -372,7 +372,7 @@ data "pingfederate_oauth_server_settings" "%[1]s" {
 		resourceModel.refreshTokenLength,
 		optionalHcl,
 		updatedResourceModelFields,
-		accesstokenmanager.TestAccessTokenManagerHCL(fmt.Sprintf("%sAtm", resourceName)),
+		accesstokenmanager.AccessTokenManagerTestHCL(fmt.Sprintf("%sAtm", resourceName)),
 	)
 }
 

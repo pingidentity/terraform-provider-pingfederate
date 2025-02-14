@@ -705,7 +705,7 @@ resource "pingfederate_sp_idp_connection" "example" {
   }
 }
 `, spIdpConnection_SamlDependencyHCL(),
-		accesstokenmanager.TestAccessTokenManagerHCL("idpConnSamlAtm"),
+		accesstokenmanager.AccessTokenManagerTestHCL("idpConnSamlAtm"),
 		idpConnSamlId)
 }
 
