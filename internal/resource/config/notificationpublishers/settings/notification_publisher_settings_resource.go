@@ -44,9 +44,9 @@ func (r *notificationPublisherSettingsResource) Schema(ctx context.Context, req 
 		Description: "Manages Notification Publisher Settings",
 		Attributes: map[string]schema.Attribute{
 			"default_notification_publisher_ref": resourcelink.CompleteSingleNestedAttribute(
-				false,
-				false,
 				true,
+				false,
+				false,
 				"The default notification publisher reference",
 			),
 		},

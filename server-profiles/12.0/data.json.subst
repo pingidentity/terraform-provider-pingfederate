@@ -1081,52 +1081,6 @@
       ]
     },
     {
-      "resourceType": "/notificationPublishers",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "id": "exampleSmtpPublisher",
-          "name": "exampleSmtpPublisher",
-          "pluginDescriptorRef": {
-            "id": "com.pingidentity.email.SmtpNotificationPlugin"
-          },
-          "configuration": {
-            "tables": [],
-            "fields": [
-              {
-                "name": "From Address",
-                "value": "example@pingidentity.com"
-              },
-              {
-                "name": "Email Server",
-                "value": "example.com"
-              }
-            ]
-          }
-        },
-        {
-          "id": "exampleSmtpPublisher2",
-          "name": "exampleSmtpPublisher2",
-          "pluginDescriptorRef": {
-            "id": "com.pingidentity.email.SmtpNotificationPlugin"
-          },
-          "configuration": {
-            "tables": [],
-            "fields": [
-              {
-                "name": "From Address",
-                "value": "example@pingdemo.example"
-              },
-              {
-                "name": "Email Server",
-                "value": "pingdemo.example"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "operationType": "SAVE",
       "items": [
         {
