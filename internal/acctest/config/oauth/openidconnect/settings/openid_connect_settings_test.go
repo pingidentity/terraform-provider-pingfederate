@@ -39,7 +39,7 @@ func TestAccOpenIdConnectSettings(t *testing.T) {
 	})
 }
 
-func testAccOpenIdConnectSettings(resourceName string) string {
+func testAccOpenIdConnectSettings(resourceName string) string { //TODO fix this
 	// The dependent OIDC policy is not created in this test because prior to PF 12.1 it isn't possible to delete
 	// the final OIDC policy from the server config, because it is always in use.
 	return fmt.Sprintf(`

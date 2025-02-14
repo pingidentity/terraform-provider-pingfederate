@@ -213,6 +213,7 @@ func testAccServerSettingsComplete(resourceName string, resourceModel serverSett
 
 
 resource "pingfederate_server_settings" "%[1]s" {
+  # Ensures this resource will be updated before deleting the notification publisher
   lifecycle {
     create_before_destroy = true
   }

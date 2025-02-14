@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -22,7 +23,7 @@ type oauthAuthServerSettingsResourceModel struct {
 	allowedOrigins                              []string
 	allowUnidentifiedClientExtensionGrants      bool
 	allowUnidentifiedClientRoCreds              bool
-	atmIdForOauthGrantManagement                string
+	atmIdForOauthGrantManagement                bool
 	authorizationCodeTimeout                    int64
 	authorizationCodeEntropy                    int64
 	bypassActivationCodeConfirmation            bool
@@ -65,7 +66,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 		allowedOrigins:                              []string{"https://example.com:*"},
 		allowUnidentifiedClientExtensionGrants:      true,
 		allowUnidentifiedClientRoCreds:              true,
-		atmIdForOauthGrantManagement:                "jwt",
+		atmIdForOauthGrantManagement:                true,
 		authorizationCodeTimeout:                    60,
 		authorizationCodeEntropy:                    30,
 		bypassActivationCodeConfirmation:            true,
@@ -116,7 +117,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "allow_unidentified_client_extension_grants", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientExtensionGrants)),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "allow_unidentified_client_ro_creds", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientRoCreds)),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "allowed_origins.0", updatedResourceModel.allowedOrigins[0]),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "atm_id_for_oauth_grant_management", updatedResourceModel.atmIdForOauthGrantManagement),
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "atm_id_for_oauth_grant_management"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "bypass_activation_code_confirmation", fmt.Sprintf("%t", updatedResourceModel.bypassActivationCodeConfirmation)),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "client_secret_retention_period", fmt.Sprintf("%d", updatedResourceModel.clientSecretRetentionPeriod)),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "default_scope_description", updatedResourceModel.defaultScopeDescription),
@@ -211,8 +212,8 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
 		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("allow_unidentified_client_ro_creds = %t", resourceModel.allowUnidentifiedClientRoCreds))
 	}
 
-	if resourceModel.atmIdForOauthGrantManagement != "" {
-		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("atm_id_for_oauth_grant_management = \"%s\"", resourceModel.atmIdForOauthGrantManagement))
+	if resourceModel.atmIdForOauthGrantManagement {
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("atm_id_for_oauth_grant_management = pingfederate_oauth_access_token_manager.%sAtm.id", resourceName))
 	}
 
 	if resourceModel.persistentGrantLifetime != 0 {
@@ -362,13 +363,16 @@ data "pingfederate_oauth_server_settings" "%[1]s" {
   depends_on = [
     pingfederate_oauth_server_settings.%[1]s
   ]
-}`, resourceName,
+}
+  %[8]s
+`, resourceName,
 		resourceModel.authorizationCodeEntropy,
 		resourceModel.authorizationCodeTimeout,
 		resourceModel.refreshRollingInterval,
 		resourceModel.refreshTokenLength,
 		optionalHcl,
 		updatedResourceModelFields,
+		accesstokenmanager.TestAccessTokenManagerHCL(fmt.Sprintf("%sAtm", resourceName)),
 	)
 }
 
@@ -472,12 +476,6 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			if err != nil {
 				return err
 			}
-		}
-
-		err = acctest.TestAttributesMatchString(resourceType, nil, "atm_id_for_oauth_grant_management",
-			config.atmIdForOauthGrantManagement, *response.AtmIdForOAuthGrantManagement)
-		if err != nil {
-			return err
 		}
 
 		err = acctest.TestAttributesMatchString(resourceType, nil, "scope_for_oauth_grant_management",
