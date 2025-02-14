@@ -4,6 +4,7 @@
 * Marked the `default_generator_group_ref` field as optional in the `pingfederate_oauth_token_exchange_generator_settings` resource, to allow setting the ref to null when no generator groups are defined ([#463](https://github.com/pingidentity/terraform-provider-pingfederate/pull/463))
 * Marked the `default_captcha_provider_ref` field as optional in the `pingfederate_captcha_provider_settings` resource, to allow setting the ref to null when no captcha providers are defined ([#464](https://github.com/pingidentity/terraform-provider-pingfederate/pull/464))
 * Marked the `default_notification_publisher_ref` field as optional in the `pingfederate_notification_publisher_settings` resource, to allow setting the ref to null when no notification publishers are defined ([#464](https://github.com/pingidentity/terraform-provider-pingfederate/pull/464))
+* Marked the `default_access_token_manager_ref` field as optional in the `pingfederate_oauth_access_token_manager_settings` resource, to allow setting the ref to null when no access token managers are defined ([#464](https://github.com/pingidentity/terraform-provider-pingfederate/pull/464))
 
 # v1.4.2 February 5, 2025
 ### Bug fixes
