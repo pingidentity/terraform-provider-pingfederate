@@ -44,9 +44,9 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 		Description: "Manages OAuth CIBA Server Policy Settings",
 		Attributes: map[string]schema.Attribute{
 			"default_request_policy_ref": resourcelink.CompleteSingleNestedAttribute(
-				false,
-				false,
 				true,
+				false,
+				false,
 				"Reference to the default request policy, if one is defined.",
 			),
 		},
