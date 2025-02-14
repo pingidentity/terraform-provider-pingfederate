@@ -16,6 +16,13 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
+	"golang.org/x/exp/rand"
+)
+
+const (
+	// CharSetAlphaNum is the alphanumeric character set for use with
+	// RandStringFromCharSet
+	CharSetAlphaNum = "abcdefghijklmnopqrstuvwxyz012346789"
 )
 
 // Verify that any required environment variables are set before the test begins
@@ -293,4 +300,13 @@ func VersionAtLeast(minimumVersion version.SupportedVersion) bool {
 	supportedVersion, _ := version.Parse(os.Getenv("PINGFEDERATE_PROVIDER_PRODUCT_VERSION"))
 	compare, _ := version.Compare(supportedVersion, minimumVersion)
 	return compare >= 0
+}
+
+func ResourceIdGen() string {
+	strlen := 10
+	result := make([]byte, strlen)
+	for i := 0; i < strlen; i++ {
+		result[i] = CharSetAlphaNum[rand.Intn(len(CharSetAlphaNum))]
+	}
+	return string(result)
 }

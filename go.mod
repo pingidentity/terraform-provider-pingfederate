@@ -16,6 +16,7 @@ require (
 	github.com/pavius/impi v0.0.3
 	github.com/pingidentity/pingfederate-go-client/v1220 v1220.0.0
 	github.com/terraform-linters/tflint v0.55.1
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 )
 
 require (
@@ -332,7 +333,6 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
-	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20241108190413-2d47ceb2692f // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.34.0 // indirect

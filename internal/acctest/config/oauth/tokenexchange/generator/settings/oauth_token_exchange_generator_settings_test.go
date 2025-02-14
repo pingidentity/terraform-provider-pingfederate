@@ -9,85 +9,87 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
-
-// Attributes to test with. Add optional properties to test here if desired.
-type oauthTokenExchangeGeneratorSettingsResourceModel struct {
-	defaultGeneratorGroupRefId string
-}
 
 func TestAccOauthTokenExchangeGeneratorSettings(t *testing.T) {
 	resourceName := "myOauthTokenExchangeGeneratorSettings"
-	initialResourceModel := oauthTokenExchangeGeneratorSettingsResourceModel{
-		defaultGeneratorGroupRefId: "exampleGeneratorGroup",
-	}
+	var testClient *configurationapi.APIClient
+	ctx := acctest.TestBasicAuthContext()
+	defaultGeneratorGroupId := acctest.ResourceIdGen()
 
-	updatedResourceModel := oauthTokenExchangeGeneratorSettingsResourceModel{
-		defaultGeneratorGroupRefId: "exampleGeneratorGroup2",
+	//TODO currently token exchange generator groups are not supported by the provider.
+	// When they are, this should be created with terraform rather than direct API requests.
+	defaultGroup := configurationapi.TokenExchangeGeneratorGroup{
+		Name: defaultGeneratorGroupId,
+		Id:   defaultGeneratorGroupId,
+		GeneratorMappings: []configurationapi.TokenExchangeGeneratorMapping{
+			{
+				RequestedTokenType: "urn:ietf:params:oauth:token-type:saml2",
+				DefaultMapping:     utils.Pointer(true),
+				TokenGenerator: configurationapi.ResourceLink{
+					Id: "tokengenerator",
+				},
+			},
+		},
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		PreCheck: func() {
+			acctest.ConfigurationPreCheck(t)
+			testClient = acctest.TestClient()
+		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOauthTokenExchangeGeneratorSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthTokenExchangeGeneratorSettingsAttributes(initialResourceModel),
+				Config: testAccOauthTokenExchangeGeneratorSettingsEmpty(resourceName),
 			},
 			{
-				Config: testAccOauthTokenExchangeGeneratorSettings(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedOauthTokenExchangeGeneratorSettingsAttributes(updatedResourceModel),
+				PreConfig: func() {
+					_, _, err := testClient.OauthTokenExchangeGeneratorAPI.CreateGroup(ctx).Body(defaultGroup).Execute()
+					if err != nil {
+						t.Fatal(err)
+					}
+				},
+				Config: testAccOauthTokenExchangeGeneratorSettingsDefaultRef(resourceName, defaultGeneratorGroupId),
 			},
 			{
 				// Test importing the resource
-				Config:                               testAccOauthTokenExchangeGeneratorSettings(resourceName, updatedResourceModel),
+				Config:                               testAccOauthTokenExchangeGeneratorSettingsDefaultRef(resourceName, defaultGeneratorGroupId),
 				ResourceName:                         "pingfederate_oauth_token_exchange_generator_settings." + resourceName,
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 				ImportStateVerifyIdentifierAttribute: "default_generator_group_ref.id",
 			},
 			{
-				Config: testAccOauthTokenExchangeGeneratorSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthTokenExchangeGeneratorSettingsAttributes(initialResourceModel),
+				PreConfig: func() {
+					_, err := testClient.OauthTokenExchangeGeneratorAPI.DeleteOauthTokenExchangeGroup(ctx, defaultGeneratorGroupId).Execute()
+					if err != nil {
+						t.Fatal(err)
+					}
+				},
+				Config: testAccOauthTokenExchangeGeneratorSettingsEmpty(resourceName),
 			},
 		},
 	})
 }
 
-func testAccOauthTokenExchangeGeneratorSettings(resourceName string, resourceModel oauthTokenExchangeGeneratorSettingsResourceModel) string {
+func testAccOauthTokenExchangeGeneratorSettingsEmpty(resourceName string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_token_exchange_generator_settings" "%s" {
+}`, resourceName)
+}
+
+func testAccOauthTokenExchangeGeneratorSettingsDefaultRef(resourceName string, defaultRef string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_token_exchange_generator_settings" "%[1]s" {
   default_generator_group_ref = {
     id = "%[2]s"
   }
-}`, resourceName,
-		resourceModel.defaultGeneratorGroupRefId,
-	)
-}
-
-// Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedOauthTokenExchangeGeneratorSettingsAttributes(config oauthTokenExchangeGeneratorSettingsResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		resourceType := "OauthTokenExchangeGeneratorSettings"
-		testClient := acctest.TestClient()
-		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthTokenExchangeGeneratorAPI.GetOauthTokenExchangeSettings(ctx).Execute()
-
-		if err != nil {
-			return err
-		}
-
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, nil, "id", config.defaultGeneratorGroupRefId, response.DefaultGeneratorGroupRef.Id)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
+}`, resourceName, defaultRef)
 }
