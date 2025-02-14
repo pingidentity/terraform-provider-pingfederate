@@ -158,11 +158,60 @@ func oauthClientSettings_CompleteHCL() string {
 	return fmt.Sprintf(`
 	%s
 
+resource "pingfederate_oauth_ciba_server_policy_request_policy" "example" {
+  allow_unsigned_login_hint_token = false
+  alternative_login_hint_token_issuers = [
+  ]
+  authenticator_ref = {
+    id = "exampleCibaAuthenticator"
+  }
+  identity_hint_contract = {
+    extended_attributes = [
+    ]
+  }
+  identity_hint_contract_fulfillment = {
+    attribute_contract_fulfillment = {
+      IDENTITY_HINT_SUBJECT = {
+        source = {
+          id   = null
+          type = "REQUEST"
+        }
+        value = "IDENTITY_HINT_SUBJECT"
+      }
+    }
+  }
+  identity_hint_mapping = {
+    attribute_contract_fulfillment = {
+      USER_KEY = {
+        source = {
+          id   = null
+          type = "NO_MAPPING"
+        }
+        value = null
+      }
+      subject = {
+        source = {
+          id   = null
+          type = "NO_MAPPING"
+        }
+        value = null
+      }
+    }
+  }
+  name                            = "oauthClientSettingsTestCibaPolicy"
+  policy_id                       = "oauthClientSettingsTestCibaPolicy"
+  require_token_for_identity_hint = false
+  transaction_lifetime            = 120
+}
+
 resource "pingfederate_oauth_client_settings" "example" {
   depends_on = [
     pingfederate_oauth_server_settings.oauthSettings,
     pingfederate_openid_connect_policy.oidcPolicy
   ]
+  lifecycle {
+    create_before_destroy = true
+  }
   dynamic_client_registration = {
     allow_client_delete                          = false
     allowed_exclusive_scopes                     = ["myexclusivescope"]
@@ -207,7 +256,7 @@ resource "pingfederate_oauth_client_settings" "example" {
     refresh_token_rolling_interval          = 10
     refresh_token_rolling_interval_type     = "OVERRIDE_SERVER_DEFAULT"
     request_policy_ref = {
-      id = "exampleCibaReqPolicy"
+      id = pingfederate_oauth_ciba_server_policy_request_policy.example.id
     }
     require_jwt_secured_authorization_response_mode = true
     require_proof_key_for_code_exchange             = true
