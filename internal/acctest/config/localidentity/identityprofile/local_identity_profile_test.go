@@ -78,10 +78,7 @@ func authSourceUpdatePolicyHcl(policy *client.LocalIdentityAuthSourceUpdatePolic
 
 func updatedRegistrationConfig() *client.RegistrationConfig {
 	return &client.RegistrationConfig{
-		CaptchaEnabled: pointers.Bool(true),
-		CaptchaProviderRef: &client.ResourceLink{
-			Id: "exampleCaptchaProvider",
-		},
+		CaptchaEnabled:                      pointers.Bool(true),
 		TemplateName:                        "local.identity.registration.html",
 		CreateAuthnSessionAfterRegistration: pointers.Bool(true),
 		UsernameField:                       pointers.String("mail"),
@@ -89,7 +86,7 @@ func updatedRegistrationConfig() *client.RegistrationConfig {
 	}
 }
 
-func registrationConfigHcl(config *client.RegistrationConfig) string {
+func registrationConfigHcl(resourceName string, config *client.RegistrationConfig) string {
 	if config == nil {
 		return ""
 	}
@@ -98,7 +95,7 @@ func registrationConfigHcl(config *client.RegistrationConfig) string {
 	registration_config = {
 		captcha_enabled = %[1]t
 		captcha_provider_ref = {
-			id = "%[2]s"
+			id = pingfederate_captcha_provider.%[2]sCapPro.id
 		}
 		template_name = "%[3]s"
 		create_authn_session_after_registration = %[4]t
@@ -106,7 +103,7 @@ func registrationConfigHcl(config *client.RegistrationConfig) string {
 		this_is_my_device_enabled = %[6]t
 	}
 	`, *config.CaptchaEnabled,
-		config.CaptchaProviderRef.Id,
+		resourceName,
 		config.TemplateName,
 		*config.CreateAuthnSessionAfterRegistration,
 		*config.UsernameField,
@@ -457,6 +454,36 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
   name                = "%[2]s"
 }
 
+resource "pingfederate_captcha_provider" "%[1]sCapPro" {
+  configuration = {
+    fields = [
+      {
+        name  = "JavaScript File Name"
+        value = "recaptcha-v3.js"
+      },
+      {
+        name  = "Pass Score Threshold"
+        value = "1"
+      },
+      {
+        name  = "Site Key"
+        value = "asdf"
+      },
+    ]
+    sensitive_fields = [
+      {
+        name            = "Secret Key"
+        value           = "asdf"
+      },
+    ]
+  }
+  name       = "%[1]sCapPro"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.captcha.recaptchaV3.ReCaptchaV3Plugin"
+  }
+  provider_id = "%[1]sCapPro"
+}
+
 resource "pingfederate_local_identity_profile" "%[1]s" {
   profile_id = "%[2]s"
   name       = "%[3]s"
@@ -483,7 +510,7 @@ data "pingfederate_local_identity_profile" "%[1]s" {
 		resourceModel.profileEnabled,
 		authSourcesHcl(resourceModel.authSources),
 		authSourceUpdatePolicyHcl(resourceModel.authSourceUpdatePolicy),
-		registrationConfigHcl(resourceModel.registrationConfig),
+		registrationConfigHcl(resourceName, resourceModel.registrationConfig),
 		profileConfigHcl(resourceModel.profileConfig),
 		fieldConfigHcl(resourceModel.fieldConfig),
 		emailVerificationConfigHcl(resourceModel.emailVerificationConfig),
