@@ -67,7 +67,7 @@ func (r *oauthAccessTokenManagerSettingsResource) Schema(ctx context.Context, re
 						},
 					},
 				},
-				Required:    true,
+				Optional:    true,
 				Description: "Reference to the default access token manager, if one is defined.",
 			},
 		},

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -158,6 +159,8 @@ func oauthClientSettings_CompleteHCL() string {
 	return fmt.Sprintf(`
 	%s
 
+  %s
+
 resource "pingfederate_oauth_ciba_server_policy_request_policy" "example" {
   allow_unsigned_login_hint_token = false
   alternative_login_hint_token_issuers = [
@@ -209,6 +212,7 @@ resource "pingfederate_oauth_client_settings" "example" {
     pingfederate_oauth_server_settings.oauthSettings,
     pingfederate_openid_connect_policy.oidcPolicy
   ]
+  # Ensures this resource will be updated before deleting the oauth access token manager or ciba server policy
   lifecycle {
     create_before_destroy = true
   }
@@ -225,7 +229,7 @@ resource "pingfederate_oauth_client_settings" "example" {
     client_secret_retention_period_override = 2
     client_secret_retention_period_type     = "OVERRIDE_SERVER_DEFAULT"
     default_access_token_manager_ref = {
-      id = "jwt"
+      id = pingfederate_oauth_access_token_manager.oauthClientSettingsAtm.id
     }
     device_flow_setting_type           = "OVERRIDE_SERVER_DEFAULT"
     device_polling_interval_override   = 5
@@ -274,7 +278,9 @@ resource "pingfederate_oauth_client_settings" "example" {
 	%s
   }
 }
-`, oauthClientSettings_DependencyHcl(), versionSpecificHcl)
+`, oauthClientSettings_DependencyHcl(),
+		accesstokenmanager.AccessTokenManagerTestHCL("oauthClientSettingsAtm"),
+		versionSpecificHcl)
 }
 
 // Validate any computed values when applying HCL that expects computed values

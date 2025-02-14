@@ -78,10 +78,7 @@ func authSourceUpdatePolicyHcl(policy *client.LocalIdentityAuthSourceUpdatePolic
 
 func updatedRegistrationConfig() *client.RegistrationConfig {
 	return &client.RegistrationConfig{
-		CaptchaEnabled: pointers.Bool(true),
-		CaptchaProviderRef: &client.ResourceLink{
-			Id: "exampleCaptchaProvider",
-		},
+		CaptchaEnabled:                      pointers.Bool(true),
 		TemplateName:                        "local.identity.registration.html",
 		CreateAuthnSessionAfterRegistration: pointers.Bool(true),
 		UsernameField:                       pointers.String("mail"),
@@ -89,7 +86,7 @@ func updatedRegistrationConfig() *client.RegistrationConfig {
 	}
 }
 
-func registrationConfigHcl(config *client.RegistrationConfig) string {
+func registrationConfigHcl(resourceName string, config *client.RegistrationConfig) string {
 	if config == nil {
 		return ""
 	}
@@ -98,7 +95,7 @@ func registrationConfigHcl(config *client.RegistrationConfig) string {
 	registration_config = {
 		captcha_enabled = %[1]t
 		captcha_provider_ref = {
-			id = "%[2]s"
+			id = pingfederate_captcha_provider.%[2]sCapPro.id
 		}
 		template_name = "%[3]s"
 		create_authn_session_after_registration = %[4]t
@@ -106,7 +103,7 @@ func registrationConfigHcl(config *client.RegistrationConfig) string {
 		this_is_my_device_enabled = %[6]t
 	}
 	`, *config.CaptchaEnabled,
-		config.CaptchaProviderRef.Id,
+		resourceName,
 		config.TemplateName,
 		*config.CreateAuthnSessionAfterRegistration,
 		*config.UsernameField,
@@ -258,14 +255,11 @@ func updatedEmailVerificationConfig() *client.EmailVerificationConfig {
 		OtpTimeToLive:                        pointers.Int64(1440),
 		FieldForEmailToVerify:                "mail",
 		FieldStoringVerificationStatus:       "cn",
-		NotificationPublisherRef: &client.ResourceLink{
-			Id: "exampleSmtpPublisher",
-		},
-		RequireVerifiedEmail: pointers.Bool(true),
+		RequireVerifiedEmail:                 pointers.Bool(true),
 	}
 }
 
-func emailVerificationConfigHcl(config *client.EmailVerificationConfig) string {
+func emailVerificationConfigHcl(resourceName string, config *client.EmailVerificationConfig) string {
 	if config == nil {
 		return ""
 	}
@@ -285,7 +279,7 @@ func emailVerificationConfigHcl(config *client.EmailVerificationConfig) string {
 		field_for_email_to_verify         = "%s"
 		field_storing_verification_status = "%s"
 		notification_publisher_ref = {
-		  id = "%s",
+		  id = pingfederate_notification_publisher.%sPub.id,
 		}
 		require_verified_email = %t
 	}`, *config.EmailVerificationEnabled,
@@ -300,7 +294,7 @@ func emailVerificationConfigHcl(config *client.EmailVerificationConfig) string {
 		*config.OtpTimeToLive,
 		config.FieldForEmailToVerify,
 		config.FieldStoringVerificationStatus,
-		config.NotificationPublisherRef.Id,
+		resourceName,
 		*config.RequireVerifiedEmail)
 }
 
@@ -457,6 +451,84 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
   name                = "%[2]s"
 }
 
+resource "pingfederate_captcha_provider" "%[1]sCapPro" {
+  configuration = {
+    fields = [
+      {
+        name  = "JavaScript File Name"
+        value = "recaptcha-v3.js"
+      },
+      {
+        name  = "Pass Score Threshold"
+        value = "1"
+      },
+      {
+        name  = "Site Key"
+        value = "asdf"
+      },
+    ]
+    sensitive_fields = [
+      {
+        name  = "Secret Key"
+        value = "asdf"
+      },
+    ]
+  }
+  name = "%[1]sCapPro"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.captcha.recaptchaV3.ReCaptchaV3Plugin"
+  }
+  provider_id = "%[1]sCapPro"
+}
+
+resource "pingfederate_notification_publisher" "%[1]sPub" {
+  configuration = {
+    fields = [
+      {
+        name  = "Connection Timeout"
+        value = "30"
+      },
+      {
+        name  = "Email Server"
+        value = "example.com"
+      },
+      {
+        name  = "Enable SMTP Debugging Messages"
+        value = "false"
+      },
+      {
+        name  = "Encryption Method"
+        value = "NONE"
+      },
+      {
+        name  = "From Address"
+        value = "example@pingidentity.com"
+      },
+      {
+        name  = "SMTP Port"
+        value = "25"
+      },
+      {
+        name  = "SMTPS Port"
+        value = "465"
+      },
+      {
+        name  = "UTF-8 Message Header Support"
+        value = "false"
+      },
+      {
+        name  = "Verify Hostname"
+        value = "true"
+      },
+    ]
+  }
+  name = "%[1]sPub"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.email.SmtpNotificationPlugin"
+  }
+  publisher_id = "%[1]sPub"
+}
+
 resource "pingfederate_local_identity_profile" "%[1]s" {
   profile_id = "%[2]s"
   name       = "%[3]s"
@@ -483,10 +555,10 @@ data "pingfederate_local_identity_profile" "%[1]s" {
 		resourceModel.profileEnabled,
 		authSourcesHcl(resourceModel.authSources),
 		authSourceUpdatePolicyHcl(resourceModel.authSourceUpdatePolicy),
-		registrationConfigHcl(resourceModel.registrationConfig),
+		registrationConfigHcl(resourceName, resourceModel.registrationConfig),
 		profileConfigHcl(resourceModel.profileConfig),
 		fieldConfigHcl(resourceModel.fieldConfig),
-		emailVerificationConfigHcl(resourceModel.emailVerificationConfig),
+		emailVerificationConfigHcl(resourceName, resourceModel.emailVerificationConfig),
 		dataStoreConfigHcl(resourceModel.dataStoreConfig),
 	)
 }

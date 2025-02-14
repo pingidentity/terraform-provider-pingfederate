@@ -49,27 +49,15 @@ func TestAccServerSettings(t *testing.T) {
 		notifications: &client.NotificationSettings{
 			LicenseEvents: &client.LicenseEventNotificationSettings{
 				EmailAddress: "license-events-email@example.com",
-				NotificationPublisherRef: &client.ResourceLink{
-					Id: "exampleSmtpPublisher",
-				},
 			},
 			CertificateExpirations: &client.CertificateExpirationNotificationSettings{
 				EmailAddress:         "example@example.com",
 				InitialWarningPeriod: pointers.Int64(45),
 				FinalWarningPeriod:   7,
-				NotificationPublisherRef: &client.ResourceLink{
-					Id: "exampleSmtpPublisher",
-				},
 			},
 			NotifyAdminUserPasswordChanges: pointers.Bool(true),
-			AccountChangesNotificationPublisherRef: &client.ResourceLink{
-				Id: "exampleSmtpPublisher",
-			},
 			MetadataNotificationSettings: &client.MetadataEventNotificationSettings{
 				EmailAddress: "metadata-notification@example.com",
-				NotificationPublisherRef: &client.ResourceLink{
-					Id: "exampleSmtpPublisher",
-				},
 			},
 		},
 	}
@@ -95,15 +83,15 @@ func TestAccServerSettings(t *testing.T) {
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "contact_info.last_name", *updatedResourceModel.contactInfo.LastName),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "contact_info.phone", *updatedResourceModel.contactInfo.Phone),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.license_events.email_address", updatedResourceModel.notifications.LicenseEvents.EmailAddress),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.license_events.notification_publisher_ref.id", updatedResourceModel.notifications.LicenseEvents.NotificationPublisherRef.Id),
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.license_events.notification_publisher_ref.id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.email_address", updatedResourceModel.notifications.CertificateExpirations.EmailAddress),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.initial_warning_period", fmt.Sprintf("%d", *updatedResourceModel.notifications.CertificateExpirations.InitialWarningPeriod)),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.final_warning_period", fmt.Sprintf("%d", updatedResourceModel.notifications.CertificateExpirations.FinalWarningPeriod)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.notification_publisher_ref.id", updatedResourceModel.notifications.CertificateExpirations.NotificationPublisherRef.Id),
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.notification_publisher_ref.id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.notify_admin_user_password_changes", fmt.Sprintf("%t", *updatedResourceModel.notifications.NotifyAdminUserPasswordChanges)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.account_changes_notification_publisher_ref.id", updatedResourceModel.notifications.AccountChangesNotificationPublisherRef.Id),
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.account_changes_notification_publisher_ref.id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.metadata_notification_settings.email_address", updatedResourceModel.notifications.MetadataNotificationSettings.EmailAddress),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.metadata_notification_settings.notification_publisher_ref.id", updatedResourceModel.notifications.MetadataNotificationSettings.NotificationPublisherRef.Id),
+					resource.TestCheckResourceAttrSet(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.metadata_notification_settings.notification_publisher_ref.id"),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "federation_info.saml_2_entity_id", *updatedResourceModel.federationInfo.Saml2EntityId),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "federation_info.saml_1x_issuer_id", *updatedResourceModel.federationInfo.Saml1xIssuerId),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "federation_info.wsfed_realm", *updatedResourceModel.federationInfo.WsfedRealm),
@@ -148,75 +136,130 @@ func testAccServerSettingsComplete(resourceName string, resourceModel serverSett
 		`
 	}
 	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedHcl += `
+		versionedHcl += fmt.Sprintf(`
 	  expired_certificate_administrative_console_warning_days = 10
 	  expiring_certificate_administrative_console_warning_days = 11
 	  thread_pool_exhaustion_notification_settings = {
 		thread_dump_enabled = false
 		notification_publisher_ref = {
-			id = "exampleSmtpPublisher"
+          id = pingfederate_notification_publisher.%[1]sPub.id
 		}
 		notification_mode = "LOGGING_ONLY"
 	  }
-		`
+		`, resourceName)
 	}
 	notificationsVersionedHcl := ""
 	if acctest.VersionAtLeast(version.PingFederate1210) {
-		notificationsVersionedHcl = `
+		notificationsVersionedHcl = fmt.Sprintf(`
 	  bulkhead_alert_notification_settings = {
 	    email_address = "example@example.com"
 		thread_dump_enabled = false
 		notification_publisher_ref = {
-			id = "exampleSmtpPublisher"
+          id = pingfederate_notification_publisher.%[1]sPub.id
 		}
 		notification_mode = "NOTIFICATION_PUBLISHER"
 	  }
-		`
+		`, resourceName)
 	}
 	return fmt.Sprintf(`
+
+
+resource "pingfederate_notification_publisher" "%[1]sPub" {
+  configuration = {
+    fields = [
+      {
+        name  = "Connection Timeout"
+        value = "30"
+      },
+      {
+        name  = "Email Server"
+        value = "example.com"
+      },
+      {
+        name  = "Enable SMTP Debugging Messages"
+        value = "false"
+      },
+      {
+        name  = "Encryption Method"
+        value = "NONE"
+      },
+      {
+        name  = "From Address"
+        value = "example@pingidentity.com"
+      },
+      {
+        name  = "SMTP Port"
+        value = "25"
+      },
+      {
+        name  = "SMTPS Port"
+        value = "465"
+      },
+      {
+        name  = "UTF-8 Message Header Support"
+        value = "false"
+      },
+      {
+        name  = "Verify Hostname"
+        value = "true"
+      },
+    ]
+  }
+  name = "%[1]sPub"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.email.SmtpNotificationPlugin"
+  }
+  publisher_id = "%[1]sPub"
+}
+
+
 resource "pingfederate_server_settings" "%[1]s" {
+  # Ensures this resource will be updated before deleting the notification publisher
+  lifecycle {
+    create_before_destroy = true
+  }
   contact_info = {
-    company    = "%s"
-    email      = "%s"
-    first_name = "%s"
-    last_name  = "%s"
-    phone      = "%s"
+    company    = "%[2]s"
+    email      = "%[3]s"
+    first_name = "%[4]s"
+    last_name  = "%[5]s"
+    phone      = "%[6]s"
   }
 
   federation_info = {
-    base_url          = "%s"
-    saml_2_entity_id  = "%s"
-    saml_1x_issuer_id = "%s"
-    wsfed_realm       = "%s"
+    base_url          = "%[7]s"
+    saml_2_entity_id  = "%[8]s"
+    saml_1x_issuer_id = "%[9]s"
+    wsfed_realm       = "%[10]s"
   }
 
   notifications = {
     license_events = {
-      email_address = "%s"
+      email_address = "%[11]s"
       notification_publisher_ref = {
-        id = "%s"
+        id = pingfederate_notification_publisher.%[1]sPub.id
       }
     }
     certificate_expirations = {
-      initial_warning_period = %d
-      final_warning_period   = %d
+      initial_warning_period = %[12]d
+      final_warning_period   = %[13]d
       notification_publisher_ref = {
-        id = "%s"
+        id = pingfederate_notification_publisher.%[1]sPub.id
       }
-      email_address = "%s"
-	  %s
+      email_address = "%[14]s"
+	  %[15]s
     }
-    notify_admin_user_password_changes = %t
+    notify_admin_user_password_changes = %[16]t
     account_changes_notification_publisher_ref = {
-      id = "%s"
+      id = pingfederate_notification_publisher.%[1]sPub.id
     }
     metadata_notification_settings = {
-      email_address = "%s"
+      email_address = "%[17]s"
       notification_publisher_ref = {
-        id = "%s"
+        id = pingfederate_notification_publisher.%[1]sPub.id
       }
     }
-	%s
+	%[18]s
   }
 }
 data "pingfederate_server_settings" "%[1]s" {
@@ -232,16 +275,12 @@ data "pingfederate_server_settings" "%[1]s" {
 		*resourceModel.federationInfo.Saml1xIssuerId,
 		*resourceModel.federationInfo.WsfedRealm,
 		resourceModel.notifications.LicenseEvents.EmailAddress,
-		resourceModel.notifications.LicenseEvents.NotificationPublisherRef.Id,
 		*resourceModel.notifications.CertificateExpirations.InitialWarningPeriod,
 		resourceModel.notifications.CertificateExpirations.FinalWarningPeriod,
-		resourceModel.notifications.CertificateExpirations.NotificationPublisherRef.Id,
 		resourceModel.notifications.CertificateExpirations.EmailAddress,
 		versionedHcl,
 		*resourceModel.notifications.NotifyAdminUserPasswordChanges,
-		resourceModel.notifications.AccountChangesNotificationPublisherRef.Id,
 		resourceModel.notifications.MetadataNotificationSettings.EmailAddress,
-		resourceModel.notifications.MetadataNotificationSettings.NotificationPublisherRef.Id,
 		notificationsVersionedHcl,
 	)
 }
@@ -323,11 +362,6 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.TestAttributesMatchString(resourceType, nil, "id", config.notifications.LicenseEvents.NotificationPublisherRef.Id, response.Notifications.LicenseEvents.NotificationPublisherRef.Id)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "email_address", config.notifications.CertificateExpirations.EmailAddress, response.Notifications.CertificateExpirations.EmailAddress)
 			if err != nil {
 				return err
@@ -348,17 +382,7 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.TestAttributesMatchString(resourceType, nil, "id", config.notifications.AccountChangesNotificationPublisherRef.Id, response.Notifications.AccountChangesNotificationPublisherRef.Id)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "email_address", config.notifications.MetadataNotificationSettings.EmailAddress, response.Notifications.MetadataNotificationSettings.EmailAddress)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.TestAttributesMatchString(resourceType, nil, "id", config.notifications.MetadataNotificationSettings.NotificationPublisherRef.Id, response.Notifications.MetadataNotificationSettings.NotificationPublisherRef.Id)
 			if err != nil {
 				return err
 			}
