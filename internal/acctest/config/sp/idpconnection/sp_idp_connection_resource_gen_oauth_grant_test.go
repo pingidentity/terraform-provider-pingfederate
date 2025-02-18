@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -66,6 +67,8 @@ func TestAccSpIdpConnection_OAuthAssertionGrantMinimalMaximal(t *testing.T) {
 // Minimal HCL with only required values set
 func spIdpConnection_OAuthAssertionGrantMinimalHCL() string {
 	return fmt.Sprintf(`
+%s
+
 resource "pingfederate_sp_idp_connection" "example" {
   connection_id = "%s"
   credentials = {
@@ -75,7 +78,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     access_token_manager_mappings = [
       {
         access_token_manager_ref = {
-          id = "jwt"
+          id = pingfederate_oauth_access_token_manager.idpConnOauthGrantAtm.id
         }
         attribute_contract_fulfillment = {
           OrgName = {
@@ -100,12 +103,15 @@ resource "pingfederate_sp_idp_connection" "example" {
   }
   name = "docker"
 }
-`, idpConnOAuthAssertionGrantId)
+`, accesstokenmanager.AccessTokenManagerTestHCL("idpConnOauthGrantAtm"),
+		idpConnOAuthAssertionGrantId)
 }
 
 // Maximal HCL with all values set where possible
 func spIdpConnection_OAuthAssertionGrantCompleteHCL() string {
 	return fmt.Sprintf(`
+%s
+
 resource "pingfederate_sp_idp_connection" "example" {
   active        = true
   base_url      = "https://localhost:9031"
@@ -154,7 +160,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     access_token_manager_mappings = [
       {
         access_token_manager_ref = {
-          id = "jwt"
+          id = pingfederate_oauth_access_token_manager.idpConnOauthGrantAtm.id
         }
         attribute_contract_fulfillment = {
           OrgName = {
@@ -224,7 +230,8 @@ resource "pingfederate_sp_idp_connection" "example" {
   name               = "docker"
   virtual_entity_ids = ["virtual_server_id_1", "virtual_server_id_2", "virtual_server_id_3"]
 }
-`, idpConnOAuthAssertionGrantId)
+`, accesstokenmanager.AccessTokenManagerTestHCL("idpConnOauthGrantAtm"),
+		idpConnOAuthAssertionGrantId)
 }
 
 // Validate any computed values when applying minimal HCL

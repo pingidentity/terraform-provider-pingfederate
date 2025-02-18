@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -24,11 +25,15 @@ func TestAccOauthAccessTokenManagerSettings_MinimalMaximal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: oauthAccessTokenManagerSettings_MinimalHCL(),
+				Config: oauthAccessTokenManagerSettings_Empty(),
+			},
+			{
+				// Create the resource with a minimal model
+				Config: oauthAccessTokenManagerSettings_WithDefault(),
 			},
 			{
 				// Test importing the resource
-				Config:                               oauthAccessTokenManagerSettings_MinimalHCL(),
+				Config:                               oauthAccessTokenManagerSettings_WithDefault(),
 				ResourceName:                         "pingfederate_oauth_access_token_manager_settings.example",
 				ImportStateVerifyIdentifierAttribute: "default_access_token_manager_ref.id",
 				ImportState:                          true,
@@ -36,68 +41,30 @@ func TestAccOauthAccessTokenManagerSettings_MinimalMaximal(t *testing.T) {
 			},
 			{
 				// Reset to the original default access token manager ref
-				Config: oauthAccessTokenManagerSettings_ResetDefaultManagerHCL(),
+				Config: oauthAccessTokenManagerSettings_Empty(),
 			},
 		},
 	})
 }
 
 // Minimal HCL with only required values set
-func oauthAccessTokenManagerSettings_MinimalHCL() string {
+func oauthAccessTokenManagerSettings_Empty() string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_access_token_manager" "example" {
-  manager_id = "myOauthAccessTokenManager"
-  name       = "Internal Manager"
-  plugin_descriptor_ref = {
-    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
-  }
-  configuration = {
-  }
-  attribute_contract = {
-    coreAttributes = []
-    extended_attributes = [
-      {
-        name         = "extended_contract"
-        multi_valued = true
-      }
-    ]
-  }
-}
-
 resource "pingfederate_oauth_access_token_manager_settings" "example" {
-  default_access_token_manager_ref = {
-    id = pingfederate_oauth_access_token_manager.example.manager_id
-  }
 }
 `)
 }
 
 // Minimal HCL with only required values set
-func oauthAccessTokenManagerSettings_ResetDefaultManagerHCL() string {
+func oauthAccessTokenManagerSettings_WithDefault() string {
+	atmName := "tokenManagerSettingsTestAtm"
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_access_token_manager" "example" {
-  manager_id = "myOauthAccessTokenManager"
-  name       = "Internal Manager"
-  plugin_descriptor_ref = {
-    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
-  }
-  configuration = {
-  }
-  attribute_contract = {
-    coreAttributes = []
-    extended_attributes = [
-      {
-        name         = "extended_contract"
-        multi_valued = true
-      }
-    ]
-  }
-}
+%s
 
 resource "pingfederate_oauth_access_token_manager_settings" "example" {
   default_access_token_manager_ref = {
-    id = "jwt"
+    id = pingfederate_oauth_access_token_manager.%s.id
   }
 }
-`)
+`, accesstokenmanager.AccessTokenManagerTestHCL(atmName), atmName)
 }

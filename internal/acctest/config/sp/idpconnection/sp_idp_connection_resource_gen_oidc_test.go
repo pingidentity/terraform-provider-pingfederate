@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -198,6 +199,8 @@ func spIdpConnection_OidcCompleteHCL() string {
 	}
 
 	return fmt.Sprintf(`
+%s
+
 %s
 
 resource "pingfederate_sp_idp_connection" "example" {
@@ -561,7 +564,7 @@ resource "pingfederate_sp_idp_connection" "example" {
           expression_criteria = null
         }
         access_token_manager_ref = {
-          id = "jwt"
+          id = pingfederate_oauth_access_token_manager.idpConnOidcAtm.id
         }
       }
     ]
@@ -584,8 +587,14 @@ resource "pingfederate_sp_idp_connection" "example" {
     client_id     = "myclientid"
     client_secret = "myclientsecrets"
   }
+  # Ensures this resource will be updated before deleting the oauth access token manager
+  lifecycle {
+    create_before_destroy = true
+  }
 }
-`, spIdpConnection_OidcDependencyHCL(), idpConnOidcId)
+`, spIdpConnection_OidcDependencyHCL(),
+		accesstokenmanager.AccessTokenManagerTestHCL("idpConnOidcAtm"),
+		idpConnOidcId)
 }
 
 // Validate any computed values when applying minimal HCL

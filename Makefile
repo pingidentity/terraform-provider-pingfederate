@@ -30,7 +30,7 @@ starttestcontainer:
 		--env-file "${HOME}/.pingidentity/config" \
 		-e "OPERATIONAL_MODE=${OPERATIONAL_MODE}" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
-		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
+		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json$${DATA_JSON_SUFFIX}.subst:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.2.0}-latest
 # Wait for the instance to become ready
 	sleep 1
@@ -72,9 +72,9 @@ testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies` -timeout 10m -v -p 4; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers/settings -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping` -timeout 10m -v -p 4; \
 	firstTestResult=$$?; \
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies` -timeout 10m -v -p 1; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers/settings -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping` -timeout 10m -v -p 1; \
 	secondTestResult=$$?; \
 	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0"; then \
 		false; \
@@ -92,7 +92,7 @@ testauthacc:
 testaccclustered:
 	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/cluster/... -timeout 5m -v
 
-testacccomplete: spincontainer testauthacc testacc
+testacccomplete: spincontainer testacc
 
 clearstates:
 	find . -name "*tfstate*" -delete
@@ -104,7 +104,7 @@ devchecknotest: verifycontent install golangcilint generate tfproviderlint tflin
 verifycontent:
 	python3 ./scripts/verifyContent.py
 
-devcheck: devchecknotest kaboom testauthacc testacc
+devcheck: devchecknotest kaboom testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=openIdConnectSettings \
