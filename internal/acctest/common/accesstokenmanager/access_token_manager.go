@@ -157,9 +157,5 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
     include_session_id              = false
     update_authn_session_activity   = false
   }
-  token_endpoint_attribute_contract = {
-    attributes = [
-    ]
-  }
 }`, id)
 }
