@@ -1079,6 +1079,32 @@
       ]
     },
     {
+      "resourceType": "/notificationPublishers",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "acctestNotificationPublisher",
+          "name": "acctestNotificationPublisher",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.email.SmtpNotificationPlugin"
+          },
+          "configuration": {
+            "tables": [],
+            "fields": [
+              {
+                "name": "From Address",
+                "value": "example@pingidentity.com"
+              },
+              {
+                "name": "Email Server",
+                "value": "example.com"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "operationType": "SAVE",
       "items": [
         {
