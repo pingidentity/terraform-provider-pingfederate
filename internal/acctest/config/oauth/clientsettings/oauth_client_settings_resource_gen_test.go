@@ -224,7 +224,7 @@ func oauthClientSettings_CompleteHCL() string {
   %s
 
   %s
-  
+
 
 resource "pingfederate_oauth_client_settings" "example" {
   depends_on = [

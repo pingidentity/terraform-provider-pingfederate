@@ -157,16 +157,16 @@ resource "pingfederate_openid_connect_policy" "%[1]s" {
   attribute_contract = {
     extended_attributes = []
   }
-	attribute_mapping = {
-		attribute_contract_fulfillment = {
-			"sub" = {
-				source = {
-		  			type = "TOKEN"
-				}
-				value = "contract"
-			}
-		}
-}
+  attribute_mapping = {
+    attribute_contract_fulfillment = {
+      "sub" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "contract"
+      }
+    }
+  }
 }
 
 
