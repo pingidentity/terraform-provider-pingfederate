@@ -11,36 +11,70 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccOauthCibaServerPolicySettings(t *testing.T) {
 	resourceName := acctest.ResourceIdGen()
+
+	var steps []resource.TestStep
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		steps = testAccOauthCibaServerPolicySettingsPf121(resourceName)
+	} else {
+		steps = testAccOauthCibaServerPolicySettingsPrePf121(resourceName)
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOauthCibaServerPolicySettingsEmpty(resourceName),
-			},
-			{
-				Config: testAccOauthCibaServerPolicySettingsDefault(resourceName),
-			},
-			{
-				// Test importing the resource
-				Config:                               testAccOauthCibaServerPolicySettingsDefault(resourceName),
-				ResourceName:                         "pingfederate_oauth_ciba_server_policy_settings." + resourceName,
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-				ImportStateVerifyIdentifierAttribute: "default_request_policy_ref.id",
-			},
-			{
-				Config: testAccOauthCibaServerPolicySettingsEmpty(resourceName),
-			},
-		},
+		Steps: steps,
 	})
+}
+
+// Prior to PF 12.1 it isn't possible to delete the final ciba policy from the server config,
+// because it is always in use.
+func testAccOauthCibaServerPolicySettingsPrePf121(resourceName string) []resource.TestStep {
+	return []resource.TestStep{
+		{
+			// Set to the existing default
+			Config: testAccOauthCibaServerPolicySettingsExistingDefaultPolicy(resourceName, "acctestCibaPolicy"),
+		},
+		{
+			// Test importing the resource
+			Config:                               testAccOauthCibaServerPolicySettingsExistingDefaultPolicy(resourceName, "acctestCibaPolicy"),
+			ResourceName:                         "pingfederate_oauth_ciba_server_policy_settings." + resourceName,
+			ImportState:                          true,
+			ImportStateVerify:                    true,
+			ImportStateVerifyIdentifierAttribute: "default_request_policy_ref.id",
+		},
+	}
+}
+
+func testAccOauthCibaServerPolicySettingsPf121(resourceName string) []resource.TestStep {
+	return []resource.TestStep{
+		{
+			// No policies configured and no default
+			Config: testAccOauthCibaServerPolicySettingsEmpty(resourceName),
+		},
+		{
+			// Set a default policy
+			Config: testAccOauthCibaServerPolicySettingsBuildDefaultPolicy(resourceName),
+		},
+		{
+			// Test importing the resource
+			Config:                               testAccOauthCibaServerPolicySettingsBuildDefaultPolicy(resourceName),
+			ResourceName:                         "pingfederate_oauth_ciba_server_policy_settings." + resourceName,
+			ImportState:                          true,
+			ImportStateVerify:                    true,
+			ImportStateVerifyIdentifierAttribute: "default_request_policy_ref.id",
+		},
+		{
+			// Reset back to no policies
+			Config: testAccOauthCibaServerPolicySettingsEmpty(resourceName),
+		},
+	}
 }
 
 func testAccOauthCibaServerPolicySettingsEmpty(resourceName string) string {
@@ -49,7 +83,7 @@ resource "pingfederate_oauth_ciba_server_policy_settings" "%s" {
 }`, resourceName)
 }
 
-func testAccOauthCibaServerPolicySettingsDefault(resourceName string) string {
+func testAccOauthCibaServerPolicySettingsBuildDefaultPolicy(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_ciba_server_policy_request_policy" "%[1]s-policy" {
   allow_unsigned_login_hint_token = false
@@ -102,4 +136,13 @@ resource "pingfederate_oauth_ciba_server_policy_settings" "%[1]s" {
     id = pingfederate_oauth_ciba_server_policy_request_policy.%[1]s-policy.id
   }
 }`, resourceName)
+}
+
+func testAccOauthCibaServerPolicySettingsExistingDefaultPolicy(resourceName, existingPolicyName string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_ciba_server_policy_settings" "%[1]s" {
+  default_request_policy_ref = {
+    id = "%[2]s"
+  }
+}`, resourceName, existingPolicyName)
 }
