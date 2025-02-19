@@ -118,49 +118,13 @@ resource "pingfederate_openid_connect_policy" "oidcPolicy" {
 `
 }
 
-// Minimal HCL with only required values set (no required values in this resource)
-func oauthClientSettings_MinimalHCL() string {
-	return fmt.Sprintf(`
-	%s
-
-resource "pingfederate_oauth_client_settings" "example" {
-}
-`, oauthClientSettings_DependencyHcl())
-}
-
-// HCL intended to validate expected computed values are set
-func oauthClientSettings_ComputedCheckHCL() string {
-	return fmt.Sprintf(`
-	%s
-
-resource "pingfederate_oauth_client_settings" "example" {
-  dynamic_client_registration = {}
-}
-`, oauthClientSettings_DependencyHcl())
-}
-
-// Maximal HCL with all values set where possible
-func oauthClientSettings_CompleteHCL() string {
-	versionSpecificHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionSpecificHcl = `
-	offline_access_require_consent_prompt = "YES"
-	refresh_token_rolling_interval_time_unit = "MINUTES"
-	require_offline_access_scope_to_issue_refresh_tokens = "YES"
-		`
+func oauthClientSettings_CibaPolicyHcl() string {
+	// Prior to PF 12.1, the last ciba policy can't be deleted from the server, so
+	// creating it in terraform will cause an error in the post-test destroy
+	if !acctest.VersionAtLeast(version.PingFederate1210) {
+		return ""
 	}
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionSpecificHcl += `
-  lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
-  lockout_max_malicious_actions = 5
-    `
-	}
-
-	return fmt.Sprintf(`
-	%s
-
-  %s
-
+	return `
 resource "pingfederate_oauth_ciba_server_policy_request_policy" "example" {
   allow_unsigned_login_hint_token = false
   alternative_login_hint_token_issuers = [
@@ -206,6 +170,61 @@ resource "pingfederate_oauth_ciba_server_policy_request_policy" "example" {
   require_token_for_identity_hint = false
   transaction_lifetime            = 120
 }
+`
+}
+
+// Minimal HCL with only required values set (no required values in this resource)
+func oauthClientSettings_MinimalHCL() string {
+	return fmt.Sprintf(`
+	%s
+
+resource "pingfederate_oauth_client_settings" "example" {
+}
+`, oauthClientSettings_DependencyHcl())
+}
+
+// HCL intended to validate expected computed values are set
+func oauthClientSettings_ComputedCheckHCL() string {
+	return fmt.Sprintf(`
+	%s
+
+resource "pingfederate_oauth_client_settings" "example" {
+  dynamic_client_registration = {}
+}
+`, oauthClientSettings_DependencyHcl())
+}
+
+// Maximal HCL with all values set where possible
+func oauthClientSettings_CompleteHCL() string {
+	versionSpecificHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		versionSpecificHcl = `
+	offline_access_require_consent_prompt = "YES"
+	refresh_token_rolling_interval_time_unit = "MINUTES"
+	require_offline_access_scope_to_issue_refresh_tokens = "YES"
+		`
+	}
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		versionSpecificHcl += `
+  lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
+  lockout_max_malicious_actions = 5
+    `
+	}
+
+	// Prior to PF 12.1, the last ciba policy can't be deleted from the server, so
+	// creating it in terraform will cause an error in the post-test destroy
+	requestPolicyId := "pingfederate_oauth_ciba_server_policy_request_policy.example.id"
+	if !acctest.VersionAtLeast(version.PingFederate1210) {
+		requestPolicyId = "\"acctestCibaPolicy\""
+	}
+
+	return fmt.Sprintf(`
+	%s
+
+  %s
+
+  %s
+  
 
 resource "pingfederate_oauth_client_settings" "example" {
   depends_on = [
@@ -260,7 +279,7 @@ resource "pingfederate_oauth_client_settings" "example" {
     refresh_token_rolling_interval          = 10
     refresh_token_rolling_interval_type     = "OVERRIDE_SERVER_DEFAULT"
     request_policy_ref = {
-      id = pingfederate_oauth_ciba_server_policy_request_policy.example.id
+      id = %s
     }
     require_jwt_secured_authorization_response_mode = true
     require_proof_key_for_code_exchange             = true
@@ -280,6 +299,8 @@ resource "pingfederate_oauth_client_settings" "example" {
 }
 `, oauthClientSettings_DependencyHcl(),
 		accesstokenmanager.AccessTokenManagerTestHCL("oauthClientSettingsAtm"),
+		oauthClientSettings_CibaPolicyHcl(),
+		requestPolicyId,
 		versionSpecificHcl)
 }
 
