@@ -258,7 +258,7 @@ resource "pingfederate_openid_connect_policy" "%s" {
   policy_id = "%s"
   name      = "%s"
   access_token_manager_ref = {
-    id = pingfederate_oauth_access_token_manager.jsonWebTokenOauthAccessTokenManagerExample.manager_id
+    id = pingfederate_oauth_access_token_manager.jsonWebTokenOauthAccessTokenManagerExample.id
   }
   attribute_contract = {
     extended_attributes = []

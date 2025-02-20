@@ -90,10 +90,6 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
         value = "false"
       },
       {
-        name  = "Publish Keys to the PingFederate JWKS Endpoint"
-        value = "false"
-      },
-      {
         name  = "Publish Thumbprint X.509 URL"
         value = "false"
       },
@@ -156,10 +152,6 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
     check_valid_authn_session       = false
     include_session_id              = false
     update_authn_session_activity   = false
-  }
-  token_endpoint_attribute_contract = {
-    attributes = [
-    ]
   }
 }`, id)
 }
