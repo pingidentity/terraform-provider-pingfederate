@@ -1,4 +1,4 @@
-# v1.4.3 (Unreleased)
+# v1.4.3 March 6, 2025
 ### Bug fixes
 * Marked the `default_request_policy_ref` field as optional in the `pingfederate_oauth_ciba_server_policy_settings` resource, to allow setting the ref to null when no request policies are defined ([#463](https://github.com/pingidentity/terraform-provider-pingfederate/pull/463))
 * Marked the `default_generator_group_ref` field as optional in the `pingfederate_oauth_token_exchange_generator_settings` resource, to allow setting the ref to null when no generator groups are defined ([#463](https://github.com/pingidentity/terraform-provider-pingfederate/pull/463))
