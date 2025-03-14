@@ -83,6 +83,10 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.4.*"
+          terraform_wrapper: false
       # Use git add -N . to ensure that new files are listed in the git diff check
       - run: |
           go generate ./...
