@@ -20,7 +20,7 @@ jobs:
   # Ensure the project can build first
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
   fmt:
     name: go fmt
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -54,7 +54,7 @@ jobs:
   vet:
     name: go vet
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -65,7 +65,7 @@ jobs:
   lint:
     name: golangcli-lint
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -76,13 +76,17 @@ jobs:
   generate:
     name: go generate
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
           cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.4.*"
+          terraform_wrapper: false
       # Use git add -N . to ensure that new files are listed in the git diff check
       - run: |
           go generate ./...
@@ -92,7 +96,7 @@ jobs:
   tfproviderlint:
     name: tfproviderlintx
     needs: [fmt, vet, lint, generate]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -103,7 +107,7 @@ jobs:
   tflint:
     name: tflint
     needs: [fmt, vet, lint, generate]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
