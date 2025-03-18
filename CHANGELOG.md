@@ -1,3 +1,7 @@
+# v1.4.4 (Unreleased)
+### Notes
+* bump Go 1.23.5 => 1.24.1 ([#478](https://github.com/pingidentity/terraform-provider-pingfederate/pull/478))
+
 # v1.4.3 March 6, 2025
 ### Bug fixes
 * Marked the `default_request_policy_ref` field as optional in the `pingfederate_oauth_ciba_server_policy_settings` resource, to allow setting the ref to null when no request policies are defined ([#463](https://github.com/pingidentity/terraform-provider-pingfederate/pull/463))
