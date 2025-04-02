@@ -380,7 +380,29 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                   }
                 },
                 outbound_attribute_mapping = {
-                  attribute_sources = [],
+                  attribute_sources = [
+                        {
+                          custom_attribute_source = {
+                            data_store_ref = {
+                                id = "customDataStore"
+                            }
+                            description = "APIStubs"
+                            filter_fields = [
+                                {
+                                    name = "Authorization Header"
+                                },
+                                {
+                                    name = "Body"
+                                },
+                                {
+                                    name  = "Resource Path"
+                                    value = "/users/external"
+                                },
+                            ]
+                            id = "APIStubs"
+                          }
+                        },
+				  ],
                   attribute_contract_fulfillment = {
                     "firstName" = {
                       source = {
