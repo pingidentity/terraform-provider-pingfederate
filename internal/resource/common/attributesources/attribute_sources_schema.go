@@ -59,8 +59,9 @@ func CustomAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeCon
 				"value": schema.StringAttribute{
 					Description: "The value of this field. Whether or not the value is required will be determined by plugin validation checks.",
 					Optional:    true,
-					Computed:    true,
-					Default:     stringdefault.StaticString(""),
+					Validators: []validator.String{
+						stringvalidator.LengthAtLeast(1),
+					},
 				},
 				"name": schema.StringAttribute{
 					Description: "The name of this field.",

@@ -89,7 +89,24 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 		attrSourceValues := map[string]attr.Value{}
 		if attrSource.CustomAttributeSource != nil {
 			customAttrSourceValues := map[string]attr.Value{}
-			customAttrSourceValues["filter_fields"], valueFromDiags = types.SetValueFrom(con, customAttrSourceAttrTypes["filter_fields"].(types.SetType).ElemType, attrSource.CustomAttributeSource.FilterFields)
+			var filterFieldsValues []attr.Value
+			for _, filterField := range attrSource.CustomAttributeSource.FilterFields {
+				filterFieldValues := map[string]attr.Value{}
+				// Ignore empty string values
+				if filterField.Value != nil && len(*filterField.Value) > 0 {
+					filterFieldValues["value"] = types.StringValue(*filterField.Value)
+				} else {
+					filterFieldValues["value"] = types.StringNull()
+				}
+				filterFieldValues["name"] = types.StringValue(filterField.Name)
+				field, valueFromDiags := types.ObjectValue(map[string]attr.Type{
+					"value": types.StringType,
+					"name":  types.StringType,
+				}, filterFieldValues)
+				diags.Append(valueFromDiags...)
+				filterFieldsValues = append(filterFieldsValues, field)
+			}
+			customAttrSourceValues["filter_fields"], valueFromDiags = types.SetValue(customAttrSourceAttrTypes["filter_fields"].(types.SetType).ElemType, filterFieldsValues)
 			diags.Append(valueFromDiags...)
 
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")
