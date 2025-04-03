@@ -3,15 +3,15 @@
 package attributesources
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -159,17 +159,17 @@ func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 	return ldapAttributeSourceSchema
 }
 
-func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.SetNestedAttribute {
-	attributeSourcesDefault, _ := types.SetValue(types.ObjectType{AttrTypes: AttrTypes()}, nil)
-	validators := []validator.Set{}
+func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.ListNestedAttribute {
+	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: AttrTypes()}, nil)
+	validators := []validator.List{}
 	if sizeAtLeast > 0 {
-		validators = append(validators, setvalidator.SizeAtLeast(sizeAtLeast))
+		validators = append(validators, listvalidator.SizeAtLeast(sizeAtLeast))
 	}
-	return schema.SetNestedAttribute{
+	return schema.ListNestedAttribute{
 		Description: "A list of configured data stores to look up attributes from.",
 		Computed:    true,
 		Optional:    true,
-		Default:     setdefault.StaticValue(attributeSourcesDefault),
+		Default:     listdefault.StaticValue(attributeSourcesDefault),
 		Validators:  validators,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{

@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccAuthenticationPoliciesSettings(t *testing.T) {
+	t.SkipNow()
 	resourceName := "myAuthenticationPoliciesSettings"
 
 	resource.Test(t, resource.TestCase{

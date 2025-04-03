@@ -56,7 +56,7 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Configure(_ context.C
 
 type oauthAuthenticationPolicyContractMappingResourceModel struct {
 	AttributeContractFulfillment    types.Map    `tfsdk:"attribute_contract_fulfillment"`
-	AttributeSources                types.Set    `tfsdk:"attribute_sources"`
+	AttributeSources                types.List   `tfsdk:"attribute_sources"`
 	AuthenticationPolicyContractRef types.Object `tfsdk:"authentication_policy_contract_ref"`
 	Id                              types.String `tfsdk:"id"`
 	IssuanceCriteria                types.Object `tfsdk:"issuance_criteria"`

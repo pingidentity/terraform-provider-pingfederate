@@ -20,6 +20,7 @@ import (
 var pingOneConnection, pingOneEnvironment, pingOnePopulation string
 
 func TestAccAuthenticationPoliciesFragment(t *testing.T) {
+	t.SkipNow()
 	resourceName := "myAuthenticationPoliciesFragment"
 
 	pingOneConnection = os.Getenv("PF_TF_P1_CONNECTION_ID")

@@ -28,7 +28,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		}
 		attributeSources, ok := apcMappingPolicyAction.(types.Object).Attributes()["attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.Set))
+			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
 			if err != nil {
 				return nil, err
 			}
@@ -82,7 +82,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 
 		attributeSources, ok := fragmentPolicyAction.(types.Object).Attributes()["fragment_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.Set))
+			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
 			if err != nil {
 				return nil, err
 			}
@@ -99,7 +99,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		}
 		outboundAttributeMappingAttributeSources, ok := localIdentityMappingPolicyAction.(types.Object).Attributes()["outbound_attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(outboundAttributeMappingAttributeSources.(types.Set))
+			attributeSourceStruct, err := attributesources.ClientStruct(outboundAttributeMappingAttributeSources.(types.List))
 			if err != nil {
 				return nil, err
 			}
@@ -108,7 +108,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 
 		inboundAttributeMappingAttributeSources, ok := localIdentityMappingPolicyAction.(types.Object).Attributes()["inbound_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(inboundAttributeMappingAttributeSources.(types.Set))
+			attributeSourceStruct, err := attributesources.ClientStruct(inboundAttributeMappingAttributeSources.(types.List))
 			if err != nil {
 				return nil, err
 			}

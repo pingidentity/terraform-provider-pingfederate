@@ -75,7 +75,7 @@ func AttrTypes() map[string]attr.Type {
 	}
 }
 
-func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
+func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var customAttrSourceAttrTypes = CustomAttributeSourceAttrType()
 	var jdbcAttrSourceAttrTypes = JdbcAttributeSourceAttrType()
@@ -153,7 +153,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	attrToState, valueFromDiags := types.SetValue(types.ObjectType{AttrTypes: AttrTypes()}, attrSourceElements)
+	attrToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: AttrTypes()}, attrSourceElements)
 	diags.Append(valueFromDiags...)
 	return attrToState, diags
 }
