@@ -227,7 +227,7 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 
 func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["inbound_mapping"] = attributemapping.ToSchema(false)
+	attrs["inbound_mapping"] = attributemapping.ToSchemaNoValueDefault(false)
 	attrs["local_identity_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
