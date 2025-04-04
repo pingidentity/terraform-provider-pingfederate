@@ -90,7 +90,7 @@ func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs["attribute_mapping"] = schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
-			"attribute_sources":              attributesources.ToSchema(0, false),
+			"attribute_sources":              attributesources.ToSchemaNoValueDefault(0, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    true,
@@ -211,7 +211,7 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 					},
 				},
 			},
-			"attribute_sources": attributesources.ToSchema(0, false),
+			"attribute_sources": attributesources.ToSchemaNoValueDefault(0, false),
 			"issuance_criteria": issuancecriteria.ToSchema(),
 		},
 		Required:    false,
@@ -236,7 +236,7 @@ func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs["outbound_attribute_mapping"] = schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
-			"attribute_sources":              attributesources.ToSchema(0, false),
+			"attribute_sources":              attributesources.ToSchemaNoValueDefault(0, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    true,
