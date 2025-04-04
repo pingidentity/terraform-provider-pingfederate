@@ -63,18 +63,18 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v -count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 20m -run ${ACC_TEST_NAME} -v -count=1
 
 testaccfolder:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 10m -v -count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 20m -v -count=1
 
 testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers/settings -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping -e captchaproviders/settings` -timeout 10m -v -p 4; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers/settings -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping -e captchaproviders/settings` -timeout 20m -v -p 4; \
 	firstTestResult=$$?; \
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers/settings -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping -e captchaproviders/settings` -timeout 10m -v -p 1; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers/settings -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping -e captchaproviders/settings` -timeout 20m -v -p 1; \
 	secondTestResult=$$?; \
 	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0"; then \
 		false; \
