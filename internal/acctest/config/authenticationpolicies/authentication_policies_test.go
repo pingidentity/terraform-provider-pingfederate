@@ -143,37 +143,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                 fragment_mapping = {
                   attribute_sources = [
                     {
-                      ldap_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                        binary_attribute_settings      = null
-                        id                             = "ldapguy"
-                        data_store_ref = {
-                          id = "pingdirectory"
-                        }
-                        description            = "PingDirectory"
-                        member_of_nested_group = false
-                        search_attributes      = ["Subject DN"]
-                        search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                        search_scope           = "SUBTREE"
-                        type                   = "LDAP"
-                      }
-                    },
-                    {
-                      jdbc_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        column_names                   = ["GRANTEE"]
-                        data_store_ref = {
-                          id = "ProvisionerDS"
-                        }
-                        description = "JDBC"
-                        filter      = "subject"
-                        id          = "jdbcguy"
-                        schema      = "INFORMATION_SCHEMA"
-                        table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                      }
-                    },
-                    {
                       custom_attribute_source = {
                         data_store_ref = {
                           id = "customDataStore"
@@ -234,37 +203,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                 }
                 fragment_mapping = {
                   attribute_sources = [
-                    {
-                      ldap_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                        binary_attribute_settings      = null
-                        id                             = "ldapguy"
-                        data_store_ref = {
-                          id = "pingdirectory"
-                        }
-                        description            = "PingDirectory"
-                        member_of_nested_group = false
-                        search_attributes      = ["Subject DN"]
-                        search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                        search_scope           = "SUBTREE"
-                        type                   = "LDAP"
-                      }
-                    },
-                    {
-                      jdbc_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        column_names                   = ["GRANTEE"]
-                        data_store_ref = {
-                          id = "ProvisionerDS"
-                        }
-                        description = "JDBC"
-                        filter      = "subject"
-                        id          = "jdbcguy"
-                        schema      = "INFORMATION_SCHEMA"
-                        table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                      }
-                    },
                     {
                       custom_attribute_source = {
                         data_store_ref = {
@@ -334,37 +272,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
             fragment_mapping = {
               attribute_sources = [
                 {
-                  ldap_attribute_source = {
-                    attribute_contract_fulfillment = null
-                    base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                    binary_attribute_settings      = null
-                    id                             = "ldapguy"
-                    data_store_ref = {
-                      id = "pingdirectory"
-                    }
-                    description            = "PingDirectory"
-                    member_of_nested_group = false
-                    search_attributes      = ["Subject DN"]
-                    search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                    search_scope           = "SUBTREE"
-                    type                   = "LDAP"
-                  }
-                },
-                {
-                  jdbc_attribute_source = {
-                    attribute_contract_fulfillment = null
-                    column_names                   = ["GRANTEE"]
-                    data_store_ref = {
-                      id = "ProvisionerDS"
-                    }
-                    description = "JDBC"
-                    filter      = "subject"
-                    id          = "jdbcguy"
-                    schema      = "INFORMATION_SCHEMA"
-                    table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                  }
-                },
-                {
                   custom_attribute_source = {
                     data_store_ref = {
                       id = "customDataStore"
@@ -430,37 +337,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
             fragment_mapping = {
               attribute_sources = [
                 {
-                  ldap_attribute_source = {
-                    attribute_contract_fulfillment = null
-                    base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                    binary_attribute_settings      = null
-                    id                             = "ldapguy"
-                    data_store_ref = {
-                      id = "pingdirectory"
-                    }
-                    description            = "PingDirectory"
-                    member_of_nested_group = false
-                    search_attributes      = ["Subject DN"]
-                    search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                    search_scope           = "SUBTREE"
-                    type                   = "LDAP"
-                  }
-                },
-                {
-                  jdbc_attribute_source = {
-                    attribute_contract_fulfillment = null
-                    column_names                   = ["GRANTEE"]
-                    data_store_ref = {
-                      id = "ProvisionerDS"
-                    }
-                    description = "JDBC"
-                    filter      = "subject"
-                    id          = "jdbcguy"
-                    schema      = "INFORMATION_SCHEMA"
-                    table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                  }
-                },
-                {
                   custom_attribute_source = {
                     data_store_ref = {
                       id = "customDataStore"
@@ -523,37 +399,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                     fragment_mapping = {
                       attribute_sources = [
                         {
-                          ldap_attribute_source = {
-                            attribute_contract_fulfillment = null
-                            base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                            binary_attribute_settings      = null
-                            id                             = "ldapguy"
-                            data_store_ref = {
-                              id = "pingdirectory"
-                            }
-                            description            = "PingDirectory"
-                            member_of_nested_group = false
-                            search_attributes      = ["Subject DN"]
-                            search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                            search_scope           = "SUBTREE"
-                            type                   = "LDAP"
-                          }
-                        },
-                        {
-                          jdbc_attribute_source = {
-                            attribute_contract_fulfillment = null
-                            column_names                   = ["GRANTEE"]
-                            data_store_ref = {
-                              id = "ProvisionerDS"
-                            }
-                            description = "JDBC"
-                            filter      = "subject"
-                            id          = "jdbcguy"
-                            schema      = "INFORMATION_SCHEMA"
-                            table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                          }
-                        },
-                        {
                           custom_attribute_source = {
                             data_store_ref = {
                               id = "customDataStore"
@@ -606,37 +451,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                         attribute_mapping = {
                           attribute_sources = [
                             {
-                              ldap_attribute_source = {
-                                attribute_contract_fulfillment = null
-                                base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                                binary_attribute_settings      = null
-                                id                             = "ldapguy"
-                                data_store_ref = {
-                                  id = "pingdirectory"
-                                }
-                                description            = "PingDirectory"
-                                member_of_nested_group = false
-                                search_attributes      = ["Subject DN"]
-                                search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                                search_scope           = "SUBTREE"
-                                type                   = "LDAP"
-                              }
-                            },
-                            {
-                              jdbc_attribute_source = {
-                                attribute_contract_fulfillment = null
-                                column_names                   = ["GRANTEE"]
-                                data_store_ref = {
-                                  id = "ProvisionerDS"
-                                }
-                                description = "JDBC"
-                                filter      = "subject"
-                                id          = "jdbcguy"
-                                schema      = "INFORMATION_SCHEMA"
-                                table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                              }
-                            },
-                            {
                               custom_attribute_source = {
                                 data_store_ref = {
                                   id = "customDataStore"
@@ -686,37 +500,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                 inbound_mapping = {
                   attribute_sources = [
                     {
-                      ldap_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                        binary_attribute_settings      = null
-                        id                             = "ldapguy"
-                        data_store_ref = {
-                          id = "pingdirectory"
-                        }
-                        description            = "PingDirectory"
-                        member_of_nested_group = false
-                        search_attributes      = ["Subject DN"]
-                        search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                        search_scope           = "SUBTREE"
-                        type                   = "LDAP"
-                      }
-                    },
-                    {
-                      jdbc_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        column_names                   = ["GRANTEE"]
-                        data_store_ref = {
-                          id = "ProvisionerDS"
-                        }
-                        description = "JDBC"
-                        filter      = "subject"
-                        id          = "jdbcguy"
-                        schema      = "INFORMATION_SCHEMA"
-                        table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                      }
-                    },
-                    {
                       custom_attribute_source = {
                         data_store_ref = {
                           id = "customDataStore"
@@ -752,37 +535,6 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                 },
                 outbound_attribute_mapping = {
                   attribute_sources = [
-                    {
-                      ldap_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-                        binary_attribute_settings      = null
-                        id                             = "ldapguy"
-                        data_store_ref = {
-                          id = "pingdirectory"
-                        }
-                        description            = "PingDirectory"
-                        member_of_nested_group = false
-                        search_attributes      = ["Subject DN"]
-                        search_filter          = "(&(memberUid=uid)(cn=Postman))"
-                        search_scope           = "SUBTREE"
-                        type                   = "LDAP"
-                      }
-                    },
-                    {
-                      jdbc_attribute_source = {
-                        attribute_contract_fulfillment = null
-                        column_names                   = ["GRANTEE"]
-                        data_store_ref = {
-                          id = "ProvisionerDS"
-                        }
-                        description = "JDBC"
-                        filter      = "subject"
-                        id          = "jdbcguy"
-                        schema      = "INFORMATION_SCHEMA"
-                        table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-                      }
-                    },
                     {
                       custom_attribute_source = {
                         data_store_ref = {
