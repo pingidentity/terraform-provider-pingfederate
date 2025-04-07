@@ -161,7 +161,43 @@ resource "pingfederate_authentication_policies_fragment" "%[1]s" {
               id = pingfederate_authentication_policy_contract.mycontract.contract_id
             }
             attribute_mapping = {
-              attribute_sources = []
+              attribute_sources = [
+                    {
+                      custom_attribute_source = {
+                        data_store_ref = {
+                          id = "customDataStore"
+                        }
+                        description = "APIStubs"
+                        filter_fields = [
+                          {
+                            name = "Authorization Header"
+                          },
+                          {
+                            name = "Body"
+                          },
+                          {
+                            name  = "Resource Path"
+                            value = "/users/external"
+                          },
+                        ]
+                        id = "APIStubs"
+                      }
+                    },
+                    {
+                      jdbc_attribute_source = {
+                        attribute_contract_fulfillment = null
+                        column_names                   = ["GRANTEE"]
+                        data_store_ref = {
+                          id = "ProvisionerDS"
+                        }
+                        description = "JDBC"
+                        filter      = "subject"
+                        id          = "jdbcguy"
+                        schema      = "INFORMATION_SCHEMA"
+                        table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
+                      }
+                    },
+                  ],
               attribute_contract_fulfillment = {
                 "firstName" : {
                   source = {
@@ -537,7 +573,46 @@ resource "pingfederate_idp_adapter" "myadapter" {
     mask_ognl_values = false
   }
   attribute_mapping = {
-    attribute_sources = []
+    attribute_sources = [
+                    {
+                      ldap_attribute_source = {
+                        attribute_contract_fulfillment = null
+                        base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
+                        binary_attribute_settings      = null
+                        id                             = "ldapguy"
+                        data_store_ref = {
+                          id = "pingdirectory"
+                        }
+                        description            = "PingDirectory"
+                        member_of_nested_group = false
+                        search_attributes      = ["Subject DN"]
+                        search_filter          = "(&(memberUid=uid)(cn=Postman))"
+                        search_scope           = "SUBTREE"
+                        type                   = "LDAP"
+                      }
+                    },
+                    {
+                      custom_attribute_source = {
+                        data_store_ref = {
+                          id = "customDataStore"
+                        }
+                        description = "APIStubs"
+                        filter_fields = [
+                          {
+                            name = "Authorization Header"
+                          },
+                          {
+                            name = "Body"
+                          },
+                          {
+                            name  = "Resource Path"
+                            value = "/users/external"
+                          },
+                        ]
+                        id = "APIStubs"
+                      }
+                    },
+                  ],
     attribute_contract_fulfillment = {
       "country" : {
         source = {
