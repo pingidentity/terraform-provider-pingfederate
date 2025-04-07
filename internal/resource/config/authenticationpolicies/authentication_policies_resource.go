@@ -107,7 +107,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 							Default:     booldefault.StaticBool(true),
 							Description: "Whether or not this authentication policy tree is enabled. Default is true.",
 						},
-						"root_node": authenticationpolicytreenode.ToSchema("A node inside the authentication policy tree."),
+						"root_node": authenticationpolicytreenode.ToSchemaNoValueDefault("A node inside the authentication policy tree."),
 						"handle_failures_locally": schema.BoolAttribute{
 							Optional:    true,
 							Computed:    true,
