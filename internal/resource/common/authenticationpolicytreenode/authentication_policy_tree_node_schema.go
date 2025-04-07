@@ -29,15 +29,29 @@ func childrenDefault(depth int) types.List {
 }
 
 func ToSchema(description string) schema.SingleNestedAttribute {
+	return toSchemaInternal(description, true)
+}
+
+func ToSchemaNoValueDefault(description string) schema.SingleNestedAttribute {
+	return toSchemaInternal(description, false)
+}
+
+func toSchemaInternal(description string, includeValueDefault bool) schema.SingleNestedAttribute {
+	var actionSchema schema.Attribute
+	if includeValueDefault {
+		actionSchema = policyaction.ToSchema()
+	} else {
+		actionSchema = policyaction.ToSchemaNoValueDefault()
+	}
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
-			"action": policyaction.ToSchema(),
+			"action": actionSchema,
 			"children": schema.ListNestedAttribute{
 				Optional:     true,
 				Computed:     true,
 				Default:      listdefault.StaticValue(childrenDefault(1)),
 				Description:  childrenDescription,
-				NestedObject: buildSchema(1),
+				NestedObject: buildSchema(1, includeValueDefault),
 			},
 		},
 		Required:    true,
@@ -45,9 +59,12 @@ func ToSchema(description string) schema.SingleNestedAttribute {
 	}
 }
 
-func buildSchema(depth int) schema.NestedAttributeObject {
-	attrs := map[string]schema.Attribute{
-		"action": policyaction.ToSchema(),
+func buildSchema(depth int, includeValueDefault bool) schema.NestedAttributeObject {
+	attrs := map[string]schema.Attribute{}
+	if includeValueDefault {
+		attrs["action"] = policyaction.ToSchema()
+	} else {
+		attrs["action"] = policyaction.ToSchemaNoValueDefault()
 	}
 	if depth < MaxPolicyNodeRecursiveDepth {
 		attrs["children"] = schema.ListNestedAttribute{
@@ -55,7 +72,7 @@ func buildSchema(depth int) schema.NestedAttributeObject {
 			Computed:     true,
 			Default:      listdefault.StaticValue(childrenDefault(depth + 1)),
 			Description:  childrenDescription,
-			NestedObject: buildSchema(depth + 1),
+			NestedObject: buildSchema(depth+1, includeValueDefault),
 		}
 	}
 	return schema.NestedAttributeObject{
