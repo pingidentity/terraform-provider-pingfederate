@@ -22,7 +22,7 @@ func TestAccIdpSpConnection_RemovalDrift(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: spIdpConnection_SimpleCheckDestroy,
+		CheckDestroy: idpSpConnection_SimpleCheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -31,7 +31,7 @@ func TestAccIdpSpConnection_RemovalDrift(t *testing.T) {
 			{
 				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
 				PreConfig: func() {
-					spIdpConnection_Delete(t, idpSpConnId)
+					idpSpConnection_Delete(t, idpSpConnId)
 				},
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
@@ -41,7 +41,7 @@ func TestAccIdpSpConnection_RemovalDrift(t *testing.T) {
 }
 
 // Delete the resource
-func spIdpConnection_Delete(t *testing.T, id string) {
+func idpSpConnection_Delete(t *testing.T, id string) {
 	testClient := acctest.TestClient()
 	_, err := testClient.IdpSpConnectionsAPI.DeleteSpConnection(acctest.TestBasicAuthContext(), id).Execute()
 	if err != nil {
@@ -50,7 +50,7 @@ func spIdpConnection_Delete(t *testing.T, id string) {
 }
 
 // Test that any objects created by the test are destroyed
-func spIdpConnection_SimpleCheckDestroy(s *terraform.State) error {
+func idpSpConnection_SimpleCheckDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	_, err := testClient.IdpSpConnectionsAPI.DeleteSpConnection(acctest.TestBasicAuthContext(), idpSpConnId).Execute()
 	if err == nil {

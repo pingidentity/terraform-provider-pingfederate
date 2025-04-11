@@ -20,7 +20,7 @@ func TestAccIdpSpConnection_CertificateId(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: spIdpConnection_SimpleCheckDestroy,
+		CheckDestroy: idpSpConnection_SimpleCheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Test applying two certs without defined ids in credentials
