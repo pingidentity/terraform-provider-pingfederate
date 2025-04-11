@@ -40,6 +40,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/pemcertificates"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
@@ -2846,8 +2847,11 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				for _, certInPlan := range state.Credentials.Attributes()["certs"].(types.List).Elements() {
 					x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
-					//TODO right here
-					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
+					// If the plan did not define an id for the cert, we'll have to compare the certs via the file_data.
+					// Otherwise just compare the ids of the certs
+					if (x509FileIdPlan == "" &&
+						pemcertificates.FileDataEquivalent(x509FilePlanAttrs["file_data"].(types.String).ValueString(), cert.X509File.FileData)) ||
+						(cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan) {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
 						credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planFileData, cert, &diags, isImportRead)
 						respDiags.Append(objDiags...)
@@ -2889,8 +2893,11 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 						for _, ibcaCertInPlan := range state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
 							ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
-							//TODO right here
-							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
+							// If the plan did not define an id for the cert, we'll have to compare the certs via the file_data.
+							// Otherwise just compare the ids of the certs
+							if (ibcax509FileIdPlan == "" &&
+								pemcertificates.FileDataEquivalent(ibcax509FilePlanAttrs["file_data"].(types.String).ValueString(), ibcaCert.X509File.FileData)) ||
+								(ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan) {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
 								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
 								respDiags.Append(objDiags...)

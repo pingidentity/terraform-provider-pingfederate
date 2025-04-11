@@ -115,7 +115,7 @@ resource "pingfederate_idp_sp_connection" "example" {
 		certs = [
 		{
 			active_verification_cert    = true
-			encryption_cert             = true
+			encryption_cert             = false
 			primary_verification_cert   = true
 			secondary_verification_cert = false
 			x509_file = {
