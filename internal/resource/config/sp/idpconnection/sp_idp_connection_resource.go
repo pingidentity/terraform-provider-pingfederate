@@ -4535,6 +4535,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				for _, certInPlan := range plan.Credentials.Attributes()["certs"].(types.List).Elements() {
 					x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
+					//TODO right here
 					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
 						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &respDiags, isImportRead)
@@ -4577,6 +4578,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						for _, ibcaCertInPlan := range plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
 							ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
+							//TODO right here
 							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
 								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &respDiags, isImportRead)
