@@ -1,6 +1,6 @@
 # v1.4.5 (Unreleased)
 ### Bug fixes
-* Fixed an inconsitent result error that would occur when configuring certificates with no `id` value in the `pingfederate_idp_sp_connection` and `pingfederate_sp_idp_connection` resources. Also fixed a related inconsistent result failure that would occur when modifying the `id` of a certificate.
+* Fixed an inconsistent result error that would occur when configuring certificates with no `id` value in the `pingfederate_idp_sp_connection` and `pingfederate_sp_idp_connection` resources. Also fixed a related inconsistent result failure that would occur when modifying the `id` of a certificate.
 
 # v1.4.4 April 8, 2025
 ### Bug fixes
