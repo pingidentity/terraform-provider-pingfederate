@@ -1,3 +1,7 @@
+# v1.4.5 (Unreleased)
+### Bug fixes
+* Fixed an inconsistent result error that would occur when configuring certificates with no `id` value in the `pingfederate_idp_sp_connection` and `pingfederate_sp_idp_connection` resources. Also fixed a related inconsistent result failure that would occur when modifying the `id` of a certificate.
+
 # v1.4.4 April 8, 2025
 ### Bug fixes
 * Updated the `pingfederate_authentication_policies` resource to set no default for custom attribute source `filter_fields.value` attributes, and to validate that the configured filter field value string has length at least 1. This will prevent inconsistent result errors when using custom attribute sources in the authentication policies. Related to a known terraform-plugin-framework bug with defaults in nested sets: [#867](https://github.com/hashicorp/terraform-plugin-framework/issues/867). ([#484](https://github.com/pingidentity/terraform-provider-pingfederate/pull/484))

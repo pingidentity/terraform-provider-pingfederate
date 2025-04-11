@@ -4,13 +4,12 @@ package planmodifiers
 
 import (
 	"context"
-	"encoding/base64"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/pemcertificates"
 )
 
 var _ planmodifier.List = &x509FileData{}
@@ -53,35 +52,20 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 		stateCertViewValue := stateValueAttrs["cert_view"].(types.Object)
 		planCertViewValue := planValueAttrs["cert_view"].(types.Object)
 
-		var planFileDataStringFormatted, formattedFileDataAsStringFormatted, fileDataBase64Decoded string
-
-		// Remove header, footer, and new lines
-		stringReplacer := strings.NewReplacer("-----BEGIN CERTIFICATE-----", "", "-----END CERTIFICATE-----", "", "\n", "")
-
 		// Get file_data from plan
 		fileData, ok := planX509Value.Attributes()["file_data"]
 		if !ok {
 			return
 		}
-		planFileDataString := fileData.(types.String).ValueString()
-		planFileDataStringFormatted = stringReplacer.Replace(planFileDataString)
-		base64DecodedFileData, err := base64.StdEncoding.DecodeString(planFileDataString)
-		if err == nil {
-			// The plan value was base64-encoded, use the decoded value for comparison
-			fileDataBase64Decoded = string(base64DecodedFileData)
-		}
-		fileDataBase64Decoded = stringReplacer.Replace(fileDataBase64Decoded)
-
 		// Get formatted_file_data from state
 		formattedFileData, ok := stateX509Value.Attributes()["formatted_file_data"].(types.String)
 		if !ok {
 			return
 		}
-		formattedFileDataAsStringFormatted = stringReplacer.Replace(formattedFileData.ValueString())
 
 		// Check if formatted_file_data and file_data strings match, or if formatted_file_data matches original string
 		// If they do not, formatted_file_data is set to unknown
-		if formattedFileDataAsStringFormatted != fileDataBase64Decoded && formattedFileDataAsStringFormatted != planFileDataStringFormatted {
+		if !pemcertificates.FileDataEquivalent(fileData.(types.String).ValueString(), formattedFileData.ValueString()) {
 			reqPlanAttrs := planX509Value.Attributes()
 			reqPlanAttrs["formatted_file_data"] = types.StringUnknown()
 			planX509Value, respDiags = types.ObjectValue(planX509Value.AttributeTypes(ctx), reqPlanAttrs)
@@ -104,7 +88,15 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 					"x509_file object did not build properly",
 				)
 			}
-			planCertViewValue, respDiags = types.ObjectValue(planCertViewValue.AttributeTypes(ctx), stateCertViewValue.Attributes())
+
+			certViewAttrs := stateCertViewValue.Attributes()
+			// Handle if the id was changed between the plan and state
+			planCertId := planX509Value.Attributes()["id"]
+			if !planCertId.IsUnknown() && !planCertId.IsNull() {
+				certViewAttrs["id"] = planCertId
+			}
+
+			planCertViewValue, respDiags = types.ObjectValue(planCertViewValue.AttributeTypes(ctx), certViewAttrs)
 			resp.Diagnostics.Append(respDiags...)
 			if respDiags.HasError() {
 				resp.Diagnostics.AddError(
