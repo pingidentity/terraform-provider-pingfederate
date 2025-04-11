@@ -88,7 +88,15 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 					"x509_file object did not build properly",
 				)
 			}
-			planCertViewValue, respDiags = types.ObjectValue(planCertViewValue.AttributeTypes(ctx), stateCertViewValue.Attributes())
+
+			certViewAttrs := stateCertViewValue.Attributes()
+			// Handle if the id was changed between the plan and state
+			planCertId := planX509Value.Attributes()["id"]
+			if !planCertId.IsUnknown() && !planCertId.IsNull() {
+				certViewAttrs["id"] = planCertId
+			}
+
+			planCertViewValue, respDiags = types.ObjectValue(planCertViewValue.AttributeTypes(ctx), certViewAttrs)
 			resp.Diagnostics.Append(respDiags...)
 			if respDiags.HasError() {
 				resp.Diagnostics.AddError(
