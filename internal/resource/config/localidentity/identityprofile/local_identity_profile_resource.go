@@ -844,8 +844,12 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 }
 
 func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model localIdentityProfileModel
+	var model *localIdentityProfileModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+	if model == nil {
+		return
+	}
+
 	if internaltypes.IsDefined(model.EmailVerificationConfig) {
 		emailVerificationConfig := model.EmailVerificationConfig.Attributes()
 		emailVerificationType := model.EmailVerificationConfig.Attributes()["email_verification_type"].(basetypes.StringValue).ValueString()
@@ -964,7 +968,8 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 			}
 		}
 	}
-	if !model.ProfileEnabled.ValueBool() && !model.RegistrationEnabled.ValueBool() {
+	if !model.ProfileEnabled.IsUnknown() && !model.ProfileEnabled.ValueBool() &&
+		!model.RegistrationEnabled.IsUnknown() && !model.RegistrationEnabled.ValueBool() {
 		if internaltypes.IsDefined(model.EmailVerificationConfig) || internaltypes.IsDefined(model.DataStoreConfig) || internaltypes.IsDefined(model.FieldConfig) || internaltypes.IsDefined(model.RegistrationConfig) || internaltypes.IsDefined(model.ProfileConfig) {
 			resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("email, data_store_config, field Config, registration_config and profile_config are not allowed when registration and profile are disabled."))
 		}
@@ -995,7 +1000,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 				providererror.InvalidAttributeConfiguration,
 				fmt.Sprintln("registration_config is required when registration is enabled."))
 		}
-		if !model.RegistrationEnabled.ValueBool() {
+		if !model.RegistrationEnabled.IsUnknown() && !model.RegistrationEnabled.ValueBool() {
 			if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
 				fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
 				fieldElems := fieldObj.Elements()
@@ -1009,7 +1014,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 							fmt.Sprintln("registration_page_field option for the fields attribute should not be set to 'true' when registration is disabled."))
 					}
 					profilePageField := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
-					if internaltypes.IsDefined(profilePageField) && !profilePageField.ValueBool() {
+					if !profilePageField.IsUnknown() && !profilePageField.ValueBool() {
 						resp.Diagnostics.AddAttributeError(
 							path.Root("field_config").AtMapKey("fields"),
 							providererror.InvalidAttributeConfiguration,
@@ -1024,7 +1029,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 					fmt.Sprintln("registration_config is not allowed when registration is not enabled."))
 			}
 		}
-		if !model.ProfileEnabled.ValueBool() {
+		if !model.ProfileEnabled.IsUnknown() && !model.ProfileEnabled.ValueBool() {
 			if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
 				fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
 				fieldElems := fieldObj.Elements()
@@ -1038,7 +1043,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 							fmt.Sprintln("profile_page_field option for the fields attribute should not be set to 'true' when profile is disabled."))
 					}
 					registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
-					if (internaltypes.IsDefined(registrationPageField)) && (!registrationPageField.ValueBool()) {
+					if !registrationPageField.IsUnknown() && !registrationPageField.ValueBool() {
 						resp.Diagnostics.AddAttributeError(
 							path.Root("field_config").AtMapKey("fields"),
 							providererror.InvalidAttributeConfiguration,
