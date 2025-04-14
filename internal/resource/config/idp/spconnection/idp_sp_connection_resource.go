@@ -1929,7 +1929,8 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 	}
 
-	if internaltypes.IsDefined(state.OutboundProvision) != internaltypes.IsDefined(plan.OutboundProvision) {
+	if (state.OutboundProvision.IsNull() && internaltypes.IsDefined(plan.OutboundProvision)) ||
+		(internaltypes.IsDefined(state.OutboundProvision) && plan.OutboundProvision.IsNull()) {
 		// PF can't add or remove outbound_provision from a sp connection
 		resp.RequiresReplace = []path.Path{
 			path.Root("outbound_provision"),

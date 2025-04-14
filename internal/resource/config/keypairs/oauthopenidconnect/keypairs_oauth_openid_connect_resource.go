@@ -36,56 +36,56 @@ func (r *keypairsOauthOpenidConnectResource) setConditionalDefaults(ctx context.
 	// Nothing else can be set if static_jwks_enabled is set to false
 	if plan.StaticJwksEnabled.ValueBool() {
 		// If an active cert ref is set, then corresponding publish_x5c_parameter attribute defaults to false
-		if plan.P256publishX5cParameter.IsUnknown() {
+		if plan.P256publishX5cParameter.IsUnknown() && !plan.P256activeCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.P256activeCertRef) {
 				plan.P256publishX5cParameter = types.BoolValue(false)
 			} else {
 				plan.P256publishX5cParameter = types.BoolNull()
 			}
 		}
-		if plan.P256decryptionPublishX5cParameter.IsUnknown() {
+		if plan.P256decryptionPublishX5cParameter.IsUnknown() && !plan.P256decryptionActiveCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.P256decryptionActiveCertRef) {
 				plan.P256decryptionPublishX5cParameter = types.BoolValue(false)
 			} else {
 				plan.P256decryptionPublishX5cParameter = types.BoolNull()
 			}
 		}
-		if plan.P384publishX5cParameter.IsUnknown() {
+		if plan.P384publishX5cParameter.IsUnknown() && !plan.P384activeCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.P384activeCertRef) {
 				plan.P384publishX5cParameter = types.BoolValue(false)
 			} else {
 				plan.P384publishX5cParameter = types.BoolNull()
 			}
 		}
-		if plan.P384decryptionPublishX5cParameter.IsUnknown() {
+		if plan.P384decryptionPublishX5cParameter.IsUnknown() && !plan.P384decryptionActiveCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.P384decryptionActiveCertRef) {
 				plan.P384decryptionPublishX5cParameter = types.BoolValue(false)
 			} else {
 				plan.P384decryptionPublishX5cParameter = types.BoolNull()
 			}
 		}
-		if plan.P521publishX5cParameter.IsUnknown() {
+		if plan.P521publishX5cParameter.IsUnknown() && !plan.P521activeCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.P521activeCertRef) {
 				plan.P521publishX5cParameter = types.BoolValue(false)
 			} else {
 				plan.P521publishX5cParameter = types.BoolNull()
 			}
 		}
-		if plan.P521decryptionPublishX5cParameter.IsUnknown() {
+		if plan.P521decryptionPublishX5cParameter.IsUnknown() && !plan.P521decryptionActiveCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.P521decryptionActiveCertRef) {
 				plan.P521decryptionPublishX5cParameter = types.BoolValue(false)
 			} else {
 				plan.P521decryptionPublishX5cParameter = types.BoolNull()
 			}
 		}
-		if plan.RsaPublishX5cParameter.IsUnknown() {
+		if plan.RsaPublishX5cParameter.IsUnknown() && !plan.RsaActiveCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.RsaActiveCertRef) {
 				plan.RsaPublishX5cParameter = types.BoolValue(false)
 			} else {
 				plan.RsaPublishX5cParameter = types.BoolNull()
 			}
 		}
-		if plan.RsaDecryptionPublishX5cParameter.IsUnknown() {
+		if plan.RsaDecryptionPublishX5cParameter.IsUnknown() && !plan.RsaDecryptionActiveCertRef.IsUnknown() {
 			if internaltypes.IsDefined(plan.RsaDecryptionActiveCertRef) {
 				plan.RsaDecryptionPublishX5cParameter = types.BoolValue(false)
 			} else {
@@ -145,7 +145,7 @@ func (config *keypairsOauthOpenidConnectResourceModel) validatePlan() diag.Diagn
 		validateActiveAndPreviousCertRef("p521_decryption_", config.P521decryptionActiveCertRef, config.P521decryptionPreviousCertRef, &respDiags)
 		validateActiveAndPreviousCertRef("rsa_", config.RsaActiveCertRef, config.RsaPreviousCertRef, &respDiags)
 		validateActiveAndPreviousCertRef("rsa_decryption_", config.RsaDecryptionActiveCertRef, config.RsaDecryptionPreviousCertRef, &respDiags)
-	} else {
+	} else if !config.StaticJwksEnabled.IsUnknown() {
 		// Nothing else can be set if static_jwks_enabled is not set to true
 		addValidateConfigErrorIfDefined("p256_active_cert_ref", internaltypes.IsDefined(config.P256activeCertRef), &respDiags)
 		addValidateConfigErrorIfDefined("p256_active_key_id", internaltypes.IsDefined(config.P256activeKeyId), &respDiags)
@@ -210,7 +210,7 @@ func validateActiveAndPreviousCertRef(prefix string, active, previous types.Obje
 		if !activeId.IsUnknown() && activeId.Equal(previousId) {
 			respDiags.AddError(fmt.Sprintf("The %[1]sactive_cert_ref.id and %[1]sprevious_cert_ref.id attributes must be different.", prefix), fmt.Sprintf("active id: %s, previous id: %s", activeId.ValueString(), previousId.ValueString()))
 		}
-	} else if !internaltypes.IsDefined(active) && internaltypes.IsDefined(previous) {
+	} else if active.IsNull() && internaltypes.IsDefined(previous) {
 		// active must be set to set the previous cert ref
 		respDiags.AddError(fmt.Sprintf("The %[1]sactive_cert_ref attribute must be set when %[1]sprevious_cert_ref is set.", prefix), "")
 	}

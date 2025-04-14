@@ -126,7 +126,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		// Prior to 11.3, the user_name field is required for jdbc data stores
 		if internaltypes.IsDefined(plan.JdbcDataStore) {
 			username := plan.JdbcDataStore.Attributes()["user_name"]
-			if !internaltypes.IsDefined(username) {
+			if username.IsNull() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("jdbc_data_store"),
 					providererror.InvalidAttributeConfiguration,
@@ -199,16 +199,18 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		if jdbcDataStore["connection_url"].IsUnknown() {
 			// Find the connection_url_tags with default_source set to true
 			for _, tag := range jdbcDataStore["connection_url_tags"].(types.Set).Elements() {
-				tagAttrs := tag.(types.Object).Attributes()
-				if tagAttrs["default_source"].(types.Bool).ValueBool() {
-					jdbcDataStore["connection_url"] = types.StringValue(tagAttrs["connection_url"].(types.String).ValueString())
-					break
+				if !tag.IsUnknown() {
+					tagAttrs := tag.(types.Object).Attributes()
+					if tagAttrs["default_source"].(types.Bool).ValueBool() && !tagAttrs["connection_url"].IsUnknown() {
+						jdbcDataStore["connection_url"] = types.StringValue(tagAttrs["connection_url"].(types.String).ValueString())
+						break
+					}
 				}
 			}
 		}
 
 		// If connection_url_tags is not set, build it based on connection_url
-		if jdbcDataStore["connection_url_tags"].IsUnknown() {
+		if jdbcDataStore["connection_url_tags"].IsUnknown() && !jdbcDataStore["connection_url"].IsUnknown() {
 			urlTag, respDiags := types.ObjectValue(jdbcTagConfigAttrType.AttrTypes, map[string]attr.Value{
 				"connection_url": types.StringValue(jdbcDataStore["connection_url"].(types.String).ValueString()),
 				"tags":           types.StringNull(),
@@ -220,11 +222,11 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 
 		// If name is not set, build it based on connection_url and user_name
-		if jdbcDataStore["name"].IsUnknown() {
+		if jdbcDataStore["name"].IsUnknown() && !jdbcDataStore["connection_url"].IsUnknown() && !jdbcDataStore["user_name"].IsUnknown() {
 			var nameStr strings.Builder
 			nameStr.WriteString(jdbcDataStore["connection_url"].(types.String).ValueString())
 			nameStr.WriteString(" (")
-			if internaltypes.IsDefined(jdbcDataStore["user_name"]) {
+			if !jdbcDataStore["user_name"].IsNull() {
 				nameStr.WriteString(jdbcDataStore["user_name"].(types.String).ValueString())
 			} else {
 				nameStr.WriteString("null")
@@ -248,22 +250,25 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 	if internaltypes.IsDefined(plan.LdapDataStore) {
 		ldapDataStore := plan.LdapDataStore.Attributes()
 		// If hostnames is not set, build it based on hostnames_tags
-		if ldapDataStore["hostnames"].IsUnknown() {
+		if ldapDataStore["hostnames"].IsUnknown() && !ldapDataStore["hostnames_tags"].IsUnknown() {
 			// Find the hostnames_tags with default_source set to true
 			var defaultHostnames []attr.Value
 			for _, tag := range ldapDataStore["hostnames_tags"].(types.Set).Elements() {
+				if tag.IsUnknown() {
+					continue
+				}
 				tagAttrs := tag.(types.Object).Attributes()
-				if tagAttrs["default_source"].(types.Bool).ValueBool() {
+				if tagAttrs["default_source"].(types.Bool).ValueBool() && !tagAttrs["hostnames"].IsUnknown() {
 					defaultHostnames = tagAttrs["hostnames"].(types.List).Elements()
+					ldapDataStore["hostnames"], respDiags = types.ListValue(types.StringType, defaultHostnames)
+					resp.Diagnostics.Append(respDiags...)
 					break
 				}
 			}
-			ldapDataStore["hostnames"], respDiags = types.ListValue(types.StringType, defaultHostnames)
-			resp.Diagnostics.Append(respDiags...)
 		}
 
 		// If hostnames_tags is not set, build it based on hostnames
-		if ldapDataStore["hostnames_tags"].IsUnknown() {
+		if ldapDataStore["hostnames_tags"].IsUnknown() && !ldapDataStore["hostnames"].IsUnknown() {
 			tagHostnames, respDiags := types.ListValue(types.StringType, ldapDataStore["hostnames"].(types.List).Elements())
 			resp.Diagnostics.Append(respDiags...)
 			tagAttr, respDiags := types.ObjectValue(ldapTagConfigAttrType.AttrTypes, map[string]attr.Value{
@@ -277,14 +282,14 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 
 		// If name is not set, build it based on hostnames and user_dn
-		if ldapDataStore["name"].IsUnknown() {
+		if ldapDataStore["name"].IsUnknown() && !ldapDataStore["hostnames"].IsUnknown() && !ldapDataStore["user_dn"].IsUnknown() {
 			var nameStr strings.Builder
 			for _, hostname := range ldapDataStore["hostnames"].(types.List).Elements() {
 				nameStr.WriteString(hostname.(types.String).ValueString())
 				nameStr.WriteString(" ")
 			}
 			nameStr.WriteString("(")
-			if internaltypes.IsDefined(ldapDataStore["user_dn"]) {
+			if !ldapDataStore["user_dn"].IsNull() {
 				nameStr.WriteString(ldapDataStore["user_dn"].(types.String).ValueString())
 			} else {
 				nameStr.WriteString("null")
@@ -326,7 +331,8 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		// Ensure one and only one of the authentication attributes is set
 		if internaltypes.IsDefined(ldapDataStore["client_tls_certificate_ref"]) {
 			// If client_tls_certificate_ref is defined, ensure use_start_tls or use_ssl is set to true
-			if !ldapDataStore["use_start_tls"].(types.Bool).ValueBool() && !ldapDataStore["use_ssl"].(types.Bool).ValueBool() {
+			if !ldapDataStore["use_start_tls"].IsUnknown() && !ldapDataStore["use_start_tls"].(types.Bool).ValueBool() &&
+				!ldapDataStore["use_ssl"].IsUnknown() && !ldapDataStore["use_ssl"].(types.Bool).ValueBool() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("ldap_data_store").AtMapKey("client_tls_certificate_ref"),
 					providererror.InvalidAttributeConfiguration,
@@ -355,8 +361,8 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			}
 		}
 		// If password or encrypted_password is set, then user_dn must be set
-		if ((internaltypes.IsDefined(ldapDataStore["password"]) || internaltypes.IsDefined(ldapDataStore["encrypted_password"])) && !internaltypes.IsDefined(ldapDataStore["user_dn"])) ||
-			(!(internaltypes.IsDefined(ldapDataStore["password"]) || internaltypes.IsDefined(ldapDataStore["encrypted_password"])) && internaltypes.IsDefined(ldapDataStore["user_dn"])) {
+		if ((internaltypes.IsDefined(ldapDataStore["password"]) || internaltypes.IsDefined(ldapDataStore["encrypted_password"])) && ldapDataStore["user_dn"].IsNull()) ||
+			(ldapDataStore["password"].IsNull() && ldapDataStore["encrypted_password"].IsNull() && internaltypes.IsDefined(ldapDataStore["user_dn"])) {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("ldap_data_store"),
 				providererror.InvalidAttributeConfiguration,
@@ -366,7 +372,11 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 	if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {
 		pingOneLdapGatewayDataStore := plan.PingOneLdapGatewayDataStore.Attributes()
-		if pingOneLdapGatewayDataStore["name"].IsUnknown() {
+		if pingOneLdapGatewayDataStore["name"].IsUnknown() &&
+			!pingOneLdapGatewayDataStore["ping_one_connection_ref"].IsUnknown() &&
+			!pingOneLdapGatewayDataStore["ping_one_connection_ref"].(types.Object).Attributes()["id"].IsUnknown() &&
+			!pingOneLdapGatewayDataStore["ping_one_environment_id"].IsUnknown() &&
+			!pingOneLdapGatewayDataStore["ping_one_ldap_gateway_id"].IsUnknown() {
 			pingOneConnectionRefId := pingOneLdapGatewayDataStore["ping_one_connection_ref"].(types.Object).Attributes()["id"].(types.String).ValueString()
 			pingOneEnvironmentId := pingOneLdapGatewayDataStore["ping_one_environment_id"].(types.String).ValueString()
 			pingOneLdapGatewayId := pingOneLdapGatewayDataStore["ping_one_ldap_gateway_id"].(types.String).ValueString()

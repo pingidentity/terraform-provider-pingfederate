@@ -38,8 +38,8 @@ func (r *oauthClientSettingsResource) validatePf121Config(ctx context.Context, r
 	if internaltypes.IsDefined(plan.DynamicClientRegistration) {
 		attrs := plan.DynamicClientRegistration.Attributes()
 		// If require_offline_access_scope_to_issue_refresh_tokens is not set to "YES", then offline_access_require_consent_prompt has to have the default value of "SERVER_DEFAULT"
-		if attrs["require_offline_access_scope_to_issue_refresh_tokens"].(types.String).ValueString() != "YES" &&
-			internaltypes.IsDefined(attrs["offline_access_require_consent_prompt"]) && attrs["offline_access_require_consent_prompt"].(types.String).ValueString() != "SERVER_DEFAULT" {
+		if !attrs["require_offline_access_scope_to_issue_refresh_tokens"].IsUnknown() && attrs["require_offline_access_scope_to_issue_refresh_tokens"].(types.String).ValueString() != "YES" &&
+			!attrs["offline_access_require_consent_prompt"].IsUnknown() && attrs["offline_access_require_consent_prompt"].(types.String).ValueString() != "SERVER_DEFAULT" {
 			resp.Diagnostics.AddError("'dynamic_client_registration.offline_access_require_consent_prompt' must be set to 'SERVER_DEFAULT' when 'dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens' is not set to 'YES'", "")
 		}
 

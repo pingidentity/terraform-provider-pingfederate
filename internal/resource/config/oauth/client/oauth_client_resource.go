@@ -1424,11 +1424,11 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		planModified = true
 	}
 
-	// Set encrypted values as neessary
+	// Set encrypted values as necessary
 	if internaltypes.IsDefined(plan.ClientAuth) && state != nil {
 		clientAuthAttrs := plan.ClientAuth.Attributes()
 		stateClientAuthAttrs := state.ClientAuth.Attributes()
-		if !internaltypes.IsDefined(clientAuthAttrs["secret"]) && clientAuthAttrs["encrypted_secret"].IsUnknown() {
+		if clientAuthAttrs["secret"].IsNull() && clientAuthAttrs["encrypted_secret"].IsUnknown() {
 			clientAuthAttrs["encrypted_secret"] = types.StringNull()
 		} else if !stateClientAuthAttrs["secret"].Equal(clientAuthAttrs["secret"]) {
 			clientAuthAttrs["encrypted_secret"] = types.StringUnknown()

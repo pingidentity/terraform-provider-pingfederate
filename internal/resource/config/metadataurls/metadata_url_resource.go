@@ -4,14 +4,13 @@ package metadataurls
 
 import (
 	"context"
-	"encoding/base64"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/pemcertificates"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -25,15 +24,7 @@ func (r *metadataUrlResource) ModifyPlan(ctx context.Context, req resource.Modif
 			planX509Attrs := plan.X509File.Attributes()
 			planFileData := planX509Attrs["file_data"].(types.String).ValueString()
 			stateFormattedFileData := state.X509File.Attributes()["formatted_file_data"].(types.String).ValueString()
-			base64DecodedFileData, err := base64.StdEncoding.DecodeString(planFileData)
-			base64FileDataStr := ""
-			if err == nil {
-				// The plan value was base64-encoded, also compare the decoded value in case the whole cert was base 64 encoded
-				base64FileDataStr = string(base64DecodedFileData)
-			}
-			// If the single-line file_data values don't match, need to re-apply the resource
-			if stripNewLinesAndCertHeaderFooter(planFileData) != stripNewLinesAndCertHeaderFooter(stateFormattedFileData) &&
-				stripNewLinesAndCertHeaderFooter(base64FileDataStr) != stripNewLinesAndCertHeaderFooter(stateFormattedFileData) {
+			if !pemcertificates.FileDataEquivalent(planFileData, stateFormattedFileData) {
 				planX509Attrs["formatted_file_data"] = types.StringUnknown()
 				var diags diag.Diagnostics
 				plan.X509File, diags = types.ObjectValue(plan.X509File.AttributeTypes(ctx), planX509Attrs)
@@ -43,13 +34,6 @@ func (r *metadataUrlResource) ModifyPlan(ctx context.Context, req resource.Modif
 			}
 		}
 	}
-}
-
-func stripNewLinesAndCertHeaderFooter(s string) string {
-	result := strings.ReplaceAll(s, "\n", "")
-	result = strings.ReplaceAll(result, "-----BEGIN CERTIFICATE-----", "")
-	result = strings.ReplaceAll(result, "-----END CERTIFICATE-----", "")
-	return result
 }
 
 func (state *metadataUrlResourceModel) readClientResponseX509File(response *client.MetadataUrl) diag.Diagnostics {
