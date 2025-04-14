@@ -1054,7 +1054,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 					providererror.InvalidAttributeConfiguration,
 					"refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
 			}
-		} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" {
+		} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && model.RefreshTokenRollingInterval.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("refresh_token_rolling_interval"),
 				providererror.InvalidAttributeConfiguration,
@@ -1196,7 +1196,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		oidcPolicy := model.OidcPolicy.Attributes()
 		pairwiseIdentifierUserType := oidcPolicy["pairwise_identifier_user_type"]
 		oidcPolicySectorIdentifierUri := oidcPolicy["sector_identifier_uri"]
-		if internaltypes.IsDefined(pairwiseIdentifierUserType) && !pairwiseIdentifierUserType.(types.Bool).ValueBool() &&
+		if !pairwiseIdentifierUserType.IsUnknown() && !pairwiseIdentifierUserType.(types.Bool).ValueBool() &&
 			internaltypes.IsDefined(oidcPolicySectorIdentifierUri) {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("oidc_policy").AtMapKey("sector_identifier_uri"),
