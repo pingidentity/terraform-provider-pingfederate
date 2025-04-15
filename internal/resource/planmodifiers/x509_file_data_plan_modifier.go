@@ -41,7 +41,7 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 	var finalPlanElements []attr.Value
 	var respDiags diag.Diagnostics
 	for i, planElement := range req.PlanValue.Elements() {
-		if i >= len(req.StateValue.Elements()) {
+		if i >= len(req.StateValue.Elements()) || planElement.IsUnknown() {
 			continue
 		}
 		stateValueAttrs := req.StateValue.Elements()[i].(types.Object).Attributes()
