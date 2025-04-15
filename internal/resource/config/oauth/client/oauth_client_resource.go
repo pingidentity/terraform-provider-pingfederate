@@ -1022,11 +1022,15 @@ func (r *oauthClientResource) Configure(_ context.Context, req resource.Configur
 }
 
 func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthClientModel
+	var model *oauthClientModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+	if model == nil {
+		return
+	}
 
 	// Persistent Grant Expiration Validation
-	if (internaltypes.IsDefined(model.PersistentGrantExpirationTime) || internaltypes.IsDefined(model.PersistentGrantExpirationTimeUnit)) && model.PersistentGrantExpirationType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
+	if (internaltypes.IsDefined(model.PersistentGrantExpirationTime) || internaltypes.IsDefined(model.PersistentGrantExpirationTimeUnit)) &&
+		!model.PersistentGrantExpirationType.IsUnknown() && model.PersistentGrantExpirationType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("persistent_grant_expiration_time"),
 			providererror.InvalidAttributeConfiguration,
@@ -1034,32 +1038,33 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// Refresh Token Rolling Validation
-	if !internaltypes.IsDefined(model.RefreshTokenRollingIntervalType) || model.RefreshTokenRollingIntervalType.ValueString() == "SERVER_DEFAULT" {
-		// The refresh_token_rolling_interval and refresh_token_rolling_interval_time_unit value can't be
-		// configured with a non-default value when refresh_token_rolling_interval_type is set to "SERVER_DEFAULT"
-		if internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
+	if !model.RefreshTokenRollingIntervalType.IsUnknown() {
+		if model.RefreshTokenRollingIntervalType.ValueString() == "SERVER_DEFAULT" {
+			// The refresh_token_rolling_interval and refresh_token_rolling_interval_time_unit value can't be
+			// configured with a non-default value when refresh_token_rolling_interval_type is set to "SERVER_DEFAULT"
+			if internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("refresh_token_rolling_interval"),
+					providererror.InvalidAttributeConfiguration,
+					"refresh_token_rolling_interval can only be configured if refresh_token_rolling_interval_type is set to \"OVERRIDE_SERVER_DEFAULT\".")
+			}
+			if internaltypes.IsDefined(model.RefreshTokenRollingIntervalTimeUnit) && model.RefreshTokenRollingIntervalTimeUnit.ValueString() != "HOURS" {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("refresh_token_rolling_interval_time_unit"),
+					providererror.InvalidAttributeConfiguration,
+					"refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
+			}
+		} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && model.RefreshTokenRollingInterval.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("refresh_token_rolling_interval"),
 				providererror.InvalidAttributeConfiguration,
-				"refresh_token_rolling_interval can only be configured if refresh_token_rolling_interval_type is set to \"OVERRIDE_SERVER_DEFAULT\".")
+				"refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
 		}
-		if internaltypes.IsDefined(model.RefreshTokenRollingIntervalTimeUnit) && model.RefreshTokenRollingIntervalTimeUnit.ValueString() != "HOURS" {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("refresh_token_rolling_interval_time_unit"),
-				providererror.InvalidAttributeConfiguration,
-				"refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
-		}
-	} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && !internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("refresh_token_rolling_interval"),
-			providererror.InvalidAttributeConfiguration,
-			"refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
 	}
 
 	//  Client Auth Defined
 	var clientAuthAttributes map[string]attr.Value
-	clientAuthDefined := internaltypes.IsDefined(model.ClientAuth)
-	if clientAuthDefined {
+	if internaltypes.IsDefined(model.ClientAuth) {
 		clientAuthAttributes = model.ClientAuth.Attributes()
 		if internaltypes.IsDefined(clientAuthAttributes["type"]) {
 			clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
@@ -1094,7 +1099,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 						"client_cert_issuer_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
 				}
 			case "SECRET":
-				if clientAuthAttributes["secret"].IsNull() && !internaltypes.IsDefined(clientAuthAttributes["encrypted_secret"]) {
+				if clientAuthAttributes["secret"].IsNull() && clientAuthAttributes["encrypted_secret"].IsNull() {
 					resp.Diagnostics.AddAttributeError(
 						path.Root("client_auth"),
 						providererror.InvalidAttributeConfiguration,
@@ -1110,7 +1115,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	for _, grantType := range model.GrantTypes.Elements() {
 		grantTypeVal := grantType.(types.String).ValueString()
 		if grantTypeVal == "CLIENT_CREDENTIALS" {
-			if !clientAuthDefined {
+			if model.ClientAuth.IsNull() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("client_auth"),
 					providererror.InvalidAttributeConfiguration,
@@ -1123,7 +1128,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// CIBA Validation
-	if !hasCibaGrantType && (internaltypes.IsDefined(model.CibaDeliveryMode) ||
+	if !model.GrantTypes.IsUnknown() && !hasCibaGrantType && (internaltypes.IsDefined(model.CibaDeliveryMode) ||
 		internaltypes.IsDefined(model.CibaNotificationEndpoint) ||
 		internaltypes.IsDefined(model.CibaPollingInterval) ||
 		internaltypes.IsDefined(model.CibaRequireSignedRequests) ||
@@ -1131,7 +1136,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		internaltypes.IsDefined(model.CibaUserCodeSupported)) {
 		resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, "ciba attributes can only be configured when \"CIBA\" is included in grant_types.")
 	}
-	if hasCibaGrantType && (model.CibaDeliveryMode.ValueString() == "PING" && !internaltypes.IsDefined(model.CibaNotificationEndpoint)) {
+	if hasCibaGrantType && model.CibaDeliveryMode.ValueString() == "PING" && model.CibaNotificationEndpoint.IsNull() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("ciba_notification_endpoint"),
 			providererror.InvalidAttributeConfiguration,
@@ -1140,9 +1145,9 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 
 	// Client Auth Validation
 	// ID Token Signing Algorithm Validation when client_auth is not defined
-	if !internaltypes.IsDefined(model.ClientAuth) {
+	if model.ClientAuth.IsNull() {
 		var algorithmAttributeSet []string
-		if internaltypes.IsDefined(model.OidcPolicy) && model.OidcPolicy.Attributes()["id_token_signing_algorithm"] != nil {
+		if internaltypes.IsDefined(model.OidcPolicy) && !model.OidcPolicy.Attributes()["id_token_signing_algorithm"].IsUnknown() {
 			algorithmAttributeSet = append(algorithmAttributeSet, model.OidcPolicy.Attributes()["id_token_signing_algorithm"].(types.String).ValueString())
 		}
 
@@ -1179,7 +1184,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			"restrict_scopes cannot be configured to false when allow_authentication_api_init is set to true.")
 	}
 
-	if len(model.RestrictedScopes.Elements()) > 0 && !model.RestrictScopes.ValueBool() {
+	if len(model.RestrictedScopes.Elements()) > 0 && !model.RestrictScopes.IsUnknown() && !model.RestrictScopes.ValueBool() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("restricted_scopes"),
 			providererror.InvalidAttributeConfiguration,
@@ -1191,7 +1196,8 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		oidcPolicy := model.OidcPolicy.Attributes()
 		pairwiseIdentifierUserType := oidcPolicy["pairwise_identifier_user_type"]
 		oidcPolicySectorIdentifierUri := oidcPolicy["sector_identifier_uri"]
-		if (pairwiseIdentifierUserType != nil && !pairwiseIdentifierUserType.(types.Bool).ValueBool()) && internaltypes.IsDefined(oidcPolicySectorIdentifierUri) {
+		if !pairwiseIdentifierUserType.IsUnknown() && !pairwiseIdentifierUserType.(types.Bool).ValueBool() &&
+			internaltypes.IsDefined(oidcPolicySectorIdentifierUri) {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("oidc_policy").AtMapKey("sector_identifier_uri"),
 				providererror.InvalidAttributeConfiguration,
@@ -1200,7 +1206,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// JWKS Settings Validation
-	if !internaltypes.IsDefined(model.JwksSettings) {
+	if model.JwksSettings.IsNull() {
 		if internaltypes.IsDefined(model.TokenIntrospectionEncryptionAlgorithm) {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("token_introspection_encryption_algorithm"),
@@ -1216,7 +1222,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to "YES"
-	if internaltypes.IsDefined(model.RequireOfflineAccessScopeToIssueRefreshTokens) && model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString() != "YES" &&
+	if !model.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() && model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString() != "YES" &&
 		internaltypes.IsDefined(model.OfflineAccessRequireConsentPrompt) && model.OfflineAccessRequireConsentPrompt.ValueString() != "SERVER_DEFAULT" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("offline_access_require_consent_prompt"),
@@ -1234,7 +1240,8 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// lockout_max_malicious_actions validation
-	if internaltypes.IsDefined(model.LockoutMaxMaliciousActions) && model.LockoutMaxMaliciousActionsType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
+	if internaltypes.IsDefined(model.LockoutMaxMaliciousActions) &&
+		!model.LockoutMaxMaliciousActionsType.IsUnknown() && model.LockoutMaxMaliciousActionsType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("lockout_max_malicious_actions"),
 			providererror.InvalidAttributeConfiguration,

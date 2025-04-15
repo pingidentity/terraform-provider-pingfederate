@@ -1809,16 +1809,21 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 	}
 
 	virtualIds := config.VirtualEntityIds.Elements()
-	if internaltypes.IsDefined(config.DefaultVirtualEntityId) {
+	if internaltypes.IsDefined(config.DefaultVirtualEntityId) && !config.VirtualEntityIds.IsUnknown() {
 		defaultId := config.DefaultVirtualEntityId.ValueString()
 		found := false
+		anyUnknown := false
 		for _, id := range virtualIds {
+			if id.IsUnknown() {
+				anyUnknown = true
+				break
+			}
 			if defaultId == id.(types.String).ValueString() {
 				found = true
 				break
 			}
 		}
-		if !found {
+		if !found && !anyUnknown {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("default_virtual_entity_id"),
 				providererror.InvalidAttributeConfiguration,

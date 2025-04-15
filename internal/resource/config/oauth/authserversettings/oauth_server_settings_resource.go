@@ -578,8 +578,12 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 }
 
 func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthServerSettingsModel
+	var model *oauthServerSettingsModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+
+	if model == nil {
+		return
+	}
 
 	// Scope list for comparing values in matchNameBtwnScopes variable
 	scopeNames := []string{}
@@ -588,15 +592,17 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 		scopeElems := model.Scopes.Elements()
 		for _, scopeElem := range scopeElems {
 			scopeElemObjectAttrs := scopeElem.(types.Object)
-			scopeEntryName := scopeElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString()
-			scopeNames = append(scopeNames, scopeEntryName)
-			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
-			if scopeEntryIsDynamic {
-				if strings.Count(scopeEntryName, "*") != 1 {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("scopes"),
-						providererror.InvalidAttributeConfiguration,
-						fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
+			scopeEntryName := scopeElemObjectAttrs.Attributes()["name"].(basetypes.StringValue)
+			if !scopeEntryName.IsUnknown() {
+				scopeNames = append(scopeNames, scopeEntryName.ValueString())
+				scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
+				if scopeEntryIsDynamic {
+					if strings.Count(scopeEntryName.ValueString(), "*") != 1 {
+						resp.Diagnostics.AddAttributeError(
+							path.Root("scopes"),
+							providererror.InvalidAttributeConfiguration,
+							fmt.Sprintf("Scope name \"%s\" must include a single \"*\" when dynamic is set to true.", scopeEntryName))
+					}
 				}
 			}
 		}
@@ -608,15 +614,17 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 		exclusiveScopeElems := model.ExclusiveScopes.Elements()
 		for _, esElem := range exclusiveScopeElems {
 			esElemObjectAttrs := esElem.(types.Object)
-			eScopeEntryName := esElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString()
-			eScopeNames = append(eScopeNames, eScopeEntryName)
-			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
-			if eScopeEntryIsDynamic {
-				if strings.Index(eScopeEntryName, "*") != 0 {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("exclusive_scopes"),
-						providererror.InvalidAttributeConfiguration,
-						fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
+			eScopeEntryName := esElemObjectAttrs.Attributes()["name"].(basetypes.StringValue)
+			if !eScopeEntryName.IsUnknown() {
+				eScopeNames = append(eScopeNames, eScopeEntryName.ValueString())
+				eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
+				if eScopeEntryIsDynamic {
+					if strings.Count(eScopeEntryName.ValueString(), "*") != 1 {
+						resp.Diagnostics.AddAttributeError(
+							path.Root("exclusive_scopes"),
+							providererror.InvalidAttributeConfiguration,
+							fmt.Sprintf("Exclusive scope name \"%s\" must include a single \"*\" when dynamic is set to true.", eScopeEntryName))
+					}
 				}
 			}
 		}
@@ -631,7 +639,9 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 	}
 
 	// offline_access_require_consent_prompt can't be true if require_offline_access_scope_to_issue_refresh_tokens is false
-	if model.OfflineAccessRequireConsentPrompt.ValueBool() && !model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueBool() {
+	if model.OfflineAccessRequireConsentPrompt.ValueBool() &&
+		!model.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() &&
+		!model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueBool() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("require_offline_access_scope_to_issue_refresh_tokens"),
 			providererror.InvalidAttributeConfiguration,

@@ -77,8 +77,11 @@ func (r *oauthClientSettingsResource) setVersionDependentDefaults(ctx context.Co
 }
 
 func (r *oauthClientSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var config oauthClientSettingsResourceModel
+	var config *oauthClientSettingsResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if config == nil {
+		return
+	}
 
 	if internaltypes.IsDefined(config.DynamicClientRegistration) {
 		attrs := config.DynamicClientRegistration.Attributes()
@@ -123,28 +126,33 @@ func (r *oauthClientSettingsResource) ValidateConfig(ctx context.Context, req re
 		})...)
 
 		// retain_client_secret must be true to configure client_secret_retention_period_type and client_secret_retention_period_override
-		if !attrs["retain_client_secret"].(types.Bool).ValueBool() {
-			if internaltypes.IsDefined(attrs["client_secret_retention_period_type"]) && attrs["client_secret_retention_period_type"].(types.String).ValueString() != "SERVER_DEFAULT" {
-				resp.Diagnostics.AddError("'dynamic_client_registration.client_secret_retention_period_type' cannot be configured unless 'dynamic_client_registration.retain_client_secret' is set to true", "")
+		if !attrs["retain_client_secret"].IsUnknown() {
+			if !attrs["retain_client_secret"].(types.Bool).ValueBool() {
+				if internaltypes.IsDefined(attrs["client_secret_retention_period_type"]) && attrs["client_secret_retention_period_type"].(types.String).ValueString() != "SERVER_DEFAULT" {
+					resp.Diagnostics.AddError("'dynamic_client_registration.client_secret_retention_period_type' cannot be configured unless 'dynamic_client_registration.retain_client_secret' is set to true", "")
+				}
+				if internaltypes.IsDefined(attrs["client_secret_retention_period_override"]) {
+					resp.Diagnostics.AddError("'dynamic_client_registration.client_secret_retention_period_override' cannot be configured unless 'dynamic_client_registration.retain_client_secret' is set to true", "")
+				}
+			} else {
+				// Validate overriding server default for client_secret_retention_period_type
+				resp.Diagnostics.Append(validateOverride("client_secret_retention_period_type", attrs["client_secret_retention_period_type"].(types.String), map[string]attr.Value{
+					"client_secret_retention_period_override": attrs["client_secret_retention_period_override"],
+				})...)
 			}
-			if internaltypes.IsDefined(attrs["client_secret_retention_period_override"]) {
-				resp.Diagnostics.AddError("'dynamic_client_registration.client_secret_retention_period_override' cannot be configured unless 'dynamic_client_registration.retain_client_secret' is set to true", "")
-			}
-		} else {
-			// Validate overriding server default for client_secret_retention_period_type
-			resp.Diagnostics.Append(validateOverride("client_secret_retention_period_type", attrs["client_secret_retention_period_type"].(types.String), map[string]attr.Value{
-				"client_secret_retention_period_override": attrs["client_secret_retention_period_override"],
-			})...)
 		}
 	}
 }
 
 func validateOverride(typeAttrName string, typeAttr types.String, overridingAttrs map[string]attr.Value) diag.Diagnostics {
 	var respDiags diag.Diagnostics
+	if typeAttr.IsUnknown() {
+		return respDiags
+	}
 	if typeAttr.ValueString() == "OVERRIDE_SERVER_DEFAULT" {
 		// Each of the overriding attributes must be set
 		for attrName, attr := range overridingAttrs {
-			if !internaltypes.IsDefined(attr) {
+			if attr.IsNull() {
 				respDiags.AddError(fmt.Sprintf("The 'dynamic_client_registration.%s' attribute must be configured when 'dynamic_client_registration.%s' is set to 'OVERRIDE_SERVER_DEFAULT'", attrName, typeAttrName), "")
 			}
 		}

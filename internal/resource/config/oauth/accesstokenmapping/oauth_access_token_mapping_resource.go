@@ -201,8 +201,11 @@ func addOptionalOauthAccessTokenMappingsFields(addRequest *client.AccessTokenMap
 }
 
 func (r *oauthAccessTokenMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthAccessTokenMappingResourceModel
+	var model *oauthAccessTokenMappingResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+	if model == nil {
+		return
+	}
 	if internaltypes.IsDefined(model.Context) {
 		modelContextType := model.Context.Attributes()["type"].(types.String).ValueString()
 		modelContextContextRef := model.Context.Attributes()["context_ref"].(types.Object)
