@@ -601,7 +601,7 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 						resp.Diagnostics.AddAttributeError(
 							path.Root("scopes"),
 							providererror.InvalidAttributeConfiguration,
-							fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
+							fmt.Sprintf("Scope name \"%s\" must include a single \"*\" when dynamic is set to true.", scopeEntryName))
 					}
 				}
 			}
@@ -619,11 +619,11 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 				eScopeNames = append(eScopeNames, eScopeEntryName.ValueString())
 				eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 				if eScopeEntryIsDynamic {
-					if strings.Index(eScopeEntryName.ValueString(), "*") != 0 {
+					if strings.Count(eScopeEntryName.ValueString(), "*") != 1 {
 						resp.Diagnostics.AddAttributeError(
 							path.Root("exclusive_scopes"),
 							providererror.InvalidAttributeConfiguration,
-							fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
+							fmt.Sprintf("Exclusive scope name \"%s\" must include a single \"*\" when dynamic is set to true.", eScopeEntryName))
 					}
 				}
 			}
