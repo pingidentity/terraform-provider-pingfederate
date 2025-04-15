@@ -284,18 +284,25 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		// If name is not set, build it based on hostnames and user_dn
 		if ldapDataStore["name"].IsUnknown() && !ldapDataStore["hostnames"].IsUnknown() && !ldapDataStore["user_dn"].IsUnknown() {
 			var nameStr strings.Builder
+			anyUnknown := false
 			for _, hostname := range ldapDataStore["hostnames"].(types.List).Elements() {
+				if hostname.IsUnknown() {
+					anyUnknown = true
+					break
+				}
 				nameStr.WriteString(hostname.(types.String).ValueString())
 				nameStr.WriteString(" ")
 			}
-			nameStr.WriteString("(")
-			if !ldapDataStore["user_dn"].IsNull() {
-				nameStr.WriteString(ldapDataStore["user_dn"].(types.String).ValueString())
-			} else {
-				nameStr.WriteString("null")
+			if !anyUnknown {
+				nameStr.WriteString("(")
+				if !ldapDataStore["user_dn"].IsNull() {
+					nameStr.WriteString(ldapDataStore["user_dn"].(types.String).ValueString())
+				} else {
+					nameStr.WriteString("null")
+				}
+				nameStr.WriteString(")")
+				ldapDataStore["name"] = types.StringValue(nameStr.String())
 			}
-			nameStr.WriteString(")")
-			ldapDataStore["name"] = types.StringValue(nameStr.String())
 		}
 
 		// If PF version is at least 11.3 then set a default for retry_failed_operations.
