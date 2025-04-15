@@ -659,7 +659,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if plan.EmailVerificationConfig.IsUnknown() {
 			plan.EmailVerificationConfig = emailVerificationConfigDefault
 		}
-	} else if plan.AuthSourceUpdatePolicy.IsNull() && plan.EmailVerificationConfig.IsNull() {
+	} else {
 		if plan.AuthSourceUpdatePolicy.IsUnknown() {
 			plan.AuthSourceUpdatePolicy = types.ObjectNull(authSourceUpdatePolicyAttrTypes)
 		}
