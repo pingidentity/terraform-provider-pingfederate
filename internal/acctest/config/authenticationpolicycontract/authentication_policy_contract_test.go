@@ -4,7 +4,6 @@ package authenticationpolicycontract_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -15,150 +14,146 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-var stateId string
+const authenticationPolicyContractContractId = "authenticationPolicyContractCont"
 
-// Attributes to test with. Add optional properties to test here if desired.
-type authenticationPolicyContractResourceModel struct {
-	id                 string
-	name               string
-	extendedAttributes []string
-}
-
-func TestAccAuthenticationPolicyContract(t *testing.T) {
-	resourceName := "myAuthenticationPolicyContract"
-	initialResourceModel := authenticationPolicyContractResourceModel{
-		name:               "example",
-		extendedAttributes: []string{},
-	}
-	updatedResourceModel := authenticationPolicyContractResourceModel{
-		name:               "example",
-		extendedAttributes: []string{"extended_attribute", "extended_attribute2", "extendedwith\\\"escaped\\\"quotes"},
-	}
-
-	minimalResourceModelWithId := authenticationPolicyContractResourceModel{
-		name:               "example",
-		extendedAttributes: []string{},
-		id:                 "myAuthenticationPolicyContract",
-	}
-
+func TestAccAuthenticationPolicyContract_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: testAccCheckAuthenticationPolicyContractDestroy,
+		CheckDestroy: authenticationPolicyContract_CheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				// Minimal model
-				Config: testAccAuthenticationPolicyContract(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(initialResourceModel),
+				// Create the resource with a minimal model
+				Config: authenticationPolicyContract_MinimalHCL(),
 			},
 			{
-				// More complete model
-				Config: testAccAuthenticationPolicyContract(resourceName, updatedResourceModel),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedAuthenticationPolicyContractAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.0.name", updatedResourceModel.extendedAttributes[0]),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.1.name", updatedResourceModel.extendedAttributes[1]),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.2.name", "extendedwith\"escaped\"quotes"),
-				),
-			},
-			{
-				// Test importing the resource
-				Config:            testAccAuthenticationPolicyContract(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_authentication_policy_contract." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				// Back to minimal model
-				Config: testAccAuthenticationPolicyContract(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(initialResourceModel),
-			},
-			{
+				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
 				PreConfig: func() {
-					testClient := acctest.TestClient()
-					ctx := acctest.TestBasicAuthContext()
-					_, err := testClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(ctx, stateId).Execute()
-					if err != nil {
-						t.Fatalf("Failed to delete config: %v", err)
-					}
+					authenticationPolicyContract_Delete(t)
 				},
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
-			},
-			{
-				// Minimal model
-				Config: testAccAuthenticationPolicyContract(resourceName, minimalResourceModelWithId),
-				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(minimalResourceModelWithId),
 			},
 		},
 	})
 }
 
-func testAccAuthenticationPolicyContract(resourceName string, resourceModel authenticationPolicyContractResourceModel) string {
-	extendedAttrsHcl := ""
-	if len(resourceModel.extendedAttributes) > 0 {
-		extendedAttrsHcl = fmt.Sprintf("extended_attributes = %[1]s",
-			acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.extendedAttributes))
-	}
-	return fmt.Sprintf(`
-resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  %[2]s
-  name = "%[3]s"
-  %[4]s
+func TestAccAuthenticationPolicyContract_MinimalMaximal(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: authenticationPolicyContract_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create the resource with a minimal model
+				Config: authenticationPolicyContract_MinimalHCL(),
+				Check:  authenticationPolicyContract_CheckComputedValuesMinimal(),
+			},
+			{
+				// Delete the minimal model
+				Config:  authenticationPolicyContract_MinimalHCL(),
+				Destroy: true,
+			},
+			{
+				// Re-create with a complete model
+				Config: authenticationPolicyContract_CompleteHCL(),
+				Check:  authenticationPolicyContract_CheckComputedValuesComplete(),
+			},
+			{
+				// Back to minimal model
+				Config: authenticationPolicyContract_MinimalHCL(),
+				Check:  authenticationPolicyContract_CheckComputedValuesMinimal(),
+			},
+			{
+				// Back to complete model
+				Config: authenticationPolicyContract_CompleteHCL(),
+				Check:  authenticationPolicyContract_CheckComputedValuesComplete(),
+			},
+			{
+				// Test importing the resource
+				Config:                               authenticationPolicyContract_CompleteHCL(),
+				ResourceName:                         "pingfederate_authentication_policy_contract.example",
+				ImportStateId:                        authenticationPolicyContractContractId,
+				ImportStateVerifyIdentifierAttribute: "contract_id",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+			},
+		},
+	})
 }
-data "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
-  contract_id = pingfederate_authentication_policy_contract.%[1]s.contract_id
-}`, resourceName,
-		acctest.AddIdHcl("contract_id", resourceModel.id),
-		resourceModel.name,
-		extendedAttrsHcl,
+
+// Minimal HCL with only required values set
+func authenticationPolicyContract_MinimalHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_authentication_policy_contract" "example" {
+  contract_id = "%s"
+  name = "initialApc"
+}
+  data "pingfederate_authentication_policy_contract" "example" {
+  contract_id = pingfederate_authentication_policy_contract.example.id
+}
+`, authenticationPolicyContractContractId)
+}
+
+// Maximal HCL with all values set where possible
+func authenticationPolicyContract_CompleteHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_authentication_policy_contract" "example" {
+  contract_id = "%s"
+  extended_attributes = [
+    {
+      name = "extended_attribute"
+    },
+	{
+					name = "extended_attribute2"
+	},
+	{
+		name = "extendedwith\"escaped\"quotes"
+	}
+  ]
+  name = "myApc"
+}
+  data "pingfederate_authentication_policy_contract" "example" {
+  contract_id = pingfederate_authentication_policy_contract.example.id
+}
+`, authenticationPolicyContractContractId)
+}
+
+// Validate any computed values when applying minimal HCL
+func authenticationPolicyContract_CheckComputedValuesMinimal() resource.TestCheckFunc {
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_authentication_policy_contract.example", "core_attributes.0.name", "subject"),
+		resource.TestCheckResourceAttr("pingfederate_authentication_policy_contract.example", "extended_attributes.#", "0"),
+	)
+
+}
+
+// Validate any computed values when applying complete HCL
+func authenticationPolicyContract_CheckComputedValuesComplete() resource.TestCheckFunc {
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_authentication_policy_contract.example", "core_attributes.0.name", "subject"),
 	)
 }
 
-// Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authenticationPolicyContractResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		resourceType := "AuthenticationPolicyContract"
-		testClient := acctest.TestClient()
-		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_authentication_policy_contract.myAuthenticationPolicyContract"].Primary.Attributes
-		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, stateAttributes["id"]).Execute()
-		if err != nil {
-			return err
-		}
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "name",
-			config.name, *response.Name)
-		if err != nil {
-			return err
-		}
-
-		extendedAttrs := response.GetExtendedAttributes()
-		extendedAttrNames := make([]string, len(extendedAttrs))
-		for i := 0; i < len(extendedAttrNames); i++ {
-			// Need to "re-escape" quotes here since they had to be escaped to form the terraform HCL
-			extendedAttrNames[i] = strings.ReplaceAll(extendedAttrs[i].Name, "\"", "\\\"")
-		}
-		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.id, "extended_attributes",
-			config.extendedAttributes, extendedAttrNames)
-		if err != nil {
-			return err
-		}
-
-		stateId = stateAttributes["id"]
-		return nil
+// Delete the resource
+func authenticationPolicyContract_Delete(t *testing.T) {
+	testClient := acctest.TestClient()
+	_, err := testClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(acctest.TestBasicAuthContext(), authenticationPolicyContractContractId).Execute()
+	if err != nil {
+		t.Fatalf("Failed to delete config: %v", err)
 	}
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckAuthenticationPolicyContractDestroy(s *terraform.State) error {
+func authenticationPolicyContract_CheckDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
-	ctx := acctest.TestBasicAuthContext()
-	_, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, stateId).Execute()
+	_, err := testClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(acctest.TestBasicAuthContext(), authenticationPolicyContractContractId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("AuthenticationPolicyContract", stateId)
+		return fmt.Errorf("authentication_policy_contract still exists after tests. Expected it to be destroyed")
 	}
 	return nil
 }
