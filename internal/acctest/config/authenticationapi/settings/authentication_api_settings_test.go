@@ -9,30 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-// Attributes to test with. Add optional properties to test here if desired.
-type authenticationApiSettingsResourceModel struct {
-	apiEnabled                       bool
-	enableApiDescriptions            bool
-	restrictAccessToRedirectlessMode bool
-	includeRequestContext            bool
-	defaultApplicationRef            string
-}
-
-func TestAccAuthenticationApiSettings(t *testing.T) {
-	resourceName := "myAuthenticationApiSettings"
-	// Use values that differ from the resource defaults
-	updatedResourceModel := authenticationApiSettingsResourceModel{
-		apiEnabled:                       true,
-		enableApiDescriptions:            true,
-		restrictAccessToRedirectlessMode: true,
-		includeRequestContext:            true,
-		defaultApplicationRef:            "myauthenticationapiapplication",
-	}
+func TestAccAuthenticationApiSettings_MinimalMaximal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -40,109 +21,80 @@ func TestAccAuthenticationApiSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAuthenticationApiSettings(resourceName, nil),
+				// Create the resource with a minimal model
+				Config: authenticationApiSettings_MinimalHCL(),
+				Check:  authenticationApiSettings_CheckComputedValuesMinimal(),
 			},
 			{
-				Config: testAccAuthenticationApiSettings(resourceName, &updatedResourceModel),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedAuthenticationApiSettingsAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "api_enabled", fmt.Sprintf("%t", updatedResourceModel.apiEnabled)),
-					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "enable_api_descriptions", fmt.Sprintf("%t", updatedResourceModel.enableApiDescriptions)),
-					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "restrict_access_to_redirectless_mode", fmt.Sprintf("%t", updatedResourceModel.restrictAccessToRedirectlessMode)),
-					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "include_request_context", fmt.Sprintf("%t", updatedResourceModel.includeRequestContext)),
-					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "default_application_ref.id", updatedResourceModel.defaultApplicationRef),
-				),
+				// Update to a complete model. No computed values to check.
+				Config: authenticationApiSettings_CompleteHCL(),
 			},
 			{
 				// Test importing the resource
-				Config:                               testAccAuthenticationApiSettings(resourceName, &updatedResourceModel),
-				ResourceName:                         "pingfederate_authentication_api_settings." + resourceName,
+				Config:                               authenticationApiSettings_CompleteHCL(),
+				ResourceName:                         "pingfederate_authentication_api_settings.example",
+				ImportStateVerifyIdentifierAttribute: "api_enabled",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIdentifierAttribute: "api_enabled",
 			},
 			{
-				Config: testAccAuthenticationApiSettings(resourceName, nil),
+				// Back to minimal model
+				Config: authenticationApiSettings_MinimalHCL(),
+				Check:  authenticationApiSettings_CheckComputedValuesMinimal(),
 			},
 		},
 	})
 }
 
-func testAccAuthenticationApiSettings(resourceName string, resourceModel *authenticationApiSettingsResourceModel) string {
-	if resourceModel == nil {
-		// Use resource defaults
-		return fmt.Sprintf(`
-resource "pingfederate_authentication_api_settings" "%[1]s" {
+// Minimal HCL with only required values set
+func authenticationApiSettings_MinimalHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_authentication_api_settings" "example" {
+}
+data "pingfederate_authentication_api_settings" "example" {
+  depends_on = [
+    pingfederate_authentication_api_settings.example
+  ]
+}
+`)
 }
 
-data "pingfederate_authentication_api_settings" "%[1]s" {
-  depends_on = [
-    pingfederate_authentication_api_settings.%[1]s
-  ]
-}`, resourceName)
-	}
-
+// Maximal HCL with all values set where possible
+func authenticationApiSettings_CompleteHCL() string {
 	return fmt.Sprintf(`
-resource "pingfederate_authentication_api_settings" "%[1]s" {
-  api_enabled                          = %[2]t
-  enable_api_descriptions              = %[3]t
-  restrict_access_to_redirectless_mode = %[4]t
-  include_request_context              = %[5]t
+resource "pingfederate_authentication_api_application" "example" {
+  application_id = "settingsTestApp"
+  name = "authApiApp"
+  url = "https://example.com"
+}
+
+resource "pingfederate_authentication_api_settings" "example" {
+  api_enabled = true
   default_application_ref = {
-    id = "%[6]s"
+    id = pingfederate_authentication_api_application.example.id
+  }
+  enable_api_descriptions = true
+  include_request_context = true
+  restrict_access_to_redirectless_mode = true
+  # Ensures this resource will be updated before deleting the authentication api application
+  lifecycle {
+    create_before_destroy = true
   }
 }
-
-data "pingfederate_authentication_api_settings" "%[1]s" {
+data "pingfederate_authentication_api_settings" "example" {
   depends_on = [
-    pingfederate_authentication_api_settings.%[1]s
+    pingfederate_authentication_api_settings.example
   ]
-}`, resourceName,
-		resourceModel.apiEnabled,
-		resourceModel.enableApiDescriptions,
-		resourceModel.restrictAccessToRedirectlessMode,
-		resourceModel.includeRequestContext,
-		resourceModel.defaultApplicationRef,
-	)
+}
+`)
 }
 
-// Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedAuthenticationApiSettingsAttributes(config authenticationApiSettingsResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		resourceType := "AuthenticationApiSettings"
-		testClient := acctest.TestClient()
-		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AuthenticationApiAPI.GetAuthenticationApiSettings(ctx).Execute()
-
-		if err != nil {
-			return err
-		}
-
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "api_enabled",
-			config.apiEnabled, *response.ApiEnabled)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_api_descriptions",
-			config.enableApiDescriptions, *response.EnableApiDescriptions)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "restrict_access_to_redirectless_mode",
-			config.restrictAccessToRedirectlessMode, *response.RestrictAccessToRedirectlessMode)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "include_request_context",
-			config.includeRequestContext, *response.IncludeRequestContext)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
+// Validate any computed values when applying minimal HCL
+func authenticationApiSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.example", "api_enabled", "false"),
+		resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.example", "enable_api_descriptions", "false"),
+		resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.example", "include_request_context", "false"),
+		resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.example", "restrict_access_to_redirectless_mode", "false"),
+	)
 }
