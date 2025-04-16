@@ -10,215 +10,145 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const authenticationApiApplicationId = "myAuthenticationApiApplication"
-const authenticationApiApplicationName = "myAuthenticationApiApplicationName"
-const authenticationApiApplicationUrl = "https://example.com"
+const authenticationApiApplicationApplicationId = "authenticationApiApplicationAppl"
 
-// Attributes to test with. Add optional properties to test here if desired.
-type authenticationApiApplicationResourceModel struct {
-	applicationId                string
-	name                         string
-	url                          string
-	description                  string
-	additionalAllowedOrigins     []string
-	clientForRedirectlessModeRef *client.ResourceLink
-}
-
-func TestAccAuthenticationApiApplication(t *testing.T) {
-	resourceName := "myAuthenticationApiApplication"
-	initialResourceModel := authenticationApiApplicationResourceModel{
-		applicationId:                authenticationApiApplicationId,
-		name:                         authenticationApiApplicationName,
-		url:                          authenticationApiApplicationUrl,
-		additionalAllowedOrigins:     []string{},
-		clientForRedirectlessModeRef: nil,
-	}
-
-	clientForRedirectlessModeRefResourceLink := client.NewResourceLink("myOauthClientExample")
-
-	updatedResourceModel := authenticationApiApplicationResourceModel{
-		applicationId:                authenticationApiApplicationId,
-		name:                         authenticationApiApplicationName,
-		url:                          authenticationApiApplicationUrl,
-		description:                  "myAuthenticationApiApplicationDescription",
-		additionalAllowedOrigins:     []string{"https://example.com", "https://example2.com"},
-		clientForRedirectlessModeRef: clientForRedirectlessModeRefResourceLink,
-	}
-
+func TestAccAuthenticationApiApplication_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: testAccCheckAuthenticationApiApplicationDestroy,
+		CheckDestroy: authenticationApiApplication_CheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAuthenticationApiApplication(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationApiApplicationAttributes(initialResourceModel),
+				// Create the resource with a minimal model
+				Config: authenticationApiApplication_MinimalHCL(),
 			},
 			{
-				// Test updating some fields
-				Config: testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedAuthenticationApiApplicationAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "additional_allowed_origins.0", updatedResourceModel.additionalAllowedOrigins[0]),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "additional_allowed_origins.1", updatedResourceModel.additionalAllowedOrigins[1]),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "client_for_redirectless_mode_ref.id", updatedResourceModel.clientForRedirectlessModeRef.Id),
-				),
-			},
-			{
-				// Test importing the resource
-				Config:            testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_authentication_api_application." + resourceName,
-				ImportStateId:     authenticationApiApplicationId,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				Config: testAccAuthenticationApiApplication(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationApiApplicationAttributes(initialResourceModel),
-			},
-			{
+				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
 				PreConfig: func() {
-					testClient := acctest.TestClient()
-					ctx := acctest.TestBasicAuthContext()
-					_, err := testClient.AuthenticationApiAPI.DeleteApplication(ctx, updatedResourceModel.applicationId).Execute()
-					if err != nil {
-						t.Fatalf("Failed to delete config: %v", err)
-					}
+					authenticationApiApplication_Delete(t)
 				},
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: testAccAuthenticationApiApplication(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationApiApplicationAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
-func optionalHcl(model authenticationApiApplicationResourceModel) string {
-	var hclDescription string
-	var hclAdditionalAllowedOrigins string
-	var oauthClientDependency string
-	var clientForRedirectlessModeRef string
-
-	if model.description != "" {
-		hclDescription = fmt.Sprintf("description = \"%s\"", model.description)
-	}
-
-	if len(model.additionalAllowedOrigins) > 0 {
-		hclAdditionalAllowedOrigins = fmt.Sprintf("additional_allowed_origins = %s", acctest.StringSliceToTerraformString(model.additionalAllowedOrigins))
-	}
-
-	if model.clientForRedirectlessModeRef != nil {
-		clientForRedirectlessModeRef = `
-	client_for_redirectless_mode_ref = {
-	  id = pingfederate_oauth_client.myOauthClientExample.id
-	}`
-	}
-
-	return fmt.Sprintf(`
-	%s
-	%s
-	%s
-	%s
-	`, hclDescription, hclAdditionalAllowedOrigins, oauthClientDependency, clientForRedirectlessModeRef)
+func TestAccAuthenticationApiApplication_MinimalMaximal(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: authenticationApiApplication_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create the resource with a minimal model
+				Config: authenticationApiApplication_MinimalHCL(),
+				Check:  authenticationApiApplication_CheckComputedValuesMinimal(),
+			},
+			{
+				// Delete the minimal model
+				Config:  authenticationApiApplication_MinimalHCL(),
+				Destroy: true,
+			},
+			{
+				// Re-create with a complete model. No computed values to check in complete model
+				Config: authenticationApiApplication_CompleteHCL(),
+			},
+			{
+				// Back to minimal model
+				Config: authenticationApiApplication_MinimalHCL(),
+				Check:  authenticationApiApplication_CheckComputedValuesMinimal(),
+			},
+			{
+				// Back to complete model
+				Config: authenticationApiApplication_CompleteHCL(),
+			},
+			{
+				// Test importing the resource
+				Config:                               authenticationApiApplication_CompleteHCL(),
+				ResourceName:                         "pingfederate_authentication_api_application.example",
+				ImportStateId:                        authenticationApiApplicationApplicationId,
+				ImportStateVerifyIdentifierAttribute: "application_id",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+			},
+		},
+	})
 }
 
-func testAccAuthenticationApiApplication(resourceName string, resourceModel authenticationApiApplicationResourceModel) string {
-	optionalFields := optionalHcl(resourceModel)
+// Minimal HCL with only required values set
+func authenticationApiApplication_MinimalHCL() string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_client" "myOauthClientExample" {
-  client_id                     = "myOauthClientExample"
-  name                          = "myOauthClientExample"
-  grant_types                   = ["EXTENSION"]
-  allow_authentication_api_init = true
+resource "pingfederate_authentication_api_application" "example" {
+  application_id = "%s"
+  name = "authApiApp"
+  url = "https://example.com"
+}
+`, authenticationApiApplicationApplicationId)
 }
 
-resource "pingfederate_authentication_api_settings" "myAuthenticationApiSettingsExample" {
+// Maximal HCL with all values set where possible
+func authenticationApiApplication_CompleteHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_authentication_api_settings" "example" {
   restrict_access_to_redirectless_mode = true
 }
 
-resource "pingfederate_authentication_api_application" "%[1]s" {
-  application_id = "%[2]s"
-  name           = "%[3]s"
-  url            = "%[4]s"
-	%[5]s
-}`, resourceName,
-		resourceModel.applicationId,
-		resourceModel.name,
-		resourceModel.url,
-		optionalFields,
+	resource "pingfederate_oauth_client" "example" {
+		client_id                     = "myOauthClientExample"
+		name                          = "myOauthClientExample"
+		grant_types                   = ["EXTENSION"]
+		allow_authentication_api_init = true
+	  }
+
+resource "pingfederate_authentication_api_application" "example" {
+  depends_on = [pingfederate_authentication_api_settings.example]
+  application_id = "%s"
+  additional_allowed_origins = [
+	"https://example.com",
+	"https://example2.com",
+  ]
+  client_for_redirectless_mode_ref = {
+    id = pingfederate_oauth_client.example.id
+  }
+  description = "this is my app"
+  name = "authApiAppUpdated"
+  url = "https://changed.example.com"
+}
+`, authenticationApiApplicationApplicationId)
+}
+
+// Validate any computed values when applying minimal HCL
+func authenticationApiApplication_CheckComputedValuesMinimal() resource.TestCheckFunc {
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_authentication_api_application.example", "additional_allowed_origins.#", "0"),
+		resource.TestCheckNoResourceAttr("pingfederate_authentication_api_application.example", "description"),
 	)
 }
 
-// Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authenticationApiApplicationResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		resourceType := "AuthenticationApiApplication"
-		testClient := acctest.TestClient()
-		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AuthenticationApiAPI.GetApplication(ctx, authenticationApiApplicationId).Execute()
-		if err != nil {
-			return err
-		}
-
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationApiApplicationName), "application_id", config.applicationId, response.Id)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationApiApplicationName), "name", config.name, response.Name)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationApiApplicationName), "url", config.url, response.Url)
-		if err != nil {
-			return err
-		}
-
-		if config.description != "" {
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationApiApplicationName), "description", config.description, *response.Description)
-			if err != nil {
-				return err
-			}
-		}
-
-		if config.additionalAllowedOrigins != nil {
-			err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(authenticationApiApplicationName), "additional_allowed_origins", config.additionalAllowedOrigins, response.AdditionalAllowedOrigins)
-			if err != nil {
-				return err
-			}
-		}
-
-		if config.clientForRedirectlessModeRef != nil {
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationApiApplicationName), "client_for_redirectless_mode_ref", config.clientForRedirectlessModeRef.Id, response.ClientForRedirectlessModeRef.Id)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
+// Delete the resource
+func authenticationApiApplication_Delete(t *testing.T) {
+	testClient := acctest.TestClient()
+	_, err := testClient.AuthenticationApiAPI.DeleteApplication(acctest.TestBasicAuthContext(), authenticationApiApplicationApplicationId).Execute()
+	if err != nil {
+		t.Fatalf("Failed to delete config: %v", err)
 	}
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckAuthenticationApiApplicationDestroy(s *terraform.State) error {
+func authenticationApiApplication_CheckDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
-	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.AuthenticationApiAPI.DeleteApplication(ctx, authenticationApiApplicationId).Execute()
+	_, err := testClient.AuthenticationApiAPI.DeleteApplication(acctest.TestBasicAuthContext(), authenticationApiApplicationApplicationId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("AuthenticationApiApplication", authenticationApiApplicationId)
+		return fmt.Errorf("authentication_api_application still exists after tests. Expected it to be destroyed")
 	}
 	return nil
 }
