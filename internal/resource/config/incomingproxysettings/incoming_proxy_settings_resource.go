@@ -195,12 +195,12 @@ func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req reso
 	}
 
 	// Plan checks against nil values, not empty strings
-	if !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && plan.ForwardedIpAddressHeaderIndex.IsUnknown() {
+	if plan.ForwardedIpAddressHeaderName.IsNull() && plan.ForwardedIpAddressHeaderIndex.IsUnknown() {
 		plan.ForwardedIpAddressHeaderIndex = types.StringNull()
 	}
 
 	// Plan checks against nil values, not empty strings
-	if !internaltypes.IsDefined(plan.ForwardedHostHeaderName) && plan.ForwardedHostHeaderIndex.IsUnknown() {
+	if plan.ForwardedHostHeaderName.IsNull() && plan.ForwardedHostHeaderIndex.IsUnknown() {
 		plan.ForwardedHostHeaderIndex = types.StringNull()
 	}
 

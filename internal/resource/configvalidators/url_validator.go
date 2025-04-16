@@ -111,7 +111,7 @@ func (v urlSetValidator) ValidateSet(ctx context.Context, req validator.SetReque
 	setElems := req.ConfigValue.Elements()
 	for _, elem := range setElems {
 		elemString, ok := elem.(types.String)
-		if !ok {
+		if !ok || elemString.IsUnknown() {
 			return
 		}
 		validateUrlValue(req.Path, elemString, &resp.Diagnostics)
