@@ -96,6 +96,9 @@ resource "pingfederate_administrative_account" "example" {
   roles = ["USER_ADMINISTRATOR"]
   password = "2FederateM0re!"
 }
+  data "pingfederate_administrative_account" "example" {
+  username = pingfederate_administrative_account.example.username
+}
 `, administrativeAccountUsername)
 }
 
@@ -112,6 +115,9 @@ resource "pingfederate_administrative_account" "example" {
   password = "2FederateM0re!"
   phone_number = "555-555-5555"
   roles = []
+}
+  data "pingfederate_administrative_account" "example" {
+  username = pingfederate_administrative_account.example.username
 }
 `, administrativeAccountUsername)
 }
