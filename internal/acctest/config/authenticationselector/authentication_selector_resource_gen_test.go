@@ -130,9 +130,9 @@ resource "pingfederate_authentication_selector" "example" {
   selector_id = "%s"
   attribute_contract = {
     extended_attributes = [
-	  {
-	    name = "another"
-	  },
+      {
+        name = "another"
+      },
       {
         name = "extendedattr"
       }

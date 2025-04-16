@@ -95,10 +95,10 @@ func administrativeAccount_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_administrative_account" "example" {
   username = "%s"
-  roles = ["USER_ADMINISTRATOR"]
+  roles    = ["USER_ADMINISTRATOR"]
   password = "2FederateM0re!"
 }
-  data "pingfederate_administrative_account" "example" {
+data "pingfederate_administrative_account" "example" {
   username = pingfederate_administrative_account.example.username
 }
 `, administrativeAccountUsername)
@@ -108,17 +108,17 @@ resource "pingfederate_administrative_account" "example" {
 func administrativeAccount_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_administrative_account" "example" {
-  username = "%s"
-  active = false
-  auditor = true
-  department = "mydepartment"
-  description = "mydescription"
+  username      = "%s"
+  active        = false
+  auditor       = true
+  department    = "mydepartment"
+  description   = "mydescription"
   email_address = "aggie@draynorvillage.example.com"
-  password = "2FederateM0re!"
-  phone_number = "555-555-5555"
-  roles = []
+  password      = "2FederateM0re!"
+  phone_number  = "555-555-5555"
+  roles         = []
 }
-  data "pingfederate_administrative_account" "example" {
+data "pingfederate_administrative_account" "example" {
   username = pingfederate_administrative_account.example.username
 }
 `, administrativeAccountUsername)

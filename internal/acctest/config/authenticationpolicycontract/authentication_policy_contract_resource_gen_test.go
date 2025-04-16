@@ -93,9 +93,9 @@ func authenticationPolicyContract_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "example" {
   contract_id = "%s"
-  name = "initialApc"
+  name        = "initialApc"
 }
-  data "pingfederate_authentication_policy_contract" "example" {
+data "pingfederate_authentication_policy_contract" "example" {
   contract_id = pingfederate_authentication_policy_contract.example.id
 }
 `, authenticationPolicyContractContractId)
@@ -110,16 +110,16 @@ resource "pingfederate_authentication_policy_contract" "example" {
     {
       name = "extended_attribute"
     },
-	{
-					name = "extended_attribute2"
-	},
-	{
-		name = "extendedwith\"escaped\"quotes"
-	}
+    {
+      name = "extended_attribute2"
+    },
+    {
+      name = "extendedwith\"escaped\"quotes"
+    }
   ]
   name = "myApc"
 }
-  data "pingfederate_authentication_policy_contract" "example" {
+data "pingfederate_authentication_policy_contract" "example" {
   contract_id = pingfederate_authentication_policy_contract.example.id
 }
 `, authenticationPolicyContractContractId)

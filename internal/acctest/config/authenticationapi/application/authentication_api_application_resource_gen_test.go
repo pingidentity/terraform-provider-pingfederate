@@ -91,8 +91,8 @@ func authenticationApiApplication_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_api_application" "example" {
   application_id = "%s"
-  name = "authApiApp"
-  url = "https://example.com"
+  name           = "authApiApp"
+  url            = "https://example.com"
 }
 `, authenticationApiApplicationApplicationId)
 }
@@ -104,26 +104,26 @@ resource "pingfederate_authentication_api_settings" "example" {
   restrict_access_to_redirectless_mode = true
 }
 
-	resource "pingfederate_oauth_client" "example" {
-		client_id                     = "myOauthClientExample"
-		name                          = "myOauthClientExample"
-		grant_types                   = ["EXTENSION"]
-		allow_authentication_api_init = true
-	  }
+resource "pingfederate_oauth_client" "example" {
+  client_id                     = "myOauthClientExample"
+  name                          = "myOauthClientExample"
+  grant_types                   = ["EXTENSION"]
+  allow_authentication_api_init = true
+}
 
 resource "pingfederate_authentication_api_application" "example" {
-  depends_on = [pingfederate_authentication_api_settings.example]
+  depends_on     = [pingfederate_authentication_api_settings.example]
   application_id = "%s"
   additional_allowed_origins = [
-	"https://example.com",
-	"https://example2.com",
+    "https://example.com",
+    "https://example2.com",
   ]
   client_for_redirectless_mode_ref = {
     id = pingfederate_oauth_client.example.id
   }
   description = "this is my app"
-  name = "authApiAppUpdated"
-  url = "https://changed.example.com"
+  name        = "authApiAppUpdated"
+  url         = "https://changed.example.com"
 }
 `, authenticationApiApplicationApplicationId)
 }

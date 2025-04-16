@@ -66,8 +66,8 @@ func authenticationApiSettings_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_api_application" "example" {
   application_id = "settingsTestApp"
-  name = "authApiApp"
-  url = "https://example.com"
+  name           = "authApiApp"
+  url            = "https://example.com"
 }
 
 resource "pingfederate_authentication_api_settings" "example" {
@@ -75,8 +75,8 @@ resource "pingfederate_authentication_api_settings" "example" {
   default_application_ref = {
     id = pingfederate_authentication_api_application.example.id
   }
-  enable_api_descriptions = true
-  include_request_context = true
+  enable_api_descriptions              = true
+  include_request_context              = true
   restrict_access_to_redirectless_mode = true
   # Ensures this resource will be updated before deleting the authentication api application
   lifecycle {
