@@ -306,11 +306,15 @@ func (r *idpAdapterResource) ModifyPlan(ctx context.Context, req resource.Modify
 			definedAttrs := []string{}
 			for _, attr := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
 				attrName := attr.(types.Object).Attributes()["name"].(types.String).ValueString()
-				definedAttrs = append(definedAttrs, attrName)
+				if attrName != "" {
+					definedAttrs = append(definedAttrs, attrName)
+				}
 			}
 			for _, attr := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
 				attrName := attr.(types.Object).Attributes()["name"].(types.String).ValueString()
-				definedAttrs = append(definedAttrs, attrName)
+				if attrName != "" {
+					definedAttrs = append(definedAttrs, attrName)
+				}
 			}
 			for _, attrName := range definedAttrs {
 				if !attributeContractFulfillmentKeys[attrName] {

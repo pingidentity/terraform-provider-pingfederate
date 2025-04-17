@@ -3443,21 +3443,28 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	// Ensure that group attributes have appropriate values
 	if internaltypes.IsDefined(plan.InboundProvisioning) {
 		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
-		groupSupportEnabled := inboundProvisioningAttrs["group_support"].(types.Bool).ValueBool()
-		groupsConfigured := internaltypes.IsDefined(inboundProvisioningAttrs["groups"])
-		if !groupSupportEnabled && groupsConfigured {
-			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
-				providererror.InvalidAttributeConfiguration, "`inbound_provisioning.group_support` must be set to `true` to configure inbound provisioning groups.")
-		}
-		if groupSupportEnabled && !groupsConfigured {
-			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
-				providererror.InvalidAttributeConfiguration, "If `inbound_provisioning.group_support` is set to `true`, then `inbound_provisioning.groups` must be configured.")
-		}
+		if !inboundProvisioningAttrs["group_support"].IsUnknown() {
+			groupSupportEnabled := inboundProvisioningAttrs["group_support"].(types.Bool).ValueBool()
+			if !inboundProvisioningAttrs["groups"].IsUnknown() {
+				groupsConfigured := internaltypes.IsDefined(inboundProvisioningAttrs["groups"])
+				if !groupSupportEnabled && groupsConfigured {
+					resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
+						providererror.InvalidAttributeConfiguration, "`inbound_provisioning.group_support` must be set to `true` to configure inbound provisioning groups.")
+				}
+				if groupSupportEnabled && !groupsConfigured {
+					resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning"),
+						providererror.InvalidAttributeConfiguration, "If `inbound_provisioning.group_support` is set to `true`, then `inbound_provisioning.groups` must be configured.")
+				}
+			}
 
-		userRepositoryLdap := inboundProvisioningAttrs["user_repository"].(types.Object).Attributes()["ldap"]
-		if internaltypes.IsDefined(userRepositoryLdap) && len(userRepositoryLdap.(types.Object).Attributes()["unique_group_id_filter"].(types.String).ValueString()) == 0 && groupSupportEnabled {
-			resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning.user_repository.ldap"),
-				providererror.InvalidAttributeConfiguration, "`inbound_provisioning.user_repository.ldap.unique_group_id_filter` must be set if `inbound_provisioning.group_support` is set to `true`.")
+			userRepositoryLdap := inboundProvisioningAttrs["user_repository"].(types.Object).Attributes()["ldap"]
+			if internaltypes.IsDefined(userRepositoryLdap) {
+				filter := userRepositoryLdap.(types.Object).Attributes()["unique_group_id_filter"].(types.String)
+				if !filter.IsUnknown() && len(filter.ValueString()) == 0 && groupSupportEnabled {
+					resp.Diagnostics.AddAttributeError(path.Root("inbound_provisioning.user_repository.ldap"),
+						providererror.InvalidAttributeConfiguration, "`inbound_provisioning.user_repository.ldap.unique_group_id_filter` must be set if `inbound_provisioning.group_support` is set to `true`.")
+				}
+			}
 		}
 	}
 
@@ -3508,7 +3515,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	if internaltypes.IsDefined(plan.IdpBrowserSso) {
 		browserSsoAttrs := plan.IdpBrowserSso.Attributes()
 		if browserSsoAttrs["decryption_policy"].IsUnknown() {
-			if browserSsoAttrs["protocol"].(types.String).ValueString() != "OIDC" {
+			if !browserSsoAttrs["protocol"].IsUnknown() && browserSsoAttrs["protocol"].(types.String).ValueString() != "OIDC" {
 				browserSsoAttrs["decryption_policy"], diags = types.ObjectValue(idpBrowserSsoDecryptionPolicyAttrTypes, map[string]attr.Value{
 					"assertion_encrypted":           types.BoolValue(false),
 					"attributes_encrypted":          types.BoolValue(false),
@@ -3616,7 +3623,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	if internaltypes.IsDefined(plan.OidcClientCredentials) {
 		planOidcClientCredentials := plan.OidcClientCredentials.Attributes()
 		stateOidcClientCredentials := state.OidcClientCredentials.Attributes()
-		if !internaltypes.IsDefined(planOidcClientCredentials["client_secret"]) && planOidcClientCredentials["encrypted_secret"].IsUnknown() {
+		if planOidcClientCredentials["client_secret"].IsNull() && planOidcClientCredentials["encrypted_secret"].IsUnknown() {
 			planOidcClientCredentials["encrypted_secret"] = types.StringNull()
 			plan.OidcClientCredentials, diags = types.ObjectValue(plan.OidcClientCredentials.AttributeTypes(ctx), planOidcClientCredentials)
 			resp.Diagnostics.Append(diags...)

@@ -21,11 +21,11 @@ func (r *configStoreResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	// If the type of the config store has changed, require replacement
-	if internaltypes.IsDefined(plan.ListValue) != internaltypes.IsDefined(state.ListValue) {
+	if internaltypes.IsDefined(plan.ListValue) && state.ListValue.IsNull() {
 		resp.RequiresReplace = path.Paths{path.Root("list_value")}
-	} else if internaltypes.IsDefined(plan.MapValue) != internaltypes.IsDefined(state.MapValue) {
+	} else if internaltypes.IsDefined(plan.MapValue) && state.MapValue.IsNull() {
 		resp.RequiresReplace = path.Paths{path.Root("map_value")}
-	} else if internaltypes.IsDefined(plan.StringValue) != internaltypes.IsDefined(state.StringValue) {
+	} else if internaltypes.IsDefined(plan.StringValue) && state.StringValue.IsNull() {
 		resp.RequiresReplace = path.Paths{path.Root("string_value")}
 	}
 }

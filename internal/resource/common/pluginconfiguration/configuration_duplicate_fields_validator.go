@@ -85,7 +85,7 @@ func checkDuplicateFields(fields attr.Value, sensitiveFields attr.Value, tableNa
 				fieldName, nameOk := fieldObj.Attributes()["name"]
 				if nameOk {
 					nameValue, nameOk := fieldName.(types.String)
-					if nameOk {
+					if nameOk && !nameValue.IsUnknown() {
 						fieldNames[nameValue.ValueString()] = true
 					}
 				}
@@ -97,7 +97,7 @@ func checkDuplicateFields(fields attr.Value, sensitiveFields attr.Value, tableNa
 				fieldName, nameOk := fieldObj.Attributes()["name"]
 				if nameOk {
 					nameValue, nameOk := fieldName.(types.String)
-					if nameOk {
+					if nameOk && !nameValue.IsUnknown() {
 						if _, ok := fieldNames[nameValue.ValueString()]; ok {
 							resp.Diagnostics.AddAttributeError(
 								req.Path,
