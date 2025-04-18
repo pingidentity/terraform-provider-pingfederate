@@ -387,7 +387,7 @@ resource "pingfederate_authentication_policy_contract" "mycontract" {
 }
 
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "AuthFragmentsAccTestEnv"
   credential = "%s"
   active     = true
 }

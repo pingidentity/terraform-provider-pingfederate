@@ -139,7 +139,7 @@ func captchaProvider_CompleteHCL(credential, envId string) string {
 		// The PingOneProtectProvider was added in PF version 12.0+
 		return fmt.Sprintf(`
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "CaptchaAccTestEnv"
   credential = "%s"
   active     = true
 }

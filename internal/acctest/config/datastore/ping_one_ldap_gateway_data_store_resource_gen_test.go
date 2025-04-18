@@ -121,7 +121,7 @@ func TestAccPingOneLdapGatewayDataStore_MinimalMaximal(t *testing.T) {
 func pingOneLdapGatewayDataStore_MinimalHCL(credential, envId, gatewayId string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "MinimalGatewayAccTestEnv"
   credential = "%s"
   active     = true
 }
@@ -150,7 +150,7 @@ func pingOneLdapGatewayDataStore_CompleteHCL(credential, envId, gatewayId string
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "CompleteGatewayAccTestEnv"
   credential = "%s"
   active     = true
 }

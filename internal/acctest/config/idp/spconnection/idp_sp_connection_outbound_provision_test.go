@@ -78,7 +78,7 @@ func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
 func idpSpConnection_OutboundProvisionMinimalHCL(credential, envId string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "OutboundSpConnTestEnv"
   credential = "%s"
   active     = true
 }
@@ -343,7 +343,7 @@ resource "pingfederate_idp_sp_connection" "example" {
 func idpSpConnection_OutboundProvisionCompleteHCL(credential, envId string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "OutboundSpConnTestEnv"
   credential = "%s"
   active     = true
 }

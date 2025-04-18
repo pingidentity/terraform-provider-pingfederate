@@ -486,7 +486,7 @@ sp_browser_sso = {
 func testAccSpConnectionOutboundProvision(credential, envId, resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "CompleteSpConnTestEnv"
   credential = "%s"
   active     = true
 }
@@ -626,7 +626,7 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 func testAccSpConnectionComplete(credential, envId, resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_pingone_connection" "example" {
-  name       = "My PingOne Environment"
+  name       = "CompleteSpConnTestEnv"
   credential = "%s"
   active     = true
 }
