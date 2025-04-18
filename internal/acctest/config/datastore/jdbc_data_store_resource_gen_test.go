@@ -78,7 +78,7 @@ func TestAccJdbcDataStore_MinimalMaximal(t *testing.T) {
 				// Test importing the resource
 				Config:                               jdbcDataStore_CompleteHCL(),
 				ResourceName:                         "pingfederate_data_store.example",
-				ImportStateId:                        jdbcDataStoreId,
+				ImportStateId:                        jdbcStoreId,
 				ImportStateVerifyIdentifierAttribute: "data_store_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
@@ -100,7 +100,7 @@ resource "pingfederate_data_store" "example" {
     password = "mypassword"
   }
 }
-`, jdbcDataStoreId)
+`, jdbcStoreId)
 }
 
 // Maximal HCL with all values set where possible
@@ -138,7 +138,7 @@ resource "pingfederate_data_store" "example" {
 	validate_connection_sql = "SELECT 1"
   }
 }
-`, jdbcDataStoreId)
+`, jdbcStoreId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -155,7 +155,7 @@ func jdbcDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet("pingfederate_data_store.example", "jdbc_data_store.encrypted_password"),
 		resource.TestCheckNoResourceAttr("pingfederate_data_store.example", "jdbc_data_store.user_name"),
 		resource.TestCheckNoResourceAttr("pingfederate_data_store.example", "jdbc_data_store.validate_connection_sql"),
-		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", jdbcDataStoreId),
+		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", jdbcStoreId),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "mask_attribute_values", "false"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "jdbc_data_store.type", "JDBC"),
 	)
@@ -167,7 +167,7 @@ func jdbcDataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckNoResourceAttr("pingfederate_data_store.example", "jdbc_data_store.connection_url_tags.0.tags"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "jdbc_data_store.connection_url_tags.1.default_source", "false"),
 		resource.TestCheckResourceAttrSet("pingfederate_data_store.example", "jdbc_data_store.encrypted_password"),
-		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", jdbcDataStoreId),
+		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", jdbcStoreId),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "jdbc_data_store.type", "JDBC"),
 	)
 }
@@ -175,7 +175,7 @@ func jdbcDataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
 // Delete the resource
 func jdbcDataStore_Delete(t *testing.T) {
 	testClient := acctest.TestClient()
-	_, err := testClient.DataStoresAPI.DeleteDataStore(acctest.TestBasicAuthContext(), jdbcDataStoreId).Execute()
+	_, err := testClient.DataStoresAPI.DeleteDataStore(acctest.TestBasicAuthContext(), jdbcStoreId).Execute()
 	if err != nil {
 		t.Fatalf("Failed to delete config: %v", err)
 	}
@@ -184,7 +184,7 @@ func jdbcDataStore_Delete(t *testing.T) {
 // Test that any objects created by the test are destroyed
 func jdbcDataStore_CheckDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
-	_, err := testClient.DataStoresAPI.DeleteDataStore(acctest.TestBasicAuthContext(), jdbcDataStoreId).Execute()
+	_, err := testClient.DataStoresAPI.DeleteDataStore(acctest.TestBasicAuthContext(), jdbcStoreId).Execute()
 	if err == nil {
 		return fmt.Errorf("data_store still exists after tests. Expected it to be destroyed")
 	}
