@@ -110,7 +110,8 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 			},
 			"enable_client_cert_header_auth": schema.BoolAttribute{
 				Optional:    true,
-				Description: "Enable client certificate header authentication. Supported in PF version `12.2` and later.",
+				Computed:    true,
+				Description: "Enable client certificate header authentication. Supported in PF version `12.2` and later. Default value is `false`.",
 			},
 			"proxy_terminates_https_conns": schema.BoolAttribute{
 				Description: "Allows you to globally specify that connections to the reverse proxy are made over HTTPS even when HTTP is used between the reverse proxy and PingFederate. Default value is `false`.",
@@ -181,6 +182,9 @@ func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req reso
 	} else {
 		if plan.ClientCertHeaderEncodingFormat.IsUnknown() {
 			plan.ClientCertHeaderEncodingFormat = types.StringValue("APACHE_MOD_SSL")
+		}
+		if plan.EnableClientCertHeaderAuth.IsUnknown() {
+			plan.EnableClientCertHeaderAuth = types.BoolValue(false)
 		}
 	}
 
