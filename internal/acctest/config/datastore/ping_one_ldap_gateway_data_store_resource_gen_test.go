@@ -20,20 +20,20 @@ import (
 const pingOneLdapGatewayStoreId = "pingOneLdapGatewayDataStoreId"
 
 func TestAccPingOneLdapGatewayDataStore_RemovalDrift(t *testing.T) {
-	var pingOneConnectionRefId = os.Getenv("PF_TF_P1_CONNECTION_ID")
+	var pingOneCredential = os.Getenv("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA")
 	var pingOneEnvironmentId = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 	var pingOneLdapGatewayId = os.Getenv("PF_TF_P1_LDAP_GATEWAY_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
-			if pingOneConnectionRefId == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
+			if pingOneCredential == "" {
+				t.Fatal("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA must be set for TestAccPingOneLdapGatewayDataStore_RemovalDrift")
 			}
 			if pingOneEnvironmentId == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
+				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for TestAccPingOneLdapGatewayDataStore_RemovalDrift")
 			}
 			if pingOneLdapGatewayId == "" {
-				t.Fatal("PF_TF_P1_LDAP_GATEWAY_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
+				t.Fatal("PF_TF_P1_LDAP_GATEWAY_ID must be set for TestAccPingOneLdapGatewayDataStore_RemovalDrift")
 			}
 		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -43,7 +43,7 @@ func TestAccPingOneLdapGatewayDataStore_RemovalDrift(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: pingOneLdapGatewayDataStore_MinimalHCL(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Config: pingOneLdapGatewayDataStore_MinimalHCL(pingOneCredential, pingOneEnvironmentId, pingOneLdapGatewayId),
 			},
 			{
 				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
@@ -58,20 +58,20 @@ func TestAccPingOneLdapGatewayDataStore_RemovalDrift(t *testing.T) {
 }
 
 func TestAccPingOneLdapGatewayDataStore_MinimalMaximal(t *testing.T) {
-	var pingOneConnectionRefId = os.Getenv("PF_TF_P1_CONNECTION_ID")
+	var pingOneCredential = os.Getenv("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA")
 	var pingOneEnvironmentId = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 	var pingOneLdapGatewayId = os.Getenv("PF_TF_P1_LDAP_GATEWAY_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
-			if pingOneConnectionRefId == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
+			if pingOneCredential == "" {
+				t.Fatal("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA must be set for TestAccPingOneLdapGatewayDataStore_MinimalMaximal")
 			}
 			if pingOneEnvironmentId == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
+				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for TestAccPingOneLdapGatewayDataStore_MinimalMaximal")
 			}
 			if pingOneLdapGatewayId == "" {
-				t.Fatal("PF_TF_P1_LDAP_GATEWAY_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
+				t.Fatal("PF_TF_P1_LDAP_GATEWAY_ID must be set for TestAccPingOneLdapGatewayDataStore_MinimalMaximal")
 			}
 		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -81,32 +81,32 @@ func TestAccPingOneLdapGatewayDataStore_MinimalMaximal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: pingOneLdapGatewayDataStore_MinimalHCL(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
-				Check:  pingOneLdapGatewayDataStore_CheckComputedValuesMinimal(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Config: pingOneLdapGatewayDataStore_MinimalHCL(pingOneCredential, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Check:  pingOneLdapGatewayDataStore_CheckComputedValuesMinimal(),
 			},
 			{
 				// Delete the minimal model
-				Config:  pingOneLdapGatewayDataStore_MinimalHCL(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Config:  pingOneLdapGatewayDataStore_MinimalHCL(pingOneCredential, pingOneEnvironmentId, pingOneLdapGatewayId),
 				Destroy: true,
 			},
 			{
 				// Re-create with a complete model
-				Config: pingOneLdapGatewayDataStore_CompleteHCL(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Config: pingOneLdapGatewayDataStore_CompleteHCL(pingOneCredential, pingOneEnvironmentId, pingOneLdapGatewayId),
 				Check:  pingOneLdapGatewayDataStore_CheckComputedValuesComplete(),
 			},
 			{
 				// Back to minimal model
-				Config: pingOneLdapGatewayDataStore_MinimalHCL(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
-				Check:  pingOneLdapGatewayDataStore_CheckComputedValuesMinimal(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Config: pingOneLdapGatewayDataStore_MinimalHCL(pingOneCredential, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Check:  pingOneLdapGatewayDataStore_CheckComputedValuesMinimal(),
 			},
 			{
 				// Back to complete model
-				Config: pingOneLdapGatewayDataStore_CompleteHCL(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Config: pingOneLdapGatewayDataStore_CompleteHCL(pingOneCredential, pingOneEnvironmentId, pingOneLdapGatewayId),
 				Check:  pingOneLdapGatewayDataStore_CheckComputedValuesComplete(),
 			},
 			{
 				// Test importing the resource
-				Config:                               pingOneLdapGatewayDataStore_CompleteHCL(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
+				Config:                               pingOneLdapGatewayDataStore_CompleteHCL(pingOneCredential, pingOneEnvironmentId, pingOneLdapGatewayId),
 				ResourceName:                         "pingfederate_data_store.example",
 				ImportStateId:                        pingOneLdapGatewayStoreId,
 				ImportStateVerifyIdentifierAttribute: "data_store_id",
@@ -118,24 +118,30 @@ func TestAccPingOneLdapGatewayDataStore_MinimalMaximal(t *testing.T) {
 }
 
 // Minimal HCL with only required values set
-func pingOneLdapGatewayDataStore_MinimalHCL(connRef, envId, gatewayId string) string {
+func pingOneLdapGatewayDataStore_MinimalHCL(credential, envId, gatewayId string) string {
 	return fmt.Sprintf(`
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Environment"
+  credential = "%s"
+  active = true
+}
+
 resource "pingfederate_data_store" "example" {
   data_store_id = "%s"
   ping_one_ldap_gateway_data_store = {
     ldap_type = "PING_DIRECTORY"
     ping_one_connection_ref = {
-      id = "%s"
+      id = pingfederate_pingone_connection.example.id
     }
     ping_one_environment_id = "%s"
     ping_one_ldap_gateway_id =  "%s"
   }
 }
-`, pingOneLdapGatewayStoreId, connRef, envId, gatewayId)
+`, credential, pingOneLdapGatewayStoreId, envId, gatewayId)
 }
 
 // Maximal HCL with all values set where possible
-func pingOneLdapGatewayDataStore_CompleteHCL(connRef, envId, gatewayId string) string {
+func pingOneLdapGatewayDataStore_CompleteHCL(credential, envId, gatewayId string) string {
 	versionedHcl := ""
 	if acctest.VersionAtLeast(version.PingFederate1210) {
 		versionedHcl += `
@@ -143,6 +149,12 @@ func pingOneLdapGatewayDataStore_CompleteHCL(connRef, envId, gatewayId string) s
 		  `
 	}
 	return fmt.Sprintf(`
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Environment"
+  credential = "%s"
+  active = true
+}
+
 resource "pingfederate_data_store" "example" {
   data_store_id = "%s"
   mask_attribute_values = true
@@ -151,7 +163,7 @@ resource "pingfederate_data_store" "example" {
     name = "myp1datastore"
     ldap_type = "PING_DIRECTORY"
     ping_one_connection_ref = {
-      id = "%s"
+      id = pingfederate_pingone_connection.example.id
     }
     ping_one_environment_id = "%s"
     ping_one_ldap_gateway_id =  "%s"
@@ -159,7 +171,7 @@ resource "pingfederate_data_store" "example" {
 	%s
   }
 }
-`, pingOneLdapGatewayStoreId, connRef, envId, gatewayId, versionedHcl)
+`, credential, pingOneLdapGatewayStoreId, envId, gatewayId, versionedHcl)
 }
 
 func checkGatewayPf121ComputedAttrs() resource.TestCheckFunc {
@@ -170,10 +182,10 @@ func checkGatewayPf121ComputedAttrs() resource.TestCheckFunc {
 }
 
 // Validate any computed values when applying minimal HCL
-func pingOneLdapGatewayDataStore_CheckComputedValuesMinimal(connRef, envId, gatewayId string) resource.TestCheckFunc {
+func pingOneLdapGatewayDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckNoResourceAttr("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.binary_attributes"),
-		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.name", fmt.Sprintf("%s:%s:%s", connRef, envId, gatewayId)),
+		resource.TestCheckResourceAttrSet("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.name"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.use_ssl", "false"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", pingOneLdapGatewayStoreId),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "mask_attribute_values", "false"),

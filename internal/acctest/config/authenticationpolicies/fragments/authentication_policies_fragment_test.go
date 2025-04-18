@@ -17,20 +17,20 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
-var pingOneConnection, pingOneEnvironment, pingOnePopulation string
+var pingOneCredential, pingOneEnvironment, pingOnePopulation string
 
 func TestAccAuthenticationPoliciesFragment(t *testing.T) {
 	resourceName := "myAuthenticationPoliciesFragment"
 
-	pingOneConnection = os.Getenv("PF_TF_P1_CONNECTION_ID")
+	pingOneCredential = os.Getenv("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA")
 	pingOneEnvironment = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 	pingOnePopulation = os.Getenv("PF_TF_P1_POPULATION_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
-			if pingOneConnection == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the TestAccAuthenticationPoliciesFragment acceptance test")
+			if pingOneCredential == "" {
+				t.Fatal("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA must be set for the TestAccAuthenticationPoliciesFragment acceptance test")
 			}
 			if pingOneEnvironment == "" {
 				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the TestAccAuthenticationPoliciesFragment acceptance test")
@@ -386,6 +386,12 @@ resource "pingfederate_authentication_policy_contract" "mycontract" {
   ]
 }
 
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Environment"
+  credential = "%s"
+  active = true
+}
+
 resource "pingfederate_idp_adapter" "myadapter" {
   adapter_id = "PingOneVerify"
   name       = "PingOneVerify (GovID)"
@@ -416,7 +422,7 @@ resource "pingfederate_idp_adapter" "myadapter" {
     fields = [
       {
         name  = "PingOne Environment",
-        value = "%s|%s"
+        value = "${pingfederate_pingone_connection.example.id}|%s"
       },
       {
         name  = "PingOne Population",
@@ -707,7 +713,7 @@ resource "pingfederate_idp_adapter" "myadapter" {
       %s
     }
   }
-}`, pingOneConnection, pingOneEnvironment, pingOnePopulation, verifyFields(), additionalCoreAttributes(), additionalAttributeContractFulfillments())
+}`, pingOneCredential, pingOneEnvironment, pingOnePopulation, verifyFields(), additionalCoreAttributes(), additionalAttributeContractFulfillments())
 }
 
 // Test that the expected attributes are set on the PingFederate server
