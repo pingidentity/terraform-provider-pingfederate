@@ -19,22 +19,22 @@ import (
 
 const customStoreId = "customDataStoreId"
 
-func TestAccDataStore_RemovalDrift(t *testing.T) {
+func TestAccCustomDataStore_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: dataStore_CheckDestroy,
+		CheckDestroy: customDataStore_CheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: dataStore_MinimalHCL(),
+				Config: customDataStore_MinimalHCL(),
 			},
 			{
 				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
 				PreConfig: func() {
-					dataStore_Delete(t)
+					customDataStore_Delete(t)
 				},
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
@@ -43,42 +43,42 @@ func TestAccDataStore_RemovalDrift(t *testing.T) {
 	})
 }
 
-func TestAccDataStore_MinimalMaximal(t *testing.T) {
+func TestAccCustomDataStore_MinimalMaximal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: dataStore_CheckDestroy,
+		CheckDestroy: customDataStore_CheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: dataStore_MinimalHCL(),
-				Check:  dataStore_CheckComputedValuesMinimal(),
+				Config: customDataStore_MinimalHCL(),
+				Check:  customDataStore_CheckComputedValuesMinimal(),
 			},
 			{
 				// Delete the minimal model
-				Config:  dataStore_MinimalHCL(),
+				Config:  customDataStore_MinimalHCL(),
 				Destroy: true,
 			},
 			{
 				// Re-create with a complete model
-				Config: dataStore_CompleteHCL(),
-				Check:  dataStore_CheckComputedValuesComplete(),
+				Config: customDataStore_CompleteHCL(),
+				Check:  customDataStore_CheckComputedValuesComplete(),
 			},
 			{
 				// Back to minimal model
-				Config: dataStore_MinimalHCL(),
-				Check:  dataStore_CheckComputedValuesMinimal(),
+				Config: customDataStore_MinimalHCL(),
+				Check:  customDataStore_CheckComputedValuesMinimal(),
 			},
 			{
 				// Back to complete model
-				Config: dataStore_CompleteHCL(),
-				Check:  dataStore_CheckComputedValuesComplete(),
+				Config: customDataStore_CompleteHCL(),
+				Check:  customDataStore_CheckComputedValuesComplete(),
 			},
 			{
 				// Test importing the resource
-				Config:                               dataStore_CompleteHCL(),
+				Config:                               customDataStore_CompleteHCL(),
 				ResourceName:                         "pingfederate_data_store.example",
 				ImportStateId:                        customStoreId,
 				ImportStateVerifyIdentifierAttribute: "data_store_id",
@@ -95,7 +95,7 @@ func TestAccDataStore_MinimalMaximal(t *testing.T) {
 }
 
 // Minimal HCL with only required values set
-func dataStore_MinimalHCL() string {
+func customDataStore_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "example" {
   data_store_id = "%[1]s"
@@ -149,7 +149,7 @@ resource "pingfederate_data_store" "example" {
 }
 
 // Maximal HCL with all values set where possible
-func dataStore_CompleteHCL() string {
+func customDataStore_CompleteHCL() string {
 	versionedFields := ""
 	if acctest.VersionAtLeast(version.PingFederate1130) {
 		versionedFields += `
@@ -365,7 +365,7 @@ resource "pingfederate_data_store" "example" {
 }
 
 // Validate any computed values when applying minimal HCL
-func dataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
+func customDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	fieldsCount := 19
 	if acctest.VersionAtLeast(version.PingFederate1130) {
 		fieldsCount += 2
@@ -384,7 +384,7 @@ func dataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 }
 
 // Validate any computed values when applying complete HCL
-func dataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
+func customDataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
 	fieldsCount := 19
 	if acctest.VersionAtLeast(version.PingFederate1130) {
 		fieldsCount += 2
@@ -401,7 +401,7 @@ func dataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
 }
 
 // Delete the resource
-func dataStore_Delete(t *testing.T) {
+func customDataStore_Delete(t *testing.T) {
 	testClient := acctest.TestClient()
 	_, err := testClient.DataStoresAPI.DeleteDataStore(acctest.TestBasicAuthContext(), customStoreId).Execute()
 	if err != nil {
@@ -410,7 +410,7 @@ func dataStore_Delete(t *testing.T) {
 }
 
 // Test that any objects created by the test are destroyed
-func dataStore_CheckDestroy(s *terraform.State) error {
+func customDataStore_CheckDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	_, err := testClient.DataStoresAPI.DeleteDataStore(acctest.TestBasicAuthContext(), customStoreId).Execute()
 	if err == nil {
