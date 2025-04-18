@@ -488,7 +488,7 @@ func testAccSpConnectionOutboundProvision(credential, envId, resourceName string
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 
 resource "pingfederate_idp_sp_connection" "%[2]s" {
@@ -628,7 +628,7 @@ func testAccSpConnectionComplete(credential, envId, resourceName string) string 
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 resource "pingfederate_idp_sp_connection" "%[2]s" {
 		%s

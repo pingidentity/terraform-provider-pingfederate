@@ -389,7 +389,7 @@ resource "pingfederate_authentication_policy_contract" "mycontract" {
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 
 resource "pingfederate_idp_adapter" "myadapter" {

@@ -80,7 +80,7 @@ func idpSpConnection_OutboundProvisionMinimalHCL(credential, envId string) strin
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 
 resource "pingfederate_idp_sp_connection" "example" {
@@ -345,7 +345,7 @@ func idpSpConnection_OutboundProvisionCompleteHCL(credential, envId string) stri
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 
 resource "pingfederate_idp_sp_connection" "example" {

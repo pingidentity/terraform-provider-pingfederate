@@ -96,7 +96,7 @@ func TestAccCertificateCa_MinimalMaximal(t *testing.T) {
 func certificateCa_MinimalHCL(fileData string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_certificate_ca" "example" {
-  ca_id = "%s"
+  ca_id     = "%s"
   file_data = "%s"
 }
 data "pingfederate_certificate_ca" "example" {

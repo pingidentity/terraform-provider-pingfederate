@@ -141,7 +141,7 @@ func captchaProvider_CompleteHCL(credential, envId string) string {
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 
 resource "pingfederate_captcha_provider" "example" {

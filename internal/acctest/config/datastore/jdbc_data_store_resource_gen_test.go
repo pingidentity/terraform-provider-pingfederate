@@ -97,7 +97,7 @@ resource "pingfederate_data_store" "example" {
   jdbc_data_store = {
     connection_url = "jdbc:sqlserver://localhost;encrypt=true;integratedSecurity=true;"
     driver_class   = "org.hsqldb.jdbcDriver"
-    password = "mypassword"
+    password       = "mypassword"
   }
 }
 `, jdbcStoreId)
@@ -107,35 +107,35 @@ resource "pingfederate_data_store" "example" {
 func jdbcDataStore_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "example" {
-  data_store_id = "%s"
+  data_store_id         = "%s"
   mask_attribute_values = true
   jdbc_data_store = {
-    name = "myjdbcstore"
-    connection_url = "jdbc:sqlserver://localhost;encrypt=true;integratedSecurity=true;"
-    driver_class   = "org.hsqldb.jdbcDriver"
-	user_name =  "myusername"
-    password = "mypassword"
-	allow_multi_value_attributes = true
-	min_pool_size = 15
-	max_pool_size = 200
-	blocking_timeout = 10000
-	idle_timeout = 10
-	connection_url_tags = [
-			{
-				connection_url = "jdbc:sqlserver://localhost;encrypt=true;integratedSecurity=true;"
-				default_source = true
-			},
-			{
-				connection_url = "secondurl.com"
-				tags = "us-east-1"
-			},
-			{
-			    connection_url = "thirdurl.com"
-				tags = "us-west-1"
-				default_source = false
-			}
-		]
-	validate_connection_sql = "SELECT 1"
+    name                         = "myjdbcstore"
+    connection_url               = "jdbc:sqlserver://localhost;encrypt=true;integratedSecurity=true;"
+    driver_class                 = "org.hsqldb.jdbcDriver"
+    user_name                    = "myusername"
+    password                     = "mypassword"
+    allow_multi_value_attributes = true
+    min_pool_size                = 15
+    max_pool_size                = 200
+    blocking_timeout             = 10000
+    idle_timeout                 = 10
+    connection_url_tags = [
+      {
+        connection_url = "jdbc:sqlserver://localhost;encrypt=true;integratedSecurity=true;"
+        default_source = true
+      },
+      {
+        connection_url = "secondurl.com"
+        tags           = "us-east-1"
+      },
+      {
+        connection_url = "thirdurl.com"
+        tags           = "us-west-1"
+        default_source = false
+      }
+    ]
+    validate_connection_sql = "SELECT 1"
   }
 }
 `, jdbcStoreId)

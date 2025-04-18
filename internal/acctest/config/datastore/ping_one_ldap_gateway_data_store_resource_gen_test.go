@@ -123,7 +123,7 @@ func pingOneLdapGatewayDataStore_MinimalHCL(credential, envId, gatewayId string)
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 
 resource "pingfederate_data_store" "example" {
@@ -133,8 +133,8 @@ resource "pingfederate_data_store" "example" {
     ping_one_connection_ref = {
       id = pingfederate_pingone_connection.example.id
     }
-    ping_one_environment_id = "%s"
-    ping_one_ldap_gateway_id =  "%s"
+    ping_one_environment_id  = "%s"
+    ping_one_ldap_gateway_id = "%s"
   }
 }
 `, credential, pingOneLdapGatewayStoreId, envId, gatewayId)
@@ -152,22 +152,22 @@ func pingOneLdapGatewayDataStore_CompleteHCL(credential, envId, gatewayId string
 resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = "%s"
-  active = true
+  active     = true
 }
 
 resource "pingfederate_data_store" "example" {
-  data_store_id = "%s"
+  data_store_id         = "%s"
   mask_attribute_values = true
   ping_one_ldap_gateway_data_store = {
     binary_attributes = ["attr1", "attr2"]
-    name = "myp1datastore"
-    ldap_type = "PING_DIRECTORY"
+    name              = "myp1datastore"
+    ldap_type         = "PING_DIRECTORY"
     ping_one_connection_ref = {
       id = pingfederate_pingone_connection.example.id
     }
-    ping_one_environment_id = "%s"
-    ping_one_ldap_gateway_id =  "%s"
-    use_ssl = true
+    ping_one_environment_id  = "%s"
+    ping_one_ldap_gateway_id = "%s"
+    use_ssl                  = true
 	%s
   }
 }

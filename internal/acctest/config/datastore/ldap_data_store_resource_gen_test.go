@@ -97,8 +97,8 @@ resource "pingfederate_data_store" "example" {
   data_store_id = "%s"
   ldap_data_store = {
     ldap_type = "PING_DIRECTORY"
-    user_dn = "cn=admin"
-    password = "mypassword"
+    user_dn   = "cn=admin"
+    password  = "mypassword"
     hostnames = [
       "pingdirectory:636"
     ]
@@ -122,57 +122,57 @@ func ldapDataStore_CompleteHCL() string {
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "example" {
-  data_store_id = "%s"
+  data_store_id         = "%s"
   mask_attribute_values = true
   ldap_data_store = {
-    ldap_type = "PING_DIRECTORY"
-    user_dn = "cn=admintwo"
-    password = "editedpassword"
-    binary_attributes = ["updatedBinaryAttribute1", "updatedBinaryAttribute2"]
-    bind_anonymously = false
-    connection_timeout = 100
-    create_if_necessary = true
-    dns_ttl = 3000
+    ldap_type             = "PING_DIRECTORY"
+    user_dn               = "cn=admintwo"
+    password              = "editedpassword"
+    binary_attributes     = ["updatedBinaryAttribute1", "updatedBinaryAttribute2"]
+    bind_anonymously      = false
+    connection_timeout    = 100
+    create_if_necessary   = true
+    dns_ttl               = 3000
     follow_ldap_referrals = false
     hostnames = [
       "pingdirectory.example.com",
-				"pingdirectory2.example.com"
+      "pingdirectory2.example.com"
     ]
     hostnames_tags = [
-        {
-            hostnames = [
-                "pingdirectory.example.com",
-				"pingdirectory2.example.com"
-            ]
-            default_source = true
-        },
-        {
-            hostnames = [
-                "pdeast1:1234"
-            ]
-            default_source = false
-            tags = "us-east-1"
-        },
-        {
-            hostnames = [
-                "pdeast2:5678"
-            ]
-            tags = "us-east-2"
-        }
+      {
+        hostnames = [
+          "pingdirectory.example.com",
+          "pingdirectory2.example.com"
         ]
-    ldap_dns_srv_prefix = "_ldapcustom._tcp"
-    ldaps_dns_srv_prefix = "_ldapscustom._tcp"
-    max_connections = 200
-    max_wait = 500
-    min_connections = 15
-    name = "mypddatastore"
-    read_timeout = 100
-    test_on_borrow = true
-    test_on_return = true
+        default_source = true
+      },
+      {
+        hostnames = [
+          "pdeast1:1234"
+        ]
+        default_source = false
+        tags           = "us-east-1"
+      },
+      {
+        hostnames = [
+          "pdeast2:5678"
+        ]
+        tags = "us-east-2"
+      }
+    ]
+    ldap_dns_srv_prefix    = "_ldapcustom._tcp"
+    ldaps_dns_srv_prefix   = "_ldapscustom._tcp"
+    max_connections        = 200
+    max_wait               = 500
+    min_connections        = 15
+    name                   = "mypddatastore"
+    read_timeout           = 100
+    test_on_borrow         = true
+    test_on_return         = true
     time_between_evictions = 100
-    use_dns_srv_records = false
-    use_ssl = true
-    verify_host = false
+    use_dns_srv_records    = false
+    use_ssl                = true
+    verify_host            = false
 	%s
   }
 }

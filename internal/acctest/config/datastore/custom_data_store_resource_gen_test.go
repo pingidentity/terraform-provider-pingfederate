@@ -101,10 +101,10 @@ resource "pingfederate_data_store" "example" {
   data_store_id = "%[1]s"
   custom_data_store = {
     name = "%[1]s"
-	plugin_descriptor_ref = {
-		id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
-	}
-	configuration = {
+    plugin_descriptor_ref = {
+      id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
+    }
+    configuration = {
       tables = [
         {
           name = "Base URLs and Tags"
@@ -124,7 +124,7 @@ resource "pingfederate_data_store" "example" {
             }
           ]
         },
-		{
+        {
           name = "Attributes"
           rows = [
             {
@@ -139,10 +139,10 @@ resource "pingfederate_data_store" "example" {
                 }
               ],
             },
-			]
-}
-	  ]
-	}
+          ]
+        }
+      ]
+    }
   }
 }
 `, customStoreId)
@@ -359,7 +359,7 @@ resource "pingfederate_data_store" "example" {
       id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
     }
   }
-    mask_attribute_values = false
+  mask_attribute_values = false
 }
 `, customStoreId, versionedFields)
 }
