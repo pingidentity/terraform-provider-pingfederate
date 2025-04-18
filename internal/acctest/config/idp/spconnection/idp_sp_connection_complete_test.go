@@ -22,14 +22,17 @@ const (
 	resourceType   = "IdP SP Connection"
 )
 
+var outboundEnvironmentSetting = ""
+
 func TestAccIdpSpConnection(t *testing.T) {
-	credential := os.Getenv("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA")
+	connId := os.Getenv("PF_TF_P1_CONNECTION_ID")
 	envId := os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
+	outboundEnvironmentSetting = connId + "|" + envId
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
-			if credential == "" {
-				t.Fatal("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA must be set for the IdP SP Connection acceptance test")
+			if connId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the IdP SP Connection acceptance test")
 			}
 			if envId == "" {
 				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the IdP SP Connection acceptance test")
@@ -42,7 +45,7 @@ func TestAccIdpSpConnection(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Outbound provision connection, minimal
-				Config: testAccSpConnectionOutboundProvision(credential, envId, spConnectionId),
+				Config: testAccSpConnectionOutboundProvision(spConnectionId),
 				Check:  testAccCheckExpectedSpConnectionAttributesOutboundProvision(),
 			},
 			{
@@ -67,7 +70,7 @@ func TestAccIdpSpConnection(t *testing.T) {
 			},
 			{
 				// Complete connection with all three types
-				Config: testAccSpConnectionComplete(credential, envId, spConnectionId),
+				Config: testAccSpConnectionComplete(spConnectionId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckExpectedSpConnectionAttributesAll(),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "virtual_entity_ids.0", "example1"),
@@ -76,7 +79,7 @@ func TestAccIdpSpConnection(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSpConnectionComplete(credential, envId, spConnectionId),
+				Config:            testAccSpConnectionComplete(spConnectionId),
 				ResourceName:      "pingfederate_idp_sp_connection." + spConnectionId,
 				ImportStateId:     spConnectionId,
 				ImportState:       true,
@@ -96,7 +99,7 @@ func TestAccIdpSpConnection(t *testing.T) {
 			},
 			{
 				// Back to Outbound Provision connection, minimal
-				Config: testAccSpConnectionOutboundProvision(credential, envId, spConnectionId),
+				Config: testAccSpConnectionOutboundProvision(spConnectionId),
 				Check:  testAccCheckExpectedSpConnectionAttributesOutboundProvision(),
 			},
 			{
@@ -113,7 +116,7 @@ func TestAccIdpSpConnection(t *testing.T) {
 			},
 			{
 				// Outbound provision connection, minimal
-				Config: testAccSpConnectionOutboundProvision(credential, envId, spConnectionId),
+				Config: testAccSpConnectionOutboundProvision(spConnectionId),
 				Check:  testAccCheckExpectedSpConnectionAttributesOutboundProvision(),
 			},
 		},
@@ -191,14 +194,14 @@ func baseHcl(resourceName string) string {
 	)
 }
 
-func outboundProvisionHcl(envId string) string {
+func outboundProvisionHcl() string {
 	return fmt.Sprintf(`
   outbound_provision = {
     type = "PingOne"
     target_settings = [
       {
         name  = "PINGONE_ENVIRONMENT"
-        value = "${pingfederate_pingone_connection.example.id}|%s"
+        value = "%s"
       }
     ]
     channels = [
@@ -262,7 +265,7 @@ func outboundProvisionHcl(envId string) string {
       }
     ]
   }
-  `, envId)
+  `, outboundEnvironmentSetting)
 }
 
 func wsTrustHcl() string {
@@ -483,26 +486,19 @@ sp_browser_sso = {
 `
 }
 
-func testAccSpConnectionOutboundProvision(credential, envId, resourceName string) string {
+func testAccSpConnectionOutboundProvision(resourceName string) string {
 	return fmt.Sprintf(`
-resource "pingfederate_pingone_connection" "example" {
-  name       = "CompleteSpConnTestEnv"
-  credential = "%s"
-  active     = true
-}
-
-resource "pingfederate_idp_sp_connection" "%[2]s" {
+resource "pingfederate_idp_sp_connection" "%[1]s" {
 	%s
 	%s
   %s
 }
-data "pingfederate_idp_sp_connection" "%[2]s" {
-  connection_id = pingfederate_idp_sp_connection.%[2]s.connection_id
-}`, credential,
-		resourceName,
+data "pingfederate_idp_sp_connection" "%[1]s" {
+  connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
+}`, resourceName,
 		baseHcl(resourceName),
 		baseCredentials(),
-		outboundProvisionHcl(envId),
+		outboundProvisionHcl(),
 	)
 }
 
@@ -623,27 +619,21 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 	)
 }
 
-func testAccSpConnectionComplete(credential, envId, resourceName string) string {
+func testAccSpConnectionComplete(resourceName string) string {
 	return fmt.Sprintf(`
-resource "pingfederate_pingone_connection" "example" {
-  name       = "CompleteSpConnTestEnv"
-  credential = "%s"
-  active     = true
-}
-resource "pingfederate_idp_sp_connection" "%[2]s" {
+resource "pingfederate_idp_sp_connection" "%[1]s" {
 		%s
 		%s
 		%s
 		%s
 		%s
 }
-data "pingfederate_idp_sp_connection" "%[2]s" {
-  connection_id = pingfederate_idp_sp_connection.%[2]s.connection_id
-}`, credential,
-		resourceName,
+data "pingfederate_idp_sp_connection" "%[1]s" {
+  connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
+}`, resourceName,
 		baseHcl(resourceName),
 		fullCredentials(),
-		outboundProvisionHcl(envId),
+		outboundProvisionHcl(),
 		spBrowserSSOHcl(),
 		wsTrustHcl(),
 	)

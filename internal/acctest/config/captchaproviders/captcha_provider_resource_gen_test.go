@@ -20,9 +20,22 @@ import (
 
 const captchaProviderProviderId = "captchaProviderProviderId"
 
+var testEnvConnId = ""
+
 func TestAccCaptchaProvider_RemovalDrift(t *testing.T) {
+	connId := os.Getenv("PF_TF_P1_CONNECTION_ID")
+	envId := os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
+	testEnvConnId = connId + "|" + envId
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		PreCheck: func() {
+			acctest.ConfigurationPreCheck(t)
+			if connId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the Captcha Provider acceptance test")
+			}
+			if envId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the Captcha Provider acceptance test")
+			}
+		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
@@ -45,18 +58,8 @@ func TestAccCaptchaProvider_RemovalDrift(t *testing.T) {
 }
 
 func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
-	credential := os.Getenv("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA")
-	envId := os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.ConfigurationPreCheck(t)
-			if credential == "" {
-				t.Fatal("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA must be set for the Captcha Provider acceptance test")
-			}
-			if envId == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the Captcha Provider acceptance test")
-			}
-		},
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
@@ -74,7 +77,7 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 			},
 			{
 				// Re-create with a complete model
-				Config: captchaProvider_CompleteHCL(credential, envId),
+				Config: captchaProvider_CompleteHCL(),
 				Check:  captchaProvider_CheckComputedValuesComplete(),
 			},
 			{
@@ -84,12 +87,12 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 			},
 			{
 				// Back to complete model
-				Config: captchaProvider_CompleteHCL(credential, envId),
+				Config: captchaProvider_CompleteHCL(),
 				Check:  captchaProvider_CheckComputedValuesComplete(),
 			},
 			{
 				// Test importing the resource
-				Config:                               captchaProvider_CompleteHCL(credential, envId),
+				Config:                               captchaProvider_CompleteHCL(),
 				ResourceName:                         "pingfederate_captcha_provider.example",
 				ImportStateId:                        captchaProviderProviderId,
 				ImportStateVerifyIdentifierAttribute: "provider_id",
@@ -134,16 +137,10 @@ resource "pingfederate_captcha_provider" "example" {
 }
 
 // Maximal HCL with all values set where possible
-func captchaProvider_CompleteHCL(credential, envId string) string {
+func captchaProvider_CompleteHCL() string {
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		// The PingOneProtectProvider was added in PF version 12.0+
 		return fmt.Sprintf(`
-resource "pingfederate_pingone_connection" "example" {
-  name       = "CaptchaAccTestEnv"
-  credential = "%s"
-  active     = true
-}
-
 resource "pingfederate_captcha_provider" "example" {
   provider_id = "%s"
   name        = "%s"
@@ -152,7 +149,7 @@ resource "pingfederate_captcha_provider" "example" {
     fields = [
       {
         name : "PingOne Environment"
-        value : "${pingfederate_pingone_connection.example.id}|%s"
+        value : "%s"
       },
       {
         name : "PingOne Risk Policy"
@@ -204,7 +201,7 @@ resource "pingfederate_captcha_provider" "example" {
     id = "com.pingidentity.adapters.pingone.protect.PingOneProtectProvider"
   }
 }
-`, credential, captchaProviderProviderId, captchaProviderProviderId, envId)
+`, captchaProviderProviderId, captchaProviderProviderId, testEnvConnId)
 	} else {
 		// For earlier versions use captcha v3
 		return fmt.Sprintf(`

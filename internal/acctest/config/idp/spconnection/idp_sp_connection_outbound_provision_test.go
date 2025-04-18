@@ -17,14 +17,16 @@ import (
 
 const spConnOutboundProvisionId = "outboundspconn"
 
+var pingOneConnection, pingOneEnvironment string
+
 func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
-	pingOneCredential := os.Getenv("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA")
-	pingOneEnvironment := os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
+	pingOneConnection = os.Getenv("PF_TF_P1_CONNECTION_ID")
+	pingOneEnvironment = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
-			if pingOneCredential == "" {
-				t.Fatal("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA must be set for the TestAccAuthenticationPoliciesFragment acceptance test")
+			if pingOneConnection == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the TestAccAuthenticationPoliciesFragment acceptance test")
 			}
 			if pingOneEnvironment == "" {
 				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the TestAccAuthenticationPoliciesFragment acceptance test")
@@ -37,32 +39,32 @@ func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: idpSpConnection_OutboundProvisionMinimalHCL(pingOneCredential, pingOneEnvironment),
+				Config: idpSpConnection_OutboundProvisionMinimalHCL(),
 				Check:  idpSpConnection_CheckComputedValuesOutboundProvisionMinimal(),
 			},
 			{
 				// Delete the minimal model
-				Config:  idpSpConnection_OutboundProvisionMinimalHCL(pingOneCredential, pingOneEnvironment),
+				Config:  idpSpConnection_OutboundProvisionMinimalHCL(),
 				Destroy: true,
 			},
 			{
 				// Re-create with a complete model
-				Config: idpSpConnection_OutboundProvisionCompleteHCL(pingOneCredential, pingOneEnvironment),
+				Config: idpSpConnection_OutboundProvisionCompleteHCL(),
 				Check:  idpSpConnection_CheckComputedValuesOutboundProvisionComplete(),
 			},
 			{
 				// Back to minimal model
-				Config: idpSpConnection_OutboundProvisionMinimalHCL(pingOneCredential, pingOneEnvironment),
+				Config: idpSpConnection_OutboundProvisionMinimalHCL(),
 				Check:  idpSpConnection_CheckComputedValuesOutboundProvisionMinimal(),
 			},
 			{
 				// Back to complete model
-				Config: idpSpConnection_OutboundProvisionCompleteHCL(pingOneCredential, pingOneEnvironment),
+				Config: idpSpConnection_OutboundProvisionCompleteHCL(),
 				Check:  idpSpConnection_CheckComputedValuesOutboundProvisionComplete(),
 			},
 			{
 				// Test importing the resource
-				Config:            idpSpConnection_OutboundProvisionCompleteHCL(pingOneCredential, pingOneEnvironment),
+				Config:            idpSpConnection_OutboundProvisionCompleteHCL(),
 				ResourceName:      "pingfederate_idp_sp_connection.example",
 				ImportStateId:     spConnOutboundProvisionId,
 				ImportState:       true,
@@ -75,14 +77,8 @@ func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
 }
 
 // Minimal HCL with only required values set
-func idpSpConnection_OutboundProvisionMinimalHCL(credential, envId string) string {
+func idpSpConnection_OutboundProvisionMinimalHCL() string {
 	return fmt.Sprintf(`
-resource "pingfederate_pingone_connection" "example" {
-  name       = "OutboundSpConnTestEnv"
-  credential = "%s"
-  active     = true
-}
-
 resource "pingfederate_idp_sp_connection" "example" {
   connection_id = "%s"
   credentials = {
@@ -330,24 +326,18 @@ resource "pingfederate_idp_sp_connection" "example" {
     target_settings = [
       {
         name  = "PINGONE_ENVIRONMENT"
-        value = "${pingfederate_pingone_connection.example.id}|%s"
+        value = "%s|%s"
       },
     ]
     type = "PingOne"
   }
 }
-`, credential, spConnOutboundProvisionId, envId)
+`, spConnOutboundProvisionId, pingOneConnection, pingOneEnvironment)
 }
 
 // Maximal HCL with all values set where possible
-func idpSpConnection_OutboundProvisionCompleteHCL(credential, envId string) string {
+func idpSpConnection_OutboundProvisionCompleteHCL() string {
 	return fmt.Sprintf(`
-resource "pingfederate_pingone_connection" "example" {
-  name       = "OutboundSpConnTestEnv"
-  credential = "%s"
-  active     = true
-}
-
 resource "pingfederate_idp_sp_connection" "example" {
   active                 = false
   application_icon_url   = "https://example.com/logo.png"
@@ -956,7 +946,7 @@ resource "pingfederate_idp_sp_connection" "example" {
       },
       {
         name  = "PINGONE_ENVIRONMENT"
-        value = "${pingfederate_pingone_connection.example.id}|%s"
+        value = "%s|%s"
       },
       {
         name  = "PROVISION_DISABLED_USERS_PROV_OPT"
@@ -983,7 +973,7 @@ resource "pingfederate_idp_sp_connection" "example" {
   }
   virtual_entity_ids = ["ex1", "ex2"]
 }
-`, credential, spConnOutboundProvisionId, envId)
+`, spConnOutboundProvisionId, pingOneConnection, pingOneEnvironment)
 }
 
 // Validate any computed values when applying minimal HCL
