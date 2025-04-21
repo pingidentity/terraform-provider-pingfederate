@@ -201,66 +201,66 @@ resource "pingfederate_local_identity_profile" "example" {
   }
   auth_source_update_policy = {
     retain_attributes = true
-    store_attributes = true
+    store_attributes  = true
     update_attributes = true
-    update_interval = 10
+    update_interval   = 10
   }
   auth_sources = [
     {
-      id = "example"
+      id     = "example"
       source = "example"
     },
     {
-      id = "test",
+      id     = "test",
       source = "test"
     }
   ]
   data_store_config = {
     auxiliary_object_classes = ["objectClass"]
-    base_dn = "dc=example,dc=com"
-    create_pattern = "uid=$${mail}"
+    base_dn                  = "dc=example,dc=com"
+    create_pattern           = "uid=$${mail}"
     data_store_mapping = {
       "entryUUID" = {
         metadata = {
-          "key": "value"
+          "key" : "value"
         }
         name = "entryUUID"
         type = "LDAP"
       }
-	"cn" = {
-		type = "LDAP"
-		name = "cn"
-		metadata = {}
-	}
+      "cn" = {
+        type     = "LDAP"
+        name     = "cn"
+        metadata = {}
+      }
 
-	"mail" = {
-		type = "LDAP"
-		name = "mail"
-		metadata = {}
-	}
+      "mail" = {
+        type     = "LDAP"
+        name     = "mail"
+        metadata = {}
+      }
     }
     data_store_ref = {
       id = "pingdirectory"
     }
     object_class = "inetOrgPerson"
-    type = "LDAP"
+    type         = "LDAP"
   }
   email_verification_config = {
-    allowed_otp_character_set = "23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz"
-    email_verification_enabled = true
-    email_verification_error_template_name = "local.identity.email.test.verification.error.html"
-    email_verification_otp_template_name = "message-template-email-test-ownership-verification.html"
+    allowed_otp_character_set                = "23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz"
+    email_verification_enabled               = true
+    email_verification_error_template_name   = "local.identity.email.test.verification.error.html"
+    email_verification_otp_template_name     = "message-template-email-test-ownership-verification.html"
     email_verification_success_template_name = "local.identity.email.test.verification.success.html"
-    email_verification_type = "OTP"
-    field_for_email_to_verify = "mail"
-    field_storing_verification_status = "cn"
+    email_verification_type                  = "OTP"
+    field_for_email_to_verify                = "mail"
+    field_storing_verification_status        = "cn"
     notification_publisher_ref = {
       id = pingfederate_notification_publisher.example.id
     }
-    otp_length = 11
-    otp_retry_attempts = 4
-    otp_time_to_live = 1435
-    require_verified_email = true
+    otp_length                 = 11
+    otp_retry_attempts         = 4
+    otp_time_to_live           = 1435
+    require_verified_email     = true
     verify_email_template_name = true
   }
   field_config = {
@@ -285,8 +285,8 @@ resource "pingfederate_local_identity_profile" "example" {
         registration_page_field = false
         profile_page_field      = true
         attributes = {
-"Unique ID Field" = false,
-"Mask Log Values" = false,
+          "Unique ID Field" = false,
+          "Mask Log Values" = false,
         }
       },
       {
@@ -296,11 +296,11 @@ resource "pingfederate_local_identity_profile" "example" {
         registration_page_field = false
         profile_page_field      = true
         attributes = {
-"Read-Only" = false,
-"Must Pick One" = false,
-"Mask Log Values" = false,
+          "Read-Only"       = false,
+          "Must Pick One"   = false,
+          "Mask Log Values" = false,
         }
-		options = ["option1, option2"]
+        options = ["option1, option2"]
       },
     ]
     strip_space_from_unique_field = true
