@@ -327,6 +327,10 @@ resource "pingfederate_local_identity_profile" "example" {
     create_before_destroy = true
   }
 }
+
+data "pingfederate_local_identity_profile" "example" {
+  profile_id = pingfederate_local_identity_profile.example.id
+}
 `, profileId)
 }
 
