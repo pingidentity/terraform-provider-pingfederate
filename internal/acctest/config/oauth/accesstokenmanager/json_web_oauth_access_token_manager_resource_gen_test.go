@@ -120,7 +120,7 @@ resource "pingfederate_oauth_access_token_manager" "example" {
     coreAttributes = []
     extended_attributes = [
       {
-        name         = "extended_contract"
+        name = "extended_contract"
       }
     ]
   }
@@ -175,7 +175,7 @@ attributes = [
 resource "pingfederate_oauth_access_token_manager" "example" {
   manager_id = "%s"
   access_control_settings = {
-    allowed_clients = []
+    allowed_clients  = []
     restrict_clients = false
   }
   attribute_contract = {
@@ -371,13 +371,13 @@ resource "pingfederate_oauth_access_token_manager" "example" {
   }
   session_validation_settings = {
     check_session_revocation_status = true
-    check_valid_authn_session = true
-    include_session_id = true
-    update_authn_session_activity = true
+    check_valid_authn_session       = true
+    include_session_id              = true
+    update_authn_session_activity   = true
   }
   %s
 }
-  data "pingfederate_oauth_access_token_manager" "example" {
+data "pingfederate_oauth_access_token_manager" "example" {
   manager_id = pingfederate_oauth_access_token_manager.example.id
 }
 `, atmId, versionedFields, additionalVersionedHcl)
