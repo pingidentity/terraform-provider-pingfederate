@@ -154,7 +154,28 @@ func oauthClient_CompleteHCL() string {
 		`
 	}
 	return fmt.Sprintf(`
+resource "pingfederate_extended_properties" "example" {
+  items = [
+    {
+      name         = "authNexp",
+      description  = "Authentication Experience [Single_Factor | Internal | ID-First | Multi_Factor]",
+      multi_valued = false
+    },
+    {
+      name         = "useAuthnApi",
+      description  = "Use the AuthN API",
+      multi_valued = false
+    },
+    {
+      name         = "test"
+      description  = "test"
+      multi_valued = false
+    }
+  ]
+}
+
 resource "pingfederate_oauth_client" "example" {
+  depends_on = [pingfederate_extended_properties.example]
   client_id                                    = "%s"
   allow_authentication_api_init                = true
   bypass_activation_code_confirmation_override = false
