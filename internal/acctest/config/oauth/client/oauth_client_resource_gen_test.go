@@ -175,7 +175,7 @@ resource "pingfederate_extended_properties" "example" {
 }
 
 resource "pingfederate_oauth_client" "example" {
-  depends_on = [pingfederate_extended_properties.example]
+  depends_on                                   = [pingfederate_extended_properties.example]
   client_id                                    = "%s"
   allow_authentication_api_init                = true
   bypass_activation_code_confirmation_override = false
