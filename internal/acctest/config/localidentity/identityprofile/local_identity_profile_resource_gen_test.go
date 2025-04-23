@@ -96,6 +96,54 @@ resource "pingfederate_authentication_policy_contract" "example" {
   name                = "My Contract"
 }
 
+resource "pingfederate_notification_publisher" "example" {
+  configuration = {
+    fields = [
+      {
+        name  = "Connection Timeout"
+        value = "30"
+      },
+      {
+        name  = "Email Server"
+        value = "example.com"
+      },
+      {
+        name  = "Enable SMTP Debugging Messages"
+        value = "false"
+      },
+      {
+        name  = "Encryption Method"
+        value = "NONE"
+      },
+      {
+        name  = "From Address"
+        value = "example@pingidentity.com"
+      },
+      {
+        name  = "SMTP Port"
+        value = "25"
+      },
+      {
+        name  = "SMTPS Port"
+        value = "465"
+      },
+      {
+        name  = "UTF-8 Message Header Support"
+        value = "false"
+      },
+      {
+        name  = "Verify Hostname"
+        value = "true"
+      },
+    ]
+  }
+  name = "examplePub"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.email.SmtpNotificationPlugin"
+  }
+  publisher_id = "examplePub"
+}
+
 resource "pingfederate_local_identity_profile" "example" {
   profile_id = "%s"
   apc_id = {
