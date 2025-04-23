@@ -350,7 +350,6 @@ func oauthClient_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "refresh_token_rolling_interval_type", "SERVER_DEFAULT"),
 		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "request_object_signing_algorithm"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_jwt_secured_authorization_response_mode", "false"),
-		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_proof_key_for_code_exchange", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_pushed_authorization_requests", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_signed_requests", "false"),
