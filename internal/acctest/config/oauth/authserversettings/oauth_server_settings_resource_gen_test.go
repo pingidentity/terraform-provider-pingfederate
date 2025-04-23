@@ -371,20 +371,56 @@ resource "pingfederate_oauth_server_settings" "example" {
 }
 
 func checkPf121ComputedAttrs() resource.TestCheckFunc {
+	versionedChecks := []resource.TestCheckFunc{}
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_require_nonce", "false"),
+			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_lifetime_seconds", "120"),
+			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_enforce_replay_prevention", "false"),
+		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_require_nonce"),
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_lifetime_seconds"),
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_enforce_replay_prevention"),
+		)
+	}
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "bypass_authorization_for_approved_consents", "false"),
+			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "consent_lifetime_days", "-1"),
+		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "bypass_authorization_for_approved_consents"),
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "consent_lifetime_days"),
+		)
+	}
 	if acctest.VersionAtLeast(version.PingFederate1210) {
-		return resource.ComposeTestCheckFunc(
+		versionedChecks = append(versionedChecks,
 			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "require_offline_access_scope_to_issue_refresh_tokens", "false"),
 			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "offline_access_require_consent_prompt", "false"),
 			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "refresh_rolling_interval_time_unit", "HOURS"),
 			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "enable_cookieless_user_authorization_authentication_api", "false"),
 		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "require_offline_access_scope_to_issue_refresh_tokens"),
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "offline_access_require_consent_prompt"),
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "refresh_rolling_interval_time_unit"),
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "enable_cookieless_user_authorization_authentication_api"),
+		)
 	}
-	return resource.ComposeTestCheckFunc(
-		resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "require_offline_access_scope_to_issue_refresh_tokens"),
-		resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "offline_access_require_consent_prompt"),
-		resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "refresh_rolling_interval_time_unit"),
-		resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "enable_cookieless_user_authorization_authentication_api"),
-	)
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "return_id_token_on_open_id_with_device_authz_grant", "false"),
+		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "return_id_token_on_open_id_with_device_authz_grant"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(versionedChecks...)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -399,16 +435,11 @@ func oauthServerSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "approved_scopes_attribute"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "atm_id_for_oauth_grant_management", ""),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "bypass_activation_code_confirmation", "false"),
-		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "bypass_authorization_for_approved_consents", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "bypass_authorization_for_approved_grants", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "client_secret_retention_period", "0"),
-		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "consent_lifetime_days", "-1"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "default_scope_description", ""),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "device_polling_interval", "5"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "disallow_plain_pkce", "false"),
-		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_enforce_replay_prevention", "false"),
-		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_lifetime_seconds", "120"),
-		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_require_nonce", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "exclusive_scope_groups.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "exclusive_scopes.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "include_issuer_in_authorization_response", "false"),
@@ -426,7 +457,6 @@ func oauthServerSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "persistent_grant_reuse_grant_types.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "refresh_token_rolling_grace_period", "60"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "registered_authorization_path", ""),
-		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "return_id_token_on_open_id_with_device_authz_grant", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "roll_refresh_token_values", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "scope_for_oauth_grant_management", ""),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "scope_groups.#", "0"),

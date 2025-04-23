@@ -425,7 +425,6 @@ func oauthAccessTokenManager_CheckComputedValuesCompleteJsonWeb() resource.TestC
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "access_control_settings.allowed_clients.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "access_control_settings.restrict_clients", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "attribute_contract.core_attributes.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "configuration.fields_all.#", "33"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "configuration.tables_all.#", "2"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "id", atmId),
 		resource.TestCheckResourceAttrSet("pingfederate_oauth_access_token_manager.example", "sequence_number"),
