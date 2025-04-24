@@ -83,10 +83,6 @@ func TestAccOauthAccessTokenManager_MinimalMaximalInternallyManaged(t *testing.T
 				ImportStateVerifyIdentifierAttribute: "manager_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})

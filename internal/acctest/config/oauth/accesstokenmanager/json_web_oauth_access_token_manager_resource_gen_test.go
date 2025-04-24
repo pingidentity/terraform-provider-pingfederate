@@ -57,9 +57,9 @@ func TestAccOauthAccessTokenManager_MinimalMaximalJsonWeb(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "manager_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
+				// sensitive fields can't be imported
 				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
+					"configuration.tables.0.rows.0.sensitive_fields",
 				},
 			},
 		},
