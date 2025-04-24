@@ -10,14 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const validatorId = "testValidatorId"
-
-func TestAccPasswordCredentialValidator_RadiusRemovalDrift(t *testing.T) {
+func TestAccPasswordCredentialValidator_SimpleRemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -27,7 +24,7 @@ func TestAccPasswordCredentialValidator_RadiusRemovalDrift(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: passwordCredentialValidator_RadiusMinimalHCL(),
+				Config: passwordCredentialValidator_SimpleMinimalHCL(),
 			},
 			{
 				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
@@ -41,7 +38,7 @@ func TestAccPasswordCredentialValidator_RadiusRemovalDrift(t *testing.T) {
 	})
 }
 
-func TestAccPasswordCredentialValidator_RadiusMinimalMaximal(t *testing.T) {
+func TestAccPasswordCredentialValidator_SimpleMinimalMaximal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -51,32 +48,32 @@ func TestAccPasswordCredentialValidator_RadiusMinimalMaximal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
-				Config: passwordCredentialValidator_RadiusMinimalHCL(),
-				Check:  passwordCredentialValidator_RadiusCheckComputedValuesMinimal(),
+				Config: passwordCredentialValidator_SimpleMinimalHCL(),
+				Check:  passwordCredentialValidator_SimpleCheckComputedValuesMinimal(),
 			},
 			{
 				// Delete the minimal model
-				Config:  passwordCredentialValidator_RadiusMinimalHCL(),
+				Config:  passwordCredentialValidator_SimpleMinimalHCL(),
 				Destroy: true,
 			},
 			{
 				// Re-create with a complete model
-				Config: passwordCredentialValidator_RadiusCompleteHCL(),
-				Check:  passwordCredentialValidator_RadiusCheckComputedValuesComplete(),
+				Config: passwordCredentialValidator_SimpleCompleteHCL(),
+				Check:  passwordCredentialValidator_SimpleCheckComputedValuesComplete(),
 			},
 			{
 				// Back to minimal model
-				Config: passwordCredentialValidator_RadiusMinimalHCL(),
-				Check:  passwordCredentialValidator_RadiusCheckComputedValuesMinimal(),
+				Config: passwordCredentialValidator_SimpleMinimalHCL(),
+				Check:  passwordCredentialValidator_SimpleCheckComputedValuesMinimal(),
 			},
 			{
 				// Back to complete model
-				Config: passwordCredentialValidator_RadiusCompleteHCL(),
-				Check:  passwordCredentialValidator_RadiusCheckComputedValuesComplete(),
+				Config: passwordCredentialValidator_SimpleCompleteHCL(),
+				Check:  passwordCredentialValidator_SimpleCheckComputedValuesComplete(),
 			},
 			{
 				// Test importing the resource
-				Config:                               passwordCredentialValidator_RadiusCompleteHCL(),
+				Config:                               passwordCredentialValidator_SimpleCompleteHCL(),
 				ResourceName:                         "pingfederate_password_credential_validator.example",
 				ImportStateId:                        validatorId,
 				ImportStateVerifyIdentifierAttribute: "validator_id",
@@ -92,44 +89,44 @@ func TestAccPasswordCredentialValidator_RadiusMinimalMaximal(t *testing.T) {
 }
 
 // Minimal HCL with only required values set
-func passwordCredentialValidator_RadiusMinimalHCL() string {
+func passwordCredentialValidator_SimpleMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validator" "example" {
   validator_id = "%s"
   configuration = {
     tables = [
       {
-        name = "RADIUS Servers"
+        name = "Users"
         rows = [
           {
             fields = [
               {
-                name  = "Hostname"
-                value = "localhost"
+                name  = "Username"
+                value = "example"
               },
               {
-                name  = "Authentication Port"
-                value = "1234"
-              },
-              {
-                name  = "Authentication Protocol"
-                value = "PAP"
-              },
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
             ]
             sensitive_fields = [
               {
-                name  = "Shared Secret"
-                value = "mysecret"
-              }
+                name  = "Password"
+                value = "2FederateM0re"
+              },
+              {
+                name  = "Confirm Password"
+                value = "2FederateM0re"
+              },
             ]
-          }
-        ]
+          },
+        ],
       }
-    ],
+    ]
   }
   name = "mydude"
   plugin_descriptor_ref = {
-    id = "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator"
+    id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
   attribute_contract = {}
 }
@@ -137,84 +134,86 @@ resource "pingfederate_password_credential_validator" "example" {
 }
 
 // Maximal HCL with all values set where possible
-func passwordCredentialValidator_RadiusCompleteHCL() string {
+func passwordCredentialValidator_SimpleCompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validator" "example" {
   validator_id = "%s"
   configuration = {
-    fields = [
-      {
-        name  = "NAS Identifier"
-        value = "PingFederate"
-      },
-      {
-        name  = "Timeout"
-        value = "123"
-      },
-      {
-        name  = "Retry Count"
-        value = "3"
-      },
-      {
-        name  = "Allow Challenge Retries after Access-Reject"
-        value = "false"
-      }
-    ]
     tables = [
       {
-        name = "RADIUS Servers"
+        name = "Users"
         rows = [
           {
-            default_row = false
             fields = [
               {
-                name  = "Hostname"
-                value = "localhost"
+                name  = "Username"
+                value = "example"
               },
               {
-                name  = "Authentication Port"
-                value = "1234"
-              },
-              {
-                name  = "Authentication Protocol"
-                value = "PAP"
-              },
+                name  = "Relax Password Requirements"
+                value = "false"
+              }
             ]
             sensitive_fields = [
               {
-                name  = "Shared Secret"
-                value = "mysecret"
+                name  = "Password"
+                value = "2FederateM0re"
+              },
+              {
+                name  = "Confirm Password"
+                value = "2FederateM0re"
+              },
+            ]
+            default_row = false
+          },
+          {
+            fields = [
+              {
+                name  = "Username"
+                value = "example2"
+              },
+              {
+                name  = "Relax Password Requirements"
+                value = "false"
               }
             ]
+            sensitive_fields = [
+              {
+                name  = "Password"
+                value = "2FederateM0re"
+              },
+              {
+                name  = "Confirm Password"
+                value = "2FederateM0re"
+              },
+            ]
+            default_row = false
           }
-        ]
+        ],
       }
-    ],
+    ]
   }
   name = "mydude"
   plugin_descriptor_ref = {
-    id = "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator"
+    id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
   attribute_contract = {
-    extended_attributes = [
-      {
-        name = "contract"
-      }
-    ]
+    extended_attributes = []
   }
 }
 `, validatorId)
 }
 
 // Validate any computed values when applying minimal HCL
-func passwordCredentialValidator_RadiusCheckComputedValuesMinimal() resource.TestCheckFunc {
+func passwordCredentialValidator_SimpleCheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "attribute_contract.core_attributes.0.name", "username"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "attribute_contract.core_attributes.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "attribute_contract.extended_attributes.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.fields_all.#", "4"),
+		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.fields_all.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.default_row", "false"),
 		resource.TestCheckResourceAttrSet("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.sensitive_fields.0.encrypted_value"),
+		resource.TestCheckResourceAttrSet("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.sensitive_fields.1.encrypted_value"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.0.rows.0.fields.#", "4"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "id", validatorId),
@@ -222,33 +221,15 @@ func passwordCredentialValidator_RadiusCheckComputedValuesMinimal() resource.Tes
 }
 
 // Validate any computed values when applying complete HCL
-func passwordCredentialValidator_RadiusCheckComputedValuesComplete() resource.TestCheckFunc {
+func passwordCredentialValidator_SimpleCheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "attribute_contract.core_attributes.0.name", "username"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "attribute_contract.core_attributes.#", "1"),
-		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.fields_all.#", "4"),
+		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.fields_all.#", "0"),
+		resource.TestCheckResourceAttrSet("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.sensitive_fields.0.encrypted_value"),
+		resource.TestCheckResourceAttrSet("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.sensitive_fields.1.encrypted_value"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.0.rows.0.fields.#", "4"),
-		resource.TestCheckResourceAttrSet("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.sensitive_fields.0.encrypted_value"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "id", validatorId),
 	)
-}
-
-// Delete the resource
-func passwordCredentialValidator_Delete(t *testing.T) {
-	testClient := acctest.TestClient()
-	_, err := testClient.PasswordCredentialValidatorsAPI.DeletePasswordCredentialValidator(acctest.TestBasicAuthContext(), validatorId).Execute()
-	if err != nil {
-		t.Fatalf("Failed to delete config: %v", err)
-	}
-}
-
-// Test that any objects created by the test are destroyed
-func passwordCredentialValidator_CheckDestroy(s *terraform.State) error {
-	testClient := acctest.TestClient()
-	_, err := testClient.PasswordCredentialValidatorsAPI.DeletePasswordCredentialValidator(acctest.TestBasicAuthContext(), validatorId).Execute()
-	if err == nil {
-		return fmt.Errorf("password_credential_validator still exists after tests. Expected it to be destroyed")
-	}
-	return nil
 }
