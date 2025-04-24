@@ -194,6 +194,20 @@ func openidConnectPolicy_CompleteHCL() string {
 	}
 
 	return fmt.Sprintf(`
+resource "pingfederate_oauth_server_settings" "example" {
+  authorization_code_entropy = 30
+  authorization_code_timeout = 60
+  refresh_rolling_interval   = 2
+  refresh_token_length       = 50
+  scopes = [
+    {
+      name        = "email"
+      description = "email scope"
+      dynamic     = false
+    }
+  ]
+}
+
 resource "pingfederate_oauth_access_token_manager" "example" {
   manager_id = "oidcJsonWebTokenExample"
   name       = "oidcJsonWebTokenExample"
@@ -259,7 +273,8 @@ resource "pingfederate_oauth_access_token_manager" "example" {
 }
 
 resource "pingfederate_openid_connect_policy" "example" {
-  policy_id = "%s"
+  depends_on = [pingfederate_oauth_server_settings.example]
+  policy_id  = "%s"
   access_token_manager_ref = {
     id = pingfederate_oauth_access_token_manager.example.id
   }
