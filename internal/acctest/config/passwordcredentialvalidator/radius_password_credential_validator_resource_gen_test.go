@@ -214,6 +214,7 @@ func passwordCredentialValidator_RadiusCheckComputedValuesMinimal() resource.Tes
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "attribute_contract.extended_attributes.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.fields_all.#", "4"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.default_row", "false"),
+		resource.TestCheckResourceAttrSet("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.sensitive_fields.0.encrypted_value"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.0.rows.0.fields.#", "4"),
 	)
@@ -227,6 +228,7 @@ func passwordCredentialValidator_RadiusCheckComputedValuesComplete() resource.Te
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.fields_all.#", "4"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_password_credential_validator.example", "configuration.tables_all.0.rows.0.fields.#", "4"),
+		resource.TestCheckResourceAttrSet("pingfederate_password_credential_validator.example", "configuration.tables.0.rows.0.sensitive_fields.0.encrypted_value"),
 	)
 }
 

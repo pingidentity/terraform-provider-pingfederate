@@ -98,8 +98,12 @@ func readFieldsResponse(fields []client.ConfigField, planFields, planSensitiveFi
 			planFieldObj := planField.(types.Object)
 			plannedSensitiveFieldsValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
 				planFieldObj.Attributes()["value"].(types.String).ValueStringPointer()
+			var encryptedValuePtr *string
+			if !planFieldObj.Attributes()["encrypted_value"].IsUnknown() {
+				encryptedValuePtr = planFieldObj.Attributes()["encrypted_value"].(types.String).ValueStringPointer()
+			}
 			plannedSensitiveFieldsEncryptedValues[planFieldObj.Attributes()["name"].(types.String).ValueString()] =
-				planFieldObj.Attributes()["encrypted_value"].(types.String).ValueStringPointer()
+				encryptedValuePtr
 		}
 	}
 
