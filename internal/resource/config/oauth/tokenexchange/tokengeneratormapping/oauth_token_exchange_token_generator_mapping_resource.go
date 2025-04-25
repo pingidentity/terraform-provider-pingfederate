@@ -167,6 +167,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Con
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	//TODO right here
 	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
 	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
 	if attributeContractFulfillmentErr != nil {

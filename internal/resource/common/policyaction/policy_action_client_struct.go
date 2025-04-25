@@ -22,10 +22,12 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	attrs := object.Attributes()
 	apcMappingPolicyAction, ok := attrs["apc_mapping_policy_action"]
 	if ok && internaltypes.IsDefined(apcMappingPolicyAction) {
+		//TODO fully build this
 		err := json.Unmarshal([]byte(internaljson.FromValue(apcMappingPolicyAction, true)), &result.ApcMappingPolicyAction)
 		if err != nil {
 			return nil, err
 		}
+		//result.ApcMappingPolicyAction.AttributeMapping.AttributeContractFulfillment
 		attributeSources, ok := apcMappingPolicyAction.(types.Object).Attributes()["attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
 			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.Set))
@@ -47,7 +49,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		return &result, nil
 	}
 	authnSourcePolicyAction, ok := attrs["authn_source_policy_action"]
-	if ok && internaltypes.IsDefined(authnSourcePolicyAction) {
+	if ok && internaltypes.IsDefined(authnSourcePolicyAction) { //TODO fully build this
 		err := json.Unmarshal([]byte(internaljson.FromValue(authnSourcePolicyAction, true)), &result.AuthnSourcePolicyAction)
 		if err != nil {
 			return nil, err
@@ -74,7 +76,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		return &result, nil
 	}
 	fragmentPolicyAction, ok := attrs["fragment_policy_action"]
-	if ok && internaltypes.IsDefined(fragmentPolicyAction) {
+	if ok && internaltypes.IsDefined(fragmentPolicyAction) { //TODO fully build this
 		err := json.Unmarshal([]byte(internaljson.FromValue(fragmentPolicyAction, true)), &result.FragmentPolicyAction)
 		if err != nil {
 			return nil, err
@@ -92,7 +94,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		return &result, nil
 	}
 	localIdentityMappingPolicyAction, ok := attrs["local_identity_mapping_policy_action"]
-	if ok && internaltypes.IsDefined(localIdentityMappingPolicyAction) {
+	if ok && internaltypes.IsDefined(localIdentityMappingPolicyAction) { //TODO fully build this
 		err := json.Unmarshal([]byte(internaljson.FromValue(localIdentityMappingPolicyAction, true)), &result.LocalIdentityMappingPolicyAction)
 		if err != nil {
 			return nil, err

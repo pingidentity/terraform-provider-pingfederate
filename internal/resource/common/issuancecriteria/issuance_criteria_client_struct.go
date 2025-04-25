@@ -12,6 +12,7 @@ import (
 )
 
 func ConditionalCriteriaClientStruct(issuanceCriteria types.Object) ([]client.ConditionalIssuanceCriteriaEntry, error) {
+	//TODO build this
 	conditionalCriteria := []client.ConditionalIssuanceCriteriaEntry{}
 	conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["conditional_criteria"].(types.Set), true)), &conditionalCriteria)
 	if conditionalCriteriaErr != nil {
