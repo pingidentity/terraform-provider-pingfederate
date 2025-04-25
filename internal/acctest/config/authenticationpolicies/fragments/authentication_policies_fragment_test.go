@@ -224,7 +224,7 @@ resource "pingfederate_authentication_policies_fragment" "%[1]s" {
                   source = {
                     type = "EXPRESSION"
                   },
-                  value = "fullName"
+                  value = "'test1|test2|test3'.split(\"\\\\|\")[1]"
                 }
                 "photo" : {
                   source = {
