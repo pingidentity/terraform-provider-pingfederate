@@ -148,10 +148,7 @@ func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.Id
 	// application_name
 	result.ApplicationName = model.ApplicationName.ValueStringPointer()
 	// attribute_contract_fulfillment
-	result.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
-	if err != nil {
-		return nil, err
-	}
+	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
 	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)

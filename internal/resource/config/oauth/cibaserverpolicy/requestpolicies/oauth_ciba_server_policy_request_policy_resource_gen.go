@@ -266,10 +266,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 	if !model.IdentityHintContractFulfillment.IsNull() && !model.IdentityHintContractFulfillment.IsUnknown() {
 		identityHintContractFulfillmentValue := &client.AttributeMapping{}
 		identityHintContractFulfillmentAttrs := model.IdentityHintContractFulfillment.Attributes()
-		identityHintContractFulfillmentValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(identityHintContractFulfillmentAttrs["attribute_contract_fulfillment"].(types.Map))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_contract_fulfillment: "+err.Error())
-		}
+		identityHintContractFulfillmentValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(identityHintContractFulfillmentAttrs["attribute_contract_fulfillment"].(types.Map))
 		identityHintContractFulfillmentValue.AttributeSources, err = attributesources.ClientStruct(identityHintContractFulfillmentAttrs["attribute_sources"].(types.Set))
 		if err != nil {
 			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())
@@ -285,10 +282,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 	if !model.IdentityHintMapping.IsNull() {
 		identityHintMappingValue := &client.AttributeMapping{}
 		identityHintMappingAttrs := model.IdentityHintMapping.Attributes()
-		identityHintMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(identityHintMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_contract_fulfillment: "+err.Error())
-		}
+		identityHintMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(identityHintMappingAttrs["attribute_contract_fulfillment"].(types.Map))
 		identityHintMappingValue.AttributeSources, err = attributesources.ClientStruct(identityHintMappingAttrs["attribute_sources"].(types.Set))
 		if err != nil {
 			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())

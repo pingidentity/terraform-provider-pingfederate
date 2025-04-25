@@ -190,10 +190,7 @@ func (model *oauthAccessTokenMappingResourceModel) buildClientStruct() (*client.
 	result.AccessTokenManagerRef = accessTokenManagerRefValue
 
 	// attribute_contract_fulfillment
-	result.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
-	if err != nil {
-		respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-	}
+	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
 	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)

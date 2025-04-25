@@ -7,8 +7,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 )
 
-// TODO remove err result
-func ClientStruct(attributeContractFulfillmentAttr types.Map) (map[string]client.AttributeFulfillmentValue, error) {
+func ClientStruct(attributeContractFulfillmentAttr types.Map) map[string]client.AttributeFulfillmentValue {
 	attributeContractFulfillment := map[string]client.AttributeFulfillmentValue{}
 	for key, fulfillment := range attributeContractFulfillmentAttr.Elements() {
 		fulfillmentValue := client.AttributeFulfillmentValue{}
@@ -20,5 +19,5 @@ func ClientStruct(attributeContractFulfillmentAttr types.Map) (map[string]client
 		fulfillmentValue.Source.Id = sourceAttrs["id"].(types.String).ValueStringPointer()
 		attributeContractFulfillment[key] = fulfillmentValue
 	}
-	return attributeContractFulfillment, nil
+	return attributeContractFulfillment
 }

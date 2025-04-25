@@ -329,10 +329,7 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	// attribute_mapping
 	attributeMappingValue := client.AttributeMapping{}
 	attributeMappingAttrs := model.AttributeMapping.Attributes()
-	attributeMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-	if err != nil {
-		respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-	}
+	attributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
 	attributeMappingValue.AttributeSources, err = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.Set))
 	if err != nil {
 		respDiags.AddError("Error building client struct for attribute_sources", err.Error())

@@ -179,13 +179,9 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
-		return
-	}
+	attributeContractFulfillment := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	createSpAuthenticationPolicyContractMappingResource := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err = addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createSpAuthenticationPolicyContractMappingResource, plan)
+	err := addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createSpAuthenticationPolicyContractMappingResource, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the SP Authentication Policy Contract Mapping Resource: "+err.Error())
 		return
@@ -246,14 +242,10 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
-		return
-	}
+	attributeContractFulfillment := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	updateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingById(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString())
 	createUpdateRequest := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err = addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createUpdateRequest, plan)
+	err := addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for SP Authentication Policy Contract Mapping Resource: "+err.Error())
 		return

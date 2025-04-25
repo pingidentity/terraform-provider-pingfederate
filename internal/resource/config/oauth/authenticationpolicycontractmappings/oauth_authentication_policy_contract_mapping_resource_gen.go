@@ -100,10 +100,7 @@ func (model *oauthAuthenticationPolicyContractMappingResourceModel) buildClientS
 	result := &client.ApcToPersistentGrantMapping{}
 	var err error
 	// attribute_contract_fulfillment
-	result.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
-	if err != nil {
-		return nil, err
-	}
+	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
 	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)
