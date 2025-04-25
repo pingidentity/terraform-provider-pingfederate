@@ -2,6 +2,7 @@
 ### Bug fixes
 * Fixed an inconsistent result error that would occur when configuring certificates with no `id` value in the `pingfederate_idp_sp_connection` and `pingfederate_sp_idp_connection` resources. Also fixed a related inconsistent result failure that would occur when modifying the `id` of a certificate. ([#487](https://github.com/pingidentity/terraform-provider-pingfederate/pull/487))
 * Fixed plan validation logic in various resources that did not correctly handle unknown values, such as values that depend on the output of another resource. ([#488](https://github.com/pingidentity/terraform-provider-pingfederate/pull/488))
+* Fixed the `encrypted_value` fields of sensitive configuration fields not being correctly written to state.
 
 # v1.4.4 April 8, 2025
 ### Bug fixes

@@ -83,10 +83,6 @@ func TestAccAuthenticationSelector_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "selector_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
