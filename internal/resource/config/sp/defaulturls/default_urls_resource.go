@@ -119,7 +119,7 @@ func (r *defaultUrlsResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 
-	if internaltypes.IsDefined(plan.ConfirmIdpSlo) && internaltypes.IsDefined(plan.ConfirmSpSlo) && plan.ConfirmIdpSlo.ValueBool() != plan.ConfirmSpSlo.ValueBool() {
+	if !plan.ConfirmIdpSlo.IsUnknown() && !plan.ConfirmSpSlo.IsUnknown() && plan.ConfirmIdpSlo.ValueBool() != plan.ConfirmSpSlo.ValueBool() {
 		resp.Diagnostics.AddError(
 			providererror.InvalidAttributeConfiguration,
 			"`confirm_idp_slo` and `confirm_sp_slo` must be set to the same value")

@@ -590,7 +590,6 @@ func addOptionalLocalIdentityProfileFields(ctx context.Context, addRequest *clie
 	if internaltypes.IsDefined(plan.ProfileConfig) {
 		addRequest.ProfileConfig = client.NewProfileConfigWithDefaults()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ProfileConfig, false)), addRequest.ProfileConfig)
-		fmt.Println(err)
 		if err != nil {
 			return err
 		}
@@ -673,16 +672,19 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		emailVerificationAttributes := plan.EmailVerificationConfig.Attributes()
 		// Some defaults in the email verification config only apply if email verification is enabled
 		emailVerificationEnabled := emailVerificationAttributes["email_verification_enabled"].(types.Bool).ValueBool()
+		emailVerificationDisabled := !emailVerificationAttributes["email_verification_enabled"].IsUnknown() && !emailVerificationEnabled
 		// Some attributes only apply for certain email verification types
 		emailVerificationType := emailVerificationAttributes["email_verification_type"].(types.String)
 		isOTP := emailVerificationType.ValueString() == "OTP"
+		isNotOTP := !emailVerificationAttributes["email_verification_type"].IsUnknown() && !isOTP
 		isOTL := emailVerificationType.ValueString() == "OTL"
+		isNotOTL := !emailVerificationAttributes["email_verification_type"].IsUnknown() && !isOTL
 
 		// Set unknown email verification attributes to defaults
 		if emailVerificationAttributes["verify_email_template_name"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["verify_email_template_name"] = types.StringValue("message-template-email-ownership-verification.html")
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["verify_email_template_name"] = types.StringNull()
 			}
 		}
@@ -690,7 +692,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_success_template_name"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["email_verification_success_template_name"] = types.StringValue("local.identity.email.verification.success.html")
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["email_verification_success_template_name"] = types.StringNull()
 			}
 		}
@@ -698,7 +700,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_error_template_name"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["email_verification_error_template_name"] = types.StringValue("local.identity.email.verification.error.html")
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["email_verification_error_template_name"] = types.StringNull()
 			}
 		}
@@ -706,7 +708,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["require_verified_email"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["require_verified_email"] = types.BoolValue(false)
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["require_verified_email"] = types.BoolNull()
 			}
 		}
@@ -715,7 +717,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["allowed_otp_character_set"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["allowed_otp_character_set"] = types.StringValue("23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz")
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["allowed_otp_character_set"] = types.StringNull()
 			}
 		}
@@ -723,7 +725,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otp_time_to_live"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["otp_time_to_live"] = types.Int64Value(15)
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["otp_time_to_live"] = types.Int64Null()
 			}
 		}
@@ -731,7 +733,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otp_length"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["otp_length"] = types.Int64Value(8)
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["otp_length"] = types.Int64Null()
 			}
 		}
@@ -739,7 +741,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otp_retry_attempts"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["otp_retry_attempts"] = types.Int64Value(3)
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["otp_retry_attempts"] = types.Int64Null()
 			}
 		}
@@ -747,7 +749,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_otp_template_name"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["email_verification_otp_template_name"] = types.StringValue("local.identity.email.verification.otp.html")
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["email_verification_otp_template_name"] = types.StringNull()
 			}
 		}
@@ -756,7 +758,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_sent_template_name"].IsUnknown() {
 			if emailVerificationEnabled && isOTL {
 				emailVerificationAttributes["email_verification_sent_template_name"] = types.StringValue("local.identity.email.verification.sent.html")
-			} else {
+			} else if emailVerificationDisabled || isNotOTL {
 				emailVerificationAttributes["email_verification_sent_template_name"] = types.StringNull()
 			}
 		}
@@ -764,7 +766,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otl_time_to_live"].IsUnknown() {
 			if emailVerificationEnabled && isOTL {
 				emailVerificationAttributes["otl_time_to_live"] = types.Int64Value(1440)
-			} else {
+			} else if emailVerificationDisabled || isNotOTL {
 				emailVerificationAttributes["otl_time_to_live"] = types.Int64Null()
 			}
 		}
@@ -772,7 +774,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["require_verified_email_template_name"].IsUnknown() {
 			if emailVerificationEnabled && isOTL {
 				emailVerificationAttributes["require_verified_email_template_name"] = types.StringValue("local.identity.email.verification.required.html")
-			} else {
+			} else if emailVerificationDisabled || isNotOTL {
 				emailVerificationAttributes["require_verified_email_template_name"] = types.StringNull()
 			}
 		}
@@ -791,7 +793,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 			for _, field := range fields {
 				fieldObj := field.(types.Object)
 				fieldAttrs := fieldObj.Attributes()
-				if !fieldAttrs["attributes"].IsUnknown() {
+				if !internaltypes.IsDefined(fieldObj) || !fieldAttrs["attributes"].IsUnknown() {
 					fieldsWithDefaults = append(fieldsWithDefaults, fieldObj)
 					continue
 				}
