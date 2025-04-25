@@ -590,7 +590,6 @@ func addOptionalLocalIdentityProfileFields(ctx context.Context, addRequest *clie
 	if internaltypes.IsDefined(plan.ProfileConfig) {
 		addRequest.ProfileConfig = client.NewProfileConfigWithDefaults()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ProfileConfig, false)), addRequest.ProfileConfig)
-		fmt.Println(err)
 		if err != nil {
 			return err
 		}

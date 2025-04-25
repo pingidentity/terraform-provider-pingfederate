@@ -31,7 +31,7 @@ resource "pingfederate_incoming_proxy_settings" "incomingProxySettingsExample" {
 - `client_cert_chain_ssl_header_name` (String) While the proxy server is configured to pass client certificates as HTTP request headers, specify the chain header name here.
 - `client_cert_header_encoding_format` (String) Specify the encoding format of the client certificate header. The default value is `APACHE_MOD_SSL`. Supported values are `APACHE_MOD_SSL`, `NGINX`. Supported in PF version `12.2` and later.
 - `client_cert_ssl_header_name` (String) While the proxy server is configured to pass client certificates as HTTP request headers, specify the header name here.
-- `enable_client_cert_header_auth` (Boolean) Enable client certificate header authentication. Supported in PF version `12.2` and later.
+- `enable_client_cert_header_auth` (Boolean) Enable client certificate header authentication. Supported in PF version `12.2` and later. Default value is `false`.
 - `forwarded_host_header_index` (String) PingFederate combines multiple comma-separated header values into the same order that they are received. Define which hostname you want to use. Default is to use the last hostname.
 - `forwarded_host_header_name` (String) Globally specify the header name (for example, X-Forwarded-Host) where PingFederate should attempt to retrieve the hostname and port in all HTTP requests.
 - `forwarded_ip_address_header_index` (String) PingFederate combines multiple comma-separated header values into the same order that they are received. Define which IP address you want to use. Default is to use the last address.
