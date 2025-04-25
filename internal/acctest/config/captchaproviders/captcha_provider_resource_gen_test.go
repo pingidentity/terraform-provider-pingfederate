@@ -58,6 +58,14 @@ func TestAccCaptchaProvider_RemovalDrift(t *testing.T) {
 }
 
 func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
+	verifyIgnoreFields := []string{}
+	if !acctest.VersionAtLeast(version.PingFederate1200) {
+		// Sensitive values aren't returned by PF, and encrypted_value changes on GET,
+		// so they can't be verified.
+		// After 12.0.0, this test covers a different type of captcha provider that does not
+		// require sensitive fields in the complete HCL.
+		verifyIgnoreFields = append(verifyIgnoreFields, "configuration.sensitive_fields.0")
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -98,7 +106,7 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "provider_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// Sensitive values aren't returned by PF, so they can't be verified
+				ImportStateVerifyIgnore:              verifyIgnoreFields,
 			},
 		},
 	})
