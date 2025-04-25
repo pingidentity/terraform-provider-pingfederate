@@ -112,10 +112,7 @@ func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.I
 	}
 
 	// issuance_criteria
-	result.IssuanceCriteria, err = issuancecriteria.ClientStruct(model.IssuanceCriteria)
-	if err != nil {
-		return nil, err
-	}
+	result.IssuanceCriteria = issuancecriteria.ClientStruct(model.IssuanceCriteria)
 
 	// mapping_id
 	result.Id = model.MappingId.ValueString()

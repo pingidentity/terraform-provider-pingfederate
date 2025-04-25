@@ -334,10 +334,7 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	if err != nil {
 		respDiags.AddError("Error building client struct for attribute_sources", err.Error())
 	}
-	attributeMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(attributeMappingAttrs["issuance_criteria"].(types.Object))
-	if err != nil {
-		respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-	}
+	attributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(attributeMappingAttrs["issuance_criteria"].(types.Object))
 	result.AttributeMapping = attributeMappingValue
 
 	// id_token_lifetime

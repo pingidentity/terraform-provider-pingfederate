@@ -240,10 +240,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 		addRequest.AttributeMapping.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
 
 		issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
-		addRequest.AttributeMapping.IssuanceCriteria, err = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
-		if err != nil {
-			return err
-		}
+		addRequest.AttributeMapping.IssuanceCriteria = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
 
 		attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
 		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}

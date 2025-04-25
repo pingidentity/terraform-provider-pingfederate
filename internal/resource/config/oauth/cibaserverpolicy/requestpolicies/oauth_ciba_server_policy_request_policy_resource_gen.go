@@ -271,10 +271,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 		if err != nil {
 			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())
 		}
-		identityHintContractFulfillmentValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(identityHintContractFulfillmentAttrs["issuance_criteria"].(types.Object))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for issuance_criteria: "+err.Error())
-		}
+		identityHintContractFulfillmentValue.IssuanceCriteria = issuancecriteria.ClientStruct(identityHintContractFulfillmentAttrs["issuance_criteria"].(types.Object))
 		result.IdentityHintContractFulfillment = identityHintContractFulfillmentValue
 	}
 
@@ -287,10 +284,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 		if err != nil {
 			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())
 		}
-		identityHintMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(identityHintMappingAttrs["issuance_criteria"].(types.Object))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for issuance_criteria: "+err.Error())
-		}
+		identityHintMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(identityHintMappingAttrs["issuance_criteria"].(types.Object))
 		result.IdentityHintMapping = identityHintMappingValue
 	}
 

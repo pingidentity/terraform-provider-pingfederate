@@ -211,10 +211,7 @@ func (model *oauthAccessTokenMappingResourceModel) buildClientStruct() (*client.
 	result.Context = contextValue
 
 	// issuance_criteria
-	result.IssuanceCriteria, err = issuancecriteria.ClientStruct(model.IssuanceCriteria)
-	if err != nil {
-		respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-	}
+	result.IssuanceCriteria = issuancecriteria.ClientStruct(model.IssuanceCriteria)
 
 	// mapping_id
 	result.Id = model.MappingId.ValueStringPointer()

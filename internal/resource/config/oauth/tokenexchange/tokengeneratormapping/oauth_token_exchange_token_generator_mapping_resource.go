@@ -114,12 +114,7 @@ func addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx context.Contex
 	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {
-		addRequest.IssuanceCriteria = client.NewIssuanceCriteria()
-		var issuanceCriteriaErr error
-		addRequest.IssuanceCriteria, issuanceCriteriaErr = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
-		if issuanceCriteriaErr != nil {
-			return issuanceCriteriaErr
-		}
+		addRequest.IssuanceCriteria = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
 	}
 	if internaltypes.IsDefined(plan.LicenseConnectionGroupAssignment) {
 		addRequest.LicenseConnectionGroupAssignment = plan.LicenseConnectionGroupAssignment.ValueStringPointer()

@@ -159,10 +159,7 @@ func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.Id
 	// default_target_resource
 	result.DefaultTargetResource = model.DefaultTargetResource.ValueStringPointer()
 	// issuance_criteria
-	result.IssuanceCriteria, err = issuancecriteria.ClientStruct(model.IssuanceCriteria)
-	if err != nil {
-		return nil, err
-	}
+	result.IssuanceCriteria = issuancecriteria.ClientStruct(model.IssuanceCriteria)
 
 	// license_connection_group_assignment
 	result.LicenseConnectionGroupAssignment = model.LicenseConnectionGroupAssignment.ValueStringPointer()

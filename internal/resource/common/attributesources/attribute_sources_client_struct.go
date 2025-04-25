@@ -11,7 +11,7 @@ import (
 
 func ClientStruct(attributeSourcesAttr basetypes.SetValue) ([]client.AttributeSourceAggregation, error) {
 	attributeSourceAggregation := []client.AttributeSourceAggregation{}
-	for _, source := range attributeSourcesAttr.Elements() { //TODO need to handle contract_fulfillments here
+	for _, source := range attributeSourcesAttr.Elements() {
 		//Determine which attribute source type this is
 		sourceAttrs := source.(types.Object).Attributes()
 		attributeSourceInner := client.AttributeSourceAggregation{}
