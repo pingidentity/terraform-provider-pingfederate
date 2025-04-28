@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccRedirectValidation_MinimalMaximal(t *testing.T) {
@@ -57,13 +58,9 @@ resource "pingfederate_redirect_validation" "example" {
 
 // Maximal HCL with all values set where possible
 func redirectValidation_CompleteHCL() string {
-	return fmt.Sprintf(`
-resource "pingfederate_redirect_validation" "example" {
-  redirect_validation_local_settings = {
-    enable_in_error_resource_validation                 = true
-    enable_target_resource_validation_for_idp_discovery = true
-    enable_target_resource_validation_for_slo           = true
-    enable_target_resource_validation_for_sso           = true
+	versionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		versionedHcl += `
     uri_allow_list = [
       {
         target_resource_sso      = true
@@ -74,6 +71,15 @@ resource "pingfederate_redirect_validation" "example" {
         valid_uri                = "https://example.com"
       }
     ]
+		`
+	}
+	return fmt.Sprintf(`
+resource "pingfederate_redirect_validation" "example" {
+  redirect_validation_local_settings = {
+    enable_in_error_resource_validation                 = true
+    enable_target_resource_validation_for_idp_discovery = true
+    enable_target_resource_validation_for_slo           = true
+    enable_target_resource_validation_for_sso           = true
     white_list = [
       {
         allow_query_and_fragment = true
@@ -96,12 +102,13 @@ resource "pingfederate_redirect_validation" "example" {
         valid_path               = "/second/path"
       }
     ]
+	%s
   }
   redirect_validation_partner_settings = {
     enable_wreply_validation_slo = true
   }
 }
-`)
+`, versionedHcl)
 }
 
 // Validate any computed values when applying minimal HCL

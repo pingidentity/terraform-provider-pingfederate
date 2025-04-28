@@ -266,7 +266,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	if plan == nil {
 		return
 	}
-	// If redirect_validation_local_settings.uri_allow_list is set prior to PF version 11.3, throw an error
+	// If redirect_validation_local_settings.uri_allow_list is set prior to PF version 12.1, throw an error
 	var diags diag.Diagnostics
 	var localSettingsAttrs map[string]attr.Value
 	localSettingsModified := false
