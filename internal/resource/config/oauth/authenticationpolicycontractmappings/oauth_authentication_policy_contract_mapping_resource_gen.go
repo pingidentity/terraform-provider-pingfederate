@@ -98,15 +98,11 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Schema(ctx context.Co
 
 func (model *oauthAuthenticationPolicyContractMappingResourceModel) buildClientStruct() (*client.ApcToPersistentGrantMapping, error) {
 	result := &client.ApcToPersistentGrantMapping{}
-	var err error
 	// attribute_contract_fulfillment
 	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
-	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)
-	if err != nil {
-		return nil, err
-	}
+	result.AttributeSources = attributesources.ClientStruct(model.AttributeSources)
 
 	// authentication_policy_contract_ref
 	authenticationPolicyContractRefValue := client.ResourceLink{}

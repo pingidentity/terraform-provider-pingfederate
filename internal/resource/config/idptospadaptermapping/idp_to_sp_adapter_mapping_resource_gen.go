@@ -142,7 +142,6 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 
 func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.IdpToSpAdapterMapping, error) {
 	result := &client.IdpToSpAdapterMapping{}
-	var err error
 	// application_icon_url
 	result.ApplicationIconUrl = model.ApplicationIconUrl.ValueStringPointer()
 	// application_name
@@ -151,10 +150,7 @@ func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.Id
 	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
-	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)
-	if err != nil {
-		return nil, err
-	}
+	result.AttributeSources = attributesources.ClientStruct(model.AttributeSources)
 
 	// default_target_resource
 	result.DefaultTargetResource = model.DefaultTargetResource.ValueStringPointer()

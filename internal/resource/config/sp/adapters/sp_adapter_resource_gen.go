@@ -183,7 +183,6 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 
 func (model *spAdapterResourceModel) buildClientStruct() (*client.SpAdapter, error) {
 	result := &client.SpAdapter{}
-	var err error
 	// adapter_id
 	result.Id = model.AdapterId.ValueString()
 	// attribute_contract
@@ -201,10 +200,7 @@ func (model *spAdapterResourceModel) buildClientStruct() (*client.SpAdapter, err
 	}
 
 	// configuration
-	resultConfig, err := pluginconfiguration.ClientStruct(model.Configuration)
-	if err != nil {
-		return nil, err
-	}
+	resultConfig := pluginconfiguration.ClientStruct(model.Configuration)
 	result.Configuration = *resultConfig
 
 	// name

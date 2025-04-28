@@ -23,7 +23,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -225,7 +224,6 @@ func (r *identityStoreProvisionerResource) ModifyPlan(ctx context.Context, req r
 func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client.IdentityStoreProvisioner, diag.Diagnostics) {
 	result := &client.IdentityStoreProvisioner{}
 	var respDiags diag.Diagnostics
-	var err error
 	// attribute_contract
 	if !model.AttributeContract.IsNull() {
 		attributeContractValue := &client.IdentityStoreProvisionerAttributeContract{}
@@ -248,12 +246,8 @@ func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client
 	}
 
 	// configuration
-	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
-	if err != nil {
-		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
-	} else {
-		result.Configuration = *configurationValue
-	}
+	configurationValue := pluginconfiguration.ClientStruct(model.Configuration)
+	result.Configuration = *configurationValue
 
 	// group_attribute_contract
 	if !model.GroupAttributeContract.IsNull() {

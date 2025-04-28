@@ -244,10 +244,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 
 		attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
 		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
-		addRequest.AttributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
-		if err != nil {
-			return err
-		}
+		addRequest.AttributeMapping.AttributeSources = attributesources.ClientStruct(attributeSourcesAttr)
 	}
 
 	if internaltypes.IsDefined(plan.AttributeContract) {
@@ -347,11 +344,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
@@ -429,11 +422,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
 

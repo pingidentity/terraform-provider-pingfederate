@@ -101,11 +101,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context, addRequest *client.TokenToTokenMapping, plan tokenProcessorToTokenGeneratorMappingModel) error {
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
-		var attributeSourcesErr error
-		addRequest.AttributeSources, attributeSourcesErr = attributesources.ClientStruct(plan.AttributeSources)
-		if attributeSourcesErr != nil {
-			return attributeSourcesErr
-		}
+		addRequest.AttributeSources = attributesources.ClientStruct(plan.AttributeSources)
 	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {

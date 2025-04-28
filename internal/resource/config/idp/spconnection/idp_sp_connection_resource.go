@@ -1994,7 +1994,6 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 }
 
 func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) diag.Diagnostics {
-	var err error
 	var respDiags diag.Diagnostics
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = utils.Pointer("SP")
@@ -2127,20 +2126,13 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 					adapterMappingsAdapterOverrideSettingsAttributeMappingValue := &client.IdpAdapterContractMapping{}
 					adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs := adapterMappingsAdapterOverrideSettingsAttrs["attribute_mapping"].(types.Object).Attributes()
 					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeSources, err = attributesources.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_sources"].(types.Set))
-					if err != nil {
-						respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-					}
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_sources"].(types.Set))
 					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["issuance_criteria"].(types.Object))
 					adapterMappingsAdapterOverrideSettingsValue.AttributeMapping = adapterMappingsAdapterOverrideSettingsAttributeMappingValue
 				}
 				adapterMappingsAdapterOverrideSettingsValue.AuthnCtxClassRef = adapterMappingsAdapterOverrideSettingsAttrs["authn_ctx_class_ref"].(types.String).ValueStringPointer()
-				adapterMappingsAdapterOverrideSettingsConfigurationValue, err := pluginconfiguration.ClientStruct(adapterMappingsAdapterOverrideSettingsAttrs["configuration"].(types.Object))
-				if err != nil {
-					respDiags.AddError("Error building client struct for configuration", err.Error())
-				} else {
-					adapterMappingsAdapterOverrideSettingsValue.Configuration = *adapterMappingsAdapterOverrideSettingsConfigurationValue
-				}
+				adapterMappingsAdapterOverrideSettingsConfigurationValue := pluginconfiguration.ClientStruct(adapterMappingsAdapterOverrideSettingsAttrs["configuration"].(types.Object))
+				adapterMappingsAdapterOverrideSettingsValue.Configuration = *adapterMappingsAdapterOverrideSettingsConfigurationValue
 				adapterMappingsAdapterOverrideSettingsValue.Id = adapterMappingsAdapterOverrideSettingsAttrs["id"].(types.String).ValueString()
 				adapterMappingsAdapterOverrideSettingsValue.Name = adapterMappingsAdapterOverrideSettingsAttrs["name"].(types.String).ValueString()
 				if !adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].IsNull() {
@@ -2156,10 +2148,7 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
 			}
 			adapterMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			adapterMappingsValue.AttributeSources, err = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
+			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
 			if !adapterMappingsAttrs["idp_adapter_ref"].IsNull() {
 				adapterMappingsIdpAdapterRefValue := &client.ResourceLink{}
 				adapterMappingsIdpAdapterRefAttrs := adapterMappingsAttrs["idp_adapter_ref"].(types.Object).Attributes()
@@ -2222,10 +2211,7 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 			authenticationPolicyContractAssertionMappingsAttrs := authenticationPolicyContractAssertionMappingsElement.(types.Object).Attributes()
 			authenticationPolicyContractAssertionMappingsValue.AbortSsoTransactionAsFailSafe = authenticationPolicyContractAssertionMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
 			authenticationPolicyContractAssertionMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			authenticationPolicyContractAssertionMappingsValue.AttributeSources, err = attributesources.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
+			authenticationPolicyContractAssertionMappingsValue.AttributeSources = attributesources.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_sources"].(types.Set))
 			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue := client.ResourceLink{}
 			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs := authenticationPolicyContractAssertionMappingsAttrs["authentication_policy_contract_ref"].(types.Object).Attributes()
 			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue.Id = authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
@@ -2339,10 +2325,7 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 			addRequest.AttributeQuery.Policy = attributeQueryPolicyValue
 		}
 
-		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(attributeQueryAttrs["attribute_sources"].(types.Set))
-		if err != nil {
-			respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-		}
+		addRequest.AttributeQuery.AttributeSources = attributesources.ClientStruct(attributeQueryAttrs["attribute_sources"].(types.Set))
 	}
 
 	if !plan.WsTrust.IsNull() {
@@ -2397,10 +2380,7 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 			tokenProcessorMappingsValue := client.IdpTokenProcessorMapping{}
 			tokenProcessorMappingsAttrs := tokenProcessorMappingsElement.(types.Object).Attributes()
 			tokenProcessorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(tokenProcessorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			tokenProcessorMappingsValue.AttributeSources, err = attributesources.ClientStruct(tokenProcessorMappingsAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
+			tokenProcessorMappingsValue.AttributeSources = attributesources.ClientStruct(tokenProcessorMappingsAttrs["attribute_sources"].(types.Set))
 			tokenProcessorMappingsIdpTokenProcessorRefValue := client.ResourceLink{}
 			tokenProcessorMappingsIdpTokenProcessorRefAttrs := tokenProcessorMappingsAttrs["idp_token_processor_ref"].(types.Object).Attributes()
 			tokenProcessorMappingsIdpTokenProcessorRefValue.Id = tokenProcessorMappingsIdpTokenProcessorRefAttrs["id"].(types.String).ValueString()

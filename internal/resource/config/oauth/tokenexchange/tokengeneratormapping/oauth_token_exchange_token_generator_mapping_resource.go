@@ -104,11 +104,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 func addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx context.Context, addRequest *client.ProcessorPolicyToGeneratorMapping, plan oauthTokenExchangeTokenGeneratorMappingResourceModel) error {
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
-		var attributeSourcesErr error
-		addRequest.AttributeSources, attributeSourcesErr = attributesources.ClientStruct(plan.AttributeSources)
-		if attributeSourcesErr != nil {
-			return attributeSourcesErr
-		}
+		addRequest.AttributeSources = attributesources.ClientStruct(plan.AttributeSources)
 	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {

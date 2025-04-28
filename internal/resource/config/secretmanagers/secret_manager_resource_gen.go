@@ -22,7 +22,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -137,14 +136,9 @@ func (r *secretManagerResource) ModifyPlan(ctx context.Context, req resource.Mod
 func (model *secretManagerResourceModel) buildClientStruct() (*client.SecretManager, diag.Diagnostics) {
 	result := &client.SecretManager{}
 	var respDiags diag.Diagnostics
-	var err error
 	// configuration
-	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
-	if err != nil {
-		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
-	} else {
-		result.Configuration = *configurationValue
-	}
+	configurationValue := pluginconfiguration.ClientStruct(model.Configuration)
+	result.Configuration = *configurationValue
 
 	// manager_id
 	result.Id = model.ManagerId.ValueString()

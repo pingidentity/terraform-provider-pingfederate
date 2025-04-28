@@ -9,7 +9,7 @@ import (
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func ClientStruct(attributeSourcesAttr basetypes.SetValue) ([]client.AttributeSourceAggregation, error) {
+func ClientStruct(attributeSourcesAttr basetypes.SetValue) []client.AttributeSourceAggregation {
 	attributeSourceAggregation := []client.AttributeSourceAggregation{}
 	for _, source := range attributeSourcesAttr.Elements() {
 		//Determine which attribute source type this is
@@ -130,5 +130,5 @@ func ClientStruct(attributeSourcesAttr basetypes.SetValue) ([]client.AttributeSo
 		}
 		attributeSourceAggregation = append(attributeSourceAggregation, attributeSourceInner)
 	}
-	return attributeSourceAggregation, nil
+	return attributeSourceAggregation
 }

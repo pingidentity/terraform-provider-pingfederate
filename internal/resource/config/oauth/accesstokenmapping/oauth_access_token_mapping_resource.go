@@ -182,7 +182,6 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 func (model *oauthAccessTokenMappingResourceModel) buildClientStruct() (*client.AccessTokenMapping, diag.Diagnostics) {
 	result := &client.AccessTokenMapping{}
 	var respDiags diag.Diagnostics
-	var err error
 	// access_token_manager_ref
 	accessTokenManagerRefValue := client.ResourceLink{}
 	accessTokenManagerRefAttrs := model.AccessTokenManagerRef.Attributes()
@@ -193,10 +192,7 @@ func (model *oauthAccessTokenMappingResourceModel) buildClientStruct() (*client.
 	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
-	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)
-	if err != nil {
-		respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-	}
+	result.AttributeSources = attributesources.ClientStruct(model.AttributeSources)
 
 	// context
 	contextValue := client.AccessTokenMappingContext{}

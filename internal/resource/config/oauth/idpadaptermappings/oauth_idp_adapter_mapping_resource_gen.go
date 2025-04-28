@@ -101,15 +101,11 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 
 func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.IdpAdapterMapping, error) {
 	result := &client.IdpAdapterMapping{}
-	var err error
 	// attribute_contract_fulfillment
 	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
-	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)
-	if err != nil {
-		return nil, err
-	}
+	result.AttributeSources = attributesources.ClientStruct(model.AttributeSources)
 
 	// issuance_criteria
 	result.IssuanceCriteria = issuancecriteria.ClientStruct(model.IssuanceCriteria)
