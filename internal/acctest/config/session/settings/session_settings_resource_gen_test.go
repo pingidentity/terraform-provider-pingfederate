@@ -68,8 +68,8 @@ resource "pingfederate_session_settings" "example" {
 func sessionSettings_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_session_settings" "example" {
-  revoke_user_session_on_logout = false
-  session_revocation_lifetime = 45
+  revoke_user_session_on_logout     = false
+  session_revocation_lifetime       = 45
   track_adapter_sessions_for_logout = true
 }
 `)

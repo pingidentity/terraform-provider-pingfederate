@@ -69,13 +69,13 @@ resource "pingfederate_session_authentication_policies_global" "example" {
 func sessionAuthenticationPoliciesGlobal_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_session_authentication_policies_global" "example" {
-  enable_sessions = true
+  enable_sessions                = true
   hash_unique_user_key_attribute = true
-  idle_timeout_display_unit = "HOURS"
-  idle_timeout_mins = 120
-  max_timeout_display_unit = "HOURS"
-  max_timeout_mins = 360
-  persistent_sessions = true
+  idle_timeout_display_unit      = "HOURS"
+  idle_timeout_mins              = 120
+  max_timeout_display_unit       = "HOURS"
+  max_timeout_mins               = 360
+  persistent_sessions            = true
 }
 `)
 }
