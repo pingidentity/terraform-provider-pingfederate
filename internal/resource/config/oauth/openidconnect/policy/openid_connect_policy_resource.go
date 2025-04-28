@@ -294,7 +294,6 @@ func (r *openidConnectPolicyResource) Configure(_ context.Context, req resource.
 func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdConnectPolicy, diag.Diagnostics) {
 	result := &client.OpenIdConnectPolicy{}
 	var respDiags diag.Diagnostics
-	var err error
 	// access_token_manager_ref
 	accessTokenManagerRefValue := client.ResourceLink{}
 	accessTokenManagerRefAttrs := model.AccessTokenManagerRef.Attributes()
@@ -329,18 +328,9 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	// attribute_mapping
 	attributeMappingValue := client.AttributeMapping{}
 	attributeMappingAttrs := model.AttributeMapping.Attributes()
-	attributeMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-	if err != nil {
-		respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-	}
-	attributeMappingValue.AttributeSources, err = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.Set))
-	if err != nil {
-		respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-	}
-	attributeMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(attributeMappingAttrs["issuance_criteria"].(types.Object))
-	if err != nil {
-		respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-	}
+	attributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
+	attributeMappingValue.AttributeSources = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.Set))
+	attributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(attributeMappingAttrs["issuance_criteria"].(types.Object))
 	result.AttributeMapping = attributeMappingValue
 
 	// id_token_lifetime

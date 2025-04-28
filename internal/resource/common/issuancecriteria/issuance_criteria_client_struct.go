@@ -3,50 +3,39 @@
 package issuancecriteria
 
 import (
-	"encoding/json"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func ConditionalCriteriaClientStruct(issuanceCriteria types.Object) ([]client.ConditionalIssuanceCriteriaEntry, error) {
-	conditionalCriteria := []client.ConditionalIssuanceCriteriaEntry{}
-	conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["conditional_criteria"].(types.Set), true)), &conditionalCriteria)
-	if conditionalCriteriaErr != nil {
-		return nil, conditionalCriteriaErr
-	}
-	return conditionalCriteria, nil
-}
-
-func ExpressionCriteriaClientStruct(issuanceCriteria types.Object) ([]client.ExpressionIssuanceCriteriaEntry, error) {
-	expressionCriteria := []client.ExpressionIssuanceCriteriaEntry{}
-	expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["expression_criteria"].(types.Set), true)), &expressionCriteria)
-	if expressionCriteriaErr != nil {
-		return nil, expressionCriteriaErr
-	}
-	return expressionCriteria, nil
-}
-
-func ClientStruct(issuanceCriteria types.Object) (*client.IssuanceCriteria, error) {
-	// conditional criteria
-	var conditionalCriteriaErr error
-	newIssuanceCriteria := client.NewIssuanceCriteriaWithDefaults()
-	if internaltypes.IsDefined(issuanceCriteria.Attributes()["conditional_criteria"]) {
-		newIssuanceCriteria.ConditionalCriteria, conditionalCriteriaErr = ConditionalCriteriaClientStruct(issuanceCriteria)
-		if conditionalCriteriaErr != nil {
-			return nil, conditionalCriteriaErr
+func ClientStruct(issuanceCriteria types.Object) *client.IssuanceCriteria {
+	result := &client.IssuanceCriteria{}
+	issuanceCriteriaAttrs := issuanceCriteria.Attributes()
+	if !issuanceCriteriaAttrs["conditional_criteria"].IsNull() && !issuanceCriteriaAttrs["conditional_criteria"].IsUnknown() {
+		result.ConditionalCriteria = []client.ConditionalIssuanceCriteriaEntry{}
+		for _, conditionalCriteriaElement := range issuanceCriteriaAttrs["conditional_criteria"].(types.Set).Elements() {
+			conditionalCriteriaValue := client.ConditionalIssuanceCriteriaEntry{}
+			conditionalCriteriaAttrs := conditionalCriteriaElement.(types.Object).Attributes()
+			conditionalCriteriaValue.AttributeName = conditionalCriteriaAttrs["attribute_name"].(types.String).ValueString()
+			conditionalCriteriaValue.Condition = conditionalCriteriaAttrs["condition"].(types.String).ValueString()
+			conditionalCriteriaValue.ErrorResult = conditionalCriteriaAttrs["error_result"].(types.String).ValueStringPointer()
+			conditionalCriteriaSourceValue := client.SourceTypeIdKey{}
+			conditionalCriteriaSourceAttrs := conditionalCriteriaAttrs["source"].(types.Object).Attributes()
+			conditionalCriteriaSourceValue.Id = conditionalCriteriaSourceAttrs["id"].(types.String).ValueStringPointer()
+			conditionalCriteriaSourceValue.Type = conditionalCriteriaSourceAttrs["type"].(types.String).ValueString()
+			conditionalCriteriaValue.Source = conditionalCriteriaSourceValue
+			conditionalCriteriaValue.Value = conditionalCriteriaAttrs["value"].(types.String).ValueString()
+			result.ConditionalCriteria = append(result.ConditionalCriteria, conditionalCriteriaValue)
 		}
 	}
-
-	// expression criteria
-	var expressionCriteriaErr error
-	if internaltypes.IsDefined(issuanceCriteria.Attributes()["expression_criteria"]) {
-		newIssuanceCriteria.ExpressionCriteria, expressionCriteriaErr = ExpressionCriteriaClientStruct(issuanceCriteria)
-		if expressionCriteriaErr != nil {
-			return nil, expressionCriteriaErr
+	if !issuanceCriteriaAttrs["expression_criteria"].IsNull() && !issuanceCriteriaAttrs["expression_criteria"].IsUnknown() {
+		result.ExpressionCriteria = []client.ExpressionIssuanceCriteriaEntry{}
+		for _, expressionCriteriaElement := range issuanceCriteriaAttrs["expression_criteria"].(types.Set).Elements() {
+			expressionCriteriaValue := client.ExpressionIssuanceCriteriaEntry{}
+			expressionCriteriaAttrs := expressionCriteriaElement.(types.Object).Attributes()
+			expressionCriteriaValue.ErrorResult = expressionCriteriaAttrs["error_result"].(types.String).ValueStringPointer()
+			expressionCriteriaValue.Expression = expressionCriteriaAttrs["expression"].(types.String).ValueString()
+			result.ExpressionCriteria = append(result.ExpressionCriteria, expressionCriteriaValue)
 		}
 	}
-	return newIssuanceCriteria, nil
+	return result
 }

@@ -4,6 +4,7 @@
 * Fixed plan validation logic in various resources that did not correctly handle unknown values, such as values that depend on the output of another resource. ([#488](https://github.com/pingidentity/terraform-provider-pingfederate/pull/488))
 * Fixed missing `false` default for `pingfederate_incoming_proxy_settings.enable_client_cert_header_auth`. ([#494](https://github.com/pingidentity/terraform-provider-pingfederate/pull/494))
 * Fixed the `encrypted_value` fields of sensitive configuration fields not being correctly written to state. ([#497](https://github.com/pingidentity/terraform-provider-pingfederate/pull/497))
+* Fixed potential inconsistent result errors when using certain escaped OGNL expressions in resource configuration. ([#499](https://github.com/pingidentity/terraform-provider-pingfederate/pull/499))
 
 # v1.4.4 April 8, 2025
 ### Bug fixes

@@ -25,7 +25,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -197,7 +196,6 @@ func (r *idpTokenProcessorResource) ModifyPlan(ctx context.Context, req resource
 func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenProcessor, diag.Diagnostics) {
 	result := &client.TokenProcessor{}
 	var respDiags diag.Diagnostics
-	var err error
 	// attribute_contract
 	if !model.AttributeContract.IsNull() {
 		attributeContractValue := &client.TokenProcessorAttributeContract{}
@@ -223,12 +221,8 @@ func (model *idpTokenProcessorResourceModel) buildClientStruct() (*client.TokenP
 	}
 
 	// configuration
-	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
-	if err != nil {
-		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
-	} else {
-		result.Configuration = *configurationValue
-	}
+	configurationValue := pluginconfiguration.ClientStruct(model.Configuration)
+	result.Configuration = *configurationValue
 
 	// name
 	result.Name = model.Name.ValueString()

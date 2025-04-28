@@ -7,7 +7,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 )
 
-func ClientStruct(configurationObj types.Object) (*client.PluginConfiguration, error) {
+func ClientStruct(configurationObj types.Object) *client.PluginConfiguration {
 	configurationValue := client.PluginConfiguration{}
 	configurationAttrs := configurationObj.Attributes()
 	configurationValue.Fields = fieldsFromObject(configurationAttrs["fields"].(types.Set), configurationAttrs["sensitive_fields"].(types.Set))
@@ -26,7 +26,7 @@ func ClientStruct(configurationObj types.Object) (*client.PluginConfiguration, e
 		}
 		configurationValue.Tables = append(configurationValue.Tables, tablesValue)
 	}
-	return &configurationValue, nil
+	return &configurationValue
 }
 
 func fieldsFromObject(fieldsObj types.Set, sensitiveFieldsObj types.Set) []client.ConfigField {

@@ -401,7 +401,6 @@ func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req re
 func (model *oauthAccessTokenManagerResourceModel) buildClientStruct() (*client.AccessTokenManager, diag.Diagnostics) {
 	result := &client.AccessTokenManager{}
 	var respDiags diag.Diagnostics
-	var err error
 	// access_control_settings
 	if !model.AccessControlSettings.IsNull() {
 		accessControlSettingsValue := &client.AtmAccessControlSettings{}
@@ -442,12 +441,8 @@ func (model *oauthAccessTokenManagerResourceModel) buildClientStruct() (*client.
 	}
 
 	// configuration
-	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
-	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
-	} else {
-		result.Configuration = *configurationValue
-	}
+	configurationValue := pluginconfiguration.ClientStruct(model.Configuration)
+	result.Configuration = *configurationValue
 
 	// manager_id
 	result.Id = model.ManagerId.ValueString()

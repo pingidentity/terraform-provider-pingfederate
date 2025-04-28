@@ -217,10 +217,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {
@@ -304,10 +301,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {

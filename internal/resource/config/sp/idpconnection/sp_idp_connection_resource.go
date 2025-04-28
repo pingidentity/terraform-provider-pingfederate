@@ -3684,7 +3684,6 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 }
 
 func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel) diag.Diagnostics {
-	var err error
 	var respDiags diag.Diagnostics
 	addRequest.ErrorPageMsgId = plan.ErrorPageMsgId.ValueStringPointer()
 	if !plan.ConnectionId.IsUnknown() {
@@ -3817,12 +3816,8 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 					}
 					adapterMappingsAdapterOverrideSettingsValue.AttributeContract = adapterMappingsAdapterOverrideSettingsAttributeContractValue
 				}
-				adapterMappingsAdapterOverrideSettingsConfigurationValue, err := pluginconfiguration.ClientStruct(adapterMappingsAdapterOverrideSettingsAttrs["configuration"].(types.Object))
-				if err != nil {
-					respDiags.AddError("Error building client struct for configuration", err.Error())
-				} else {
-					adapterMappingsAdapterOverrideSettingsValue.Configuration = *adapterMappingsAdapterOverrideSettingsConfigurationValue
-				}
+				adapterMappingsAdapterOverrideSettingsConfigurationValue := pluginconfiguration.ClientStruct(adapterMappingsAdapterOverrideSettingsAttrs["configuration"].(types.Object))
+				adapterMappingsAdapterOverrideSettingsValue.Configuration = *adapterMappingsAdapterOverrideSettingsConfigurationValue
 				adapterMappingsAdapterOverrideSettingsValue.Id = adapterMappingsAdapterOverrideSettingsAttrs["id"].(types.String).ValueString()
 				adapterMappingsAdapterOverrideSettingsValue.Name = adapterMappingsAdapterOverrideSettingsAttrs["name"].(types.String).ValueString()
 				if !adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].IsNull() {
@@ -3844,18 +3839,9 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 				}
 				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
 			}
-			adapterMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-			}
-			adapterMappingsValue.AttributeSources, err = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
-			adapterMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(adapterMappingsAttrs["issuance_criteria"].(types.Object))
-			if err != nil {
-				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-			}
+			adapterMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
+			adapterMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(adapterMappingsAttrs["issuance_criteria"].(types.Object))
 			adapterMappingsValue.RestrictVirtualEntityIds = adapterMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
 			if !adapterMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
 				adapterMappingsValue.RestrictedVirtualEntityIds = []string{}
@@ -3913,22 +3899,13 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		for _, authenticationPolicyContractMappingsElement := range idpBrowserSsoAttrs["authentication_policy_contract_mappings"].(types.List).Elements() {
 			authenticationPolicyContractMappingsValue := client.AuthenticationPolicyContractMapping{}
 			authenticationPolicyContractMappingsAttrs := authenticationPolicyContractMappingsElement.(types.Object).Attributes()
-			authenticationPolicyContractMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-			}
-			authenticationPolicyContractMappingsValue.AttributeSources, err = attributesources.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
+			authenticationPolicyContractMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			authenticationPolicyContractMappingsValue.AttributeSources = attributesources.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_sources"].(types.Set))
 			authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue := client.ResourceLink{}
 			authenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrs := authenticationPolicyContractMappingsAttrs["authentication_policy_contract_ref"].(types.Object).Attributes()
 			authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue.Id = authenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
 			authenticationPolicyContractMappingsValue.AuthenticationPolicyContractRef = authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue
-			authenticationPolicyContractMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(authenticationPolicyContractMappingsAttrs["issuance_criteria"].(types.Object))
-			if err != nil {
-				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-			}
+			authenticationPolicyContractMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(authenticationPolicyContractMappingsAttrs["issuance_criteria"].(types.Object))
 			authenticationPolicyContractMappingsValue.RestrictVirtualServerIds = authenticationPolicyContractMappingsAttrs["restrict_virtual_server_ids"].(types.Bool).ValueBoolPointer()
 			if !authenticationPolicyContractMappingsAttrs["restricted_virtual_server_ids"].IsNull() {
 				authenticationPolicyContractMappingsValue.RestrictedVirtualServerIds = []string{}
@@ -4120,18 +4097,9 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		if !idpBrowserSsoAttrs["sso_oauth_mapping"].IsNull() {
 			idpBrowserSsoSsoOauthMappingValue := &client.SsoOAuthMapping{}
 			idpBrowserSsoSsoOauthMappingAttrs := idpBrowserSsoAttrs["sso_oauth_mapping"].(types.Object).Attributes()
-			idpBrowserSsoSsoOauthMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-			}
-			idpBrowserSsoSsoOauthMappingValue.AttributeSources, err = attributesources.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
-			idpBrowserSsoSsoOauthMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["issuance_criteria"].(types.Object))
-			if err != nil {
-				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-			}
+			idpBrowserSsoSsoOauthMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_contract_fulfillment"].(types.Map))
+			idpBrowserSsoSsoOauthMappingValue.AttributeSources = attributesources.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_sources"].(types.Set))
+			idpBrowserSsoSsoOauthMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["issuance_criteria"].(types.Object))
 			idpBrowserSsoValue.SsoOAuthMapping = idpBrowserSsoSsoOauthMappingValue
 		}
 		idpBrowserSsoValue.SsoServiceEndpoints = []client.IdpSsoServiceEndpoint{}
@@ -4195,18 +4163,9 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 				accessTokenManagerMappingsAccessTokenManagerRefValue.Id = accessTokenManagerMappingsAccessTokenManagerRefAttrs["id"].(types.String).ValueString()
 				accessTokenManagerMappingsValue.AccessTokenManagerRef = accessTokenManagerMappingsAccessTokenManagerRefValue
 			}
-			accessTokenManagerMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(accessTokenManagerMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-			}
-			accessTokenManagerMappingsValue.AttributeSources, err = attributesources.ClientStruct(accessTokenManagerMappingsAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
-			accessTokenManagerMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(accessTokenManagerMappingsAttrs["issuance_criteria"].(types.Object))
-			if err != nil {
-				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-			}
+			accessTokenManagerMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(accessTokenManagerMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			accessTokenManagerMappingsValue.AttributeSources = attributesources.ClientStruct(accessTokenManagerMappingsAttrs["attribute_sources"].(types.Set))
+			accessTokenManagerMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(accessTokenManagerMappingsAttrs["issuance_criteria"].(types.Object))
 			idpOauthGrantAttributeMappingValue.AccessTokenManagerMappings = append(idpOauthGrantAttributeMappingValue.AccessTokenManagerMappings, accessTokenManagerMappingsValue)
 		}
 		if !idpOauthGrantAttributeMappingAttrs["idp_oauth_attribute_contract"].IsNull() {
@@ -4261,19 +4220,10 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		for _, tokenGeneratorMappingsElement := range wsTrustAttrs["token_generator_mappings"].(types.Set).Elements() {
 			tokenGeneratorMappingsValue := client.SpTokenGeneratorMapping{}
 			tokenGeneratorMappingsAttrs := tokenGeneratorMappingsElement.(types.Object).Attributes()
-			tokenGeneratorMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(tokenGeneratorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-			}
-			tokenGeneratorMappingsValue.AttributeSources, err = attributesources.ClientStruct(tokenGeneratorMappingsAttrs["attribute_sources"].(types.Set))
-			if err != nil {
-				respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-			}
+			tokenGeneratorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(tokenGeneratorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			tokenGeneratorMappingsValue.AttributeSources = attributesources.ClientStruct(tokenGeneratorMappingsAttrs["attribute_sources"].(types.Set))
 			tokenGeneratorMappingsValue.DefaultMapping = tokenGeneratorMappingsAttrs["default_mapping"].(types.Bool).ValueBoolPointer()
-			tokenGeneratorMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(tokenGeneratorMappingsAttrs["issuance_criteria"].(types.Object))
-			if err != nil {
-				respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-			}
+			tokenGeneratorMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(tokenGeneratorMappingsAttrs["issuance_criteria"].(types.Object))
 			if !tokenGeneratorMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
 				tokenGeneratorMappingsValue.RestrictedVirtualEntityIds = []string{}
 				for _, restrictedVirtualEntityIdsElement := range tokenGeneratorMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
