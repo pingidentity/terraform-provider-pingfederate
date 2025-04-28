@@ -100,6 +100,9 @@ resource "pingfederate_data_store" "example" {
     password       = "mypassword"
   }
 }
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
+}
 `, jdbcStoreId)
 }
 
@@ -137,6 +140,9 @@ resource "pingfederate_data_store" "example" {
     ]
     validate_connection_sql = "SELECT 1"
   }
+}
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
 }
 `, jdbcStoreId)
 }

@@ -52,6 +52,9 @@ func protocolMetadataLifetimeSettings_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_protocol_metadata_lifetime_settings" "example" {
 }
+data "pingfederate_protocol_metadata_lifetime_settings" "example" {
+  depends_on = [pingfederate_protocol_metadata_lifetime_settings.example]
+}
 `)
 }
 
@@ -61,6 +64,9 @@ func protocolMetadataLifetimeSettings_CompleteHCL() string {
 resource "pingfederate_protocol_metadata_lifetime_settings" "example" {
   cache_duration = 1000
   reload_delay   = 1000
+}
+data "pingfederate_protocol_metadata_lifetime_settings" "example" {
+  depends_on = [pingfederate_protocol_metadata_lifetime_settings.example]
 }
 `)
 }

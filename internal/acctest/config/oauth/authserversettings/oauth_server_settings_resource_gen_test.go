@@ -58,6 +58,11 @@ resource "pingfederate_oauth_server_settings" "example" {
   refresh_rolling_interval   = 2
   refresh_token_length       = 50
 }
+data "pingfederate_oauth_server_settings" "example" {
+  depends_on = [
+    pingfederate_oauth_server_settings.example
+  ]
+}
 `)
 }
 
@@ -366,6 +371,11 @@ resource "pingfederate_oauth_server_settings" "example" {
   lifecycle {
     create_before_destroy = true
   }
+}
+data "pingfederate_oauth_server_settings" "example" {
+  depends_on = [
+    pingfederate_oauth_server_settings.example
+  ]
 }
 `, versionedHcl)
 }

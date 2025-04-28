@@ -3,7 +3,6 @@
 package licenseagreement_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -37,7 +36,7 @@ func TestAccLicenseAgreement(t *testing.T) {
 }
 
 func testAccLicenseAgreement() string {
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_license_agreement" "example" {
   accepted = true
 }
@@ -46,5 +45,5 @@ data "pingfederate_license_agreement" "example" {
   depends_on = [
     pingfederate_license_agreement.example
   ]
-}`)
+}`
 }

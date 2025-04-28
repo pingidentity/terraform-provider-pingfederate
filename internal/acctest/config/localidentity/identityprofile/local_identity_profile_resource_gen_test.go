@@ -151,6 +151,10 @@ resource "pingfederate_local_identity_profile" "example" {
   }
   name = "myprofile"
 }
+
+data "pingfederate_local_identity_profile" "example" {
+  profile_id = pingfederate_local_identity_profile.example.id
+}
 `, profileId)
 }
 

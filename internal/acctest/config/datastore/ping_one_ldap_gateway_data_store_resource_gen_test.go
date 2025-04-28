@@ -131,6 +131,9 @@ resource "pingfederate_data_store" "example" {
     ping_one_ldap_gateway_id = "%s"
   }
 }
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
+}
 `, pingOneLdapGatewayStoreId, connRef, envId, gatewayId)
 }
 
@@ -158,6 +161,9 @@ resource "pingfederate_data_store" "example" {
     use_ssl                  = true
 	%s
   }
+}
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
 }
 `, pingOneLdapGatewayStoreId, connRef, envId, gatewayId, versionedHcl)
 }

@@ -61,6 +61,9 @@ func virtualHostNames_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_virtual_host_names" "example" {
 }
+data "pingfederate_virtual_host_names" "example" {
+  depends_on = [pingfederate_virtual_host_names.example]
+}
 `)
 }
 
@@ -69,6 +72,9 @@ func virtualHostNames_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_virtual_host_names" "example" {
   virtual_host_names = ["example1", "example2", "example3"]
+}
+data "pingfederate_virtual_host_names" "example" {
+  depends_on = [pingfederate_virtual_host_names.example]
 }
 `)
 }

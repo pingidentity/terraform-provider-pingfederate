@@ -62,6 +62,9 @@ func sessionAuthenticationPoliciesGlobal_MinimalHCL() string {
 resource "pingfederate_session_authentication_policies_global" "example" {
   enable_sessions = false
 }
+data "pingfederate_session_authentication_policies_global" "example" {
+  depends_on = [pingfederate_session_authentication_policies_global.example]
+}
 `)
 }
 
@@ -76,6 +79,9 @@ resource "pingfederate_session_authentication_policies_global" "example" {
   max_timeout_display_unit       = "HOURS"
   max_timeout_mins               = 360
   persistent_sessions            = true
+}
+data "pingfederate_session_authentication_policies_global" "example" {
+  depends_on = [pingfederate_session_authentication_policies_global.example]
 }
 `)
 }

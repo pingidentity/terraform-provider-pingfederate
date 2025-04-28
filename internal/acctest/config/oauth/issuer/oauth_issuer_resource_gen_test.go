@@ -95,6 +95,9 @@ resource "pingfederate_oauth_issuer" "example" {
   host      = "myhost"
   name      = "myname"
 }
+data "pingfederate_oauth_issuer" "example" {
+  issuer_id = pingfederate_oauth_issuer.example.id
+}
 `, oauthIssuerIssuerId)
 }
 
@@ -107,6 +110,9 @@ resource "pingfederate_oauth_issuer" "example" {
   host        = "myhostupdated"
   name        = "mynameupdated"
   path        = "/mypath"
+}
+data "pingfederate_oauth_issuer" "example" {
+  issuer_id = pingfederate_oauth_issuer.example.id
 }
 `, oauthIssuerIssuerId)
 }

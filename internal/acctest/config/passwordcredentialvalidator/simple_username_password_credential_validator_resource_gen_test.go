@@ -130,6 +130,9 @@ resource "pingfederate_password_credential_validator" "example" {
   }
   attribute_contract = {}
 }
+data "pingfederate_password_credential_validator" "example" {
+  validator_id = pingfederate_password_credential_validator.example.validator_id
+}
 `, validatorId)
 }
 
@@ -200,6 +203,9 @@ resource "pingfederate_password_credential_validator" "example" {
   attribute_contract = {
     extended_attributes = []
   }
+}
+data "pingfederate_password_credential_validator" "example" {
+  validator_id = pingfederate_password_credential_validator.example.validator_id
 }
 `, validatorId)
 }

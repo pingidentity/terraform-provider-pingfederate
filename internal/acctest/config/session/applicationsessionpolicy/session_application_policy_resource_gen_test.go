@@ -52,6 +52,9 @@ func sessionApplicationPolicy_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_session_application_policy" "example" {
 }
+data "pingfederate_session_application_policy" "example" {
+  depends_on = [pingfederate_session_application_policy.example]
+}
 `)
 }
 
@@ -61,6 +64,9 @@ func sessionApplicationPolicy_CompleteHCL() string {
 resource "pingfederate_session_application_policy" "example" {
   idle_timeout_mins = 120
   max_timeout_mins  = 360
+}
+data "pingfederate_session_application_policy" "example" {
+  depends_on = [pingfederate_session_application_policy.example]
 }
 `)
 }

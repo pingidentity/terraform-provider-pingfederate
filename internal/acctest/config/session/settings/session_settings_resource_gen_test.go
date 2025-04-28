@@ -61,6 +61,9 @@ func sessionSettings_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_session_settings" "example" {
 }
+data "pingfederate_session_settings" "example" {
+  depends_on = [pingfederate_session_settings.example]
+}
 `)
 }
 
@@ -71,6 +74,9 @@ resource "pingfederate_session_settings" "example" {
   revoke_user_session_on_logout     = false
   session_revocation_lifetime       = 45
   track_adapter_sessions_for_logout = true
+}
+data "pingfederate_session_settings" "example" {
+  depends_on = [pingfederate_session_settings.example]
 }
 `)
 }

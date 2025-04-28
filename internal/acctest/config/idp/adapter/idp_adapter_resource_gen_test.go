@@ -126,6 +126,9 @@ resource "pingfederate_idp_adapter" "example" {
     ]
   }
 }
+data "pingfederate_idp_adapter" "example" {
+  adapter_id = pingfederate_idp_adapter.example.id
+}
 `, adapterId)
 }
 
@@ -243,6 +246,9 @@ resource "pingfederate_idp_adapter" "example" {
   plugin_descriptor_ref = {
     id = "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter"
   }
+}
+data "pingfederate_idp_adapter" "example" {
+  adapter_id = pingfederate_idp_adapter.example.id
 }
 `, adapterId)
 }

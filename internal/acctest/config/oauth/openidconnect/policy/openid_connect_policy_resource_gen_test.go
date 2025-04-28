@@ -174,6 +174,9 @@ resource "pingfederate_openid_connect_policy" "example" {
   }
   name = "myoidcpolicy"
 }
+data "pingfederate_openid_connect_policy" "example" {
+  policy_id = pingfederate_openid_connect_policy.example.policy_id
+}
 `, openidConnectPolicyPolicyId)
 }
 
@@ -353,6 +356,9 @@ resource "pingfederate_openid_connect_policy" "example" {
     }
   }
   %s
+}
+data "pingfederate_openid_connect_policy" "example" {
+  policy_id = pingfederate_openid_connect_policy.example.policy_id
 }
 `, openidConnectPolicyPolicyId, versionedHcl)
 }
