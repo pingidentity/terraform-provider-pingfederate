@@ -126,13 +126,17 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 }
 
 func addOptionalIncomingProxySettingsFields(ctx context.Context, addRequest *client.IncomingProxySettings, plan incomingProxySettingsResourceModel) {
-	addRequest.EnableClientCertHeaderAuth = plan.EnableClientCertHeaderAuth.ValueBoolPointer()
+	if internaltypes.IsDefined(plan.EnableClientCertHeaderAuth) {
+		addRequest.EnableClientCertHeaderAuth = plan.EnableClientCertHeaderAuth.ValueBoolPointer()
+	}
 	addRequest.ForwardedIpAddressHeaderName = plan.ForwardedIpAddressHeaderName.ValueStringPointer()
 	addRequest.ForwardedIpAddressHeaderIndex = plan.ForwardedIpAddressHeaderIndex.ValueStringPointer()
 	addRequest.ForwardedHostHeaderName = plan.ForwardedHostHeaderName.ValueStringPointer()
 	addRequest.ForwardedHostHeaderIndex = plan.ForwardedHostHeaderIndex.ValueStringPointer()
 	addRequest.ClientCertSSLHeaderName = plan.ClientCertSSLHeaderName.ValueStringPointer()
-	addRequest.ClientCertHeaderEncodingFormat = plan.ClientCertHeaderEncodingFormat.ValueStringPointer()
+	if internaltypes.IsDefined(plan.ClientCertHeaderEncodingFormat) {
+		addRequest.ClientCertHeaderEncodingFormat = plan.ClientCertHeaderEncodingFormat.ValueStringPointer()
+	}
 	addRequest.ClientCertChainSSLHeaderName = plan.ClientCertChainSSLHeaderName.ValueStringPointer()
 	addRequest.ProxyTerminatesHttpsConns = plan.ProxyTerminatesHttpsConns.ValueBoolPointer()
 }
