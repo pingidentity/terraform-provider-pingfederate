@@ -58,6 +58,9 @@ resource "pingfederate_server_settings" "example" {
     saml_2_entity_id = "initial.pingidentity.com"
   }
 }
+data "pingfederate_server_settings" "example" {
+  depends_on = [pingfederate_server_settings.example]
+}
 `)
 }
 
@@ -191,6 +194,9 @@ resource "pingfederate_server_settings" "example" {
   lifecycle {
     create_before_destroy = true
   }
+}
+data "pingfederate_server_settings" "example" {
+  depends_on = [pingfederate_server_settings.example]
 }
 `, certExpirationsVersionedHcl, notificationsVersionedHcl)
 }

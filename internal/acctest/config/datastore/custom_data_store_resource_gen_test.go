@@ -145,6 +145,9 @@ resource "pingfederate_data_store" "example" {
     }
   }
 }
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
+}
 `, customStoreId)
 }
 
@@ -360,6 +363,9 @@ resource "pingfederate_data_store" "example" {
     }
   }
   mask_attribute_values = false
+}
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
 }
 `, customStoreId, versionedFields)
 }

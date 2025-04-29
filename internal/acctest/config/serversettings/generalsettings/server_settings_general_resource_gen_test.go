@@ -52,6 +52,9 @@ func serverSettingsGeneral_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_server_settings_general" "example" {
 }
+data "pingfederate_server_settings_general" "example" {
+  depends_on = [pingfederate_server_settings_general.example]
+}
 `)
 }
 
@@ -64,6 +67,9 @@ resource "pingfederate_server_settings_general" "example" {
   idp_connection_transaction_logging_override = "ENHANCED"
   request_header_for_correlation_id           = "MyHeader"
   sp_connection_transaction_logging_override  = "STANDARD"
+}
+data "pingfederate_server_settings_general" "example" {
+  depends_on = [pingfederate_server_settings_general.example]
 }
 `)
 }

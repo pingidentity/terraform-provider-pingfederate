@@ -101,6 +101,7 @@ func (r *authenticationApiApplicationDataSource) Read(ctx context.Context, req d
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
+		return
 	}
 
 	// Read the response into the state

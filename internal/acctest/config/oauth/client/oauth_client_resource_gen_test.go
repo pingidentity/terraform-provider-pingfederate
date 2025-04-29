@@ -105,6 +105,9 @@ resource "pingfederate_oauth_client" "example" {
     secret = "mysecret"
   }
 }
+data "pingfederate_oauth_client" "example" {
+  client_id = pingfederate_oauth_client.example.client_id
+}
 `, oauthClientId)
 }
 
@@ -251,6 +254,9 @@ resource "pingfederate_oauth_client" "example" {
   token_introspection_signing_algorithm            = "RS256"
   validate_using_all_eligible_atms                 = true
   %s
+}
+data "pingfederate_oauth_client" "example" {
+  client_id = pingfederate_oauth_client.example.client_id
 }
 `, oauthClientId, versionedOidcPolicyHcl, versionedHcl)
 }

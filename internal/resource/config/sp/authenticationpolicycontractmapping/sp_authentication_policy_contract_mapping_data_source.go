@@ -132,6 +132,7 @@ func (r *spAuthenticationPolicyContractMappingDataSource) Read(ctx context.Conte
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the SP Authentication Policy Contract Mapping Resource", err, httpResp)
+		return
 	}
 
 	// Read the response into the state

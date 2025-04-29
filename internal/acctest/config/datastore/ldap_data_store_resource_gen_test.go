@@ -104,6 +104,9 @@ resource "pingfederate_data_store" "example" {
     ]
   }
 }
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
+}
 `, ldapStoreId)
 }
 
@@ -175,6 +178,9 @@ resource "pingfederate_data_store" "example" {
     verify_host            = false
 	%s
   }
+}
+data "pingfederate_data_store" "example" {
+  data_store_id = pingfederate_data_store.example.id
 }
 `, ldapStoreId, versionedHcl)
 }

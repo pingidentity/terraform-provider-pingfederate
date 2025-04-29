@@ -53,6 +53,9 @@ func redirectValidation_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_redirect_validation" "example" {
 }
+data "pingfederate_redirect_validation" "example" {
+  depends_on = [pingfederate_redirect_validation.example]
+}
 `)
 }
 
@@ -107,6 +110,9 @@ resource "pingfederate_redirect_validation" "example" {
   redirect_validation_partner_settings = {
     enable_wreply_validation_slo = true
   }
+}
+data "pingfederate_redirect_validation" "example" {
+  depends_on = [pingfederate_redirect_validation.example]
 }
 `, versionedHcl)
 }

@@ -102,6 +102,9 @@ resource "pingfederate_oauth_token_exchange_token_generator_mapping" "example" {
   source_id = "tokenexchangeprocessorpolicy"
   target_id = "tokengenerator"
 }
+data "pingfederate_oauth_token_exchange_token_generator_mapping" "example" {
+  mapping_id = pingfederate_oauth_token_exchange_token_generator_mapping.example.id
+}
 `
 }
 
@@ -149,6 +152,9 @@ resource "pingfederate_oauth_token_exchange_token_generator_mapping" "example" {
   }
   source_id = "tokenexchangeprocessorpolicy"
   target_id = "tokengenerator"
+}
+data "pingfederate_oauth_token_exchange_token_generator_mapping" "example" {
+  mapping_id = pingfederate_oauth_token_exchange_token_generator_mapping.example.id
 }
 `
 }

@@ -125,6 +125,9 @@ resource "pingfederate_oauth_access_token_manager" "example" {
     ]
   }
 }
+data "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = pingfederate_oauth_access_token_manager.example.id
+}
 `, atmId)
 }
 
