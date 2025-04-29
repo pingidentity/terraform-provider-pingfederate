@@ -142,30 +142,20 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 
 func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.IdpToSpAdapterMapping, error) {
 	result := &client.IdpToSpAdapterMapping{}
-	var err error
 	// application_icon_url
 	result.ApplicationIconUrl = model.ApplicationIconUrl.ValueStringPointer()
 	// application_name
 	result.ApplicationName = model.ApplicationName.ValueStringPointer()
 	// attribute_contract_fulfillment
-	result.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
-	if err != nil {
-		return nil, err
-	}
+	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
-	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)
-	if err != nil {
-		return nil, err
-	}
+	result.AttributeSources = attributesources.ClientStruct(model.AttributeSources)
 
 	// default_target_resource
 	result.DefaultTargetResource = model.DefaultTargetResource.ValueStringPointer()
 	// issuance_criteria
-	result.IssuanceCriteria, err = issuancecriteria.ClientStruct(model.IssuanceCriteria)
-	if err != nil {
-		return nil, err
-	}
+	result.IssuanceCriteria = issuancecriteria.ClientStruct(model.IssuanceCriteria)
 
 	// license_connection_group_assignment
 	result.LicenseConnectionGroupAssignment = model.LicenseConnectionGroupAssignment.ValueStringPointer()

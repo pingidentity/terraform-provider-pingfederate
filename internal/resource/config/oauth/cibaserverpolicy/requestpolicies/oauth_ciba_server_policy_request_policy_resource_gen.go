@@ -28,7 +28,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -223,7 +222,6 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct() (*client.RequestPolicy, diag.Diagnostics) {
 	result := &client.RequestPolicy{}
 	var respDiags diag.Diagnostics
-	var err error
 	// allow_unsigned_login_hint_token
 	result.AllowUnsignedLoginHintToken = model.AllowUnsignedLoginHintToken.ValueBoolPointer()
 	// alternative_login_hint_token_issuers
@@ -266,18 +264,9 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 	if !model.IdentityHintContractFulfillment.IsNull() && !model.IdentityHintContractFulfillment.IsUnknown() {
 		identityHintContractFulfillmentValue := &client.AttributeMapping{}
 		identityHintContractFulfillmentAttrs := model.IdentityHintContractFulfillment.Attributes()
-		identityHintContractFulfillmentValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(identityHintContractFulfillmentAttrs["attribute_contract_fulfillment"].(types.Map))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_contract_fulfillment: "+err.Error())
-		}
-		identityHintContractFulfillmentValue.AttributeSources, err = attributesources.ClientStruct(identityHintContractFulfillmentAttrs["attribute_sources"].(types.Set))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())
-		}
-		identityHintContractFulfillmentValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(identityHintContractFulfillmentAttrs["issuance_criteria"].(types.Object))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for issuance_criteria: "+err.Error())
-		}
+		identityHintContractFulfillmentValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(identityHintContractFulfillmentAttrs["attribute_contract_fulfillment"].(types.Map))
+		identityHintContractFulfillmentValue.AttributeSources = attributesources.ClientStruct(identityHintContractFulfillmentAttrs["attribute_sources"].(types.Set))
+		identityHintContractFulfillmentValue.IssuanceCriteria = issuancecriteria.ClientStruct(identityHintContractFulfillmentAttrs["issuance_criteria"].(types.Object))
 		result.IdentityHintContractFulfillment = identityHintContractFulfillmentValue
 	}
 
@@ -285,18 +274,9 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 	if !model.IdentityHintMapping.IsNull() {
 		identityHintMappingValue := &client.AttributeMapping{}
 		identityHintMappingAttrs := model.IdentityHintMapping.Attributes()
-		identityHintMappingValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(identityHintMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_contract_fulfillment: "+err.Error())
-		}
-		identityHintMappingValue.AttributeSources, err = attributesources.ClientStruct(identityHintMappingAttrs["attribute_sources"].(types.Set))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for attribute_sources: "+err.Error())
-		}
-		identityHintMappingValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(identityHintMappingAttrs["issuance_criteria"].(types.Object))
-		if err != nil {
-			respDiags.AddError(providererror.InternalProviderError, "Error building client struct for issuance_criteria: "+err.Error())
-		}
+		identityHintMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(identityHintMappingAttrs["attribute_contract_fulfillment"].(types.Map))
+		identityHintMappingValue.AttributeSources = attributesources.ClientStruct(identityHintMappingAttrs["attribute_sources"].(types.Set))
+		identityHintMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(identityHintMappingAttrs["issuance_criteria"].(types.Object))
 		result.IdentityHintMapping = identityHintMappingValue
 	}
 

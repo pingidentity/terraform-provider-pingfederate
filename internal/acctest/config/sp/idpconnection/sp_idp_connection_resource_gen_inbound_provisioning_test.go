@@ -635,7 +635,7 @@ resource "pingfederate_sp_idp_connection" "example" {
               id   = null
               type = "EXPRESSION"
             }
-            value = "emails.work.value"
+            value = "'test1|test2|test3'.split(\"\\\\|\")[1]"
           }
           mobile = {
             source = {

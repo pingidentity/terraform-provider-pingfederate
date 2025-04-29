@@ -221,11 +221,7 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 		return
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
 
 	createCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(createCustomDataStore, con, client.CustomDataStore{}, plan)
@@ -258,11 +254,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 		return
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
 
 	name := customPlan["name"].(types.String).ValueString()
 	updateCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))

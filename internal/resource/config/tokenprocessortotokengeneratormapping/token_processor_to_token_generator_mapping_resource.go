@@ -101,20 +101,11 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context, addRequest *client.TokenToTokenMapping, plan tokenProcessorToTokenGeneratorMappingModel) error {
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
-		var attributeSourcesErr error
-		addRequest.AttributeSources, attributeSourcesErr = attributesources.ClientStruct(plan.AttributeSources)
-		if attributeSourcesErr != nil {
-			return attributeSourcesErr
-		}
+		addRequest.AttributeSources = attributesources.ClientStruct(plan.AttributeSources)
 	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {
-		addRequest.IssuanceCriteria = client.NewIssuanceCriteria()
-		var issuanceCriteriaErr error
-		addRequest.IssuanceCriteria, issuanceCriteriaErr = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
-		if issuanceCriteriaErr != nil {
-			return issuanceCriteriaErr
-		}
+		addRequest.IssuanceCriteria = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
 	}
 
 	if internaltypes.IsDefined(plan.DefaultTargetResource) {
@@ -154,13 +145,9 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Create(ctx context.Conte
 		return
 	}
 
-	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
-		return
-	}
+	attributeContractFulfillment := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err = addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
+	err := addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Token Processor to Token Generator Mapping: "+err.Error())
 		return

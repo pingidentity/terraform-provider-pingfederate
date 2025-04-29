@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const adapterId = "idpAdapterId"
@@ -253,6 +254,13 @@ data "pingfederate_idp_adapter" "example" {
 `, adapterId)
 }
 
+func idpAdapter_expectedFieldCount() string {
+	if !acctest.VersionAtLeast(version.PingFederate1200) {
+		return "64"
+	}
+	return "65"
+}
+
 // Validate any computed values when applying minimal HCL
 func idpAdapter_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
@@ -268,7 +276,7 @@ func idpAdapter_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "attribute_mapping.issuance_criteria.conditional_criteria.#", "0"),
 		resource.TestCheckNoResourceAttr("pingfederate_idp_adapter.example", "attribute_mapping.issuance_criteria.expression_criteria"),
 		resource.TestCheckNoResourceAttr("pingfederate_idp_adapter.example", "authn_ctx_class_ref"),
-		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.fields_all.#", "65"),
+		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.fields_all.#", idpAdapter_expectedFieldCount()),
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.tables.0.rows.0.default_row", "false"),
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "id", adapterId),
@@ -281,7 +289,7 @@ func idpAdapter_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "attribute_contract.core_attributes_all.#", "2"),
 		resource.TestCheckNoResourceAttr("pingfederate_idp_adapter.example", "attribute_mapping.issuance_criteria.expression_criteria"),
 		resource.TestCheckNoResourceAttr("pingfederate_idp_adapter.example", "authn_ctx_class_ref"),
-		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.fields_all.#", "65"),
+		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.fields_all.#", idpAdapter_expectedFieldCount()),
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.tables.0.rows.0.default_row", "false"),
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_idp_adapter.example", "id", adapterId),

@@ -22,7 +22,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -143,14 +142,9 @@ func (r *oauthClientRegistrationPolicyResource) ModifyPlan(ctx context.Context, 
 func (model *oauthClientRegistrationPolicyResourceModel) buildClientStruct() (*client.ClientRegistrationPolicy, diag.Diagnostics) {
 	result := &client.ClientRegistrationPolicy{}
 	var respDiags diag.Diagnostics
-	var err error
 	// configuration
-	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
-	if err != nil {
-		respDiags.AddError(providererror.InternalProviderError, "Error building client struct for configuration: "+err.Error())
-	} else {
-		result.Configuration = *configurationValue
-	}
+	configurationValue := pluginconfiguration.ClientStruct(model.Configuration)
+	result.Configuration = *configurationValue
 
 	// name
 	result.Name = model.Name.ValueString()

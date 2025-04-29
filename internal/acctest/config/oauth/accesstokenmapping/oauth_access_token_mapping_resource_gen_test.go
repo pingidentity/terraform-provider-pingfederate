@@ -247,10 +247,9 @@ resource "pingfederate_oauth_access_token_mapping" "example" {
     },
     "device_custodian_user_id" = {
       source = {
-        id   = "Directory"
-        type = "LDAP_DATA_STORE"
+        type = "EXPRESSION"
       }
-      value = "seeAlso"
+      value = "'test1|test2|test3'.split(\"\\\\|\")[1]"
     },
   }
 

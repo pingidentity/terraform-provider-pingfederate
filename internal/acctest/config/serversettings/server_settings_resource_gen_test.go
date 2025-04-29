@@ -82,7 +82,8 @@ func serverSettings_CompleteHCL() string {
 		notification_publisher_ref = {
           id = pingfederate_notification_publisher.example.id
 		}
-		notification_mode = "LOGGING_ONLY"
+		email_address = "alertalert@example.com"
+		notification_mode = "NOTIFICATION_PUBLISHER"
 	  }
 		`
 	}
@@ -251,9 +252,9 @@ func serverSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func serverSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
 	versionedChecks := []resource.TestCheckFunc{}
-	if acctest.VersionAtLeast(version.PingFederate1200) {
+	if !acctest.VersionAtLeast(version.PingFederate1200) {
 		versionedChecks = append(versionedChecks,
-			resource.TestCheckNoResourceAttr("pingfederate_server_settings.example", "notifications.thread_pool_exhaustion_notification_settings.notification_publisher_ref"),
+			resource.TestCheckNoResourceAttr("pingfederate_server_settings.example", "notifications.thread_pool_exhaustion_notification_settings"),
 		)
 	}
 	return resource.ComposeTestCheckFunc(
