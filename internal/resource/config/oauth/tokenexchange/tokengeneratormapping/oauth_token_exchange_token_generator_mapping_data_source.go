@@ -127,6 +127,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingDataSource) Read(ctx context.Con
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Token Exchange Token Generator Mapping", err, httpResp)
+		return
 	}
 
 	// Read the response into the state

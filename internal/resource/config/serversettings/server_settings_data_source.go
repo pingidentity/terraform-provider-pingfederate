@@ -424,6 +424,7 @@ func (r *serverSettingsDataSource) Read(ctx context.Context, req datasource.Read
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
+		return
 	}
 
 	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)

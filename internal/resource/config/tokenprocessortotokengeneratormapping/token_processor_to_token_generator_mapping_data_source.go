@@ -96,6 +96,7 @@ func (r *tokenProcessorToTokenGeneratorMappingDataSource) Read(ctx context.Conte
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Token Processor To Token Generator Mapping", err, httpResp)
+		return
 	}
 
 	// Read the response into the state
