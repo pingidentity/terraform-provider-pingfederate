@@ -112,7 +112,6 @@ data "pingfederate_token_processor_to_token_generator_mapping" "example" {
 func tokenProcessorToTokenGeneratorMapping_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
-  // TODO set values for minimal fields
   attribute_contract_fulfillment = {
     "SAML_SUBJECT" = {
       source = {
