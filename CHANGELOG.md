@@ -1,3 +1,10 @@
+# v1.5.0 (Unreleased)
+### Enhancements
+* Added `formatted_file_data` field to `pingfederate_certificate_ca` and `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate` resources, to handle drift detection when the certificate is changed outside of terraform. ([#502](https://github.com/pingidentity/terraform-provider-pingfederate/pull/502))
+
+### Bug fixes
+* Fixed the required `file_data` field not being written to state on import for the `pingfederate_certificate_ca`, `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate`, and `pingfederate_metadata_url` resources. ([#502](https://github.com/pingidentity/terraform-provider-pingfederate/pull/502))
+
 # v1.4.5 April 30, 2025
 ### Bug fixes
 * Fixed an inconsistent result error that would occur when configuring certificates with no `id` value in the `pingfederate_idp_sp_connection` and `pingfederate_sp_idp_connection` resources. Also fixed a related inconsistent result failure that would occur when modifying the `id` of a certificate. ([#487](https://github.com/pingidentity/terraform-provider-pingfederate/pull/487))
