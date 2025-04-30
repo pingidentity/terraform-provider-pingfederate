@@ -10,21 +10,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/pemcertificates"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
-var _ planmodifier.List = &x509FileData{}
+var _ planmodifier.List = &handleFormattedCertsListFileData{}
 
-type x509FileData struct{}
+type handleFormattedCertsListFileData struct{}
 
-func (v x509FileData) Description(ctx context.Context) string {
-	return "Validates that the formatted_file_data and file_data values match. This is to detect a drift with assigned certificate(s)."
+func (v handleFormattedCertsListFileData) Description(ctx context.Context) string {
+	return "Checks that the computed x509_file.formatted_file_data and user-supplied x509_file.file_data values represent the same value in a list of certs. This is to detect drift with server-formatted certificates."
 }
 
-func (v x509FileData) MarkdownDescription(ctx context.Context) string {
+func (v handleFormattedCertsListFileData) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListRequest, resp *planmodifier.ListResponse) {
+func (v handleFormattedCertsListFileData) PlanModifyList(ctx context.Context, req planmodifier.ListRequest, resp *planmodifier.ListResponse) {
 	// If the value is unknown or null, there is nothing to validate.
 	if req.PlanValue.IsUnknown() || req.PlanValue.IsNull() {
 		return
@@ -71,8 +72,8 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 			planX509Value, respDiags = types.ObjectValue(planX509Value.AttributeTypes(ctx), reqPlanAttrs)
 			if respDiags.HasError() {
 				resp.Diagnostics.AddError(
-					"Unable to build plan object",
-					"x509_file object did not build properly",
+					providererror.InternalProviderError,
+					"Failed to construct x509_file object value with unknown formatted_file_data in certs list plan modifier",
 				)
 			}
 			resp.Diagnostics.Append(respDiags...)
@@ -84,8 +85,8 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 			resp.Diagnostics.Append(respDiags...)
 			if respDiags.HasError() {
 				resp.Diagnostics.AddError(
-					"Unable to build plan object",
-					"x509_file object did not build properly",
+					providererror.InternalProviderError,
+					"Failed to construct x509_file object value with existing formatted_file_data in certs list plan modifier",
 				)
 			}
 
@@ -100,8 +101,8 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 			resp.Diagnostics.Append(respDiags...)
 			if respDiags.HasError() {
 				resp.Diagnostics.AddError(
-					"Unable to build plan object",
-					"cert_view object did not build properly",
+					providererror.InternalProviderError,
+					"Failed to construct cert_view object value in certs list plan modifier",
 				)
 			}
 		}
@@ -129,8 +130,8 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 		finalPlanValue, respDiags := types.ObjectValue(planValue.AttributeTypes(ctx), planValueAttrs)
 		if respDiags.HasError() {
 			resp.Diagnostics.AddError(
-				"Unable to build plan object",
-				"certs element did not build properly",
+				providererror.InternalProviderError,
+				"Failed to construct cert object value in certs list plan modifier",
 			)
 		}
 		resp.Diagnostics.Append(respDiags...)
@@ -140,13 +141,13 @@ func (v x509FileData) PlanModifyList(ctx context.Context, req planmodifier.ListR
 	resp.PlanValue, respDiags = types.ListValue(req.PlanValue.ElementType(ctx), finalPlanElements)
 	if respDiags.HasError() {
 		resp.Diagnostics.AddError(
-			"Unable to build plan object",
-			"certs object did not build properly",
+			providererror.InternalProviderError,
+			"Failed to construct certs list value in certs list plan modifier",
 		)
 	}
 	resp.Diagnostics.Append(respDiags...)
 }
 
-func ValidateX509FileData() x509FileData {
-	return x509FileData{}
+func HandleFormattedCertsListFileData() planmodifier.List {
+	return handleFormattedCertsListFileData{}
 }

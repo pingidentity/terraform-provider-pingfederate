@@ -15,23 +15,24 @@ import (
 )
 
 func (r *metadataUrlResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
 	// Handle drift detection for the x509_file.file_data value changing outside of terraform
-	if !req.Plan.Raw.IsNull() && !req.State.Raw.IsNull() {
-		var plan, state metadataUrlResourceModel
-		req.Plan.Get(ctx, &plan)
-		req.State.Get(ctx, &state)
-		if internaltypes.IsDefined(plan.X509File) && internaltypes.IsDefined(state.X509File) {
-			planX509Attrs := plan.X509File.Attributes()
-			planFileData := planX509Attrs["file_data"].(types.String).ValueString()
-			stateFormattedFileData := state.X509File.Attributes()["formatted_file_data"].(types.String).ValueString()
-			if !pemcertificates.FileDataEquivalent(planFileData, stateFormattedFileData) {
-				planX509Attrs["formatted_file_data"] = types.StringUnknown()
-				var diags diag.Diagnostics
-				plan.X509File, diags = types.ObjectValue(plan.X509File.AttributeTypes(ctx), planX509Attrs)
-				resp.Diagnostics.Append(diags...)
-				plan.CertView = types.ObjectUnknown(plan.CertView.AttributeTypes(ctx))
-				resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
-			}
+	var plan, state metadataUrlResourceModel
+	req.Plan.Get(ctx, &plan)
+	req.State.Get(ctx, &state)
+	if internaltypes.IsDefined(plan.X509File) && internaltypes.IsDefined(state.X509File) {
+		planX509Attrs := plan.X509File.Attributes()
+		planFileData := planX509Attrs["file_data"].(types.String).ValueString()
+		stateFormattedFileData := state.X509File.Attributes()["formatted_file_data"].(types.String).ValueString()
+		if !pemcertificates.FileDataEquivalent(planFileData, stateFormattedFileData) {
+			planX509Attrs["formatted_file_data"] = types.StringUnknown()
+			var diags diag.Diagnostics
+			plan.X509File, diags = types.ObjectValue(plan.X509File.AttributeTypes(ctx), planX509Attrs)
+			resp.Diagnostics.Append(diags...)
+			plan.CertView = types.ObjectUnknown(plan.CertView.AttributeTypes(ctx))
+			resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 		}
 	}
 }
