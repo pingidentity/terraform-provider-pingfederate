@@ -85,7 +85,7 @@ func TestAccCertificateCa_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "ca_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// TODO currently the file_data isn't imported - see CDI-462
+				// The file_data is formatted by the server, so it may not match the config value on import
 				ImportStateVerifyIgnore: []string{"file_data"},
 			},
 		},
