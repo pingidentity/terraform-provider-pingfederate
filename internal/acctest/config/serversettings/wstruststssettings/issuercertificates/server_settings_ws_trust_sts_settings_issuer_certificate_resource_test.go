@@ -109,7 +109,7 @@ func TestAccServerSettingsWsTrustStsSettingsIssuerCertificate_MinimalMaximal(t *
 				ImportStateVerifyIdentifierAttribute: "certificate_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// File data is not returned by the API
+				// The file_data is formatted by the server, so it may not match the config value on import
 				ImportStateVerifyIgnore: []string{
 					"file_data",
 				},

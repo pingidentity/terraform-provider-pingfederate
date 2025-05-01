@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -244,7 +245,7 @@ func (model *metadataUrlResourceModel) buildClientStruct() (*client.MetadataUrl,
 	return result, nil
 }
 
-func (state *metadataUrlResourceModel) readClientResponse(response *client.MetadataUrl) diag.Diagnostics {
+func (state *metadataUrlResourceModel) readClientResponse(response *client.MetadataUrl, isImportRead bool) diag.Diagnostics {
 	var respDiags diag.Diagnostics
 	// id
 	state.Id = types.StringPointerValue(response.Id)
@@ -302,7 +303,7 @@ func (state *metadataUrlResourceModel) readClientResponse(response *client.Metad
 	// validate_signature
 	state.ValidateSignature = types.BoolPointerValue(response.ValidateSignature)
 	// x509_file
-	respDiags.Append(state.readClientResponseX509File(response)...)
+	respDiags.Append(state.readClientResponseX509File(response, isImportRead)...)
 	return respDiags
 }
 
@@ -328,13 +329,15 @@ func (r *metadataUrlResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *metadataUrlResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
 	var data metadataUrlResourceModel
 
 	// Read Terraform prior state data into the model
@@ -357,7 +360,7 @@ func (r *metadataUrlResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -385,7 +388,7 @@ func (r *metadataUrlResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -411,4 +414,5 @@ func (r *metadataUrlResource) Delete(ctx context.Context, req resource.DeleteReq
 func (r *metadataUrlResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to url_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("url_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

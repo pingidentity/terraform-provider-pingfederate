@@ -32,6 +32,7 @@ resource "pingfederate_certificate_ca" "example" {
 ### Read-Only
 
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
+- `formatted_file_data` (String) The certificate data in PEM format, formatted by PingFederate. This attribute is read-only.
 - `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name.
 - `key_algorithm` (String) The public key algorithm.

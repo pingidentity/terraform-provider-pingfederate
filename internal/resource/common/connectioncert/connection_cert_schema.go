@@ -28,7 +28,7 @@ func ToSchema(description string, includeDefault bool) schema.ListNestedAttribut
 			listvalidator.UniqueValues(),
 		},
 		PlanModifiers: []planmodifier.List{
-			planmodifiers.ValidateX509FileData(),
+			planmodifiers.HandleFormattedCertsListFileData(),
 		},
 	}
 	if includeDefault {
