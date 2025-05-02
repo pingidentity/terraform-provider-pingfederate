@@ -392,7 +392,7 @@ resource "pingfederate_sp_idp_connection" "example" {
               }
               description = "JDBC"
               filter      = "subject"
-              id          = null
+              id          = "myjdbcsource"
               schema      = "INFORMATION_SCHEMA"
               table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
             }

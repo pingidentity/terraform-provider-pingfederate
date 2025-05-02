@@ -314,6 +314,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             column_names = [
               "GRANTEE"
             ]
+            id = "myjdbcsource"
           }
         }
       ]

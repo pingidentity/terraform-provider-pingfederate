@@ -274,21 +274,24 @@ resource "pingfederate_sp_idp_connection" "example" {
     adapter_mappings = [
       {
         attribute_sources = [
-
           {
-            ldap_attribute_source = {
-              attribute_contract_fulfillment = null
-              base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-              binary_attribute_settings      = null
+            custom_attribute_source = {
               data_store_ref = {
-                id = "pingdirectory"
+                id = "customDataStore"
               }
-              description            = "PingDirectory"
-              member_of_nested_group = false
-              search_attributes      = ["Subject DN"]
-              search_filter          = "(&(memberUid=uid)(cn=Postman))"
-              search_scope           = "SUBTREE"
-              type                   = "LDAP"
+              description = "APIStubs"
+              filter_fields = [
+                {
+                  name = "Authorization Header"
+                },
+                {
+                  name = "Body"
+                },
+                {
+                  name  = "Resource Path"
+                  value = "/users/extid"
+                },
+              ]
             }
           },
         ]
@@ -598,7 +601,7 @@ resource "pingfederate_sp_idp_connection" "example" {
             }
             description = "JDBC"
             filter      = "$${SAML_SUBJECT}"
-            id          = null
+            id          = "myjdbcsource"
             schema      = "INFORMATION_SCHEMA"
             table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
           }
