@@ -142,7 +142,7 @@ resource "pingfederate_sp_idp_connection" "example" {
               search_filter          = "(&(memberUid=uid)(cn=Postman))"
               search_scope           = "SUBTREE"
               type                   = "LDAP"
-              id = "myldapattrsource"
+              id                     = "myldapattrsource"
             }
           },
         ]
