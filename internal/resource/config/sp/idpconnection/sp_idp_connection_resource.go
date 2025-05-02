@@ -170,7 +170,7 @@ var (
 	idpBrowserSsoAdapterMappingsAttrTypes = map[string]attr.Type{
 		"adapter_override_settings":      types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
+		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypesNoId()}},
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
 		"restrict_virtual_entity_ids":    types.BoolType,
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
@@ -617,6 +617,10 @@ type spIdpConnectionResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	adapterMappingsAttrSources := attributesources.ToSchemaNoIdAttr()
+	adapterMappingsAttrSources.Validators = []validator.Set{
+		setvalidator.SizeAtMost(1),
+	}
 	schema := schema.Schema{
 		Description: "Manages a partner Identity Provider connection",
 		Attributes: map[string]schema.Attribute{
@@ -1191,7 +1195,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									},
 								},
 								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
-								"attribute_sources":              attributesources.ToSchema(0, false),
+								"attribute_sources":              adapterMappingsAttrSources,
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:            true,
@@ -3840,7 +3844,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
 			}
 			adapterMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
+			adapterMappingsValue.AttributeSources = attributesources.ClientStructNoId(adapterMappingsAttrs["attribute_sources"].(types.Set))
 			adapterMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(adapterMappingsAttrs["issuance_criteria"].(types.Object))
 			adapterMappingsValue.RestrictVirtualEntityIds = adapterMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
 			if !adapterMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
@@ -4847,7 +4851,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment)
 				respDiags.Append(objDiags...)
 
-				idpBrowserSsoAdapterMappingsAttributeSourcesValue, objDiags := attributesources.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
+				idpBrowserSsoAdapterMappingsAttributeSourcesValue, objDiags := attributesources.ToStateNoId(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
 				respDiags.Append(objDiags...)
 
 				var idpBrowserSsoAdapterMappingsIssuanceCriteriaValue types.Object

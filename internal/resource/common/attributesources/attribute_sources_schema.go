@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -20,16 +21,18 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
-func commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment bool) map[string]schema.Attribute {
+func commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr bool) map[string]schema.Attribute {
 	commonAttributeSourceSchema := map[string]schema.Attribute{}
 	commonAttributeSourceSchema["data_store_ref"] = schema.SingleNestedAttribute{
 		Required:    true,
 		Description: "Reference to the associated data store.",
 		Attributes:  resourcelink.ToSchema(),
 	}
-	commonAttributeSourceSchema["id"] = schema.StringAttribute{
-		Optional:    true,
-		Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
+	if includeIdAttr {
+		commonAttributeSourceSchema["id"] = schema.StringAttribute{
+			Optional:    true,
+			Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
+		}
 	}
 	commonAttributeSourceSchema["description"] = schema.StringAttribute{
 		Optional:    true,
@@ -43,8 +46,8 @@ func commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfi
 	return commonAttributeSourceSchema
 }
 
-func customAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, valueDefaultEmptyString bool) map[string]schema.Attribute {
-	customAttributeSourceSchema := commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment)
+func customAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, valueDefaultEmptyString, includeIdAttr bool) map[string]schema.Attribute {
+	customAttributeSourceSchema := commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr)
 	customAttributeSourceSchema["type"] = schema.StringAttribute{
 		Computed:    true,
 		Optional:    false,
@@ -77,8 +80,8 @@ func customAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeCon
 	return customAttributeSourceSchema
 }
 
-func jdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment bool) map[string]schema.Attribute {
-	jdbcAttributeSourceSchema := commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment)
+func jdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr bool) map[string]schema.Attribute {
+	jdbcAttributeSourceSchema := commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr)
 	jdbcAttributeSourceSchema["type"] = schema.StringAttribute{
 		Computed:    true,
 		Optional:    false,
@@ -105,8 +108,8 @@ func jdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 	return jdbcAttributeSourceSchema
 }
 
-func ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment bool) map[string]schema.Attribute {
-	ldapAttributeSourceSchema := commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment)
+func ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr bool) map[string]schema.Attribute {
+	ldapAttributeSourceSchema := commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr)
 	ldapAttributeSourceSchema["type"] = schema.StringAttribute{
 		Required:    true,
 		Description: "The data store type of this attribute source.",
@@ -165,15 +168,25 @@ func ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 }
 
 func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.SetNestedAttribute {
-	return toSchemaInternal(sizeAtLeast, optionalAndComputedNestedAttributeContractFulfillment, true)
+	return toSchemaInternal(sizeAtLeast, optionalAndComputedNestedAttributeContractFulfillment, true, true)
 }
 
 func ToSchemaNoValueDefault(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.SetNestedAttribute {
-	return toSchemaInternal(sizeAtLeast, optionalAndComputedNestedAttributeContractFulfillment, false)
+	return toSchemaInternal(sizeAtLeast, optionalAndComputedNestedAttributeContractFulfillment, false, true)
 }
 
-func toSchemaInternal(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment, includeValueDefault bool) schema.SetNestedAttribute {
-	attributeSourcesDefault, _ := types.SetValue(types.ObjectType{AttrTypes: AttrTypes()}, nil)
+func ToSchemaNoIdAttr() schema.SetNestedAttribute {
+	return toSchemaInternal(0, false, true, false)
+}
+
+func toSchemaInternal(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment, includeValueDefault, includeIdAttr bool) schema.SetNestedAttribute {
+	var attrTypes map[string]attr.Type
+	if includeIdAttr {
+		attrTypes = AttrTypes()
+	} else {
+		attrTypes = AttrTypesNoId()
+	}
+	attributeSourcesDefault, _ := types.SetValue(types.ObjectType{AttrTypes: attrTypes}, nil)
 	validators := []validator.Set{}
 	if sizeAtLeast > 0 {
 		validators = append(validators, setvalidator.SizeAtLeast(sizeAtLeast))
@@ -189,7 +202,7 @@ func toSchemaInternal(sizeAtLeast int, optionalAndComputedNestedAttributeContrac
 				"custom_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a custom data store.",
 					Optional:    true,
-					Attributes:  customAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeValueDefault),
+					Attributes:  customAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeValueDefault, includeIdAttr),
 					Validators: []validator.Object{
 						objectvalidator.ExactlyOneOf(
 							path.MatchRelative().AtParent().AtName("jdbc_attribute_source"),
@@ -200,7 +213,7 @@ func toSchemaInternal(sizeAtLeast int, optionalAndComputedNestedAttributeContrac
 				"jdbc_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a JDBC data store.",
 					Optional:    true,
-					Attributes:  jdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment),
+					Attributes:  jdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr),
 					Validators: []validator.Object{
 						objectvalidator.ExactlyOneOf(
 							path.MatchRelative().AtParent().AtName("custom_attribute_source"),
@@ -211,7 +224,7 @@ func toSchemaInternal(sizeAtLeast int, optionalAndComputedNestedAttributeContrac
 				"ldap_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a LDAP data store.",
 					Optional:    true,
-					Attributes:  ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment),
+					Attributes:  ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr),
 					Validators: []validator.Object{
 						objectvalidator.ExactlyOneOf(
 							path.MatchRelative().AtParent().AtName("custom_attribute_source"),
