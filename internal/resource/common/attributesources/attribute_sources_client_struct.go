@@ -47,7 +47,10 @@ func ClientStruct(attributeSourcesAttr basetypes.SetValue) []client.AttributeSou
 					attributeSourceInner.CustomAttributeSource.FilterFields = append(attributeSourceInner.CustomAttributeSource.FilterFields, filterFieldsValue)
 				}
 			}
-			attributeSourceInner.CustomAttributeSource.Id = customAttributeSourceAttrs["id"].(types.String).ValueStringPointer()
+			idAttr, ok := customAttributeSourceAttrs["id"]
+			if ok {
+				attributeSourceInner.CustomAttributeSource.Id = idAttr.(types.String).ValueStringPointer()
+			}
 			attributeSourceInner.CustomAttributeSource.Type = customAttributeSourceAttrs["type"].(types.String).ValueString()
 		}
 		if internaltypes.IsDefined(sourceAttrs["jdbc_attribute_source"]) {
@@ -79,7 +82,10 @@ func ClientStruct(attributeSourcesAttr basetypes.SetValue) []client.AttributeSou
 			attributeSourceInner.JdbcAttributeSource.DataStoreRef = jdbcAttributeSourceDataStoreRefValue
 			attributeSourceInner.JdbcAttributeSource.Description = jdbcAttributeSourceAttrs["description"].(types.String).ValueStringPointer()
 			attributeSourceInner.JdbcAttributeSource.Filter = jdbcAttributeSourceAttrs["filter"].(types.String).ValueString()
-			attributeSourceInner.JdbcAttributeSource.Id = jdbcAttributeSourceAttrs["id"].(types.String).ValueStringPointer()
+			idAttr, ok := jdbcAttributeSourceAttrs["id"]
+			if ok {
+				attributeSourceInner.JdbcAttributeSource.Id = idAttr.(types.String).ValueStringPointer()
+			}
 			attributeSourceInner.JdbcAttributeSource.Schema = jdbcAttributeSourceAttrs["schema"].(types.String).ValueStringPointer()
 			attributeSourceInner.JdbcAttributeSource.Table = jdbcAttributeSourceAttrs["table"].(types.String).ValueString()
 			attributeSourceInner.JdbcAttributeSource.Type = jdbcAttributeSourceAttrs["type"].(types.String).ValueString()
@@ -116,7 +122,10 @@ func ClientStruct(attributeSourcesAttr basetypes.SetValue) []client.AttributeSou
 			ldapAttributeSourceDataStoreRefValue.Id = ldapAttributeSourceDataStoreRefAttrs["id"].(types.String).ValueString()
 			attributeSourceInner.LdapAttributeSource.DataStoreRef = ldapAttributeSourceDataStoreRefValue
 			attributeSourceInner.LdapAttributeSource.Description = ldapAttributeSourceAttrs["description"].(types.String).ValueStringPointer()
-			attributeSourceInner.LdapAttributeSource.Id = ldapAttributeSourceAttrs["id"].(types.String).ValueStringPointer()
+			idAttr, ok := ldapAttributeSourceAttrs["id"]
+			if ok {
+				attributeSourceInner.LdapAttributeSource.Id = idAttr.(types.String).ValueStringPointer()
+			}
 			attributeSourceInner.LdapAttributeSource.MemberOfNestedGroup = ldapAttributeSourceAttrs["member_of_nested_group"].(types.Bool).ValueBoolPointer()
 			if !ldapAttributeSourceAttrs["search_attributes"].IsNull() && !ldapAttributeSourceAttrs["search_attributes"].IsUnknown() {
 				attributeSourceInner.LdapAttributeSource.SearchAttributes = []string{}

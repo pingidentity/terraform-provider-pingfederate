@@ -14,18 +14,20 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
-func CommonAttributeSourceAttrType() map[string]attr.Type {
+func commonAttributeSourceAttrType(includeIdAttr bool) map[string]attr.Type {
 	commonAttrSourceAttrType := map[string]attr.Type{}
 	commonAttrSourceAttrType["type"] = types.StringType
 	commonAttrSourceAttrType["data_store_ref"] = types.ObjectType{AttrTypes: resourcelink.AttrType()}
-	commonAttrSourceAttrType["id"] = types.StringType
+	if includeIdAttr {
+		commonAttrSourceAttrType["id"] = types.StringType
+	}
 	commonAttrSourceAttrType["description"] = types.StringType
 	commonAttrSourceAttrType["attribute_contract_fulfillment"] = attributecontractfulfillment.MapType()
 	return commonAttrSourceAttrType
 }
 
-func CustomAttributeSourceAttrType() map[string]attr.Type {
-	customAttrSourceAttrType := CommonAttributeSourceAttrType()
+func customAttributeSourceAttrType(includeIdAttr bool) map[string]attr.Type {
+	customAttrSourceAttrType := commonAttributeSourceAttrType(includeIdAttr)
 	customAttrSourceAttrType["filter_fields"] = types.SetType{ElemType: types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"value": types.StringType,
@@ -35,8 +37,8 @@ func CustomAttributeSourceAttrType() map[string]attr.Type {
 	return customAttrSourceAttrType
 }
 
-func JdbcAttributeSourceAttrType() map[string]attr.Type {
-	jdbcAttributeSourceAttrType := CommonAttributeSourceAttrType()
+func jdbcAttributeSourceAttrType(includeIdAttr bool) map[string]attr.Type {
+	jdbcAttributeSourceAttrType := commonAttributeSourceAttrType(includeIdAttr)
 	jdbcAttributeSourceAttrType["schema"] = types.StringType
 	jdbcAttributeSourceAttrType["table"] = types.StringType
 	jdbcAttributeSourceAttrType["column_names"] = types.ListType{ElemType: types.StringType}
@@ -44,8 +46,8 @@ func JdbcAttributeSourceAttrType() map[string]attr.Type {
 	return jdbcAttributeSourceAttrType
 }
 
-func LdapAttributeSourceAttrType() map[string]attr.Type {
-	ldapAttrSourceAttrType := CommonAttributeSourceAttrType()
+func ldapAttributeSourceAttrType(includeIdAttr bool) map[string]attr.Type {
+	ldapAttrSourceAttrType := commonAttributeSourceAttrType(includeIdAttr)
 	ldapAttrSourceAttrType["base_dn"] = types.StringType
 	ldapAttrSourceAttrType["search_scope"] = types.StringType
 	ldapAttrSourceAttrType["search_filter"] = types.StringType
@@ -62,24 +64,40 @@ func LdapAttributeSourceAttrType() map[string]attr.Type {
 }
 
 func AttrTypes() map[string]attr.Type {
+	return attrTypesInternal(true)
+}
+
+func AttrTypesNoId() map[string]attr.Type {
+	return attrTypesInternal(false)
+}
+
+func attrTypesInternal(includeIdAttr bool) map[string]attr.Type {
 	return map[string]attr.Type{
 		"custom_attribute_source": types.ObjectType{
-			AttrTypes: CustomAttributeSourceAttrType(),
+			AttrTypes: customAttributeSourceAttrType(includeIdAttr),
 		},
 		"jdbc_attribute_source": types.ObjectType{
-			AttrTypes: JdbcAttributeSourceAttrType(),
+			AttrTypes: jdbcAttributeSourceAttrType(includeIdAttr),
 		},
 		"ldap_attribute_source": types.ObjectType{
-			AttrTypes: LdapAttributeSourceAttrType(),
+			AttrTypes: ldapAttributeSourceAttrType(includeIdAttr),
 		},
 	}
 }
 
 func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
+	return toStateInternal(con, attributeSourcesFromClient, true)
+}
+
+func ToStateNoId(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
+	return toStateInternal(con, attributeSourcesFromClient, false)
+}
+
+func toStateInternal(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeIdAttr bool) (basetypes.SetValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var customAttrSourceAttrTypes = CustomAttributeSourceAttrType()
-	var jdbcAttrSourceAttrTypes = JdbcAttributeSourceAttrType()
-	var ldapAttrSourceAttrTypes = LdapAttributeSourceAttrType()
+	var customAttrSourceAttrTypes = customAttributeSourceAttrType(includeIdAttr)
+	var jdbcAttrSourceAttrTypes = jdbcAttributeSourceAttrType(includeIdAttr)
+	var ldapAttrSourceAttrTypes = ldapAttributeSourceAttrType(includeIdAttr)
 	var valueFromDiags diag.Diagnostics
 
 	// Build attribute_sources value
@@ -95,7 +113,9 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")
 			customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.CustomAttributeSource.DataStoreRef)
 			diags.Append(valueFromDiags...)
-			customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
+			if includeIdAttr {
+				customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
+			}
 			customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
 			customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.CustomAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
@@ -114,7 +134,9 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			jdbcAttrSourceValues["type"] = types.StringValue("JDBC")
 			jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
 			diags.Append(valueFromDiags...)
-			jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
+			if includeIdAttr {
+				jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
+			}
 			jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
 			jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
@@ -140,7 +162,9 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			ldapAttrSourceValues["type"] = types.StringValue(attrSource.LdapAttributeSource.Type)
 			ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.LdapAttributeSource.DataStoreRef)
 			diags.Append(valueFromDiags...)
-			ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
+			if includeIdAttr {
+				ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
+			}
 			ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)
 			ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.LdapAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
@@ -149,11 +173,11 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 		} else {
 			attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
 		}
-		attrSourceElement, valueFromDiags := types.ObjectValue(AttrTypes(), attrSourceValues)
+		attrSourceElement, valueFromDiags := types.ObjectValue(attrTypesInternal(includeIdAttr), attrSourceValues)
 		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	attrToState, valueFromDiags := types.SetValue(types.ObjectType{AttrTypes: AttrTypes()}, attrSourceElements)
+	attrToState, valueFromDiags := types.SetValue(types.ObjectType{AttrTypes: attrTypesInternal(includeIdAttr)}, attrSourceElements)
 	diags.Append(valueFromDiags...)
 	return attrToState, diags
 }

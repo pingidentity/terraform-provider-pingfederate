@@ -97,19 +97,16 @@ resource "pingfederate_sp_idp_connection" "example" {
       {
         attribute_sources = [
           {
-            ldap_attribute_source = {
+            jdbc_attribute_source = {
               attribute_contract_fulfillment = null
-              base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-              binary_attribute_settings      = null
+              column_names                   = ["GRANTEE"]
               data_store_ref = {
-                id = "pingdirectory"
+                id = "ProvisionerDS"
               }
-              description            = "PingDirectory"
-              member_of_nested_group = false
-              search_attributes      = ["Subject DN"]
-              search_filter          = "(&(memberUid=uid)(cn=Postman))"
-              search_scope           = "SUBTREE"
-              type                   = "LDAP"
+              description = "JDBC"
+              filter      = "subject"
+              schema      = "INFORMATION_SCHEMA"
+              table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
             }
           },
         ]
@@ -145,6 +142,7 @@ resource "pingfederate_sp_idp_connection" "example" {
               search_filter          = "(&(memberUid=uid)(cn=Postman))"
               search_scope           = "SUBTREE"
               type                   = "LDAP"
+              id                     = "myldapattrsource"
             }
           },
         ]
@@ -209,6 +207,7 @@ resource "pingfederate_sp_idp_connection" "example" {
       attribute_sources = [
         {
           jdbc_attribute_source = {
+            id = "myjdbcsource"
             data_store_ref = {
               id = "ProvisionerDS",
             },

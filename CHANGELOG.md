@@ -4,6 +4,7 @@
 
 ### Bug fixes
 * Fixed the required `file_data` field not being written to state on import for the `pingfederate_certificate_ca`, `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate`, and `pingfederate_metadata_url` resources. ([#502](https://github.com/pingidentity/terraform-provider-pingfederate/pull/502))
+* Fixed validation for the `idp_browser_sso.adapter_mappings.attribute_sources` attribute in the `pingfederate_sp_idp_connection` resource. The attribute sources are now limited to a maximum size of `1`, and the `id` attribute for the individual attribute sources is removed, as it is not supported in IdP connection adapter mappings. ([#503](https://github.com/pingidentity/terraform-provider-pingfederate/pull/503))
 
 # v1.4.5 April 30, 2025
 ### Bug fixes
