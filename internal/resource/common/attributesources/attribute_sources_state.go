@@ -64,29 +64,23 @@ func ldapAttributeSourceAttrType(includeIdAttr bool) map[string]attr.Type {
 }
 
 func AttrTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"custom_attribute_source": types.ObjectType{
-			AttrTypes: customAttributeSourceAttrType(true),
-		},
-		"jdbc_attribute_source": types.ObjectType{
-			AttrTypes: jdbcAttributeSourceAttrType(true),
-		},
-		"ldap_attribute_source": types.ObjectType{
-			AttrTypes: ldapAttributeSourceAttrType(true),
-		},
-	}
+	return attrTypesInternal(true)
 }
 
 func AttrTypesNoId() map[string]attr.Type {
+	return attrTypesInternal(false)
+}
+
+func attrTypesInternal(includeIdAttr bool) map[string]attr.Type {
 	return map[string]attr.Type{
 		"custom_attribute_source": types.ObjectType{
-			AttrTypes: customAttributeSourceAttrType(false),
+			AttrTypes: customAttributeSourceAttrType(includeIdAttr),
 		},
 		"jdbc_attribute_source": types.ObjectType{
-			AttrTypes: jdbcAttributeSourceAttrType(false),
+			AttrTypes: jdbcAttributeSourceAttrType(includeIdAttr),
 		},
 		"ldap_attribute_source": types.ObjectType{
-			AttrTypes: ldapAttributeSourceAttrType(false),
+			AttrTypes: ldapAttributeSourceAttrType(includeIdAttr),
 		},
 	}
 }
@@ -104,12 +98,6 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 	var customAttrSourceAttrTypes = customAttributeSourceAttrType(includeIdAttr)
 	var jdbcAttrSourceAttrTypes = jdbcAttributeSourceAttrType(includeIdAttr)
 	var ldapAttrSourceAttrTypes = ldapAttributeSourceAttrType(includeIdAttr)
-	var attrTypes map[string]attr.Type
-	if includeIdAttr {
-		attrTypes = AttrTypes()
-	} else {
-		attrTypes = AttrTypesNoId()
-	}
 	var valueFromDiags diag.Diagnostics
 
 	// Build attribute_sources value
@@ -185,11 +173,11 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 		} else {
 			attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
 		}
-		attrSourceElement, valueFromDiags := types.ObjectValue(attrTypes, attrSourceValues)
+		attrSourceElement, valueFromDiags := types.ObjectValue(attrTypesInternal(includeIdAttr), attrSourceValues)
 		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	attrToState, valueFromDiags := types.SetValue(types.ObjectType{AttrTypes: attrTypes}, attrSourceElements)
+	attrToState, valueFromDiags := types.SetValue(types.ObjectType{AttrTypes: attrTypesInternal(includeIdAttr)}, attrSourceElements)
 	diags.Append(valueFromDiags...)
 	return attrToState, diags
 }

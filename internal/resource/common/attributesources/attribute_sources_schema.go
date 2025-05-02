@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -180,13 +179,7 @@ func ToSchemaNoIdAttr() schema.SetNestedAttribute {
 }
 
 func toSchemaInternal(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment, includeValueDefault, includeIdAttr bool) schema.SetNestedAttribute {
-	var attrTypes map[string]attr.Type
-	if includeIdAttr {
-		attrTypes = AttrTypes()
-	} else {
-		attrTypes = AttrTypesNoId()
-	}
-	attributeSourcesDefault, _ := types.SetValue(types.ObjectType{AttrTypes: attrTypes}, nil)
+	attributeSourcesDefault, _ := types.SetValue(types.ObjectType{AttrTypes: attrTypesInternal(includeIdAttr)}, nil)
 	validators := []validator.Set{}
 	if sizeAtLeast > 0 {
 		validators = append(validators, setvalidator.SizeAtLeast(sizeAtLeast))
