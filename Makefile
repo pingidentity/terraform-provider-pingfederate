@@ -123,25 +123,25 @@ openapp:
 	open "https://localhost:9999/pingfederate/app"
 
 golangcilint:
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint run --timeout 5m ./internal/...
+	go tool golangci-lint run --timeout 5m ./internal/...
 
 tfproviderlint: 
-	go run github.com/bflad/tfproviderlint/cmd/tfproviderlintx \
-									-c 1 \
-									-AT001.ignored-filename-suffixes=_test.go \
-									-AT003=false \
-									-R018=false \
-									-XAT001=false \
-									-XR004=false \
-									-XS002=false ./internal/...
+	go tool tfproviderlintx \
+						-c 1 \
+						-AT001.ignored-filename-suffixes=_test.go \
+						-AT003=false \
+						-R018=false \
+						-XAT001=false \
+						-XR004=false \
+						-XS002=false ./internal/...
 
 tflint:
-	go run github.com/terraform-linters/tflint --recursive --disable-rule "terraform_unused_declarations" --disable-rule "terraform_required_providers" --disable-rule "terraform_required_version"
+	go tool tflint --recursive --disable-rule "terraform_unused_declarations" --disable-rule "terraform_required_providers" --disable-rule "terraform_required_version"
 
 terrafmtlint:
 	find ./internal/acctest -type f -name '*_test.go' \
 		| sort -u \
-		| xargs -I {} go run github.com/katbyte/terrafmt -f fmt {} -v
+		| xargs -I {} go tool terrafmt -f fmt {} -v
 
 importfmtlint:
-	go run github.com/pavius/impi/cmd/impi --local . --scheme stdThirdPartyLocal ./internal/...
+	go tool impi --local . --scheme stdThirdPartyLocal ./internal/...

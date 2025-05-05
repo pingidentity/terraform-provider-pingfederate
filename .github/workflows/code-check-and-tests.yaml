@@ -138,7 +138,7 @@ jobs:
       - run: |
           find ./internal/acctest -type f -name '*_test.go' \
           | sort -u \
-          | xargs -I {} go run github.com/katbyte/terrafmt diff -f --check --fmtcompat {} ; if [ $$? -ne 0 ]; then \
+          | xargs -I {} go tool terrafmt diff -f --check --fmtcompat {} ; if [ $$? -ne 0 ]; then \
           echo ""; \
           echo "terrafmt found bad formatting of HCL embedded in the test scripts. Please run "; \
           echo "\"make terrafmtlint\" before submitting the code for review."; \
