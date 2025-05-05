@@ -84,7 +84,7 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.4.*"
+          terraform_version: "1.11.*"
           terraform_wrapper: false
       # Use git add -N . to ensure that new files are listed in the git diff check
       - run: |
@@ -158,7 +158,7 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.4.*"
+          terraform_version: "1.11.*"
           terraform_wrapper: false
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testaccclustered && make removetestcontainer
         env:
@@ -179,7 +179,7 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.4.*"
+          terraform_version: "1.11.*"
           terraform_wrapper: false
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testauthacc && make removetestcontainer
         env:
@@ -200,7 +200,7 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.4.*"
+          terraform_version: "1.11.*"
           terraform_wrapper: false
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
         env:
