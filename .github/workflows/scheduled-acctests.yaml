@@ -14,8 +14,7 @@ jobs:
       matrix:
         terraform:
           - "1.4.*"
-          - "1.5.*"
-          - "1.6.*"
+          - "1.11.*"
         # Cover oldest and newest patch release of the major-minor releases we support
         pingfederate:
           - "11.3.7"
