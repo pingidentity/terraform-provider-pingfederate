@@ -273,9 +273,21 @@ func (state *metadataUrlResourceModel) readClientResponse(response *client.Metad
 	} else {
 		certViewSubjectAlternativeNamesValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.CertView.SubjectAlternativeNames)
 		respDiags.Append(diags...)
+		var expires types.String
+		if response.CertView.Expires != nil {
+			expires = types.StringValue(response.CertView.Expires.Format(time.RFC3339))
+		} else {
+			expires = types.StringNull()
+		}
+		var validFrom types.String
+		if response.CertView.ValidFrom != nil {
+			validFrom = types.StringValue(response.CertView.ValidFrom.Format(time.RFC3339))
+		} else {
+			validFrom = types.StringNull()
+		}
 		certViewValue, diags = types.ObjectValue(certViewAttrTypes, map[string]attr.Value{
 			"crypto_provider":           types.StringPointerValue(response.CertView.CryptoProvider),
-			"expires":                   types.StringValue(response.CertView.Expires.Format(time.RFC3339)),
+			"expires":                   expires,
 			"id":                        types.StringPointerValue(response.CertView.Id),
 			"issuer_dn":                 types.StringPointerValue(response.CertView.IssuerDN),
 			"key_algorithm":             types.StringPointerValue(response.CertView.KeyAlgorithm),
@@ -287,7 +299,7 @@ func (state *metadataUrlResourceModel) readClientResponse(response *client.Metad
 			"status":                    types.StringPointerValue(response.CertView.Status),
 			"subject_alternative_names": certViewSubjectAlternativeNamesValue,
 			"subject_dn":                types.StringPointerValue(response.CertView.SubjectDN),
-			"valid_from":                types.StringValue(response.CertView.ValidFrom.Format(time.RFC3339)),
+			"valid_from":                validFrom,
 			"version":                   types.Int64PointerValue(response.CertView.Version),
 		})
 		respDiags.Append(diags...)

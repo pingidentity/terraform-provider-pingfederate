@@ -173,8 +173,16 @@ func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, 
 	state.SubjectDN = types.StringPointerValue(r.SubjectDN)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
 	state.IssuerDN = types.StringPointerValue(r.IssuerDN)
-	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
-	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
+	if r.ValidFrom != nil {
+		state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
+	} else {
+		state.ValidFrom = types.StringNull()
+	}
+	if r.Expires != nil {
+		state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
 	state.KeySize = types.Int64PointerValue(r.KeySize)
 	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)

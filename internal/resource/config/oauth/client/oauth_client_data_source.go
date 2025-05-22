@@ -617,7 +617,11 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 	for _, secondarySecretFromClient := range secondarySecretsFromClient {
 		secondarySecretAttrVal := map[string]attr.Value{}
 		secondarySecretAttrVal["encrypted_secret"] = types.StringPointerValue(secondarySecretFromClient.EncryptedSecret)
-		secondarySecretAttrVal["expiry_time"] = types.StringValue(secondarySecretFromClient.ExpiryTime.Format(time.RFC3339Nano))
+		if secondarySecretFromClient.ExpiryTime != nil {
+			secondarySecretAttrVal["expiry_time"] = types.StringValue(secondarySecretFromClient.ExpiryTime.Format(time.RFC3339Nano))
+		} else {
+			secondarySecretAttrVal["expiry_time"] = types.StringNull()
+		}
 		secondarySecretsAttrValObj, respDiags := types.ObjectValue(secondarySecretsDataSourceAttrType, secondarySecretAttrVal)
 		diags.Append(respDiags...)
 		secondarySecretsListSlice = append(secondarySecretsListSlice, secondarySecretsAttrValObj)

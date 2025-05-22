@@ -1453,7 +1453,11 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 
 	state.ContactInfo = contactInfoValue
 	// creation_date
-	state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
+	if r.CreationDate != nil {
+		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
+	} else {
+		state.CreationDate = types.StringNull()
+	}
 	// credentials
 	var credentialsCertsValues []attr.Value
 	for _, cert := range r.Credentials.Certs {

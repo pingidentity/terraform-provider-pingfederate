@@ -166,7 +166,11 @@ func (state *keypairsSigningKeyDataSourceModel) readClientResponse(response *cli
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires
-	state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	if response.Expires != nil {
+		state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	// issuer_dn
 	state.IssuerDn = types.StringPointerValue(response.IssuerDN)
 	// key_algorithm

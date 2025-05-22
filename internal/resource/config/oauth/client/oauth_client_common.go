@@ -183,8 +183,16 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	} else {
 		state.Description = types.StringPointerValue(description)
 	}
-	state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339Nano))
-	state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
+	if r.ModificationDate != nil {
+		state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339Nano))
+	} else {
+		state.ModificationDate = types.StringNull()
+	}
+	if r.CreationDate != nil {
+		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
+	} else {
+		state.CreationDate = types.StringNull()
+	}
 	state.LogoUrl = types.StringPointerValue(r.LogoUrl)
 	state.DefaultAccessTokenManagerRef, respDiags = resourcelink.ToState(ctx, r.DefaultAccessTokenManagerRef)
 	diags.Append(respDiags...)
@@ -263,7 +271,11 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.RefreshTokenRollingGracePeriod = types.Int64PointerValue(r.RefreshTokenRollingGracePeriod)
 	state.ClientSecretRetentionPeriodType = types.StringPointerValue(r.ClientSecretRetentionPeriodType)
 	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
-	state.ClientSecretChangedTime = types.StringValue(r.GetClientSecretChangedTime().Format(time.RFC3339Nano))
+	if r.ClientSecretChangedTime != nil {
+		state.ClientSecretChangedTime = types.StringValue(r.ClientSecretChangedTime.Format(time.RFC3339Nano))
+	} else {
+		state.ClientSecretChangedTime = types.StringNull()
+	}
 	state.TokenIntrospectionSigningAlgorithm = types.StringPointerValue(r.TokenIntrospectionSigningAlgorithm)
 	state.TokenIntrospectionEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionEncryptionAlgorithm)
 	state.TokenIntrospectionContentEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionContentEncryptionAlgorithm)
