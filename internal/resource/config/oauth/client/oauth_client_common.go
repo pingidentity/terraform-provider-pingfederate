@@ -270,12 +270,7 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.RefreshTokenRollingGracePeriodType = types.StringPointerValue(r.RefreshTokenRollingGracePeriodType)
 	state.RefreshTokenRollingGracePeriod = types.Int64PointerValue(r.RefreshTokenRollingGracePeriod)
 	state.ClientSecretRetentionPeriodType = types.StringPointerValue(r.ClientSecretRetentionPeriodType)
-	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
-	if r.ClientSecretChangedTime != nil {
-		state.ClientSecretChangedTime = types.StringValue(r.ClientSecretChangedTime.Format(time.RFC3339Nano))
-	} else {
-		state.ClientSecretChangedTime = types.StringNull()
-	}
+	state.ClientSecretChangedTime = types.StringValue(r.GetClientSecretChangedTime().Format(time.RFC3339Nano))
 	state.TokenIntrospectionSigningAlgorithm = types.StringPointerValue(r.TokenIntrospectionSigningAlgorithm)
 	state.TokenIntrospectionEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionEncryptionAlgorithm)
 	state.TokenIntrospectionContentEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionContentEncryptionAlgorithm)
