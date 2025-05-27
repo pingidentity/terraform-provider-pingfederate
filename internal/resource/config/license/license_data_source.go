@@ -238,8 +238,16 @@ func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, s
 	state.MaxConnections = types.Int64PointerValue(r.MaxConnections)
 	state.UsedConnections = types.Int64PointerValue(r.UsedConnections)
 	state.Tier = types.StringPointerValue(r.Tier)
-	state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
-	state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
+	if r.IssueDate != nil {
+		state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
+	} else {
+		state.IssueDate = types.StringNull()
+	}
+	if r.ExpirationDate != nil {
+		state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
+	} else {
+		state.ExpirationDate = types.StringNull()
+	}
 	state.EnforcementType = types.StringPointerValue(r.EnforcementType)
 	state.Version = types.StringPointerValue(r.Version)
 	state.Product = types.StringPointerValue(r.Product)

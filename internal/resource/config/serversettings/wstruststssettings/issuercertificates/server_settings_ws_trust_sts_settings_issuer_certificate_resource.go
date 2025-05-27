@@ -223,7 +223,11 @@ func (state *serverSettingsWsTrustStsSettingsIssuerCertificateResourceModel) rea
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CertView.CryptoProvider)
 	// expires
-	state.Expires = types.StringValue(response.CertView.Expires.Format(time.RFC3339))
+	if response.CertView.Expires != nil {
+		state.Expires = types.StringValue(response.CertView.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	// certificate_id
 	state.CertificateId = types.StringPointerValue(response.CertView.Id)
 	// on imports, read in the file_data value from the response
@@ -254,7 +258,11 @@ func (state *serverSettingsWsTrustStsSettingsIssuerCertificateResourceModel) rea
 	// subject_dn
 	state.SubjectDn = types.StringPointerValue(response.CertView.SubjectDN)
 	// valid_from
-	state.ValidFrom = types.StringValue(response.CertView.ValidFrom.Format(time.RFC3339))
+	if response.CertView.ValidFrom != nil {
+		state.ValidFrom = types.StringValue(response.CertView.ValidFrom.Format(time.RFC3339))
+	} else {
+		state.ValidFrom = types.StringNull()
+	}
 	// version
 	state.Version = types.Int64PointerValue(response.CertView.Version)
 	return respDiags

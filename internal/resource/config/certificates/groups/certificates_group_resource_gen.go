@@ -204,7 +204,11 @@ func (state *certificatesGroupResourceModel) readClientResponse(response *client
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires
-	state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	if response.Expires != nil {
+		state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	// group_id
 	state.GroupId = types.StringPointerValue(response.Id)
 	// issuer_dn
@@ -229,7 +233,11 @@ func (state *certificatesGroupResourceModel) readClientResponse(response *client
 	// subject_dn
 	state.SubjectDn = types.StringPointerValue(response.SubjectDN)
 	// valid_from
-	state.ValidFrom = types.StringValue(response.ValidFrom.Format(time.RFC3339))
+	if response.ValidFrom != nil {
+		state.ValidFrom = types.StringValue(response.ValidFrom.Format(time.RFC3339))
+	} else {
+		state.ValidFrom = types.StringNull()
+	}
 	// version
 	state.Version = types.Int64PointerValue(response.Version)
 	return respDiags

@@ -2792,7 +2792,11 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 
 	state.ContactInfo = contactInfoValue
 	// creation_date
-	state.CreationDate = types.StringValue(response.CreationDate.Format(time.RFC3339))
+	if response.CreationDate != nil {
+		state.CreationDate = types.StringValue(response.CreationDate.Format(time.RFC3339))
+	} else {
+		state.CreationDate = types.StringNull()
+	}
 	// credentials
 	var credentialsValue types.Object
 	if response.Credentials != nil {

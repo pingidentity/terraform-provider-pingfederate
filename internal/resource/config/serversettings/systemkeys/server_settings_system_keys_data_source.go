@@ -125,24 +125,42 @@ func (r *serverSettingsSystemKeysDataSource) Configure(_ context.Context, req da
 func readServerSettingsSystemKeysDataSourceResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 	currentAttrs := r.GetCurrent()
+	var currentCreationDate types.String
+	if currentAttrs.CreationDate != nil {
+		currentCreationDate = types.StringValue(currentAttrs.CreationDate.Format(time.RFC3339Nano))
+	} else {
+		currentCreationDate = types.StringNull()
+	}
 	currentAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"creation_date":      currentCreationDate,
 		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
 	}
 	currentAttrsObjVal, respDiags := types.ObjectValue(systemKeyDataSourceAttrTypes, currentAttrVals)
 	diags = append(diags, respDiags...)
 
 	previousAttrs := r.GetPrevious()
+	var previousCreationDate types.String
+	if previousAttrs.CreationDate != nil {
+		previousCreationDate = types.StringValue(previousAttrs.CreationDate.Format(time.RFC3339Nano))
+	} else {
+		previousCreationDate = types.StringNull()
+	}
 	previousAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(previousAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"creation_date":      previousCreationDate,
 		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
 	}
 	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyDataSourceAttrTypes, previousAttrVals)
 	diags = append(diags, respDiags...)
 
 	pendingAttrs := r.GetPending()
+	var pendingCreationDate types.String
+	if previousAttrs.CreationDate != nil {
+		pendingCreationDate = types.StringValue(pendingAttrs.CreationDate.Format(time.RFC3339Nano))
+	} else {
+		pendingCreationDate = types.StringNull()
+	}
 	pendingAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(pendingAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"creation_date":      pendingCreationDate,
 		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
 	}
 	pendingAttrsObjVal, respDiags := types.ObjectValue(systemKeyDataSourceAttrTypes, pendingAttrVals)
