@@ -1,4 +1,4 @@
-# v1.5.0 (Unreleased)
+# v1.5.0 May 28, 2025
 ### Enhancements
 * Added `formatted_file_data` field to `pingfederate_certificate_ca` and `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate` resources, to handle drift detection when the certificate is changed outside of terraform. ([#502](https://github.com/pingidentity/terraform-provider-pingfederate/pull/502))
 
