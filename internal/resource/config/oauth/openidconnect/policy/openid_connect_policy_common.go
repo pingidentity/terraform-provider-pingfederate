@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthopenidconnectpolicy
 
 import (
@@ -6,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -39,21 +41,22 @@ var (
 )
 
 type oauthOpenIdConnectPolicyModel struct {
-	Id                          types.String `tfsdk:"id"`
-	PolicyId                    types.String `tfsdk:"policy_id"`
-	Name                        types.String `tfsdk:"name"`
-	AccessTokenManagerRef       types.Object `tfsdk:"access_token_manager_ref"`
-	IdTokenLifetime             types.Int64  `tfsdk:"id_token_lifetime"`
-	IncludeSriInIdToken         types.Bool   `tfsdk:"include_sri_in_id_token"`
-	IncludeUserInfoInIdToken    types.Bool   `tfsdk:"include_user_info_in_id_token"`
-	IncludeSHashInIdToken       types.Bool   `tfsdk:"include_s_hash_in_id_token"`
-	ReturnIdTokenOnRefreshGrant types.Bool   `tfsdk:"return_id_token_on_refresh_grant"`
-	ReissueIdTokenInHybridFlow  types.Bool   `tfsdk:"reissue_id_token_in_hybrid_flow"`
-	AttributeContract           types.Object `tfsdk:"attribute_contract"`
-	AttributeMapping            types.Object `tfsdk:"attribute_mapping"`
-	ScopeAttributeMappings      types.Map    `tfsdk:"scope_attribute_mappings"`
-	IncludeX5tInIdToken         types.Bool   `tfsdk:"include_x5t_in_id_token"`
-	IdTokenTypHeaderValue       types.String `tfsdk:"id_token_typ_header_value"`
+	Id                                types.String `tfsdk:"id"`
+	PolicyId                          types.String `tfsdk:"policy_id"`
+	Name                              types.String `tfsdk:"name"`
+	AccessTokenManagerRef             types.Object `tfsdk:"access_token_manager_ref"`
+	IdTokenLifetime                   types.Int64  `tfsdk:"id_token_lifetime"`
+	IncludeSriInIdToken               types.Bool   `tfsdk:"include_sri_in_id_token"`
+	IncludeUserInfoInIdToken          types.Bool   `tfsdk:"include_user_info_in_id_token"`
+	IncludeSHashInIdToken             types.Bool   `tfsdk:"include_s_hash_in_id_token"`
+	ReturnIdTokenOnRefreshGrant       types.Bool   `tfsdk:"return_id_token_on_refresh_grant"`
+	ReissueIdTokenInHybridFlow        types.Bool   `tfsdk:"reissue_id_token_in_hybrid_flow"`
+	AttributeContract                 types.Object `tfsdk:"attribute_contract"`
+	AttributeMapping                  types.Object `tfsdk:"attribute_mapping"`
+	ScopeAttributeMappings            types.Map    `tfsdk:"scope_attribute_mappings"`
+	IncludeX5tInIdToken               types.Bool   `tfsdk:"include_x5t_in_id_token"`
+	IdTokenTypHeaderValue             types.String `tfsdk:"id_token_typ_header_value"`
+	ReturnIdTokenOnTokenExchangeGrant types.Bool   `tfsdk:"return_id_token_on_token_exchange_grant"`
 }
 
 func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.OpenIdConnectPolicy, state *oauthOpenIdConnectPolicyModel) diag.Diagnostics {
@@ -72,6 +75,7 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	state.ReturnIdTokenOnRefreshGrant = types.BoolPointerValue(response.ReturnIdTokenOnRefreshGrant)
 	state.ReissueIdTokenInHybridFlow = types.BoolPointerValue(response.ReissueIdTokenInHybridFlow)
 	state.IncludeX5tInIdToken = types.BoolPointerValue(response.IncludeX5tInIdToken)
+	state.ReturnIdTokenOnTokenExchangeGrant = types.BoolPointerValue(response.ReturnIdTokenOnTokenExchangeGrant)
 	if response.IdTokenTypHeaderValue != nil && *response.IdTokenTypHeaderValue == "" {
 		// PF can return an empty string for a nil value, so treat that as null here
 		state.IdTokenTypHeaderValue = types.StringNull()

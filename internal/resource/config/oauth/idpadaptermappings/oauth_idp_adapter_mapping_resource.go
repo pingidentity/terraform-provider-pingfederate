@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthidpadaptermappings
 
 import (
@@ -10,10 +12,10 @@ import (
 )
 
 func (r *oauthIdpAdapterMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthIdpAdapterMappingResourceModel
+	var model *oauthIdpAdapterMappingResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
-	if resp.Diagnostics.HasError() {
+	if model == nil || resp.Diagnostics.HasError() {
 		return
 	}
 

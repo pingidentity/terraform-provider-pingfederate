@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthtokenexchangegeneratorsettings
 
 import (
@@ -7,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -42,9 +44,9 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Schema(ctx context.Context
 		Description: "Manages Oauth Token Exchange Generator Settings",
 		Attributes: map[string]schema.Attribute{
 			"default_generator_group_ref": resourcelink.CompleteSingleNestedAttribute(
-				false,
-				false,
 				true,
+				false,
+				false,
 				"Reference to the default Token Exchange Generator group, if one is defined.",
 			),
 		},

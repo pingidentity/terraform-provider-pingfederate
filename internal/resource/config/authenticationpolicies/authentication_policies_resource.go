@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package authenticationpolicies
 
 import (
@@ -16,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -105,7 +107,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 							Default:     booldefault.StaticBool(true),
 							Description: "Whether or not this authentication policy tree is enabled. Default is true.",
 						},
-						"root_node": authenticationpolicytreenode.ToSchema("A node inside the authentication policy tree."),
+						"root_node": authenticationpolicytreenode.ToSchemaNoValueDefault("A node inside the authentication policy tree."),
 						"handle_failures_locally": schema.BoolAttribute{
 							Optional:    true,
 							Computed:    true,

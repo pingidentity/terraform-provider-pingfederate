@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package license
 
 import (
@@ -8,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -236,8 +238,16 @@ func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, s
 	state.MaxConnections = types.Int64PointerValue(r.MaxConnections)
 	state.UsedConnections = types.Int64PointerValue(r.UsedConnections)
 	state.Tier = types.StringPointerValue(r.Tier)
-	state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
-	state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
+	if r.IssueDate != nil {
+		state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
+	} else {
+		state.IssueDate = types.StringNull()
+	}
+	if r.ExpirationDate != nil {
+		state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
+	} else {
+		state.ExpirationDate = types.StringNull()
+	}
 	state.EnforcementType = types.StringPointerValue(r.EnforcementType)
 	state.Version = types.StringPointerValue(r.Version)
 	state.Product = types.StringPointerValue(r.Product)

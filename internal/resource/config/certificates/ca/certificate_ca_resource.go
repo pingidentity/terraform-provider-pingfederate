@@ -1,11 +1,13 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package certificatesca
 
 import (
 	"context"
+	"encoding/base64"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,10 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/pemcertificates"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -45,6 +49,7 @@ type certificatesResourceModel struct {
 	CryptoProvider          types.String `tfsdk:"crypto_provider"`
 	Expires                 types.String `tfsdk:"expires"`
 	FileData                types.String `tfsdk:"file_data"`
+	FormattedFileData       types.String `tfsdk:"formatted_file_data"`
 	Id                      types.String `tfsdk:"id"`
 	IssuerDn                types.String `tfsdk:"issuer_dn"`
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
@@ -102,6 +107,10 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 					stringvalidator.LengthAtLeast(1),
 					configvalidators.ValidBase64(),
 				},
+			},
+			"formatted_file_data": schema.StringAttribute{
+				Computed:    true,
+				Description: "The certificate data in PEM format, formatted by PingFederate. This attribute is read-only.",
 			},
 			"issuer_dn": schema.StringAttribute{
 				Computed:    true,
@@ -179,23 +188,55 @@ func (r *certificateCAResource) Configure(_ context.Context, req resource.Config
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
-
 }
 
-func readCertificateResponse(ctx context.Context, r *client.CertView, state *certificatesResourceModel, expectedValues *certificatesResourceModel, diagnostics *diag.Diagnostics, createPlan types.String) {
-	X509FileData := createPlan
+func (r *certificateCAResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+	// Handle drift detection for the file_data value changing outside of terraform
+	var plan, state certificatesResourceModel
+	req.Plan.Get(ctx, &plan)
+	req.State.Get(ctx, &state)
+	if internaltypes.IsDefined(plan.FileData) && internaltypes.IsDefined(state.FormattedFileData) {
+		if !pemcertificates.FileDataEquivalent(plan.FileData.ValueString(), state.FormattedFileData.ValueString()) {
+			// Since file_data requires replacement on change, if drift is detected we need to replace the resource
+			plan.FormattedFileData = types.StringUnknown()
+			resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+			resp.RequiresReplace = path.Paths{path.Root("formatted_file_data")}
+		}
+	}
+}
+
+func (state *certificatesResourceModel) readCertificateResponse(r *client.CertView, formattedPEM *string, isImportRead bool) {
 	state.CaId = types.StringPointerValue(r.Id)
 	state.Id = types.StringPointerValue(r.Id)
 	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
-	state.FileData = types.StringValue(X509FileData.ValueString())
-	state.Id = types.StringPointerValue(r.Id)
-	state.CaId = types.StringPointerValue(r.Id)
+	if formattedPEM != nil {
+		if isImportRead {
+			// The PEM file must be in base-64 for the validator to accept it
+			state.FileData = types.StringValue(base64.StdEncoding.EncodeToString([]byte(*formattedPEM)))
+		}
+		state.FormattedFileData = types.StringPointerValue(formattedPEM)
+	} else {
+		// In theory this should never happen, but if the server fails to return the PEM file,
+		// just copy the value from the plan.
+		state.FormattedFileData = types.StringValue(state.FileData.ValueString())
+	}
 	state.SerialNumber = types.StringPointerValue(r.SerialNumber)
 	state.SubjectDn = types.StringPointerValue(r.SubjectDN)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
 	state.IssuerDn = types.StringPointerValue(r.IssuerDN)
-	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
-	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
+	if r.ValidFrom != nil {
+		state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
+	} else {
+		state.ValidFrom = types.StringNull()
+	}
+	if r.Expires != nil {
+		state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
 	state.KeySize = types.Int64PointerValue(r.KeySize)
 	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)
@@ -229,35 +270,56 @@ func (r *certificateCAResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	// Read the response into the state
-	var state certificatesResourceModel
+	// Get the server's formatted PEM file for the cert
+	var pemFile *string
+	if certificateResponse.Id != nil {
+		exportedPemFile, httpResp, err := r.apiClient.CertificatesCaAPI.ExportCaCertificateFile(config.AuthContext(ctx, r.providerConfig), *certificateResponse.Id).Execute()
+		if err != nil {
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the PEM file of a CA certificate after create", err, httpResp, &caResourceCustomId)
+			return
+		}
+		pemFile = &exportedPemFile
+	}
 
-	readCertificateResponse(ctx, certificateResponse, &state, &plan, &resp.Diagnostics, plan.FileData)
-	diags = resp.State.Set(ctx, state)
-	resp.Diagnostics.Append(diags...)
+	// Read the response into the state
+	plan.readCertificateResponse(certificateResponse, pemFile, false)
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
 func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
 	var state certificatesResourceModel
 
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
+	certificateResponse, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificate CA", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp, &caResourceCustomId)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading a CA certificate", err, httpResp, &caResourceCustomId)
+		}
+		return
+	}
+
+	// Get the server's formatted PEM file for the cert
+	exportedPemFile, httpResp, err := r.apiClient.CertificatesCaAPI.ExportCaCertificateFile(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
+	if err != nil {
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificate CA", httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the PEM file of a CA certificate", err, httpResp, &caResourceCustomId)
 		}
 		return
 	}
 
 	// Read the response into the state
-	readCertificateResponse(ctx, apiReadCertificate, &state, &state, &resp.Diagnostics, state.FileData)
+	state.readCertificateResponse(certificateResponse, &exportedPemFile, isImportRead)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -287,4 +349,5 @@ func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteR
 
 func (r *certificateCAResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("ca_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

@@ -1,10 +1,12 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package licenseagreement
 
 import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 )
 
 type licenseAgreementModel struct {

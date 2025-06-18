@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package keypairssslserversettings
 
 import (
@@ -23,9 +25,9 @@ func (m *keypairsSslServerSettingsResourceModel) setNullObjectValues() {
 }
 
 func (r *keypairsSslServerSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var config keypairsSslServerSettingsResourceModel
+	var config *keypairsSslServerSettingsResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-	if resp.Diagnostics.HasError() {
+	if config == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -33,14 +35,19 @@ func (r *keypairsSslServerSettingsResource) ValidateConfig(ctx context.Context, 
 		certRefFound := false
 		adminConsoleCertId := config.AdminConsoleCertRef.Attributes()["id"].(types.String)
 		if internaltypes.IsDefined(adminConsoleCertId) {
+			unknownsFound := false
 			for _, cert := range config.ActiveAdminConsoleCerts.Elements() {
 				certId := cert.(types.Object).Attributes()["id"].(types.String)
+				if certId.IsUnknown() {
+					unknownsFound = true
+					break
+				}
 				if certId.Equal(adminConsoleCertId) {
 					certRefFound = true
 					break
 				}
 			}
-			if !certRefFound {
+			if !certRefFound && !unknownsFound {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("active_admin_console_certs"),
 					providererror.InvalidAttributeConfiguration,
@@ -53,14 +60,19 @@ func (r *keypairsSslServerSettingsResource) ValidateConfig(ctx context.Context, 
 		certRefFound := false
 		runtimeServerCertId := config.RuntimeServerCertRef.Attributes()["id"].(types.String)
 		if internaltypes.IsDefined(runtimeServerCertId) {
+			unknownsFound := false
 			for _, cert := range config.ActiveRuntimeServerCerts.Elements() {
 				certId := cert.(types.Object).Attributes()["id"].(types.String)
+				if certId.IsUnknown() {
+					unknownsFound = true
+					break
+				}
 				if certId.Equal(runtimeServerCertId) {
 					certRefFound = true
 					break
 				}
 			}
-			if !certRefFound {
+			if !certRefFound && !unknownsFound {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("active_runtime_server_certs"),
 					providererror.InvalidAttributeConfiguration,

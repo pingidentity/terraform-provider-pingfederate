@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package keypairssslclientcsr
 
 import (
@@ -12,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -173,7 +175,11 @@ func (state *keypairsSslClientCsrResourceModel) readClientResponse(response *cli
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires
-	state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	if response.Expires != nil {
+		state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	// keypair_id
 	state.KeypairId = types.StringPointerValue(response.Id)
 	// issuer_dn
@@ -198,7 +204,11 @@ func (state *keypairsSslClientCsrResourceModel) readClientResponse(response *cli
 	// subject_dn
 	state.SubjectDn = types.StringPointerValue(response.SubjectDN)
 	// valid_from
-	state.ValidFrom = types.StringValue(response.ValidFrom.Format(time.RFC3339))
+	if response.ValidFrom != nil {
+		state.ValidFrom = types.StringValue(response.ValidFrom.Format(time.RFC3339))
+	} else {
+		state.ValidFrom = types.StringNull()
+	}
 	// version
 	state.Version = types.Int64PointerValue(response.Version)
 	return respDiags

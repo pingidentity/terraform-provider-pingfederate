@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package authenticationselector
 
 import (
@@ -15,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
@@ -215,10 +217,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {
@@ -302,10 +301,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 		hasObjectErrMap[err] = true
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {

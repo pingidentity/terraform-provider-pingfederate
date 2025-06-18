@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package idpadapter
 
 import (
@@ -5,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -174,6 +176,7 @@ func (r *idpAdapterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+		return
 	}
 
 	// Read the response into the state

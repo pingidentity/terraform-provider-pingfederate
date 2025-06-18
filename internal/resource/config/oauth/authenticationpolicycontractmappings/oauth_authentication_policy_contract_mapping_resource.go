@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthauthenticationpolicycontractmappings
 
 import (
@@ -10,10 +12,10 @@ import (
 )
 
 func (r *oauthAuthenticationPolicyContractMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthAuthenticationPolicyContractMappingResourceModel
+	var model *oauthAuthenticationPolicyContractMappingResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
-	if resp.Diagnostics.HasError() {
+	if model == nil || resp.Diagnostics.HasError() {
 		return
 	}
 

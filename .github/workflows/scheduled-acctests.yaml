@@ -8,20 +8,19 @@ on:
 jobs:
   acceptance:
     name: Acceptance Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         terraform:
           - "1.4.*"
-          - "1.5.*"
-          - "1.6.*"
+          - "1.11.*"
         # Cover oldest and newest patch release of the major-minor releases we support
         pingfederate:
-          - "11.2.7"
           - "11.3.7"
-          - "12.0.5"
-          - "12.1.3"
+          - "12.0.6"
+          - "12.1.4"
+          - "12.2.0"
       max-parallel: 1
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +38,12 @@ jobs:
           CONFIG: ${{ secrets.Config }}
           PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
           OPERATIONAL_MODE: "CLUSTERED_CONSOLE"
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testauthacc && make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
+          DATA_JSON_SUFFIX: ".oauth"
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
         env:
           TF_ACC: "1"
@@ -58,3 +63,19 @@ jobs:
           PF_TF_ACC_TEST_CSR_RESPONSE_1: ${{ secrets.PF_TF_ACC_TEST_CSR_RESPONSE_1 }}
           PF_TF_ACC_TEST_CSR_RESPONSE_2: ${{ secrets.PF_TF_ACC_TEST_CSR_RESPONSE_2 }}
           PF_TF_ACC_TEST_CA_CERTIFICATE: ${{ secrets.PF_TF_ACC_TEST_CA_CERTIFICATE }}
+
+  onfailure:
+    if: ${{ always() && github.event_name == 'schedule' && contains(needs.*.result, 'failure') }}
+    needs: [acceptance]
+    name: Send failure webhook
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl --silent --request POST "${{ secrets.FAILURE_WEBHOOK_URL }}" \
+          --header 'Accept: application/json' \
+          --header 'Content-Type: text/plain' \
+          --data-raw '{
+              "WorkflowName": "${{ github.workflow }}",
+              "WorkflowURL": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "RepoName" : "${{ github.repository }}",
+          }'

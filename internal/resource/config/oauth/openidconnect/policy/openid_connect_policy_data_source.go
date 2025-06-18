@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthopenidconnectpolicy
 
 import (
@@ -6,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -165,6 +167,10 @@ func (r *openidConnectPolicyDataSource) Schema(ctx context.Context, req datasour
 			"id_token_typ_header_value": schema.StringAttribute{
 				Description: "ID Token Type (typ) Header Value. Supported in PF version 11.3 or later.",
 				Optional:    false,
+				Computed:    true,
+			},
+			"return_id_token_on_token_exchange_grant": schema.BoolAttribute{
+				Description: "Determines whether an ID Token should be returned when token exchange is requested or not. Supported in PF version `12.2` or later.",
 				Computed:    true,
 			},
 		},

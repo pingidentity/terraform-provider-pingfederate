@@ -1,8 +1,9 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthtokenexchangetokengeneratormapping
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,8 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -104,20 +104,11 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 func addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx context.Context, addRequest *client.ProcessorPolicyToGeneratorMapping, plan oauthTokenExchangeTokenGeneratorMappingResourceModel) error {
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
-		var attributeSourcesErr error
-		addRequest.AttributeSources, attributeSourcesErr = attributesources.ClientStruct(plan.AttributeSources)
-		if attributeSourcesErr != nil {
-			return attributeSourcesErr
-		}
+		addRequest.AttributeSources = attributesources.ClientStruct(plan.AttributeSources)
 	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {
-		addRequest.IssuanceCriteria = client.NewIssuanceCriteria()
-		var issuanceCriteriaErr error
-		addRequest.IssuanceCriteria, issuanceCriteriaErr = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
-		if issuanceCriteriaErr != nil {
-			return issuanceCriteriaErr
-		}
+		addRequest.IssuanceCriteria = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
 	}
 	if internaltypes.IsDefined(plan.LicenseConnectionGroupAssignment) {
 		addRequest.LicenseConnectionGroupAssignment = plan.LicenseConnectionGroupAssignment.ValueStringPointer()
@@ -165,13 +156,8 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Con
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
-	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
-	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+attributeContractFulfillmentErr.Error())
-		return
-	}
-	createOauthTokenExchangeTokenGeneratorMapping := client.NewProcessorPolicyToGeneratorMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	attributeContractFulfillment := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
+	createOauthTokenExchangeTokenGeneratorMapping := client.NewProcessorPolicyToGeneratorMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err := addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx, createOauthTokenExchangeTokenGeneratorMapping, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth Token Exchange Token Generator Mapping: "+err.Error())
@@ -233,14 +219,9 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Update(ctx context.Con
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
-	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
-	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+attributeContractFulfillmentErr.Error())
-		return
-	}
+	attributeContractFulfillment := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	updateOauthTokenExchangeTokenGeneratorMapping := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.UpdateTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString())
-	createUpdateRequest := client.NewProcessorPolicyToGeneratorMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	createUpdateRequest := client.NewProcessorPolicyToGeneratorMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err := addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth Token Exchange Token Generator Mapping: "+err.Error())

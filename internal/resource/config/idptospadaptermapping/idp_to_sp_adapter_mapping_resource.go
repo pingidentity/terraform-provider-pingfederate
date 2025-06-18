@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package idptospadaptermapping
 
 import (
@@ -10,10 +12,10 @@ import (
 )
 
 func (r *idpToSpAdapterMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model idpToSpAdapterMappingResourceModel
+	var model *idpToSpAdapterMappingResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
-	if resp.Diagnostics.HasError() {
+	if model == nil || resp.Diagnostics.HasError() {
 		return
 	}
 

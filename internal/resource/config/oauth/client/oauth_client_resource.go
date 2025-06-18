@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthclient
 
 import (
@@ -27,7 +29,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
@@ -492,6 +494,62 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Optional:    true,
 						ElementType: types.StringType,
 					},
+					"user_info_response_content_encryption_algorithm": schema.StringAttribute{
+						Optional:    true,
+						Description: "The JSON Web Encryption [JWE] content-encryption algorithm for the UserInfo Response. Supported values are `AES_128_CBC_HMAC_SHA_256`, `AES_192_CBC_HMAC_SHA_384`, `AES_256_CBC_HMAC_SHA_512`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`. Supported in PF version `12.2` or later.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"AES_128_CBC_HMAC_SHA_256",
+								"AES_192_CBC_HMAC_SHA_384",
+								"AES_256_CBC_HMAC_SHA_512",
+								"AES_128_GCM",
+								"AES_192_GCM",
+								"AES_256_GCM",
+							),
+						},
+					},
+					"user_info_response_encryption_algorithm": schema.StringAttribute{
+						Optional:    true,
+						Description: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the UserInfo response. Supported values are `DIR`, `A128KW`, `A192KW`, `A256KW`, `A128GCMKW`, `A192GCMKW`, `A256GCMKW`, `ECDH_ES`, `ECDH_ES_A128KW`, `ECDH_ES_A192KW`, `ECDH_ES_A256KW`, `RSA_OAEP`, `RSA_OAEP_256`. Supported in PF version `12.2` or later.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"DIR",
+								"A128KW",
+								"A192KW",
+								"A256KW",
+								"A128GCMKW",
+								"A192GCMKW",
+								"A256GCMKW",
+								"ECDH_ES",
+								"ECDH_ES_A128KW",
+								"ECDH_ES_A192KW",
+								"ECDH_ES_A256KW",
+								"RSA_OAEP",
+								"RSA_OAEP_256",
+							),
+						},
+					},
+					"user_info_response_signing_algorithm": schema.StringAttribute{
+						Optional:    true,
+						Description: "The JSON Web Signature [JWS] algorithm required to sign the UserInfo response. Supported values are `NONE`, `HS256`, `HS384`, `HS512`, `RS256`, `RS384`, `RS512`, `ES256`, `ES384`, `ES512`, `PS256`, `PS384`, `PS512`. Supported in PF version `12.2` or later.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"NONE",
+								"HS256",
+								"HS384",
+								"HS512",
+								"RS256",
+								"RS384",
+								"RS512",
+								"ES256",
+								"ES384",
+								"ES512",
+								"PS256",
+								"PS384",
+								"PS512",
+							),
+						},
+					},
 				},
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -924,6 +982,22 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					),
 				},
 			},
+			"lockout_max_malicious_actions": schema.Int64Attribute{
+				Optional:    true,
+				Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.",
+			},
+			"lockout_max_malicious_actions_type": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"DO_NOT_LOCKOUT",
+						"SERVER_DEFAULT",
+						"OVERRIDE_SERVER_DEFAULT",
+					),
+				},
+			},
 		},
 	}
 
@@ -948,11 +1022,15 @@ func (r *oauthClientResource) Configure(_ context.Context, req resource.Configur
 }
 
 func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthClientModel
+	var model *oauthClientModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+	if model == nil {
+		return
+	}
 
 	// Persistent Grant Expiration Validation
-	if (internaltypes.IsDefined(model.PersistentGrantExpirationTime) || internaltypes.IsDefined(model.PersistentGrantExpirationTimeUnit)) && model.PersistentGrantExpirationType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
+	if (internaltypes.IsDefined(model.PersistentGrantExpirationTime) || internaltypes.IsDefined(model.PersistentGrantExpirationTimeUnit)) &&
+		!model.PersistentGrantExpirationType.IsUnknown() && model.PersistentGrantExpirationType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("persistent_grant_expiration_time"),
 			providererror.InvalidAttributeConfiguration,
@@ -960,32 +1038,33 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// Refresh Token Rolling Validation
-	if !internaltypes.IsDefined(model.RefreshTokenRollingIntervalType) || model.RefreshTokenRollingIntervalType.ValueString() == "SERVER_DEFAULT" {
-		// The refresh_token_rolling_interval and refresh_token_rolling_interval_time_unit value can't be
-		// configured with a non-default value when refresh_token_rolling_interval_type is set to "SERVER_DEFAULT"
-		if internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
+	if !model.RefreshTokenRollingIntervalType.IsUnknown() {
+		if model.RefreshTokenRollingIntervalType.ValueString() == "SERVER_DEFAULT" {
+			// The refresh_token_rolling_interval and refresh_token_rolling_interval_time_unit value can't be
+			// configured with a non-default value when refresh_token_rolling_interval_type is set to "SERVER_DEFAULT"
+			if internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("refresh_token_rolling_interval"),
+					providererror.InvalidAttributeConfiguration,
+					"refresh_token_rolling_interval can only be configured if refresh_token_rolling_interval_type is set to \"OVERRIDE_SERVER_DEFAULT\".")
+			}
+			if internaltypes.IsDefined(model.RefreshTokenRollingIntervalTimeUnit) && model.RefreshTokenRollingIntervalTimeUnit.ValueString() != "HOURS" {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("refresh_token_rolling_interval_time_unit"),
+					providererror.InvalidAttributeConfiguration,
+					"refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
+			}
+		} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && model.RefreshTokenRollingInterval.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("refresh_token_rolling_interval"),
 				providererror.InvalidAttributeConfiguration,
-				"refresh_token_rolling_interval can only be configured if refresh_token_rolling_interval_type is set to \"OVERRIDE_SERVER_DEFAULT\".")
+				"refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
 		}
-		if internaltypes.IsDefined(model.RefreshTokenRollingIntervalTimeUnit) && model.RefreshTokenRollingIntervalTimeUnit.ValueString() != "HOURS" {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("refresh_token_rolling_interval_time_unit"),
-				providererror.InvalidAttributeConfiguration,
-				"refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
-		}
-	} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && !internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("refresh_token_rolling_interval"),
-			providererror.InvalidAttributeConfiguration,
-			"refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".")
 	}
 
 	//  Client Auth Defined
 	var clientAuthAttributes map[string]attr.Value
-	clientAuthDefined := internaltypes.IsDefined(model.ClientAuth)
-	if clientAuthDefined {
+	if internaltypes.IsDefined(model.ClientAuth) {
 		clientAuthAttributes = model.ClientAuth.Attributes()
 		if internaltypes.IsDefined(clientAuthAttributes["type"]) {
 			clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
@@ -1020,7 +1099,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 						"client_cert_issuer_dn must be defined when client_auth.type is configured to \"CERTIFICATE\".")
 				}
 			case "SECRET":
-				if clientAuthAttributes["secret"].IsNull() && !internaltypes.IsDefined(clientAuthAttributes["encrypted_secret"]) {
+				if clientAuthAttributes["secret"].IsNull() && clientAuthAttributes["encrypted_secret"].IsNull() {
 					resp.Diagnostics.AddAttributeError(
 						path.Root("client_auth"),
 						providererror.InvalidAttributeConfiguration,
@@ -1036,7 +1115,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	for _, grantType := range model.GrantTypes.Elements() {
 		grantTypeVal := grantType.(types.String).ValueString()
 		if grantTypeVal == "CLIENT_CREDENTIALS" {
-			if !clientAuthDefined {
+			if model.ClientAuth.IsNull() {
 				resp.Diagnostics.AddAttributeError(
 					path.Root("client_auth"),
 					providererror.InvalidAttributeConfiguration,
@@ -1049,7 +1128,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// CIBA Validation
-	if !hasCibaGrantType && (internaltypes.IsDefined(model.CibaDeliveryMode) ||
+	if !model.GrantTypes.IsUnknown() && !hasCibaGrantType && (internaltypes.IsDefined(model.CibaDeliveryMode) ||
 		internaltypes.IsDefined(model.CibaNotificationEndpoint) ||
 		internaltypes.IsDefined(model.CibaPollingInterval) ||
 		internaltypes.IsDefined(model.CibaRequireSignedRequests) ||
@@ -1057,7 +1136,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		internaltypes.IsDefined(model.CibaUserCodeSupported)) {
 		resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, "ciba attributes can only be configured when \"CIBA\" is included in grant_types.")
 	}
-	if hasCibaGrantType && (model.CibaDeliveryMode.ValueString() == "PING" && !internaltypes.IsDefined(model.CibaNotificationEndpoint)) {
+	if hasCibaGrantType && model.CibaDeliveryMode.ValueString() == "PING" && model.CibaNotificationEndpoint.IsNull() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("ciba_notification_endpoint"),
 			providererror.InvalidAttributeConfiguration,
@@ -1066,9 +1145,9 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 
 	// Client Auth Validation
 	// ID Token Signing Algorithm Validation when client_auth is not defined
-	if !internaltypes.IsDefined(model.ClientAuth) {
+	if model.ClientAuth.IsNull() {
 		var algorithmAttributeSet []string
-		if internaltypes.IsDefined(model.OidcPolicy) && model.OidcPolicy.Attributes()["id_token_signing_algorithm"] != nil {
+		if internaltypes.IsDefined(model.OidcPolicy) && !model.OidcPolicy.Attributes()["id_token_signing_algorithm"].IsUnknown() {
 			algorithmAttributeSet = append(algorithmAttributeSet, model.OidcPolicy.Attributes()["id_token_signing_algorithm"].(types.String).ValueString())
 		}
 
@@ -1105,7 +1184,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			"restrict_scopes cannot be configured to false when allow_authentication_api_init is set to true.")
 	}
 
-	if len(model.RestrictedScopes.Elements()) > 0 && !model.RestrictScopes.ValueBool() {
+	if len(model.RestrictedScopes.Elements()) > 0 && !model.RestrictScopes.IsUnknown() && !model.RestrictScopes.ValueBool() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("restricted_scopes"),
 			providererror.InvalidAttributeConfiguration,
@@ -1117,7 +1196,8 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		oidcPolicy := model.OidcPolicy.Attributes()
 		pairwiseIdentifierUserType := oidcPolicy["pairwise_identifier_user_type"]
 		oidcPolicySectorIdentifierUri := oidcPolicy["sector_identifier_uri"]
-		if (pairwiseIdentifierUserType != nil && !pairwiseIdentifierUserType.(types.Bool).ValueBool()) && internaltypes.IsDefined(oidcPolicySectorIdentifierUri) {
+		if !pairwiseIdentifierUserType.IsUnknown() && !pairwiseIdentifierUserType.(types.Bool).ValueBool() &&
+			internaltypes.IsDefined(oidcPolicySectorIdentifierUri) {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("oidc_policy").AtMapKey("sector_identifier_uri"),
 				providererror.InvalidAttributeConfiguration,
@@ -1126,7 +1206,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// JWKS Settings Validation
-	if !internaltypes.IsDefined(model.JwksSettings) {
+	if model.JwksSettings.IsNull() {
 		if internaltypes.IsDefined(model.TokenIntrospectionEncryptionAlgorithm) {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("token_introspection_encryption_algorithm"),
@@ -1142,7 +1222,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to "YES"
-	if internaltypes.IsDefined(model.RequireOfflineAccessScopeToIssueRefreshTokens) && model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString() != "YES" &&
+	if !model.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() && model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString() != "YES" &&
 		internaltypes.IsDefined(model.OfflineAccessRequireConsentPrompt) && model.OfflineAccessRequireConsentPrompt.ValueString() != "SERVER_DEFAULT" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("offline_access_require_consent_prompt"),
@@ -1157,6 +1237,15 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			path.Root("bypass_approval_page"),
 			providererror.InvalidAttributeConfiguration,
 			"bypass_approval_page cannot be configured to false when allow_authentication_api_init is set to true.")
+	}
+
+	// lockout_max_malicious_actions validation
+	if internaltypes.IsDefined(model.LockoutMaxMaliciousActions) &&
+		!model.LockoutMaxMaliciousActionsType.IsUnknown() && model.LockoutMaxMaliciousActionsType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("lockout_max_malicious_actions"),
+			providererror.InvalidAttributeConfiguration,
+			"lockout_max_malicious_actions_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to set lockout_max_malicious_actions.")
 	}
 }
 
@@ -1180,6 +1269,12 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
+		return
+	}
+	pfVersionAtLeast122 := compare >= 0
 	var plan *oauthClientModel
 	var state *oauthClientModel
 	var diags diag.Diagnostics
@@ -1239,6 +1334,24 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 			version.AddUnsupportedAttributeError("oidc_policy.post_logout_redirect_uris",
 				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
 		}
+		// Check for OIDC policy attrs added in PF 12.2
+		if !pfVersionAtLeast122 {
+			userInfoResponseContentEncryptionAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_content_encryption_algorithm"]
+			if internaltypes.IsDefined(userInfoResponseContentEncryptionAlgorithm) {
+				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_content_encryption_algorithm",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			}
+			userInfoResponseEncryptionAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_encryption_algorithm"]
+			if internaltypes.IsDefined(userInfoResponseEncryptionAlgorithm) {
+				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_encryption_algorithm",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			}
+			userInfoResponseSigningAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_signing_algorithm"]
+			if internaltypes.IsDefined(userInfoResponseSigningAlgorithm) {
+				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_signing_algorithm",
+					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+			}
+		}
 	}
 
 	// Version checking and default settings for attrs added in PF 12.1
@@ -1290,6 +1403,25 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
+	// Version checking and default settings for attrs added in PF 12.2
+	if !pfVersionAtLeast122 {
+		if internaltypes.IsDefined(plan.LockoutMaxMaliciousActions) {
+			version.AddUnsupportedAttributeError("lockout_max_malicious_actions",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		}
+		if internaltypes.IsDefined(plan.LockoutMaxMaliciousActionsType) {
+			version.AddUnsupportedAttributeError("lockout_max_malicious_actions_type",
+				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
+		} else {
+			plan.LockoutMaxMaliciousActionsType = types.StringNull()
+		}
+	} else {
+		if plan.LockoutMaxMaliciousActionsType.IsUnknown() {
+			plan.LockoutMaxMaliciousActionsType = types.StringValue("SERVER_DEFAULT")
+			planModified = true
+		}
+	}
+
 	if plan.RestrictScopes.IsUnknown() {
 		plan.RestrictScopes = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())
 		planModified = true
@@ -1299,11 +1431,11 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		planModified = true
 	}
 
-	// Set encrypted values as neessary
+	// Set encrypted values as necessary
 	if internaltypes.IsDefined(plan.ClientAuth) && state != nil {
 		clientAuthAttrs := plan.ClientAuth.Attributes()
 		stateClientAuthAttrs := state.ClientAuth.Attributes()
-		if !internaltypes.IsDefined(clientAuthAttrs["secret"]) && clientAuthAttrs["encrypted_secret"].IsUnknown() {
+		if clientAuthAttrs["secret"].IsNull() && clientAuthAttrs["encrypted_secret"].IsUnknown() {
 			clientAuthAttrs["encrypted_secret"] = types.StringNull()
 		} else if !stateClientAuthAttrs["secret"].Equal(clientAuthAttrs["secret"]) {
 			clientAuthAttrs["encrypted_secret"] = types.StringUnknown()
@@ -1491,6 +1623,8 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
 	addRequest.RequireOfflineAccessScopeToIssueRefreshTokens = plan.RequireOfflineAccessScopeToIssueRefreshTokens.ValueStringPointer()
 	addRequest.OfflineAccessRequireConsentPrompt = plan.OfflineAccessRequireConsentPrompt.ValueStringPointer()
+	addRequest.LockoutMaxMaliciousActions = plan.LockoutMaxMaliciousActions.ValueInt64Pointer()
+	addRequest.LockoutMaxMaliciousActionsType = plan.LockoutMaxMaliciousActionsType.ValueStringPointer()
 
 	// addRequest.RestrictedScopes
 	var restrictedScopes []string

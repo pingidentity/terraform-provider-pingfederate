@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package policyaction
 
 import (
@@ -21,6 +23,13 @@ func commonPolicyActionSchema() map[string]schema.Attribute {
 		Description: "The result context.",
 	}
 	return commonPolicyActionSchema
+}
+
+func attributeSourcesAttr(includeValueDefault bool) schema.Attribute {
+	if includeValueDefault {
+		return attributesources.ToSchema(0, false)
+	}
+	return attributesources.ToSchemaNoValueDefault(0, false)
 }
 
 func commonAttributeRulesAttr() schema.Attribute {
@@ -83,12 +92,12 @@ func commonAttributeRulesAttr() schema.Attribute {
 
 // Complete schemas for the individual types of policy action
 
-func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
+func apcMappingPolicyActionSchema(includeValueDefault bool) schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
 	attrs["attribute_mapping"] = schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
-			"attribute_sources":              attributesources.ToSchema(0, false),
+			"attribute_sources":              attributeSourcesAttr(includeValueDefault),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    true,
@@ -182,7 +191,7 @@ func donePolicyActionSchema() schema.SingleNestedAttribute {
 	}
 }
 
-func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
+func fragmentPolicyActionSchema(includeValueDefault bool) schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
 	attrs["attribute_rules"] = commonAttributeRulesAttr()
 	attrs["fragment"] = schema.SingleNestedAttribute{
@@ -209,7 +218,7 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 					},
 				},
 			},
-			"attribute_sources": attributesources.ToSchema(0, false),
+			"attribute_sources": attributeSourcesAttr(includeValueDefault),
 			"issuance_criteria": issuancecriteria.ToSchema(),
 		},
 		Required:    false,
@@ -223,9 +232,13 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 	}
 }
 
-func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
+func localIdentityMappingPolicyActionSchema(includeValueDefault bool) schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["inbound_mapping"] = attributemapping.ToSchema(false)
+	if includeValueDefault {
+		attrs["inbound_mapping"] = attributemapping.ToSchema(false)
+	} else {
+		attrs["inbound_mapping"] = attributemapping.ToSchemaNoValueDefault(false)
+	}
 	attrs["local_identity_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
@@ -234,7 +247,7 @@ func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs["outbound_attribute_mapping"] = schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
-			"attribute_sources":              attributesources.ToSchema(0, false),
+			"attribute_sources":              attributeSourcesAttr(includeValueDefault),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    true,
@@ -257,19 +270,27 @@ func restartPolicyActionSchema() schema.SingleNestedAttribute {
 
 // Schema for the polymorphic attribute allowing you to specify a single policy action type
 func ToSchema() schema.SingleNestedAttribute {
+	return toSchemaInternal(true)
+}
+
+func ToSchemaNoValueDefault() schema.SingleNestedAttribute {
+	return toSchemaInternal(false)
+}
+
+func toSchemaInternal(includeValueDefault bool) schema.SingleNestedAttribute {
 	// In the future it may be worth adding validators to ensure only one of the policy action types is set, but
 	// currently it causes a big performance hit
 	return schema.SingleNestedAttribute{
 		Description: "The result action.",
 		Optional:    true,
 		Attributes: map[string]schema.Attribute{
-			"apc_mapping_policy_action":            apcMappingPolicyActionSchema(),
+			"apc_mapping_policy_action":            apcMappingPolicyActionSchema(includeValueDefault),
 			"authn_selector_policy_action":         authnSelectorPolicyActionSchema(),
 			"authn_source_policy_action":           authnSourcePolicyActionSchema(),
 			"continue_policy_action":               continuePolicyActionSchema(),
 			"done_policy_action":                   donePolicyActionSchema(),
-			"fragment_policy_action":               fragmentPolicyActionSchema(),
-			"local_identity_mapping_policy_action": localIdentityMappingPolicyActionSchema(),
+			"fragment_policy_action":               fragmentPolicyActionSchema(includeValueDefault),
+			"local_identity_mapping_policy_action": localIdentityMappingPolicyActionSchema(includeValueDefault),
 			"restart_policy_action":                restartPolicyActionSchema(),
 		},
 	}

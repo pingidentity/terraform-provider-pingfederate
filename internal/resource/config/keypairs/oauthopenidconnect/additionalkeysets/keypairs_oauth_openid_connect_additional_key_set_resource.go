@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package keypairsoauthopenidconnectadditionalkeysets
 
 import (
@@ -66,28 +68,28 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefau
 		}
 	}
 	// If an active cert ref is set, then corresponding publish_x5c_parameter attribute defaults to false
-	if signingKeysAttrs["p256_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["p256_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["p256_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["p256_active_cert_ref"]) {
 			signingKeysAttrs["p256_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
 			signingKeysAttrs["p256_publish_x5c_parameter"] = types.BoolNull()
 		}
 	}
-	if signingKeysAttrs["p384_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["p384_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["p384_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["p384_active_cert_ref"]) {
 			signingKeysAttrs["p384_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
 			signingKeysAttrs["p384_publish_x5c_parameter"] = types.BoolNull()
 		}
 	}
-	if signingKeysAttrs["p521_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["p521_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["p521_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["p521_active_cert_ref"]) {
 			signingKeysAttrs["p521_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
 			signingKeysAttrs["p521_publish_x5c_parameter"] = types.BoolNull()
 		}
 	}
-	if signingKeysAttrs["rsa_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["rsa_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["rsa_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["rsa_active_cert_ref"]) {
 			signingKeysAttrs["rsa_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
@@ -134,7 +136,7 @@ func validateActiveAndPreviousCertRef(prefix string, active, previous types.Obje
 					"active id: %[2]s, previous id: %[3]s", prefix, activeId.ValueString(), previousId.ValueString()),
 			)
 		}
-	} else if !internaltypes.IsDefined(active) && internaltypes.IsDefined(previous) {
+	} else if active.IsNull() && internaltypes.IsDefined(previous) {
 		// active must be set to set the previous cert ref
 		respDiags.AddAttributeError(
 			path.Root("signing_keys"),

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package authenticationpoliciessettings
 
 import (
@@ -6,9 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -54,6 +57,13 @@ func (r *authenticationPoliciesSettingsResource) Schema(ctx context.Context, req
 func addOptionalAuthenticationPoliciesSettingsFields(addRequest *client.AuthenticationPoliciesSettings, plan authenticationPoliciesSettingsModel) {
 	addRequest.EnableIdpAuthnSelection = plan.EnableIdpAuthnSelection.ValueBoolPointer()
 	addRequest.EnableSpAuthnSelection = plan.EnableSpAuthnSelection.ValueBoolPointer()
+}
+
+func (m *authenticationPoliciesSettingsModel) buildDefaultClientStruct() *client.AuthenticationPoliciesSettings {
+	return &client.AuthenticationPoliciesSettings{
+		EnableIdpAuthnSelection: utils.Pointer(false),
+		EnableSpAuthnSelection:  utils.Pointer(false),
+	}
 }
 
 // Metadata returns the resource type name.
@@ -160,8 +170,19 @@ func (r *authenticationPoliciesSettingsResource) Update(ctx context.Context, req
 	resp.Diagnostics.Append(diags...)
 }
 
+// Delete deletes the resource and removes the Terraform state on success.
 // This config object is edit-only, so Terraform can't delete it.
 func (r *authenticationPoliciesSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	var model authenticationPoliciesSettingsModel
+	clientData := model.buildDefaultClientStruct()
+	apiUpdateRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
+	_, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the authentication policies settings", err, httpResp)
+	}
 }
 
 func (r *authenticationPoliciesSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

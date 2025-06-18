@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package idpspconnection
 
 import (
@@ -25,7 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -38,6 +40,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/pemcertificates"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
@@ -54,11 +57,6 @@ var (
 
 var (
 	resourceLinkObjectType = types.ObjectType{AttrTypes: resourcelink.AttrType()}
-
-	metadataReloadSettingsAttrTypes = map[string]attr.Type{
-		"enable_auto_metadata_update": types.BoolType,
-		"metadata_url_ref":            resourceLinkObjectType,
-	}
 
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
 		"password":           types.StringType,
@@ -108,28 +106,10 @@ var (
 		"verification_subject_dn":           types.StringType,
 	}
 
-	contactInfoAttrTypes = map[string]attr.Type{
-		"company":    types.StringType,
-		"email":      types.StringType,
-		"first_name": types.StringType,
-		"last_name":  types.StringType,
-		"phone":      types.StringType,
-	}
-
 	additionalAllowedEntitiesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"entity_id":          types.StringType,
 		"entity_description": types.StringType,
 	}}
-
-	additionalAllowedEntitiesConfigurationAttrTypes = map[string]attr.Type{
-		"allow_additional_entities":   types.BoolType,
-		"allow_all_entities":          types.BoolType,
-		"additional_allowed_entities": types.SetType{ElemType: additionalAllowedEntitiesElemType},
-	}
-
-	extendedPropertiesElemAttrTypes = map[string]attr.Type{
-		"values": types.SetType{ElemType: types.StringType},
-	}
 
 	spBrowserSsoAttributeAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -168,90 +148,6 @@ var (
 		"url":          types.StringType,
 		"response_url": types.StringType,
 	}}
-	urlWhitelistEntriesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"valid_domain":             types.StringType,
-		"valid_path":               types.StringType,
-		"allow_query_and_fragment": types.BoolType,
-		"require_https":            types.BoolType,
-	}}
-	spBrowserSSOAttrTypes = map[string]attr.Type{
-		"protocol":          types.StringType,
-		"ws_fed_token_type": types.StringType,
-		"ws_trust_version":  types.StringType,
-		"enabled_profiles":  types.SetType{ElemType: types.StringType},
-		"incoming_bindings": types.SetType{ElemType: types.StringType},
-		"message_customizations": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"context_name":       types.StringType,
-			"message_expression": types.StringType,
-		}}},
-		"url_whitelist_entries": types.SetType{ElemType: urlWhitelistEntriesElemType},
-		"artifact": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"lifetime": types.Int64Type,
-			"resolver_locations": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-				"index": types.Int64Type,
-				"url":   types.StringType,
-			}}},
-			"source_id": types.StringType,
-		}},
-		"slo_service_endpoints":         types.SetType{ElemType: sloServiceEndpointsElemType},
-		"default_target_url":            types.StringType,
-		"always_sign_artifact_response": types.BoolType,
-		"sso_service_endpoints": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"binding":    types.StringType,
-			"url":        types.StringType,
-			"is_default": types.BoolType,
-			"index":      types.Int64Type,
-		}}},
-		"sp_saml_identity_mapping":      types.StringType,
-		"sp_ws_fed_identity_mapping":    types.StringType,
-		"sign_response_as_required":     types.BoolType,
-		"sign_assertions":               types.BoolType,
-		"require_signed_authn_requests": types.BoolType,
-		"encryption_policy": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"encrypt_assertion":             types.BoolType,
-			"encrypted_attributes":          types.SetType{ElemType: types.StringType},
-			"encrypt_slo_subject_name_id":   types.BoolType,
-			"slo_subject_name_id_encrypted": types.BoolType,
-		}},
-		"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes":     types.SetType{ElemType: spBrowserSsoAttributeAttrType},
-			"extended_attributes": types.SetType{ElemType: spBrowserSsoAttributeAttrType},
-		}},
-		"adapter_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"idp_adapter_ref":               resourceLinkObjectType,
-			"restrict_virtual_entity_ids":   types.BoolType,
-			"restricted_virtual_entity_ids": types.SetType{ElemType: types.StringType},
-			"adapter_override_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"id":                    types.StringType,
-				"name":                  types.StringType,
-				"plugin_descriptor_ref": resourceLinkObjectType,
-				"parent_ref":            resourceLinkObjectType,
-				"configuration":         types.ObjectType{AttrTypes: pluginconfiguration.AttrTypes()},
-				"authn_ctx_class_ref":   types.StringType,
-				"attribute_mapping": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-					"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
-					"issuance_criteria":              issuanceCriteriaAttrType,
-				}},
-				"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"core_attributes":           types.SetType{ElemType: idpAdapterAttributeAttrType},
-					"extended_attributes":       types.SetType{ElemType: idpAdapterAttributeAttrType},
-					"unique_user_key_attribute": types.StringType,
-					"mask_ognl_values":          types.BoolType,
-				}},
-			}},
-			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
-			"issuance_criteria":                  issuanceCriteriaAttrType,
-		}}},
-		"authentication_policy_contract_assertion_mappings": types.SetType{ElemType: authenticationPolicyContractAssertionMappingsElemType},
-		"assertion_lifetime": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"minutes_before": types.Int64Type,
-			"minutes_after":  types.Int64Type,
-		}},
-		"sso_application_endpoint": types.StringType,
-	}
 
 	policyAttrTypes = map[string]attr.Type{
 		"sign_response":                  types.BoolType,
@@ -271,29 +167,6 @@ var (
 		"context_name":       types.StringType,
 		"message_expression": types.StringType,
 	}}
-	wsTrustAttrTypes = map[string]attr.Type{
-		"partner_service_ids":      types.SetType{ElemType: types.StringType},
-		"oauth_assertion_profiles": types.BoolType,
-		"default_token_type":       types.StringType,
-		"generate_key":             types.BoolType,
-		"encrypt_saml2_assertion":  types.BoolType,
-		"minutes_before":           types.Int64Type,
-		"minutes_after":            types.Int64Type,
-		"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes":     types.SetType{ElemType: spWsTrustAttributeAttrType},
-			"extended_attributes": types.SetType{ElemType: spWsTrustAttributeAttrType},
-		}},
-		"token_processor_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"idp_token_processor_ref":        resourceLinkObjectType,
-			"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
-			"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-			"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
-			"issuance_criteria":              issuanceCriteriaAttrType,
-		}}},
-		"abort_if_not_fulfilled_from_request": types.BoolType,
-		"request_contract_ref":                resourceLinkObjectType,
-		"message_customizations":              types.SetType{ElemType: messageCustomizationsElemType},
-	}
 
 	channelSourceLocationAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -532,9 +405,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Sensitive:   true,
 				Description: "The value for the configuration field. Either this attribute or `encrypted_value` must be specified.",
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
 			},
 			"encrypted_value": schema.StringAttribute{
 				Optional:    true,
@@ -637,26 +507,44 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"encrypt_assertion": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Encrypt the assertion.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Encrypt the assertion. The default value is `false`.",
 							},
 							"require_encrypted_name_id": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Require an encrypted name identifier.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Require an encrypted name identifier. The default value is `false`.",
 							},
 							"require_signed_attribute_query": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Require signed attribute query.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Require signed attribute query. The default value is `false`.",
 							},
 							"sign_assertion": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Sign the assertion.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Sign the assertion. The default value is `false`.",
 							},
 							"sign_response": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Sign the response.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Sign the response. The default value is `false`.",
 							},
 						},
-						Optional:    true,
+						Optional: true,
+						Computed: true,
+						Default: objectdefault.StaticValue(types.ObjectValueMust(policyAttrTypes, map[string]attr.Value{
+							"encrypt_assertion":              types.BoolValue(false),
+							"require_encrypted_name_id":      types.BoolValue(false),
+							"require_signed_attribute_query": types.BoolValue(false),
+							"sign_assertion":                 types.BoolValue(false),
+							"sign_response":                  types.BoolValue(false),
+						})),
 						Description: "The attribute query profile's security policy.",
 					},
 				},
@@ -752,7 +640,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							stringvalidator.LengthAtLeast(1),
 						},
 					},
-					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+					"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", true),
 					"block_encryption_algorithm": schema.StringAttribute{
 						Optional:            true,
 						Description:         "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
@@ -802,8 +690,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"include_raw_key_in_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
-								MarkdownDescription: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
+								Computed:            true,
+								Default:             booldefault.StaticBool(false),
+								Description:         "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element. The default value is `false`.",
+								MarkdownDescription: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element. The default value is `false`.",
 							},
 						},
 						Optional:            true,
@@ -936,7 +826,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
-							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption."),
+							"certs": connectioncert.ToSchema("The certificates used for signature verification and XML encryption.", false),
 							"require_ssl": schema.BoolAttribute{
 								Optional:            true,
 								Description:         "Incoming HTTP transmissions must use a secure channel.",
@@ -1078,11 +968,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												},
 												"default_status": schema.BoolAttribute{
 													Optional:    true,
-													Description: "The default status of the account.",
+													Computed:    true,
+													Default:     booldefault.StaticBool(true),
+													Description: "The default status of the account. The default value is `true`.",
 												},
 												"flag_comparison_status": schema.BoolAttribute{
 													Optional:    true,
-													Description: "The flag that represents comparison status.",
+													Computed:    true,
+													Default:     booldefault.StaticBool(true),
+													Description: "The flag that represents comparison status. The default value is `true`.",
 												},
 												"flag_comparison_value": schema.StringAttribute{
 													Optional:    true,
@@ -1415,7 +1309,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
-									Description: "Restricts this mapping to specific virtual entity IDs.",
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
+									Description: "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
 								},
 								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
@@ -1431,12 +1327,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"always_sign_artifact_response": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Specify to always sign the SAML ArtifactResponse.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "Specify to always sign the SAML ArtifactResponse. The default value is `false`.",
 					},
 					"artifact": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"lifetime": schema.Int64Attribute{
-								Required:    true,
+								Optional:    true,
 								Description: "The lifetime of the artifact in seconds.",
 							},
 							"resolver_locations": schema.SetNestedAttribute{
@@ -1513,7 +1411,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"issuance_criteria":                  issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
-									Description: "Restricts this mapping to specific virtual entity IDs.",
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
+									Description: "Restricts this mapping to specific virtual entity IDs. The default value is `false`.",
 								},
 								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
@@ -1548,11 +1448,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"encrypt_assertion": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Whether the outgoing SAML assertion will be encrypted.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Whether the outgoing SAML assertion will be encrypted. The default value is `false`.",
 							},
 							"encrypt_slo_subject_name_id": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Encrypt the name-identifier attribute in outbound SLO messages. This can be set if the name id is encrypted.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Encrypt the name-identifier attribute in outbound SLO messages. This can be set if the name id is encrypted. The default value is `false`.",
 							},
 							"encrypted_attributes": schema.SetAttribute{
 								ElementType: types.StringType,
@@ -1563,7 +1467,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"slo_subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled.",
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
+								Description: "Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled. The default value is `false`.",
 							},
 						},
 						Optional:    true,
@@ -1599,11 +1505,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"require_signed_authn_requests": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Require AuthN requests to be signed when received via the POST or Redirect bindings.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "Require AuthN requests to be signed when received via the POST or Redirect bindings. The default value is `false`.",
 					},
 					"sign_assertions": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Always sign the SAML Assertion.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "Always sign the SAML Assertion. The default value is `false`.",
 					},
 					"sign_response_as_required": schema.BoolAttribute{
 						Optional:    true,
@@ -1804,11 +1714,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"encrypt_saml2_assertion": schema.BoolAttribute{
 						Optional:    true,
-						Description: "When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles. The default value is `false`.",
 					},
 					"generate_key": schema.BoolAttribute{
 						Optional:    true,
-						Description: "When selected, the STS generates a symmetric key to be used in conjunction with the \"Holder of Key\" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "When selected, the STS generates a symmetric key to be used in conjunction with the \"Holder of Key\" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles. The default value is `false`.",
 					},
 					"message_customizations": schema.SetNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
@@ -1831,7 +1745,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"oauth_assertion_profiles": schema.BoolAttribute{
 						Optional:    true,
-						Description: "When selected, four additional token-type requests become available.",
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+						Description: "When selected, four additional token-type requests become available. The default value is `false`.",
 					},
 					"partner_service_ids": schema.SetAttribute{
 						ElementType: types.StringType,
@@ -1893,16 +1809,21 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 	}
 
 	virtualIds := config.VirtualEntityIds.Elements()
-	if internaltypes.IsDefined(config.DefaultVirtualEntityId) {
+	if internaltypes.IsDefined(config.DefaultVirtualEntityId) && !config.VirtualEntityIds.IsUnknown() {
 		defaultId := config.DefaultVirtualEntityId.ValueString()
 		found := false
+		anyUnknown := false
 		for _, id := range virtualIds {
+			if id.IsUnknown() {
+				anyUnknown = true
+				break
+			}
 			if defaultId == id.(types.String).ValueString() {
 				found = true
 				break
 			}
 		}
-		if !found {
+		if !found && !anyUnknown {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("default_virtual_entity_id"),
 				providererror.InvalidAttributeConfiguration,
@@ -1926,19 +1847,6 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 					path.Root("sp_browser_sso").AtMapKey("encryption_policy").AtMapKey("encrypted_attributes"),
 					providererror.InvalidAttributeConfiguration,
 					"The 'encrypted_attributes' attribute cannot be configured when 'encrypt_assertion' is set to true.")
-			}
-		}
-
-		protocol := config.SpBrowserSso.Attributes()["protocol"].(types.String).ValueString()
-		if protocol == "SAML20" {
-			signResponseAsRequired := config.SpBrowserSso.Attributes()["sign_response_as_required"].(types.Bool)
-			signAssertions := config.SpBrowserSso.Attributes()["sign_assertions"].(types.Bool)
-			// Exactly one of the two booleans must be true for SAML20 connections
-			if !signResponseAsRequired.IsUnknown() && !signAssertions.IsUnknown() && signResponseAsRequired.ValueBool() == signAssertions.ValueBool() {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("sp_browser_sso"),
-					providererror.InvalidAttributeConfiguration,
-					"Exactly one of 'sign_response_as_required' and 'sign_assertions' must be true for SAML 2.0 connections.")
 			}
 		}
 	}
@@ -2026,7 +1934,8 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 	}
 
-	if internaltypes.IsDefined(state.OutboundProvision) != internaltypes.IsDefined(plan.OutboundProvision) {
+	if (state.OutboundProvision.IsNull() && internaltypes.IsDefined(plan.OutboundProvision)) ||
+		(internaltypes.IsDefined(state.OutboundProvision) && plan.OutboundProvision.IsNull()) {
 		// PF can't add or remove outbound_provision from a sp connection
 		resp.RequiresReplace = []path.Path{
 			path.Root("outbound_provision"),
@@ -2084,7 +1993,8 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) error {
+func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) diag.Diagnostics {
+	var respDiags diag.Diagnostics
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = utils.Pointer("SP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
@@ -2096,27 +2006,31 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 	addRequest.ApplicationIconUrl = plan.ApplicationIconUrl.ValueStringPointer()
 	addRequest.ConnectionTargetType = plan.ConnectionTargetType.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.VirtualEntityIds) {
+	// virtual_entity_ids
+	if !plan.VirtualEntityIds.IsNull() {
 		addRequest.VirtualEntityIds = []string{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.VirtualEntityIds, true)), &addRequest.VirtualEntityIds)
-		if err != nil {
-			return err
+		for _, virtualEntityIdsElement := range plan.VirtualEntityIds.Elements() {
+			addRequest.VirtualEntityIds = append(addRequest.VirtualEntityIds, virtualEntityIdsElement.(types.String).ValueString())
 		}
 	}
 
-	if internaltypes.IsDefined(plan.MetadataReloadSettings) {
-		addRequest.MetadataReloadSettings = &client.ConnectionMetadataUrl{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.MetadataReloadSettings, true)), &addRequest.MetadataReloadSettings)
-		if err != nil {
-			return err
-		}
+	// metadata_reload_settings
+	if !plan.MetadataReloadSettings.IsNull() {
+		metadataReloadSettingsValue := &client.ConnectionMetadataUrl{}
+		metadataReloadSettingsAttrs := plan.MetadataReloadSettings.Attributes()
+		metadataReloadSettingsValue.EnableAutoMetadataUpdate = metadataReloadSettingsAttrs["enable_auto_metadata_update"].(types.Bool).ValueBoolPointer()
+		metadataReloadSettingsMetadataUrlRefValue := client.ResourceLink{}
+		metadataReloadSettingsMetadataUrlRefAttrs := metadataReloadSettingsAttrs["metadata_url_ref"].(types.Object).Attributes()
+		metadataReloadSettingsMetadataUrlRefValue.Id = metadataReloadSettingsMetadataUrlRefAttrs["id"].(types.String).ValueString()
+		metadataReloadSettingsValue.MetadataUrlRef = metadataReloadSettingsMetadataUrlRefValue
+		addRequest.MetadataReloadSettings = metadataReloadSettingsValue
 	}
 
 	if internaltypes.IsDefined(plan.Credentials) {
 		addRequest.Credentials = &client.ConnectionCredentials{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), &addRequest.Credentials)
 		if err != nil {
-			return err
+			respDiags.AddError("Error building client struct for credentials", err.Error())
 		}
 		if addRequest.Credentials.InboundBackChannelAuth != nil {
 			addRequest.Credentials.InboundBackChannelAuth.Type = "INBOUND"
@@ -2126,86 +2040,498 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ContactInfo) {
-		addRequest.ContactInfo = &client.ContactInfo{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, true)), &addRequest.ContactInfo)
-		if err != nil {
-			return err
-		}
+	// contact_info
+	if !plan.ContactInfo.IsNull() {
+		contactInfoValue := &client.ContactInfo{}
+		contactInfoAttrs := plan.ContactInfo.Attributes()
+		contactInfoValue.Company = contactInfoAttrs["company"].(types.String).ValueStringPointer()
+		contactInfoValue.Email = contactInfoAttrs["email"].(types.String).ValueStringPointer()
+		contactInfoValue.FirstName = contactInfoAttrs["first_name"].(types.String).ValueStringPointer()
+		contactInfoValue.LastName = contactInfoAttrs["last_name"].(types.String).ValueStringPointer()
+		contactInfoValue.Phone = contactInfoAttrs["phone"].(types.String).ValueStringPointer()
+		addRequest.ContactInfo = contactInfoValue
 	}
 
-	if internaltypes.IsDefined(plan.AdditionalAllowedEntitiesConfiguration) {
-		addRequest.AdditionalAllowedEntitiesConfiguration = &client.AdditionalAllowedEntitiesConfiguration{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdditionalAllowedEntitiesConfiguration, true)), &addRequest.AdditionalAllowedEntitiesConfiguration)
-		if err != nil {
-			return err
+	// additional_allowed_entities_configuration
+	if !plan.AdditionalAllowedEntitiesConfiguration.IsNull() {
+		additionalAllowedEntitiesConfigurationValue := &client.AdditionalAllowedEntitiesConfiguration{}
+		additionalAllowedEntitiesConfigurationAttrs := plan.AdditionalAllowedEntitiesConfiguration.Attributes()
+		additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = []client.Entity{}
+		for _, additionalAllowedEntitiesElement := range additionalAllowedEntitiesConfigurationAttrs["additional_allowed_entities"].(types.Set).Elements() {
+			additionalAllowedEntitiesValue := client.Entity{}
+			additionalAllowedEntitiesAttrs := additionalAllowedEntitiesElement.(types.Object).Attributes()
+			additionalAllowedEntitiesValue.EntityDescription = additionalAllowedEntitiesAttrs["entity_description"].(types.String).ValueStringPointer()
+			additionalAllowedEntitiesValue.EntityId = additionalAllowedEntitiesAttrs["entity_id"].(types.String).ValueStringPointer()
+			additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities = append(additionalAllowedEntitiesConfigurationValue.AdditionalAllowedEntities, additionalAllowedEntitiesValue)
 		}
+		additionalAllowedEntitiesConfigurationValue.AllowAdditionalEntities = additionalAllowedEntitiesConfigurationAttrs["allow_additional_entities"].(types.Bool).ValueBoolPointer()
+		additionalAllowedEntitiesConfigurationValue.AllowAllEntities = additionalAllowedEntitiesConfigurationAttrs["allow_all_entities"].(types.Bool).ValueBoolPointer()
+		addRequest.AdditionalAllowedEntitiesConfiguration = additionalAllowedEntitiesConfigurationValue
 	}
 
-	if internaltypes.IsDefined(plan.ExtendedProperties) {
+	// extended_properties
+	if !plan.ExtendedProperties.IsNull() {
 		addRequest.ExtendedProperties = &map[string]client.ParameterValues{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedProperties, true)), &addRequest.ExtendedProperties)
-		if err != nil {
-			return err
+		for key, extendedPropertiesElement := range plan.ExtendedProperties.Elements() {
+			extendedPropertiesValue := client.ParameterValues{}
+			extendedPropertiesAttrs := extendedPropertiesElement.(types.Object).Attributes()
+			if !extendedPropertiesAttrs["values"].IsNull() {
+				extendedPropertiesValue.Values = []string{}
+				for _, valuesElement := range extendedPropertiesAttrs["values"].(types.Set).Elements() {
+					extendedPropertiesValue.Values = append(extendedPropertiesValue.Values, valuesElement.(types.String).ValueString())
+				}
+			}
+			(*addRequest.ExtendedProperties)[key] = extendedPropertiesValue
 		}
 	}
 
-	if internaltypes.IsDefined(plan.SpBrowserSso) {
-		addRequest.SpBrowserSso = &client.SpBrowserSso{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, true)), &addRequest.SpBrowserSso)
-		if err != nil {
-			return err
+	// sp_browser_sso
+	if !plan.SpBrowserSso.IsNull() {
+		spBrowserSsoValue := &client.SpBrowserSso{}
+		spBrowserSsoAttrs := plan.SpBrowserSso.Attributes()
+		spBrowserSsoValue.AdapterMappings = []client.IdpAdapterAssertionMapping{}
+		for _, adapterMappingsElement := range spBrowserSsoAttrs["adapter_mappings"].(types.Set).Elements() {
+			adapterMappingsValue := client.IdpAdapterAssertionMapping{}
+			adapterMappingsAttrs := adapterMappingsElement.(types.Object).Attributes()
+			adapterMappingsValue.AbortSsoTransactionAsFailSafe = adapterMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
+			if !adapterMappingsAttrs["adapter_override_settings"].IsNull() {
+				adapterMappingsAdapterOverrideSettingsValue := &client.IdpAdapter{}
+				adapterMappingsAdapterOverrideSettingsAttrs := adapterMappingsAttrs["adapter_override_settings"].(types.Object).Attributes()
+				if !adapterMappingsAdapterOverrideSettingsAttrs["attribute_contract"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue := &client.IdpAdapterAttributeContract{}
+					adapterMappingsAdapterOverrideSettingsAttributeContractAttrs := adapterMappingsAdapterOverrideSettingsAttrs["attribute_contract"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes = []client.IdpAdapterAttribute{}
+					for _, coreAttributesElement := range adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+						coreAttributesValue := client.IdpAdapterAttribute{}
+						coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+						coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+						coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+						coreAttributesValue.Pseudonym = coreAttributesAttrs["pseudonym"].(types.Bool).ValueBoolPointer()
+						adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes = append(adapterMappingsAdapterOverrideSettingsAttributeContractValue.CoreAttributes, coreAttributesValue)
+					}
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes = []client.IdpAdapterAttribute{}
+					for _, extendedAttributesElement := range adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+						extendedAttributesValue := client.IdpAdapterAttribute{}
+						extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+						extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+						extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+						extendedAttributesValue.Pseudonym = extendedAttributesAttrs["pseudonym"].(types.Bool).ValueBoolPointer()
+						adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes = append(adapterMappingsAdapterOverrideSettingsAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+					}
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.MaskOgnlValues = adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["mask_ognl_values"].(types.Bool).ValueBoolPointer()
+					adapterMappingsAdapterOverrideSettingsAttributeContractValue.UniqueUserKeyAttribute = adapterMappingsAdapterOverrideSettingsAttributeContractAttrs["unique_user_key_attribute"].(types.String).ValueStringPointer()
+					adapterMappingsAdapterOverrideSettingsValue.AttributeContract = adapterMappingsAdapterOverrideSettingsAttributeContractValue
+				}
+				if !adapterMappingsAdapterOverrideSettingsAttrs["attribute_mapping"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue := &client.IdpAdapterContractMapping{}
+					adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs := adapterMappingsAdapterOverrideSettingsAttrs["attribute_mapping"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_sources"].(types.Set))
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["issuance_criteria"].(types.Object))
+					adapterMappingsAdapterOverrideSettingsValue.AttributeMapping = adapterMappingsAdapterOverrideSettingsAttributeMappingValue
+				}
+				adapterMappingsAdapterOverrideSettingsValue.AuthnCtxClassRef = adapterMappingsAdapterOverrideSettingsAttrs["authn_ctx_class_ref"].(types.String).ValueStringPointer()
+				adapterMappingsAdapterOverrideSettingsConfigurationValue := pluginconfiguration.ClientStruct(adapterMappingsAdapterOverrideSettingsAttrs["configuration"].(types.Object))
+				adapterMappingsAdapterOverrideSettingsValue.Configuration = *adapterMappingsAdapterOverrideSettingsConfigurationValue
+				adapterMappingsAdapterOverrideSettingsValue.Id = adapterMappingsAdapterOverrideSettingsAttrs["id"].(types.String).ValueString()
+				adapterMappingsAdapterOverrideSettingsValue.Name = adapterMappingsAdapterOverrideSettingsAttrs["name"].(types.String).ValueString()
+				if !adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].IsNull() {
+					adapterMappingsAdapterOverrideSettingsParentRefValue := &client.ResourceLink{}
+					adapterMappingsAdapterOverrideSettingsParentRefAttrs := adapterMappingsAdapterOverrideSettingsAttrs["parent_ref"].(types.Object).Attributes()
+					adapterMappingsAdapterOverrideSettingsParentRefValue.Id = adapterMappingsAdapterOverrideSettingsParentRefAttrs["id"].(types.String).ValueString()
+					adapterMappingsAdapterOverrideSettingsValue.ParentRef = adapterMappingsAdapterOverrideSettingsParentRefValue
+				}
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue := client.ResourceLink{}
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrs := adapterMappingsAdapterOverrideSettingsAttrs["plugin_descriptor_ref"].(types.Object).Attributes()
+				adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue.Id = adapterMappingsAdapterOverrideSettingsPluginDescriptorRefAttrs["id"].(types.String).ValueString()
+				adapterMappingsAdapterOverrideSettingsValue.PluginDescriptorRef = adapterMappingsAdapterOverrideSettingsPluginDescriptorRefValue
+				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
+			}
+			adapterMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
+			if !adapterMappingsAttrs["idp_adapter_ref"].IsNull() {
+				adapterMappingsIdpAdapterRefValue := &client.ResourceLink{}
+				adapterMappingsIdpAdapterRefAttrs := adapterMappingsAttrs["idp_adapter_ref"].(types.Object).Attributes()
+				adapterMappingsIdpAdapterRefValue.Id = adapterMappingsIdpAdapterRefAttrs["id"].(types.String).ValueString()
+				adapterMappingsValue.IdpAdapterRef = adapterMappingsIdpAdapterRefValue
+			}
+			adapterMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(adapterMappingsAttrs["issuance_criteria"].(types.Object))
+			adapterMappingsValue.RestrictVirtualEntityIds = adapterMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
+			if !adapterMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				adapterMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range adapterMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					adapterMappingsValue.RestrictedVirtualEntityIds = append(adapterMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			spBrowserSsoValue.AdapterMappings = append(spBrowserSsoValue.AdapterMappings, adapterMappingsValue)
 		}
+		spBrowserSsoValue.AlwaysSignArtifactResponse = spBrowserSsoAttrs["always_sign_artifact_response"].(types.Bool).ValueBoolPointer()
+		if !spBrowserSsoAttrs["artifact"].IsNull() {
+			spBrowserSsoArtifactValue := &client.ArtifactSettings{}
+			spBrowserSsoArtifactAttrs := spBrowserSsoAttrs["artifact"].(types.Object).Attributes()
+			spBrowserSsoArtifactValue.Lifetime = spBrowserSsoArtifactAttrs["lifetime"].(types.Int64).ValueInt64Pointer()
+			spBrowserSsoArtifactValue.ResolverLocations = []client.ArtifactResolverLocation{}
+			for _, resolverLocationsElement := range spBrowserSsoArtifactAttrs["resolver_locations"].(types.Set).Elements() {
+				resolverLocationsValue := client.ArtifactResolverLocation{}
+				resolverLocationsAttrs := resolverLocationsElement.(types.Object).Attributes()
+				resolverLocationsValue.Index = resolverLocationsAttrs["index"].(types.Int64).ValueInt64()
+				resolverLocationsValue.Url = resolverLocationsAttrs["url"].(types.String).ValueString()
+				spBrowserSsoArtifactValue.ResolverLocations = append(spBrowserSsoArtifactValue.ResolverLocations, resolverLocationsValue)
+			}
+			spBrowserSsoArtifactValue.SourceId = spBrowserSsoArtifactAttrs["source_id"].(types.String).ValueStringPointer()
+			spBrowserSsoValue.Artifact = spBrowserSsoArtifactValue
+		}
+		spBrowserSsoAssertionLifetimeValue := client.AssertionLifetime{}
+		spBrowserSsoAssertionLifetimeAttrs := spBrowserSsoAttrs["assertion_lifetime"].(types.Object).Attributes()
+		spBrowserSsoAssertionLifetimeValue.MinutesAfter = spBrowserSsoAssertionLifetimeAttrs["minutes_after"].(types.Int64).ValueInt64()
+		spBrowserSsoAssertionLifetimeValue.MinutesBefore = spBrowserSsoAssertionLifetimeAttrs["minutes_before"].(types.Int64).ValueInt64()
+		spBrowserSsoValue.AssertionLifetime = spBrowserSsoAssertionLifetimeValue
+		spBrowserSsoAttributeContractValue := client.SpBrowserSsoAttributeContract{}
+		spBrowserSsoAttributeContractAttrs := spBrowserSsoAttrs["attribute_contract"].(types.Object).Attributes()
+		spBrowserSsoAttributeContractValue.CoreAttributes = []client.SpBrowserSsoAttribute{}
+		for _, coreAttributesElement := range spBrowserSsoAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.SpBrowserSsoAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			coreAttributesValue.NameFormat = coreAttributesAttrs["name_format"].(types.String).ValueStringPointer()
+			spBrowserSsoAttributeContractValue.CoreAttributes = append(spBrowserSsoAttributeContractValue.CoreAttributes, coreAttributesValue)
+		}
+		spBrowserSsoAttributeContractValue.ExtendedAttributes = []client.SpBrowserSsoAttribute{}
+		for _, extendedAttributesElement := range spBrowserSsoAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.SpBrowserSsoAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			extendedAttributesValue.NameFormat = extendedAttributesAttrs["name_format"].(types.String).ValueStringPointer()
+			spBrowserSsoAttributeContractValue.ExtendedAttributes = append(spBrowserSsoAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		spBrowserSsoValue.AttributeContract = spBrowserSsoAttributeContractValue
+		spBrowserSsoValue.AuthenticationPolicyContractAssertionMappings = []client.AuthenticationPolicyContractAssertionMapping{}
+		for _, authenticationPolicyContractAssertionMappingsElement := range spBrowserSsoAttrs["authentication_policy_contract_assertion_mappings"].(types.Set).Elements() {
+			authenticationPolicyContractAssertionMappingsValue := client.AuthenticationPolicyContractAssertionMapping{}
+			authenticationPolicyContractAssertionMappingsAttrs := authenticationPolicyContractAssertionMappingsElement.(types.Object).Attributes()
+			authenticationPolicyContractAssertionMappingsValue.AbortSsoTransactionAsFailSafe = authenticationPolicyContractAssertionMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
+			authenticationPolicyContractAssertionMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			authenticationPolicyContractAssertionMappingsValue.AttributeSources = attributesources.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_sources"].(types.Set))
+			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue := client.ResourceLink{}
+			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs := authenticationPolicyContractAssertionMappingsAttrs["authentication_policy_contract_ref"].(types.Object).Attributes()
+			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue.Id = authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
+			authenticationPolicyContractAssertionMappingsValue.AuthenticationPolicyContractRef = authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue
+			authenticationPolicyContractAssertionMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["issuance_criteria"].(types.Object))
+			authenticationPolicyContractAssertionMappingsValue.RestrictVirtualEntityIds = authenticationPolicyContractAssertionMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
+			if !authenticationPolicyContractAssertionMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				authenticationPolicyContractAssertionMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range authenticationPolicyContractAssertionMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					authenticationPolicyContractAssertionMappingsValue.RestrictedVirtualEntityIds = append(authenticationPolicyContractAssertionMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			spBrowserSsoValue.AuthenticationPolicyContractAssertionMappings = append(spBrowserSsoValue.AuthenticationPolicyContractAssertionMappings, authenticationPolicyContractAssertionMappingsValue)
+		}
+		spBrowserSsoValue.DefaultTargetUrl = spBrowserSsoAttrs["default_target_url"].(types.String).ValueStringPointer()
+		if !spBrowserSsoAttrs["enabled_profiles"].IsNull() {
+			spBrowserSsoValue.EnabledProfiles = []string{}
+			for _, enabledProfilesElement := range spBrowserSsoAttrs["enabled_profiles"].(types.Set).Elements() {
+				spBrowserSsoValue.EnabledProfiles = append(spBrowserSsoValue.EnabledProfiles, enabledProfilesElement.(types.String).ValueString())
+			}
+		}
+		if !spBrowserSsoAttrs["encryption_policy"].IsNull() {
+			spBrowserSsoEncryptionPolicyValue := &client.EncryptionPolicy{}
+			spBrowserSsoEncryptionPolicyAttrs := spBrowserSsoAttrs["encryption_policy"].(types.Object).Attributes()
+			spBrowserSsoEncryptionPolicyValue.EncryptAssertion = spBrowserSsoEncryptionPolicyAttrs["encrypt_assertion"].(types.Bool).ValueBoolPointer()
+			spBrowserSsoEncryptionPolicyValue.EncryptSloSubjectNameId = spBrowserSsoEncryptionPolicyAttrs["encrypt_slo_subject_name_id"].(types.Bool).ValueBoolPointer()
+			if !spBrowserSsoEncryptionPolicyAttrs["encrypted_attributes"].IsNull() {
+				spBrowserSsoEncryptionPolicyValue.EncryptedAttributes = []string{}
+				for _, encryptedAttributesElement := range spBrowserSsoEncryptionPolicyAttrs["encrypted_attributes"].(types.Set).Elements() {
+					spBrowserSsoEncryptionPolicyValue.EncryptedAttributes = append(spBrowserSsoEncryptionPolicyValue.EncryptedAttributes, encryptedAttributesElement.(types.String).ValueString())
+				}
+			}
+			spBrowserSsoEncryptionPolicyValue.SloSubjectNameIDEncrypted = spBrowserSsoEncryptionPolicyAttrs["slo_subject_name_id_encrypted"].(types.Bool).ValueBoolPointer()
+			spBrowserSsoValue.EncryptionPolicy = spBrowserSsoEncryptionPolicyValue
+		}
+		if !spBrowserSsoAttrs["incoming_bindings"].IsNull() {
+			spBrowserSsoValue.IncomingBindings = []string{}
+			for _, incomingBindingsElement := range spBrowserSsoAttrs["incoming_bindings"].(types.Set).Elements() {
+				spBrowserSsoValue.IncomingBindings = append(spBrowserSsoValue.IncomingBindings, incomingBindingsElement.(types.String).ValueString())
+			}
+		}
+		spBrowserSsoValue.MessageCustomizations = []client.ProtocolMessageCustomization{}
+		for _, messageCustomizationsElement := range spBrowserSsoAttrs["message_customizations"].(types.Set).Elements() {
+			messageCustomizationsValue := client.ProtocolMessageCustomization{}
+			messageCustomizationsAttrs := messageCustomizationsElement.(types.Object).Attributes()
+			messageCustomizationsValue.ContextName = messageCustomizationsAttrs["context_name"].(types.String).ValueStringPointer()
+			messageCustomizationsValue.MessageExpression = messageCustomizationsAttrs["message_expression"].(types.String).ValueStringPointer()
+			spBrowserSsoValue.MessageCustomizations = append(spBrowserSsoValue.MessageCustomizations, messageCustomizationsValue)
+		}
+		spBrowserSsoValue.Protocol = spBrowserSsoAttrs["protocol"].(types.String).ValueString()
+		spBrowserSsoValue.RequireSignedAuthnRequests = spBrowserSsoAttrs["require_signed_authn_requests"].(types.Bool).ValueBoolPointer()
+		spBrowserSsoValue.SignAssertions = spBrowserSsoAttrs["sign_assertions"].(types.Bool).ValueBoolPointer()
+		spBrowserSsoValue.SignResponseAsRequired = spBrowserSsoAttrs["sign_response_as_required"].(types.Bool).ValueBoolPointer()
+		spBrowserSsoValue.SloServiceEndpoints = []client.SloServiceEndpoint{}
+		for _, sloServiceEndpointsElement := range spBrowserSsoAttrs["slo_service_endpoints"].(types.Set).Elements() {
+			sloServiceEndpointsValue := client.SloServiceEndpoint{}
+			sloServiceEndpointsAttrs := sloServiceEndpointsElement.(types.Object).Attributes()
+			sloServiceEndpointsValue.Binding = sloServiceEndpointsAttrs["binding"].(types.String).ValueStringPointer()
+			sloServiceEndpointsValue.ResponseUrl = sloServiceEndpointsAttrs["response_url"].(types.String).ValueStringPointer()
+			sloServiceEndpointsValue.Url = sloServiceEndpointsAttrs["url"].(types.String).ValueString()
+			spBrowserSsoValue.SloServiceEndpoints = append(spBrowserSsoValue.SloServiceEndpoints, sloServiceEndpointsValue)
+		}
+		spBrowserSsoValue.SpSamlIdentityMapping = spBrowserSsoAttrs["sp_saml_identity_mapping"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.SpWsFedIdentityMapping = spBrowserSsoAttrs["sp_ws_fed_identity_mapping"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.SsoApplicationEndpoint = spBrowserSsoAttrs["sso_application_endpoint"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.SsoServiceEndpoints = []client.SpSsoServiceEndpoint{}
+		for _, ssoServiceEndpointsElement := range spBrowserSsoAttrs["sso_service_endpoints"].(types.Set).Elements() {
+			ssoServiceEndpointsValue := client.SpSsoServiceEndpoint{}
+			ssoServiceEndpointsAttrs := ssoServiceEndpointsElement.(types.Object).Attributes()
+			ssoServiceEndpointsValue.Binding = ssoServiceEndpointsAttrs["binding"].(types.String).ValueStringPointer()
+			ssoServiceEndpointsValue.Index = ssoServiceEndpointsAttrs["index"].(types.Int64).ValueInt64Pointer()
+			ssoServiceEndpointsValue.IsDefault = ssoServiceEndpointsAttrs["is_default"].(types.Bool).ValueBoolPointer()
+			ssoServiceEndpointsValue.Url = ssoServiceEndpointsAttrs["url"].(types.String).ValueString()
+			spBrowserSsoValue.SsoServiceEndpoints = append(spBrowserSsoValue.SsoServiceEndpoints, ssoServiceEndpointsValue)
+		}
+		for _, urlWhitelistEntriesElement := range spBrowserSsoAttrs["url_whitelist_entries"].(types.Set).Elements() {
+			urlWhitelistEntriesValue := client.UrlWhitelistEntry{}
+			urlWhitelistEntriesAttrs := urlWhitelistEntriesElement.(types.Object).Attributes()
+			urlWhitelistEntriesValue.AllowQueryAndFragment = urlWhitelistEntriesAttrs["allow_query_and_fragment"].(types.Bool).ValueBoolPointer()
+			urlWhitelistEntriesValue.RequireHttps = urlWhitelistEntriesAttrs["require_https"].(types.Bool).ValueBoolPointer()
+			urlWhitelistEntriesValue.ValidDomain = urlWhitelistEntriesAttrs["valid_domain"].(types.String).ValueStringPointer()
+			urlWhitelistEntriesValue.ValidPath = urlWhitelistEntriesAttrs["valid_path"].(types.String).ValueStringPointer()
+			spBrowserSsoValue.UrlWhitelistEntries = append(spBrowserSsoValue.UrlWhitelistEntries, urlWhitelistEntriesValue)
+		}
+		spBrowserSsoValue.WsFedTokenType = spBrowserSsoAttrs["ws_fed_token_type"].(types.String).ValueStringPointer()
+		spBrowserSsoValue.WsTrustVersion = spBrowserSsoAttrs["ws_trust_version"].(types.String).ValueStringPointer()
+		addRequest.SpBrowserSso = spBrowserSsoValue
 	}
 
 	if internaltypes.IsDefined(plan.AttributeQuery) {
 		addRequest.AttributeQuery = &client.SpAttributeQuery{}
+		attributeQueryAttrs := plan.AttributeQuery.Attributes()
 
 		addRequest.AttributeQuery.Attributes = []string{}
-		for _, attribute := range plan.AttributeQuery.Attributes()["attributes"].(types.Set).Elements() {
+		for _, attribute := range attributeQueryAttrs["attributes"].(types.Set).Elements() {
 			addRequest.AttributeQuery.Attributes = append(addRequest.AttributeQuery.Attributes, attribute.(types.String).ValueString())
 		}
 
-		addRequest.AttributeQuery.AttributeContractFulfillment = map[string]client.AttributeFulfillmentValue{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery.Attributes()["attribute_contract_fulfillment"], true)), &addRequest.AttributeQuery.AttributeContractFulfillment)
-		if err != nil {
-			return err
+		addRequest.AttributeQuery.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(attributeQueryAttrs["attribute_contract_fulfillment"].(types.Map))
+
+		addRequest.AttributeQuery.IssuanceCriteria = issuancecriteria.ClientStruct(attributeQueryAttrs["issuance_criteria"].(types.Object))
+
+		if !attributeQueryAttrs["policy"].IsNull() {
+			attributeQueryPolicyValue := &client.SpAttributeQueryPolicy{}
+			attributeQueryPolicyAttrs := attributeQueryAttrs["policy"].(types.Object).Attributes()
+			attributeQueryPolicyValue.EncryptAssertion = attributeQueryPolicyAttrs["encrypt_assertion"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.RequireEncryptedNameId = attributeQueryPolicyAttrs["require_encrypted_name_id"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.RequireSignedAttributeQuery = attributeQueryPolicyAttrs["require_signed_attribute_query"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.SignAssertion = attributeQueryPolicyAttrs["sign_assertion"].(types.Bool).ValueBoolPointer()
+			attributeQueryPolicyValue.SignResponse = attributeQueryPolicyAttrs["sign_response"].(types.Bool).ValueBoolPointer()
+			addRequest.AttributeQuery.Policy = attributeQueryPolicyValue
 		}
 
-		addRequest.AttributeQuery.IssuanceCriteria, err = issuancecriteria.ClientStruct(plan.AttributeQuery.Attributes()["issuance_criteria"].(types.Object))
-		if err != nil {
-			return err
-		}
-
-		addRequest.AttributeQuery.Policy = &client.SpAttributeQueryPolicy{}
-		err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery.Attributes()["policy"], true)), &addRequest.AttributeQuery.Policy)
-		if err != nil {
-			return err
-		}
-
-		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(plan.AttributeQuery.Attributes()["attribute_sources"].(types.Set))
-		if err != nil {
-			return err
-		}
+		addRequest.AttributeQuery.AttributeSources = attributesources.ClientStruct(attributeQueryAttrs["attribute_sources"].(types.Set))
 	}
 
-	if internaltypes.IsDefined(plan.WsTrust) {
-		addRequest.WsTrust = &client.SpWsTrust{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, true)), &addRequest.WsTrust)
-		if err != nil {
-			return err
+	if !plan.WsTrust.IsNull() {
+		wsTrustValue := &client.SpWsTrust{}
+		wsTrustAttrs := plan.WsTrust.Attributes()
+		wsTrustValue.AbortIfNotFulfilledFromRequest = wsTrustAttrs["abort_if_not_fulfilled_from_request"].(types.Bool).ValueBoolPointer()
+		wsTrustAttributeContractValue := client.SpWsTrustAttributeContract{}
+		wsTrustAttributeContractAttrs := wsTrustAttrs["attribute_contract"].(types.Object).Attributes()
+		wsTrustAttributeContractValue.CoreAttributes = []client.SpWsTrustAttribute{}
+		for _, coreAttributesElement := range wsTrustAttributeContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.SpWsTrustAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			coreAttributesValue.Namespace = coreAttributesAttrs["namespace"].(types.String).ValueString()
+			wsTrustAttributeContractValue.CoreAttributes = append(wsTrustAttributeContractValue.CoreAttributes, coreAttributesValue)
 		}
+		wsTrustAttributeContractValue.ExtendedAttributes = []client.SpWsTrustAttribute{}
+		for _, extendedAttributesElement := range wsTrustAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+			extendedAttributesValue := client.SpWsTrustAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			extendedAttributesValue.Namespace = extendedAttributesAttrs["namespace"].(types.String).ValueString()
+			wsTrustAttributeContractValue.ExtendedAttributes = append(wsTrustAttributeContractValue.ExtendedAttributes, extendedAttributesValue)
+		}
+		wsTrustValue.AttributeContract = wsTrustAttributeContractValue
+		wsTrustValue.DefaultTokenType = wsTrustAttrs["default_token_type"].(types.String).ValueStringPointer()
+		wsTrustValue.EncryptSaml2Assertion = wsTrustAttrs["encrypt_saml2_assertion"].(types.Bool).ValueBoolPointer()
+		wsTrustValue.GenerateKey = wsTrustAttrs["generate_key"].(types.Bool).ValueBoolPointer()
+		wsTrustValue.MessageCustomizations = []client.ProtocolMessageCustomization{}
+		for _, messageCustomizationsElement := range wsTrustAttrs["message_customizations"].(types.Set).Elements() {
+			messageCustomizationsValue := client.ProtocolMessageCustomization{}
+			messageCustomizationsAttrs := messageCustomizationsElement.(types.Object).Attributes()
+			messageCustomizationsValue.ContextName = messageCustomizationsAttrs["context_name"].(types.String).ValueStringPointer()
+			messageCustomizationsValue.MessageExpression = messageCustomizationsAttrs["message_expression"].(types.String).ValueStringPointer()
+			wsTrustValue.MessageCustomizations = append(wsTrustValue.MessageCustomizations, messageCustomizationsValue)
+		}
+		wsTrustValue.MinutesAfter = wsTrustAttrs["minutes_after"].(types.Int64).ValueInt64Pointer()
+		wsTrustValue.MinutesBefore = wsTrustAttrs["minutes_before"].(types.Int64).ValueInt64Pointer()
+		wsTrustValue.OAuthAssertionProfiles = wsTrustAttrs["oauth_assertion_profiles"].(types.Bool).ValueBoolPointer()
+		wsTrustValue.PartnerServiceIds = []string{}
+		for _, partnerServiceIdsElement := range wsTrustAttrs["partner_service_ids"].(types.Set).Elements() {
+			wsTrustValue.PartnerServiceIds = append(wsTrustValue.PartnerServiceIds, partnerServiceIdsElement.(types.String).ValueString())
+		}
+		if !wsTrustAttrs["request_contract_ref"].IsNull() {
+			wsTrustRequestContractRefValue := &client.ResourceLink{}
+			wsTrustRequestContractRefAttrs := wsTrustAttrs["request_contract_ref"].(types.Object).Attributes()
+			wsTrustRequestContractRefValue.Id = wsTrustRequestContractRefAttrs["id"].(types.String).ValueString()
+			wsTrustValue.RequestContractRef = wsTrustRequestContractRefValue
+		}
+		wsTrustValue.TokenProcessorMappings = []client.IdpTokenProcessorMapping{}
+		for _, tokenProcessorMappingsElement := range wsTrustAttrs["token_processor_mappings"].(types.Set).Elements() {
+			tokenProcessorMappingsValue := client.IdpTokenProcessorMapping{}
+			tokenProcessorMappingsAttrs := tokenProcessorMappingsElement.(types.Object).Attributes()
+			tokenProcessorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(tokenProcessorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+			tokenProcessorMappingsValue.AttributeSources = attributesources.ClientStruct(tokenProcessorMappingsAttrs["attribute_sources"].(types.Set))
+			tokenProcessorMappingsIdpTokenProcessorRefValue := client.ResourceLink{}
+			tokenProcessorMappingsIdpTokenProcessorRefAttrs := tokenProcessorMappingsAttrs["idp_token_processor_ref"].(types.Object).Attributes()
+			tokenProcessorMappingsIdpTokenProcessorRefValue.Id = tokenProcessorMappingsIdpTokenProcessorRefAttrs["id"].(types.String).ValueString()
+			tokenProcessorMappingsValue.IdpTokenProcessorRef = tokenProcessorMappingsIdpTokenProcessorRefValue
+			tokenProcessorMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(tokenProcessorMappingsAttrs["issuance_criteria"].(types.Object))
+			if !tokenProcessorMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
+				tokenProcessorMappingsValue.RestrictedVirtualEntityIds = []string{}
+				for _, restrictedVirtualEntityIdsElement := range tokenProcessorMappingsAttrs["restricted_virtual_entity_ids"].(types.Set).Elements() {
+					tokenProcessorMappingsValue.RestrictedVirtualEntityIds = append(tokenProcessorMappingsValue.RestrictedVirtualEntityIds, restrictedVirtualEntityIdsElement.(types.String).ValueString())
+				}
+			}
+			wsTrustValue.TokenProcessorMappings = append(wsTrustValue.TokenProcessorMappings, tokenProcessorMappingsValue)
+		}
+		addRequest.WsTrust = wsTrustValue
 	}
 
-	if internaltypes.IsDefined(plan.OutboundProvision) {
-		addRequest.OutboundProvision = &client.OutboundProvision{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
-		if err != nil {
-			return err
+	// outbound_provision
+	if !plan.OutboundProvision.IsNull() {
+		outboundProvisionValue := &client.OutboundProvision{}
+		outboundProvisionAttrs := plan.OutboundProvision.Attributes()
+		outboundProvisionValue.Channels = []client.Channel{}
+		for _, channelsElement := range outboundProvisionAttrs["channels"].(types.List).Elements() {
+			channelsValue := client.Channel{}
+			channelsAttrs := channelsElement.(types.Object).Attributes()
+			channelsValue.Active = channelsAttrs["active"].(types.Bool).ValueBool()
+			channelsValue.AttributeMapping = []client.SaasAttributeMapping{}
+			for _, attributeMappingElement := range channelsAttrs["attribute_mapping"].(types.Set).Elements() {
+				attributeMappingValue := client.SaasAttributeMapping{}
+				attributeMappingAttrs := attributeMappingElement.(types.Object).Attributes()
+				attributeMappingValue.FieldName = attributeMappingAttrs["field_name"].(types.String).ValueString()
+				attributeMappingSaasFieldInfoValue := client.SaasFieldConfiguration{}
+				attributeMappingSaasFieldInfoAttrs := attributeMappingAttrs["saas_field_info"].(types.Object).Attributes()
+				if !attributeMappingSaasFieldInfoAttrs["attribute_names"].IsNull() {
+					attributeMappingSaasFieldInfoValue.AttributeNames = []string{}
+					for _, attributeNamesElement := range attributeMappingSaasFieldInfoAttrs["attribute_names"].(types.List).Elements() {
+						attributeMappingSaasFieldInfoValue.AttributeNames = append(attributeMappingSaasFieldInfoValue.AttributeNames, attributeNamesElement.(types.String).ValueString())
+					}
+				}
+				if !attributeMappingSaasFieldInfoAttrs["character_case"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.CharacterCase = attributeMappingSaasFieldInfoAttrs["character_case"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["create_only"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.CreateOnly = attributeMappingSaasFieldInfoAttrs["create_only"].(types.Bool).ValueBoolPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["default_value"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.DefaultValue = attributeMappingSaasFieldInfoAttrs["default_value"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["expression"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Expression = attributeMappingSaasFieldInfoAttrs["expression"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["masked"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Masked = attributeMappingSaasFieldInfoAttrs["masked"].(types.Bool).ValueBoolPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["parser"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Parser = attributeMappingSaasFieldInfoAttrs["parser"].(types.String).ValueStringPointer()
+				}
+				if !attributeMappingSaasFieldInfoAttrs["trim"].IsUnknown() {
+					attributeMappingSaasFieldInfoValue.Trim = attributeMappingSaasFieldInfoAttrs["trim"].(types.Bool).ValueBoolPointer()
+				}
+				attributeMappingValue.SaasFieldInfo = attributeMappingSaasFieldInfoValue
+				channelsValue.AttributeMapping = append(channelsValue.AttributeMapping, attributeMappingValue)
+			}
+			channelsChannelSourceValue := client.ChannelSource{}
+			channelsChannelSourceAttrs := channelsAttrs["channel_source"].(types.Object).Attributes()
+			channelsChannelSourceAccountManagementSettingsValue := client.AccountManagementSettings{}
+			channelsChannelSourceAccountManagementSettingsAttrs := channelsChannelSourceAttrs["account_management_settings"].(types.Object).Attributes()
+			channelsChannelSourceAccountManagementSettingsValue.AccountStatusAlgorithm = channelsChannelSourceAccountManagementSettingsAttrs["account_status_algorithm"].(types.String).ValueString()
+			channelsChannelSourceAccountManagementSettingsValue.AccountStatusAttributeName = channelsChannelSourceAccountManagementSettingsAttrs["account_status_attribute_name"].(types.String).ValueString()
+			channelsChannelSourceAccountManagementSettingsValue.DefaultStatus = channelsChannelSourceAccountManagementSettingsAttrs["default_status"].(types.Bool).ValueBoolPointer()
+			channelsChannelSourceAccountManagementSettingsValue.FlagComparisonStatus = channelsChannelSourceAccountManagementSettingsAttrs["flag_comparison_status"].(types.Bool).ValueBoolPointer()
+			channelsChannelSourceAccountManagementSettingsValue.FlagComparisonValue = channelsChannelSourceAccountManagementSettingsAttrs["flag_comparison_value"].(types.String).ValueStringPointer()
+			channelsChannelSourceValue.AccountManagementSettings = channelsChannelSourceAccountManagementSettingsValue
+			channelsChannelSourceValue.BaseDn = channelsChannelSourceAttrs["base_dn"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue := client.ChangeDetectionSettings{}
+			channelsChannelSourceChangeDetectionSettingsAttrs := channelsChannelSourceAttrs["change_detection_settings"].(types.Object).Attributes()
+			channelsChannelSourceChangeDetectionSettingsValue.ChangedUsersAlgorithm = channelsChannelSourceChangeDetectionSettingsAttrs["changed_users_algorithm"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.GroupObjectClass = channelsChannelSourceChangeDetectionSettingsAttrs["group_object_class"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.TimeStampAttributeName = channelsChannelSourceChangeDetectionSettingsAttrs["time_stamp_attribute_name"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.UserObjectClass = channelsChannelSourceChangeDetectionSettingsAttrs["user_object_class"].(types.String).ValueString()
+			channelsChannelSourceChangeDetectionSettingsValue.UsnAttributeName = channelsChannelSourceChangeDetectionSettingsAttrs["usn_attribute_name"].(types.String).ValueStringPointer()
+			channelsChannelSourceValue.ChangeDetectionSettings = channelsChannelSourceChangeDetectionSettingsValue
+			channelsChannelSourceDataSourceValue := client.ResourceLink{}
+			channelsChannelSourceDataSourceAttrs := channelsChannelSourceAttrs["data_source"].(types.Object).Attributes()
+			channelsChannelSourceDataSourceValue.Id = channelsChannelSourceDataSourceAttrs["id"].(types.String).ValueString()
+			channelsChannelSourceValue.DataSource = channelsChannelSourceDataSourceValue
+			channelsChannelSourceGroupMembershipDetectionValue := client.GroupMembershipDetection{}
+			channelsChannelSourceGroupMembershipDetectionAttrs := channelsChannelSourceAttrs["group_membership_detection"].(types.Object).Attributes()
+			channelsChannelSourceGroupMembershipDetectionValue.GroupMemberAttributeName = channelsChannelSourceGroupMembershipDetectionAttrs["group_member_attribute_name"].(types.String).ValueStringPointer()
+			channelsChannelSourceGroupMembershipDetectionValue.MemberOfGroupAttributeName = channelsChannelSourceGroupMembershipDetectionAttrs["member_of_group_attribute_name"].(types.String).ValueStringPointer()
+			channelsChannelSourceValue.GroupMembershipDetection = channelsChannelSourceGroupMembershipDetectionValue
+			if !channelsChannelSourceAttrs["group_source_location"].IsNull() {
+				channelsChannelSourceGroupSourceLocationValue := &client.ChannelSourceLocation{}
+				channelsChannelSourceGroupSourceLocationAttrs := channelsChannelSourceAttrs["group_source_location"].(types.Object).Attributes()
+				channelsChannelSourceGroupSourceLocationValue.Filter = channelsChannelSourceGroupSourceLocationAttrs["filter"].(types.String).ValueStringPointer()
+				channelsChannelSourceGroupSourceLocationValue.GroupDN = channelsChannelSourceGroupSourceLocationAttrs["group_dn"].(types.String).ValueStringPointer()
+				channelsChannelSourceGroupSourceLocationValue.NestedSearch = channelsChannelSourceGroupSourceLocationAttrs["nested_search"].(types.Bool).ValueBoolPointer()
+				channelsChannelSourceValue.GroupSourceLocation = channelsChannelSourceGroupSourceLocationValue
+			}
+			channelsChannelSourceValue.GuidAttributeName = channelsChannelSourceAttrs["guid_attribute_name"].(types.String).ValueString()
+			channelsChannelSourceValue.GuidBinary = channelsChannelSourceAttrs["guid_binary"].(types.Bool).ValueBool()
+			channelsChannelSourceUserSourceLocationValue := client.ChannelSourceLocation{}
+			channelsChannelSourceUserSourceLocationAttrs := channelsChannelSourceAttrs["user_source_location"].(types.Object).Attributes()
+			channelsChannelSourceUserSourceLocationValue.Filter = channelsChannelSourceUserSourceLocationAttrs["filter"].(types.String).ValueStringPointer()
+			channelsChannelSourceUserSourceLocationValue.GroupDN = channelsChannelSourceUserSourceLocationAttrs["group_dn"].(types.String).ValueStringPointer()
+			channelsChannelSourceUserSourceLocationValue.NestedSearch = channelsChannelSourceUserSourceLocationAttrs["nested_search"].(types.Bool).ValueBoolPointer()
+			channelsChannelSourceValue.UserSourceLocation = channelsChannelSourceUserSourceLocationValue
+			channelsValue.ChannelSource = channelsChannelSourceValue
+			channelsValue.MaxThreads = channelsAttrs["max_threads"].(types.Int64).ValueInt64()
+			channelsValue.Name = channelsAttrs["name"].(types.String).ValueString()
+			channelsValue.Timeout = channelsAttrs["timeout"].(types.Int64).ValueInt64()
+			outboundProvisionValue.Channels = append(outboundProvisionValue.Channels, channelsValue)
 		}
+		if !outboundProvisionAttrs["custom_schema"].IsNull() {
+			outboundProvisionCustomSchemaValue := &client.Schema{}
+			outboundProvisionCustomSchemaAttrs := outboundProvisionAttrs["custom_schema"].(types.Object).Attributes()
+			outboundProvisionCustomSchemaValue.Attributes = []client.SchemaAttribute{}
+			for _, attributesElement := range outboundProvisionCustomSchemaAttrs["attributes"].(types.Set).Elements() {
+				attributesValue := client.SchemaAttribute{}
+				attributesAttrs := attributesElement.(types.Object).Attributes()
+				attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+				attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
+				if !attributesAttrs["sub_attributes"].IsNull() {
+					attributesValue.SubAttributes = []string{}
+					for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
+						attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesElement.(types.String).ValueString())
+					}
+				}
+				if !attributesAttrs["types"].IsNull() {
+					attributesValue.Types = []string{}
+					for _, typesElement := range attributesAttrs["types"].(types.Set).Elements() {
+						attributesValue.Types = append(attributesValue.Types, typesElement.(types.String).ValueString())
+					}
+				}
+				outboundProvisionCustomSchemaValue.Attributes = append(outboundProvisionCustomSchemaValue.Attributes, attributesValue)
+			}
+			outboundProvisionCustomSchemaValue.Namespace = outboundProvisionCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
+			outboundProvisionValue.CustomSchema = outboundProvisionCustomSchemaValue
+		}
+		outboundProvisionValue.TargetSettings = []client.ConfigField{}
+		for _, targetSettingsElement := range outboundProvisionAttrs["target_settings"].(types.Set).Elements() {
+			targetSettingsValue := client.ConfigField{}
+			targetSettingsAttrs := targetSettingsElement.(types.Object).Attributes()
+			targetSettingsValue.Name = targetSettingsAttrs["name"].(types.String).ValueString()
+			targetSettingsValue.Value = targetSettingsAttrs["value"].(types.String).ValueStringPointer()
+			outboundProvisionValue.TargetSettings = append(outboundProvisionValue.TargetSettings, targetSettingsValue)
+		}
+		outboundProvisionValue.Type = outboundProvisionAttrs["type"].(types.String).ValueString()
+		addRequest.OutboundProvision = outboundProvisionValue
 	}
 
-	return nil
+	return respDiags
 }
 
 func (state *idpSpConnectionModel) getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex int) types.Object {
@@ -2466,7 +2792,11 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 
 	state.ContactInfo = contactInfoValue
 	// creation_date
-	state.CreationDate = types.StringValue(response.CreationDate.Format(time.RFC3339))
+	if response.CreationDate != nil {
+		state.CreationDate = types.StringValue(response.CreationDate.Format(time.RFC3339))
+	} else {
+		state.CreationDate = types.StringNull()
+	}
 	// credentials
 	var credentialsValue types.Object
 	if response.Credentials != nil {
@@ -2477,10 +2807,14 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				for _, certInPlan := range state.Credentials.Attributes()["certs"].(types.List).Elements() {
 					x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
-					if cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan {
+					// If the plan did not define an id for the cert, we'll have to compare the certs via the file_data.
+					// Otherwise just compare the ids of the certs
+					if (x509FileIdPlan == "" &&
+						pemcertificates.FileDataEquivalent(x509FilePlanAttrs["file_data"].(types.String).ValueString(), cert.X509File.FileData)) ||
+						(cert.X509File.Id != nil && *cert.X509File.Id == x509FileIdPlan) {
 						planFileData := x509FilePlanAttrs["file_data"].(types.String)
 						credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planFileData, cert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 						certMatchFound = true
 						break
@@ -2488,23 +2822,23 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				}
 				if !certMatchFound {
 					credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), cert, &diags, isImportRead)
-					diags.Append(objDiags...)
+					respDiags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
 			} else {
 				credentialsCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), cert, &diags, isImportRead)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
 		}
 		credentialsCertsValue, objDiags := types.ListValue(connectioncert.ObjType(), credentialsCertsValues)
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 		var credentialsDecryptionKeyPairRefValue types.Object
 		if response.Credentials.DecryptionKeyPairRef == nil {
 			credentialsDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.DecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsInboundBackChannelAuthValue types.Object
 		if response.Credentials.InboundBackChannelAuth == nil {
@@ -2519,10 +2853,14 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 						for _, ibcaCertInPlan := range state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
 							ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
-							if ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan {
+							// If the plan did not define an id for the cert, we'll have to compare the certs via the file_data.
+							// Otherwise just compare the ids of the certs
+							if (ibcax509FileIdPlan == "" &&
+								pemcertificates.FileDataEquivalent(ibcax509FilePlanAttrs["file_data"].(types.String).ValueString(), ibcaCert.X509File.FileData)) ||
+								(ibcaCert.X509File.Id != nil && *ibcaCert.X509File.Id == ibcax509FileIdPlan) {
 								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
 								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), planIbcaX509FileFileData, ibcaCert, &diags, isImportRead)
-								diags.Append(objDiags...)
+								respDiags.Append(objDiags...)
 								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 								ibaCertMatch = true
 								break
@@ -2530,17 +2868,17 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 						}
 						if !ibaCertMatch {
 							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), ibcaCert, &diags, isImportRead)
-							diags.Append(objDiags...)
+							respDiags.Append(objDiags...)
 							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 						}
 					} else {
 						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(context.Background(), types.StringNull(), ibcaCert, &diags, isImportRead)
-						diags.Append(objDiags...)
+						respDiags.Append(objDiags...)
 						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 					}
 				}
 				credentialsInboundBackChannelAuthCertsValue, objDiags = types.ListValue(connectioncert.ObjType(), credentialsInboundBackChannelAuthCertsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsInboundBackChannelAuthCertsValue = types.ListNull(connectioncert.ObjType())
 			}
@@ -2548,16 +2886,10 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			if response.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if state != nil && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
-					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
-					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+					password = passwordFromPlan.ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if state != nil && state.Credentials.Attributes()["inbound_back_channel_auth"] != nil && state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -2567,11 +2899,11 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					}
 				}
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringValue(password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsInboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"certs":                   credentialsInboundBackChannelAuthCertsValue,
@@ -2581,7 +2913,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"verification_issuer_dn":  types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
 				"verification_subject_dn": types.StringPointerValue(response.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsOutboundBackChannelAuthValue types.Object
 		if response.Credentials.OutboundBackChannelAuth == nil {
@@ -2591,16 +2923,10 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			if response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				password := ""
+				var password *string
 				if state != nil && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
-					if internaltypes.IsDefined(passwordFromPlan) {
-						password = passwordFromPlan.ValueString()
-					} else if state != nil {
-						password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
-					}
-				} else if state != nil && internaltypes.IsDefined(state.Credentials) {
-					password = state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+					password = passwordFromPlan.ValueStringPointer()
 				}
 				encryptedPassword := types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.EncryptedPassword)
 				if state != nil && state.Credentials.Attributes()["outbound_back_channel_auth"] != nil && state.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
@@ -2610,18 +2936,18 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					}
 				}
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
-					"password":           types.StringPointerValue(&password),
+					"password":           types.StringPointerValue(password),
 					"encrypted_password": encryptedPassword,
 					"username":           types.StringPointerValue(response.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
 				})
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			var credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue types.Object
 			if response.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef == nil {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 			} else {
 				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			}
 			credentialsOutboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthAttrTypes, map[string]attr.Value{
 				"digital_signature":      types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.DigitalSignature),
@@ -2629,14 +2955,14 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
 				"validate_partner_cert":  types.BoolPointerValue(response.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSecondaryDecryptionKeyPairRefValue types.Object
 		if response.Credentials.SecondaryDecryptionKeyPairRef == nil {
 			credentialsSecondaryDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
 		} else {
 			credentialsSecondaryDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(context.Background(), response.Credentials.SecondaryDecryptionKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		var credentialsSigningSettingsValue types.Object
 		if response.Credentials.SigningSettings == nil {
@@ -2647,19 +2973,19 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink := &client.ResourceLink{}
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink.Id = credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue.Id
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(context.Background(), credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
 			}
 			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValue types.Set
 			if len(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues) > 0 {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags = types.SetValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
-				diags.Append(objDiags...)
+				respDiags.Append(objDiags...)
 			} else {
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue = types.SetNull(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType)
 			}
 
 			credentialsSigningSettingsSigningKeyPairRefValue, objDiags := resourcelink.ToState(context.Background(), &response.Credentials.SigningSettings.SigningKeyPairRef)
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 			// PF will return false include_cert_in_signature as nil
 			includeCertInSignature := false
 			if response.Credentials.SigningSettings.IncludeCertInSignature != nil {
@@ -2672,7 +2998,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"include_raw_key_in_signature":      types.BoolPointerValue(response.Credentials.SigningSettings.IncludeRawKeyInSignature),
 				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
 			})
-			diags.Append(objDiags...)
+			respDiags.Append(objDiags...)
 		}
 		credentialsValue, objDiags = types.ObjectValue(credentialsAttrTypes, map[string]attr.Value{
 			"block_encryption_algorithm":        types.StringPointerValue(response.Credentials.BlockEncryptionAlgorithm),
@@ -2686,7 +3012,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			"verification_issuer_dn":            types.StringPointerValue(response.Credentials.VerificationIssuerDN),
 			"verification_subject_dn":           types.StringPointerValue(response.Credentials.VerificationSubjectDN),
 		})
-		diags.Append(objDiags...)
+		respDiags.Append(objDiags...)
 	} else {
 		credentialsValue = types.ObjectNull(credentialsAttrTypes)
 	}
@@ -2724,8 +3050,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	// logging_mode
 	// If the plan logging mode does not match the state logging mode, report that the error might be being controlled
 	// by the `server_settings_general` resource
-	if response.LoggingMode != nil && state.LoggingMode.ValueString() != *response.LoggingMode {
-		diags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
+	if response.LoggingMode != nil && internaltypes.IsDefined(state.LoggingMode) && state.LoggingMode.ValueString() != *response.LoggingMode {
+		respDiags.AddAttributeError(path.Root("logging_mode"), providererror.ConflictingValueReturnedError,
 			"PingFederate returned a different value for `logging_mode` for this resource than was planned. "+
 				"If `sp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
 				" `logging_mode` should be configured to the same value in this resource.")
@@ -3274,7 +3600,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			spBrowserSsoArtifactResolverLocationsValue, diags := types.SetValue(spBrowserSsoArtifactResolverLocationsElementType, spBrowserSsoArtifactResolverLocationsValues)
 			respDiags.Append(diags...)
 			spBrowserSsoArtifactValue, diags = types.ObjectValue(spBrowserSsoArtifactAttrTypes, map[string]attr.Value{
-				"lifetime":           types.Int64Value(response.SpBrowserSso.Artifact.Lifetime),
+				"lifetime":           types.Int64PointerValue(response.SpBrowserSso.Artifact.Lifetime),
 				"resolver_locations": spBrowserSsoArtifactResolverLocationsValue,
 				"source_id":          types.StringPointerValue(response.SpBrowserSso.Artifact.SourceId),
 			})
@@ -3418,9 +3744,22 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			spBrowserSsoUrlWhitelistEntriesValue, diags = types.SetValue(spBrowserSsoUrlWhitelistEntriesElementType, spBrowserSsoUrlWhitelistEntriesValues)
 			respDiags.Append(diags...)
 		}
+
+		// always_sign_artifact_response, sign_assertions, require_signed_authn_requests can be returned as nil when set to false
+		var alwaysSignArtifactResponse, signAssertions, requireSignedAuthnRequests bool
+		if response.SpBrowserSso.AlwaysSignArtifactResponse != nil {
+			alwaysSignArtifactResponse = *response.SpBrowserSso.AlwaysSignArtifactResponse
+		}
+		if response.SpBrowserSso.SignAssertions != nil {
+			signAssertions = *response.SpBrowserSso.SignAssertions
+		}
+		if response.SpBrowserSso.RequireSignedAuthnRequests != nil {
+			requireSignedAuthnRequests = *response.SpBrowserSso.RequireSignedAuthnRequests
+		}
+
 		spBrowserSsoValue, diags = types.ObjectValue(spBrowserSsoAttrTypes, map[string]attr.Value{
 			"adapter_mappings":              spBrowserSsoAdapterMappingsValue,
-			"always_sign_artifact_response": types.BoolPointerValue(response.SpBrowserSso.AlwaysSignArtifactResponse),
+			"always_sign_artifact_response": types.BoolValue(alwaysSignArtifactResponse),
 			"artifact":                      spBrowserSsoArtifactValue,
 			"assertion_lifetime":            spBrowserSsoAssertionLifetimeValue,
 			"attribute_contract":            spBrowserSsoAttributeContractValue,
@@ -3431,8 +3770,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			"incoming_bindings":             spBrowserSsoIncomingBindingsValue,
 			"message_customizations":        spBrowserSsoMessageCustomizationsValue,
 			"protocol":                      types.StringValue(response.SpBrowserSso.Protocol),
-			"require_signed_authn_requests": types.BoolPointerValue(response.SpBrowserSso.RequireSignedAuthnRequests),
-			"sign_assertions":               types.BoolPointerValue(response.SpBrowserSso.SignAssertions),
+			"require_signed_authn_requests": types.BoolValue(requireSignedAuthnRequests),
+			"sign_assertions":               types.BoolValue(signAssertions),
 			"sign_response_as_required":     types.BoolPointerValue(response.SpBrowserSso.SignResponseAsRequired),
 			"slo_service_endpoints":         spBrowserSsoSloServiceEndpointsValue,
 			"sp_saml_identity_mapping":      types.StringPointerValue(response.SpBrowserSso.SpSamlIdentityMapping),
@@ -3583,12 +3922,20 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		}
 		wsTrustTokenProcessorMappingsValue, diags := types.SetValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
 		respDiags.Append(diags...)
+		// Ensure that nil values are handled as false for encrypt_saml2_assertion and generate_key
+		var encryptSaml2Assertion, generateKey bool
+		if response.WsTrust.EncryptSaml2Assertion != nil {
+			encryptSaml2Assertion = *response.WsTrust.EncryptSaml2Assertion
+		}
+		if response.WsTrust.GenerateKey != nil {
+			generateKey = *response.WsTrust.GenerateKey
+		}
 		wsTrustValue, diags = types.ObjectValue(wsTrustAttrTypes, map[string]attr.Value{
 			"abort_if_not_fulfilled_from_request": types.BoolPointerValue(response.WsTrust.AbortIfNotFulfilledFromRequest),
 			"attribute_contract":                  wsTrustAttributeContractValue,
 			"default_token_type":                  types.StringPointerValue(response.WsTrust.DefaultTokenType),
-			"encrypt_saml2_assertion":             types.BoolPointerValue(response.WsTrust.EncryptSaml2Assertion),
-			"generate_key":                        types.BoolPointerValue(response.WsTrust.GenerateKey),
+			"encrypt_saml2_assertion":             types.BoolValue(encryptSaml2Assertion),
+			"generate_key":                        types.BoolValue(generateKey),
 			"message_customizations":              wsTrustMessageCustomizationsValue,
 			"minutes_after":                       types.Int64PointerValue(response.WsTrust.MinutesAfter),
 			"minutes_before":                      types.Int64PointerValue(response.WsTrust.MinutesBefore),
@@ -3614,9 +3961,8 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	err := addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdP SP Connection: "+err.Error())
+	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -3679,9 +4025,8 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the IdP SP Connection: "+err.Error())
+	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

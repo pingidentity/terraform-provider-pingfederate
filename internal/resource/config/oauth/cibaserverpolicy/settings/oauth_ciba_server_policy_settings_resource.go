@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthcibaserverpolicysettings
 
 import (
@@ -7,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -42,9 +44,9 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 		Description: "Manages OAuth CIBA Server Policy Settings",
 		Attributes: map[string]schema.Attribute{
 			"default_request_policy_ref": resourcelink.CompleteSingleNestedAttribute(
-				false,
-				false,
 				true,
+				false,
+				false,
 				"Reference to the default request policy, if one is defined.",
 			),
 		},

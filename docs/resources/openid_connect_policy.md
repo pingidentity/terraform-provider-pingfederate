@@ -187,6 +187,7 @@ resource "pingfederate_openid_connect_policy" "OIDCPolicy" {
 - `include_x5t_in_id_token` (Boolean) Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version `11.3` or later. The default value is `false`.
 - `reissue_id_token_in_hybrid_flow` (Boolean) Determines whether a new ID Token should be returned during token request of the hybrid flow. The default value is `false`.
 - `return_id_token_on_refresh_grant` (Boolean) Determines whether an ID Token should be returned when refresh grant is requested or not. The default value is `false`.
+- `return_id_token_on_token_exchange_grant` (Boolean) Determines whether an ID Token should be returned when token exchange is requested or not. Defaults to `false`. Supported in PF version `12.2` or later.
 - `scope_attribute_mappings` (Attributes Map) The attribute scope mappings from scopes to attribute names. (see [below for nested schema](#nestedatt--scope_attribute_mappings))
 
 ### Read-Only
@@ -311,14 +312,14 @@ Required:
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--type--source"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type.source`
+<a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -377,14 +378,14 @@ Required:
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--type--source"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.type.source`
+<a id="nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -430,14 +431,14 @@ Required:
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes.source`
+<a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 

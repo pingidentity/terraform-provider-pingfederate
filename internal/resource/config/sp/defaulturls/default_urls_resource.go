@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package defaulturls
 
 import (
@@ -10,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -117,7 +119,7 @@ func (r *defaultUrlsResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 
-	if internaltypes.IsDefined(plan.ConfirmIdpSlo) && internaltypes.IsDefined(plan.ConfirmSpSlo) && plan.ConfirmIdpSlo.ValueBool() != plan.ConfirmSpSlo.ValueBool() {
+	if !plan.ConfirmIdpSlo.IsUnknown() && !plan.ConfirmSpSlo.IsUnknown() && plan.ConfirmIdpSlo.ValueBool() != plan.ConfirmSpSlo.ValueBool() {
 		resp.Diagnostics.AddError(
 			providererror.InvalidAttributeConfiguration,
 			"`confirm_idp_slo` and `confirm_sp_slo` must be set to the same value")

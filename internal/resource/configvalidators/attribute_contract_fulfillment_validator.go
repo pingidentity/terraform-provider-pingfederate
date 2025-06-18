@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package configvalidators
 
 import (
@@ -46,13 +48,13 @@ func (v attributeContractFulfillmentValidator) ValidateMap(ctx context.Context, 
 			continue
 		}
 		sourceTypeAsString, ok := sourceType.(types.String)
-		if !ok {
+		if !ok || sourceTypeAsString.IsUnknown() {
 			continue
 		}
 
 		// Get the value
 		valueAsString, ok := attrAsObject.Attributes()["value"].(types.String)
-		if !ok {
+		if !ok || valueAsString.IsUnknown() {
 			continue
 		}
 
@@ -68,7 +70,7 @@ func (v attributeContractFulfillmentValidator) ValidateMap(ctx context.Context, 
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
 				providererror.InvalidAttributeConfiguration,
-				"When attribute_contract_fulfillment source type is set anything other than 'NO_MAPPING', the value must be defined. "+
+				"When attribute_contract_fulfillment source type is set to anything other than 'NO_MAPPING', the value must be defined. "+
 					fmt.Sprintf("attribute_contract_fulfillment key '%s' has no value defined while using a source type of '%s'", key, sourceTypeAsString.ValueString()),
 			)
 		}

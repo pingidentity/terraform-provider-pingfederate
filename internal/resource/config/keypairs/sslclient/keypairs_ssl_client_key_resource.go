@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package keypairssslclient
 
 import (
@@ -17,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -474,7 +476,11 @@ func (state *keypairsSslClientKeyResourceModel) readClientResponse(response *cli
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires
-	state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	if response.Expires != nil {
+		state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	// issuer_dn
 	state.IssuerDn = types.StringPointerValue(response.IssuerDN)
 	// key_algorithm

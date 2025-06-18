@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package passwordcredentialvalidator
 
 import (
@@ -15,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
@@ -136,18 +138,29 @@ func (r *passwordCredentialValidatorResource) Configure(_ context.Context, req r
 }
 
 func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model passwordCredentialValidatorModel
+	var model *passwordCredentialValidatorModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+	if model == nil {
+		return
+	}
+
+	if model.Configuration.IsUnknown() || model.PluginDescriptorRef.IsUnknown() {
+		return
+	}
 
 	configuration := model.Configuration.Attributes()
 
 	pluginDescriptorRefId := model.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
+	tablesKnown := !configuration["tables"].IsUnknown()
 	var isRadiusServerTableFound bool
 	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" || pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
-		if configuration["tables"] != nil {
+		if tablesKnown {
 			tables := configuration["tables"].(types.List).Elements()
 			for _, table := range tables {
 				tableAttrs := table.(types.Object).Attributes()
+				if tableAttrs["name"].IsUnknown() {
+					tablesKnown = false
+				}
 				tableName := tableAttrs["name"].(types.String).ValueString()
 				isRadiusServerTableFound = tableName == "RADIUS Servers" || isRadiusServerTableFound
 				if tableName == "Users" && pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
@@ -156,11 +169,19 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 						rowAttrs := row.(types.Object).Attributes()
 						fields := rowAttrs["fields"].(types.Set).Elements()
 						sensitiveFields := rowAttrs["sensitive_fields"].(types.Set).Elements()
+						if rowAttrs["fields"].IsUnknown() || rowAttrs["sensitive_fields"].IsUnknown() {
+							continue
+						}
+						anyUnknownNames := false
 						usernameFound := false
 						passwordFound := false
 						confirmPasswordFound := false
 						for _, field := range fields {
 							fieldRow := field.(types.Object).Attributes()
+							if fieldRow["name"].IsUnknown() {
+								anyUnknownNames = true
+								break
+							}
 							nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
 							if nestedTableFieldName == "Username" {
 								usernameFound = true
@@ -174,6 +195,10 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 						}
 						for _, field := range sensitiveFields {
 							fieldRow := field.(types.Object).Attributes()
+							if fieldRow["name"].IsUnknown() {
+								anyUnknownNames = true
+								break
+							}
 							nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
 							if nestedTableFieldName == "Username" {
 								usernameFound = true
@@ -185,21 +210,21 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 								confirmPasswordFound = true
 							}
 						}
-						if !usernameFound {
+						if !usernameFound && !anyUnknownNames {
 							resp.Diagnostics.AddAttributeError(
 								path.Root("configuration").AtMapKey("tables"),
 								providererror.InvalidAttributeConfiguration,
 								"The \"Username\" field is required in the Users table for the Simple Username Password Credential Validator.\n"+
 									fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
 						}
-						if !passwordFound {
+						if !passwordFound && !anyUnknownNames {
 							resp.Diagnostics.AddAttributeError(
 								path.Root("configuration").AtMapKey("tables"),
 								providererror.InvalidAttributeConfiguration,
 								"The \"Password\" field is required in the Users table for the Simple Username Password Credential Validator.\n"+
 									fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
 						}
-						if !confirmPasswordFound {
+						if !confirmPasswordFound && !anyUnknownNames {
 							resp.Diagnostics.AddAttributeError(
 								path.Root("configuration").AtMapKey("tables"),
 								providererror.InvalidAttributeConfiguration,
@@ -213,7 +238,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	}
 
 	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" {
-		if !isRadiusServerTableFound {
+		if !isRadiusServerTableFound && tablesKnown {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("configuration").AtMapKey("tables"),
 				providererror.InvalidAttributeConfiguration,
@@ -225,73 +250,84 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	if configuration["fields"] != nil {
 		fields := configuration["fields"].(types.Set).Elements()
 		sensitiveFields := configuration["sensitive_fields"].(types.Set).Elements()
+		anyUnknowns := configuration["fields"].IsUnknown() || configuration["sensitive_fields"].IsUnknown()
 		for _, field := range fields {
 			field := field.(types.Object).Attributes()
+			if field["name"].IsUnknown() {
+				anyUnknowns = true
+				break
+			}
 			fieldName := field["name"].(types.String).ValueString()
 			fieldNameMap[fieldName] = true
 		}
 		for _, field := range sensitiveFields {
 			field := field.(types.Object).Attributes()
+			if field["name"].IsUnknown() {
+				anyUnknowns = true
+				break
+			}
 			fieldName := field["name"].(types.String).ValueString()
 			fieldNameMap[fieldName] = true
 		}
 
-		switch pluginDescriptorRefId {
-		case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
-			_, hasClientId := fieldNameMap["Client Id"]
-			if !hasClientId {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("configuration").AtMapKey("fields"),
-					providererror.InvalidAttributeConfiguration,
-					"The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
-			}
-			_, hasClientSecret := fieldNameMap["Client Secret"]
-			if !hasClientSecret {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("configuration").AtMapKey("fields"),
-					providererror.InvalidAttributeConfiguration,
-					"The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
-			}
+		if !anyUnknowns {
+			switch pluginDescriptorRefId {
+			case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
+				_, hasClientId := fieldNameMap["Client Id"]
+				if !hasClientId {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("configuration").AtMapKey("fields"),
+						providererror.InvalidAttributeConfiguration,
+						"The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
+				}
+				_, hasClientSecret := fieldNameMap["Client Secret"]
+				if !hasClientSecret {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("configuration").AtMapKey("fields"),
+						providererror.InvalidAttributeConfiguration,
+						"The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
+				}
 
-		case "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV":
-			_, hasPingOneForCustomersDs := fieldNameMap["PingOne For Customers Datastore"]
-			if !hasPingOneForCustomersDs {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("configuration").AtMapKey("fields"),
-					providererror.InvalidAttributeConfiguration,
-					"The \"PingOne For Customers Datastore\" field is required for the PingOne Password Credential Validator")
-			}
+			case "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV":
+				_, hasPingOneForCustomersDs := fieldNameMap["PingOne For Customers Datastore"]
+				if !hasPingOneForCustomersDs {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("configuration").AtMapKey("fields"),
+						providererror.InvalidAttributeConfiguration,
+						"The \"PingOne For Customers Datastore\" field is required for the PingOne Password Credential Validator")
+				}
 
-		case "com.pingidentity.plugins.pcvs.pingid.PingIdPCV":
-			_, hasAuthenticationDuringErrors := fieldNameMap["Authentication During Errors"]
-			if !hasAuthenticationDuringErrors {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("configuration").AtMapKey("fields"),
-					providererror.InvalidAttributeConfiguration,
-					"The \"Authentication During Errors\" field is required for the PingID Password Credential Validator")
-			}
+			case "com.pingidentity.plugins.pcvs.pingid.PingIdPCV":
+				_, hasAuthenticationDuringErrors := fieldNameMap["Authentication During Errors"]
+				if !hasAuthenticationDuringErrors {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("configuration").AtMapKey("fields"),
+						providererror.InvalidAttributeConfiguration,
+						"The \"Authentication During Errors\" field is required for the PingID Password Credential Validator")
+				}
 
-		case "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator":
-			_, hasLdapDs := fieldNameMap["LDAP Datastore"]
-			if !hasLdapDs {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("configuration").AtMapKey("fields"),
-					providererror.InvalidAttributeConfiguration,
-					"The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator")
-			}
-			_, hasSearchBase := fieldNameMap["Search Base"]
-			if !hasSearchBase {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("configuration").AtMapKey("fields"),
-					providererror.InvalidAttributeConfiguration,
-					"The \"Search Base\" field is required for the LDAP Username Password Credential Validator")
-			}
-			_, hasSearchFilter := fieldNameMap["Search Filter"]
-			if !hasSearchFilter {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("configuration").AtMapKey("fields"),
-					providererror.InvalidAttributeConfiguration,
-					"The \"Search Filter\" field is required for the LDAP Username Password Credential Validator")
+			case "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator":
+				_, hasLdapDs := fieldNameMap["LDAP Datastore"]
+				if !hasLdapDs {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("configuration").AtMapKey("fields"),
+						providererror.InvalidAttributeConfiguration,
+						"The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator")
+				}
+				_, hasSearchBase := fieldNameMap["Search Base"]
+				if !hasSearchBase {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("configuration").AtMapKey("fields"),
+						providererror.InvalidAttributeConfiguration,
+						"The \"Search Base\" field is required for the LDAP Username Password Credential Validator")
+				}
+				_, hasSearchFilter := fieldNameMap["Search Filter"]
+				if !hasSearchFilter {
+					resp.Diagnostics.AddAttributeError(
+						path.Root("configuration").AtMapKey("fields"),
+						providererror.InvalidAttributeConfiguration,
+						"The \"Search Filter\" field is required for the LDAP Username Password Credential Validator")
+				}
 			}
 		}
 	}
@@ -356,11 +392,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	}
 
 	// Configuration
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.ValidatorId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err = addOptionalPasswordCredentialValidatorFields(ctx, createPasswordCredentialValidators, plan)
@@ -434,11 +466,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	}
 
 	// Configuration
-	configuration, err := pluginconfiguration.ClientStruct(plan.Configuration)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig), plan.ValidatorId.ValueString())
 	createUpdateRequest := client.NewPasswordCredentialValidator(plan.ValidatorId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)

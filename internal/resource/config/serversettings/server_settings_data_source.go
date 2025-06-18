@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package serversettings
 
 import (
@@ -5,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -422,6 +424,7 @@ func (r *serverSettingsDataSource) Read(ctx context.Context, req datasource.Read
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
+		return
 	}
 
 	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package passwordcredentialvalidator_test
 
 import (
@@ -10,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId = "pingOneForEnterpriseDirectoryPcv"
@@ -24,6 +27,12 @@ type pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel stru
 }
 
 func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing.T) {
+	// This PCV type is only supported prior to version 12.2
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		t.Log("Skipping test for PingOneForEnterpriseDirectoryPasswordCredentialValidators as it is not supported in PingFederate 12.2.0 and later")
+		t.SkipNow()
+	}
+
 	resourceName := "pingOneForEnterpriseDirectoryPCV"
 	initialResourceModel := pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel{
 		id:                    pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,

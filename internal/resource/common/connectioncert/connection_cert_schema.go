@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package connectioncert
 
 import (
@@ -5,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -13,8 +16,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/planmodifiers"
 )
 
-func ToSchema(description string) schema.ListNestedAttribute {
-	return schema.ListNestedAttribute{
+func ToSchema(description string, includeDefault bool) schema.ListNestedAttribute {
+	result := schema.ListNestedAttribute{
 		Description:         description,
 		MarkdownDescription: description,
 		Optional:            true,
@@ -24,7 +27,15 @@ func ToSchema(description string) schema.ListNestedAttribute {
 		Validators: []validator.List{
 			listvalidator.UniqueValues(),
 		},
+		PlanModifiers: []planmodifier.List{
+			planmodifiers.HandleFormattedCertsListFileData(),
+		},
 	}
+	if includeDefault {
+		result.Computed = true
+		result.Default = listdefault.StaticValue(types.ListValueMust(ObjType(), nil))
+	}
+	return result
 }
 
 func toSchemaAttributes() map[string]schema.Attribute {
@@ -143,9 +154,6 @@ func toSchemaAttributes() map[string]schema.Attribute {
 						stringvalidator.OneOf("HSM", "LOCAL"),
 					},
 				},
-			},
-			PlanModifiers: []planmodifier.Object{
-				planmodifiers.ValidateX509FileData(),
 			},
 		},
 		"active_verification_cert": schema.BoolAttribute{

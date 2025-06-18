@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package datastore
 
 import (
@@ -16,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -219,11 +221,7 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 		return
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
 
 	createCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(createCustomDataStore, con, client.CustomDataStore{}, plan)
@@ -256,11 +254,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 		return
 	}
 
-	configuration, err := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create configuration object for DataStore: "+err.Error())
-		return
-	}
+	configuration := pluginconfiguration.ClientStruct(customPlan["configuration"].(types.Object))
 
 	name := customPlan["name"].(types.String).ValueString()
 	updateCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))

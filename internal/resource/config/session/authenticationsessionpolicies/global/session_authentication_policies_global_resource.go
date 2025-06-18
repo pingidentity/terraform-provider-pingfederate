@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package sessionauthenticationsessionpoliciesglobal
 
 import (
@@ -11,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -100,7 +102,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) ValidateConfig(ctx context
 		return
 	}
 
-	if config.PersistentSessions.ValueBool() && !config.EnableSessions.ValueBool() {
+	if config.PersistentSessions.ValueBool() && !config.EnableSessions.IsUnknown() && !config.EnableSessions.ValueBool() {
 		resp.Diagnostics.AddAttributeError(path.Root("persistent_sessions"), providererror.InvalidAttributeConfiguration, "persistent_sessions cannot be set to `true` when enable_sessions is set to \"false\"")
 	}
 }

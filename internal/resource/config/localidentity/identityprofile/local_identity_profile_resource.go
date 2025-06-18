@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package localidentity
 
 import (
@@ -23,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -588,7 +590,6 @@ func addOptionalLocalIdentityProfileFields(ctx context.Context, addRequest *clie
 	if internaltypes.IsDefined(plan.ProfileConfig) {
 		addRequest.ProfileConfig = client.NewProfileConfigWithDefaults()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ProfileConfig, false)), addRequest.ProfileConfig)
-		fmt.Println(err)
 		if err != nil {
 			return err
 		}
@@ -671,16 +672,19 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		emailVerificationAttributes := plan.EmailVerificationConfig.Attributes()
 		// Some defaults in the email verification config only apply if email verification is enabled
 		emailVerificationEnabled := emailVerificationAttributes["email_verification_enabled"].(types.Bool).ValueBool()
+		emailVerificationDisabled := !emailVerificationAttributes["email_verification_enabled"].IsUnknown() && !emailVerificationEnabled
 		// Some attributes only apply for certain email verification types
 		emailVerificationType := emailVerificationAttributes["email_verification_type"].(types.String)
 		isOTP := emailVerificationType.ValueString() == "OTP"
+		isNotOTP := !emailVerificationAttributes["email_verification_type"].IsUnknown() && !isOTP
 		isOTL := emailVerificationType.ValueString() == "OTL"
+		isNotOTL := !emailVerificationAttributes["email_verification_type"].IsUnknown() && !isOTL
 
 		// Set unknown email verification attributes to defaults
 		if emailVerificationAttributes["verify_email_template_name"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["verify_email_template_name"] = types.StringValue("message-template-email-ownership-verification.html")
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["verify_email_template_name"] = types.StringNull()
 			}
 		}
@@ -688,7 +692,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_success_template_name"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["email_verification_success_template_name"] = types.StringValue("local.identity.email.verification.success.html")
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["email_verification_success_template_name"] = types.StringNull()
 			}
 		}
@@ -696,7 +700,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_error_template_name"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["email_verification_error_template_name"] = types.StringValue("local.identity.email.verification.error.html")
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["email_verification_error_template_name"] = types.StringNull()
 			}
 		}
@@ -704,7 +708,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["require_verified_email"].IsUnknown() {
 			if emailVerificationEnabled {
 				emailVerificationAttributes["require_verified_email"] = types.BoolValue(false)
-			} else {
+			} else if emailVerificationDisabled {
 				emailVerificationAttributes["require_verified_email"] = types.BoolNull()
 			}
 		}
@@ -713,7 +717,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["allowed_otp_character_set"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["allowed_otp_character_set"] = types.StringValue("23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz")
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["allowed_otp_character_set"] = types.StringNull()
 			}
 		}
@@ -721,7 +725,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otp_time_to_live"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["otp_time_to_live"] = types.Int64Value(15)
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["otp_time_to_live"] = types.Int64Null()
 			}
 		}
@@ -729,7 +733,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otp_length"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["otp_length"] = types.Int64Value(8)
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["otp_length"] = types.Int64Null()
 			}
 		}
@@ -737,7 +741,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otp_retry_attempts"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["otp_retry_attempts"] = types.Int64Value(3)
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["otp_retry_attempts"] = types.Int64Null()
 			}
 		}
@@ -745,7 +749,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_otp_template_name"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["email_verification_otp_template_name"] = types.StringValue("local.identity.email.verification.otp.html")
-			} else {
+			} else if emailVerificationDisabled || isNotOTP {
 				emailVerificationAttributes["email_verification_otp_template_name"] = types.StringNull()
 			}
 		}
@@ -754,7 +758,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["email_verification_sent_template_name"].IsUnknown() {
 			if emailVerificationEnabled && isOTL {
 				emailVerificationAttributes["email_verification_sent_template_name"] = types.StringValue("local.identity.email.verification.sent.html")
-			} else {
+			} else if emailVerificationDisabled || isNotOTL {
 				emailVerificationAttributes["email_verification_sent_template_name"] = types.StringNull()
 			}
 		}
@@ -762,7 +766,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["otl_time_to_live"].IsUnknown() {
 			if emailVerificationEnabled && isOTL {
 				emailVerificationAttributes["otl_time_to_live"] = types.Int64Value(1440)
-			} else {
+			} else if emailVerificationDisabled || isNotOTL {
 				emailVerificationAttributes["otl_time_to_live"] = types.Int64Null()
 			}
 		}
@@ -770,7 +774,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 		if emailVerificationAttributes["require_verified_email_template_name"].IsUnknown() {
 			if emailVerificationEnabled && isOTL {
 				emailVerificationAttributes["require_verified_email_template_name"] = types.StringValue("local.identity.email.verification.required.html")
-			} else {
+			} else if emailVerificationDisabled || isNotOTL {
 				emailVerificationAttributes["require_verified_email_template_name"] = types.StringNull()
 			}
 		}
@@ -789,7 +793,7 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 			for _, field := range fields {
 				fieldObj := field.(types.Object)
 				fieldAttrs := fieldObj.Attributes()
-				if !fieldAttrs["attributes"].IsUnknown() {
+				if !internaltypes.IsDefined(fieldObj) || !fieldAttrs["attributes"].IsUnknown() {
 					fieldsWithDefaults = append(fieldsWithDefaults, fieldObj)
 					continue
 				}
@@ -842,8 +846,12 @@ func (r *localIdentityProfileResource) ModifyPlan(ctx context.Context, req resou
 }
 
 func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model localIdentityProfileModel
+	var model *localIdentityProfileModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+	if model == nil {
+		return
+	}
+
 	if internaltypes.IsDefined(model.EmailVerificationConfig) {
 		emailVerificationConfig := model.EmailVerificationConfig.Attributes()
 		emailVerificationType := model.EmailVerificationConfig.Attributes()["email_verification_type"].(basetypes.StringValue).ValueString()
@@ -962,7 +970,8 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 			}
 		}
 	}
-	if !model.ProfileEnabled.ValueBool() && !model.RegistrationEnabled.ValueBool() {
+	if !model.ProfileEnabled.IsUnknown() && !model.ProfileEnabled.ValueBool() &&
+		!model.RegistrationEnabled.IsUnknown() && !model.RegistrationEnabled.ValueBool() {
 		if internaltypes.IsDefined(model.EmailVerificationConfig) || internaltypes.IsDefined(model.DataStoreConfig) || internaltypes.IsDefined(model.FieldConfig) || internaltypes.IsDefined(model.RegistrationConfig) || internaltypes.IsDefined(model.ProfileConfig) {
 			resp.Diagnostics.AddError(providererror.InvalidAttributeConfiguration, fmt.Sprintln("email, data_store_config, field Config, registration_config and profile_config are not allowed when registration and profile are disabled."))
 		}
@@ -993,7 +1002,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 				providererror.InvalidAttributeConfiguration,
 				fmt.Sprintln("registration_config is required when registration is enabled."))
 		}
-		if !model.RegistrationEnabled.ValueBool() {
+		if !model.RegistrationEnabled.IsUnknown() && !model.RegistrationEnabled.ValueBool() {
 			if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
 				fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
 				fieldElems := fieldObj.Elements()
@@ -1007,7 +1016,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 							fmt.Sprintln("registration_page_field option for the fields attribute should not be set to 'true' when registration is disabled."))
 					}
 					profilePageField := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
-					if internaltypes.IsDefined(profilePageField) && !profilePageField.ValueBool() {
+					if !profilePageField.IsUnknown() && !profilePageField.ValueBool() {
 						resp.Diagnostics.AddAttributeError(
 							path.Root("field_config").AtMapKey("fields"),
 							providererror.InvalidAttributeConfiguration,
@@ -1022,7 +1031,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 					fmt.Sprintln("registration_config is not allowed when registration is not enabled."))
 			}
 		}
-		if !model.ProfileEnabled.ValueBool() {
+		if !model.ProfileEnabled.IsUnknown() && !model.ProfileEnabled.ValueBool() {
 			if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
 				fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
 				fieldElems := fieldObj.Elements()
@@ -1036,7 +1045,7 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 							fmt.Sprintln("profile_page_field option for the fields attribute should not be set to 'true' when profile is disabled."))
 					}
 					registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
-					if (internaltypes.IsDefined(registrationPageField)) && (!registrationPageField.ValueBool()) {
+					if !registrationPageField.IsUnknown() && !registrationPageField.ValueBool() {
 						resp.Diagnostics.AddAttributeError(
 							path.Root("field_config").AtMapKey("fields"),
 							providererror.InvalidAttributeConfiguration,
@@ -1218,7 +1227,7 @@ func (r *localIdentityProfileResource) Read(ctx context.Context, req resource.Re
 	}
 	apiReadLocalIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.AuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil {
-		if httpResp.StatusCode == 404 {
+		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Local Identity Profile", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {

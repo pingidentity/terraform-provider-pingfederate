@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package kerberosrealmssettings
 
 import (
@@ -6,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 

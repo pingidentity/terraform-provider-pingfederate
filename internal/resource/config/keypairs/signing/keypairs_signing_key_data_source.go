@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package keypairsigning
 
 import (
@@ -9,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -164,7 +166,11 @@ func (state *keypairsSigningKeyDataSourceModel) readClientResponse(response *cli
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires
-	state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	if response.Expires != nil {
+		state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	// issuer_dn
 	state.IssuerDn = types.StringPointerValue(response.IssuerDN)
 	// key_algorithm
