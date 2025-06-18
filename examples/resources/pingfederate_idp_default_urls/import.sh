@@ -1,1 +1,0 @@
-terraform import pingfederate_idp_default_urls.idpDefaultUrl idpDefaultUrlId

@@ -1,17 +1,18 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package licenseagreement
 
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -53,8 +54,6 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 			},
 		},
 	}
-
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -98,7 +97,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	createLicenseAgreement := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createLicenseAgreement, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the license agreement", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the license agreement: "+err.Error())
 		return
 	}
 
@@ -112,7 +111,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 
 	// Read the response into the state
 	var state licenseAgreementModel
-	readLicenseAgreementResponse(ctx, licenseAgreementResponse, &state, nil)
+	readLicenseAgreementResponse(ctx, licenseAgreementResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -140,12 +139,7 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state, id)
+	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state)
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -165,7 +159,7 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for license agreement", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for license agreement: "+err.Error())
 		return
 	}
 
@@ -178,12 +172,7 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 
 	// Get the current state to see how any attributes are changing
 	var state licenseAgreementModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readLicenseAgreementResponse(ctx, updateLicenseAgreementResponse, &state, id)
+	readLicenseAgreementResponse(ctx, updateLicenseAgreementResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -193,9 +182,11 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 // This config object is edit-only, so Terraform can't delete it.
 func (r *licenseAgreementResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_license_agreement", &resp.Diagnostics)
 }
 
 func (r *licenseAgreementResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState licenseAgreementModel
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

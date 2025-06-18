@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package serversettings
 
 import (
@@ -11,17 +13,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -212,10 +213,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
 								Description: "Email address where notifications are sent.",
-								Required:    true,
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
+								Optional:    true,
 							},
 							"thread_dump_enabled": schema.BoolAttribute{
 								Description: "Generate a thread dump when approaching thread pool exhaustion.",
@@ -351,13 +349,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 										Optional:    false,
 										Default:     booldefault.StaticBool(true),
 									},
-									"enable_auto_connect": schema.BoolAttribute{
-										Description:        "This property has been deprecated and is no longer used.",
-										DeprecationMessage: "This property has been deprecated and is no longer used.",
-										Computed:           true,
-										Optional:           false,
-										Default:            booldefault.StaticBool(true),
-									},
 								},
 							},
 							"enable_outbound_provisioning": schema.BoolAttribute{
@@ -416,12 +407,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 										Optional:    false,
 										Default:     booldefault.StaticBool(true),
 									},
-									"enable_auto_connect": schema.BoolAttribute{
-										Description: "This property has been deprecated and no longer used. Default is `true`.",
-										Computed:    true,
-										Optional:    false,
-										Default:     booldefault.StaticBool(true),
-									},
 									"enable_xasp": schema.BoolAttribute{
 										Description: "Enable Attribute Requester Mapping for X.509 Attribute Sharing Profile (XASP). Default is `true`.",
 										Computed:    true,
@@ -462,6 +447,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Validators: []validator.String{
 							configvalidators.ValidUrl(),
 							stringvalidator.LengthAtLeast(1),
+							configvalidators.DoesNotEndWith("/"),
 						},
 					},
 					"saml_2_entity_id": schema.StringAttribute{
@@ -470,13 +456,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
-					},
-					"auto_connect_entity_id": schema.StringAttribute{
-						Description:        "This property has been deprecated and is no longer used",
-						DeprecationMessage: "This property has been deprecated and is no longer used",
-						Computed:           true,
-						Optional:           false,
-						Default:            stringdefault.StaticString(""),
 					},
 					"saml_1x_issuer_id": schema.StringAttribute{
 						Description: "This ID identifies your federation server for SAML 1.x transactions. As with SAML 2.0, it is usually defined as an organization's URL or a DNS address. The SourceID used for artifact resolution is derived from this ID using SHA1.",
@@ -501,186 +480,34 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 					},
 				},
 			},
-			"email_server": schema.SingleNestedAttribute{
-				Description: "Email Server Settings.",
-				Computed:    true,
-				Optional:    true,
-				Default:     objectdefault.StaticValue(types.ObjectNull(emailServerAttrType)),
-				Attributes: map[string]schema.Attribute{
-					"source_addr": schema.StringAttribute{
-						Description: "The email address that appears in the 'From' header line in email messages generated by PingFederate. The address must be in valid format but need not be set up on your system.",
-						Required:    true,
-						Validators: []validator.String{
-							configvalidators.ValidEmail(),
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-					"email_server": schema.StringAttribute{
-						Description: "The IP address or hostname of your email server.",
-						Required:    true,
-						Validators: []validator.String{
-							configvalidators.ValidHostnameOrIp(),
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-					"port": schema.Int64Attribute{
-						Description: "The SMTP port on your email server. Allowable values: `1` - `65535`. The default value is `25`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     int64default.StaticInt64(25),
-						Validators: []validator.Int64{
-							int64validator.Between(1, 65535),
-						},
-					},
-					"ssl_port": schema.Int64Attribute{
-						Description: "The secure SMTP port on your email server. This field is not active unless Use SSL is enabled. Allowable values: `1` - `65535`. The default value is `465`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     int64default.StaticInt64(465),
-						Validators: []validator.Int64{
-							int64validator.Between(1, 65535),
-						},
-					},
-					"timeout": schema.Int64Attribute{
-						Description: "The amount of time in seconds that PingFederate will wait before it times out connecting to the SMTP server. Allowable values: `0` - `3600`. The default value is `30`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     int64default.StaticInt64(30),
-						Validators: []validator.Int64{
-							int64validator.Between(0, 3600),
-						},
-					},
-					"retry_attempts": schema.Int64Attribute{
-						Description: "The number of times PingFederate tries to resend an email upon unsuccessful delivery. The default value is `2`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     int64default.StaticInt64(2),
-					},
-					"retry_delay": schema.Int64Attribute{
-						Description: "The number of minutes PingFederate waits before the next retry attempt. The default value is `2`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     int64default.StaticInt64(2),
-					},
-					"use_ssl": schema.BoolAttribute{
-						Description: "Requires the use of SSL/TLS on the port specified by `ssl_port`. If this option is enabled, it overrides the `use_tls` option. Default is `false`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     booldefault.StaticBool(false),
-					},
-					"use_tls": schema.BoolAttribute{
-						Description: "Requires the use of the STARTTLS protocol on the port specified by `port`. Default is `false`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     booldefault.StaticBool(false),
-					},
-					"verify_hostname": schema.BoolAttribute{
-						Description: "If `use_ssl` or `use_tls` is enabled, this flag determines whether the email server hostname is verified against the server's SMTPS certificate. Default is `false`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     booldefault.StaticBool(false),
-					},
-					"enable_utf8_message_headers": schema.BoolAttribute{
-						Description: "Only set this flag to `true` if the email server supports UTF-8 characters in message headers. Default is `false`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     booldefault.StaticBool(false),
-					},
-					"use_debugging": schema.BoolAttribute{
-						Description: "Turns on detailed error messages for the PingFederate server log to help troubleshoot any problems. Default is `false`.",
-						Computed:    true,
-						Optional:    true,
-						Default:     booldefault.StaticBool(false),
-					},
-					"username": schema.StringAttribute{
-						Description: "Authorized email username. Required if the password is provided.",
-						Optional:    true,
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-					"password": schema.StringAttribute{
-						Description: "User password.",
-						Computed:    true,
-						Optional:    true,
-						Sensitive:   true,
-						Default:     stringdefault.StaticString(""),
-					},
-				},
-			},
-			"captcha_settings": schema.SingleNestedAttribute{
-				Description: "Captcha Settings.",
-				Computed:    true,
-				Optional:    true,
-				Default:     objectdefault.StaticValue(types.ObjectNull(captchaSettingsAttrType)),
-				Attributes: map[string]schema.Attribute{
-					"site_key": schema.StringAttribute{
-						Description: "Site key for reCAPTCHA.",
-						Required:    true,
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-					"secret_key": schema.StringAttribute{
-						Description: "Secret key for reCAPTCHA.",
-						Sensitive:   true,
-						Required:    true,
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
-					},
-				},
-			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
-}
-
-// ValidateConfig validates the configuration of the server settings resource.
-// It also checks that the email_server use_ssl and use_tls attributes are not both set to true.
-func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-
-	var model serverSettingsModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-	// Validate email_server source_addr value
-	if internaltypes.IsDefined(model.EmailServer) {
-		esAttrs := model.EmailServer.Attributes()
-		// If email_server attribute use_ssl is set, confirm that use_tls is NOT
-		esUseSSLFlag := esAttrs["use_ssl"]
-		esUseTLSFlag := esAttrs["use_tls"]
-		if internaltypes.IsDefined(esUseSSLFlag) {
-			esUseSSLFlagValue := esUseSSLFlag.(types.Bool).ValueBool()
-			if esUseSSLFlagValue && internaltypes.IsDefined(esUseTLSFlag) {
-				resp.Diagnostics.AddError("Overlapping settings!", "If the email server setting \"use_ssl\" is true, \"use_tls\" cannot be set. Remove one of the two values from your resource file.")
-			}
-		}
-	}
 }
 
 func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	// Compare to versions 11.3 and 12.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
-	var plan serverSettingsModel
-	req.Plan.Get(ctx, &plan)
-	if !internaltypes.IsDefined(plan.Notifications) {
+	var plan *serverSettingsModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil || !internaltypes.IsDefined(plan.Notifications) {
 		return
 	}
 
@@ -765,7 +592,7 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		plan.Notifications, diags = types.ObjectValue(plan.Notifications.AttributeTypes(ctx), planNotificationsAttrs)
 		resp.Diagnostics.Append(diags...)
 
-		resp.Plan.Set(ctx, &plan)
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
 }
 
@@ -803,22 +630,6 @@ func addOptionalServerSettingsFields(ctx context.Context, addRequest *client.Ser
 		}
 	}
 
-	if internaltypes.IsDefined(plan.EmailServer) {
-		addRequest.EmailServer = client.NewEmailServerSettingsWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.EmailServer, true)), addRequest.EmailServer)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.CaptchaSettings) {
-		addRequest.CaptchaSettings = client.NewCaptchaSettingsWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.CaptchaSettings, true)), addRequest.CaptchaSettings)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 
 }
@@ -851,7 +662,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	createServerSettings := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createServerSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings: "+err.Error())
 		return
 	}
 
@@ -865,7 +676,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 
 	// Read the response into the state
 	var state serverSettingsModel
-	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan, nil)
+	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -893,12 +704,7 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, id)
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -920,7 +726,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings: "+err.Error())
 		return
 	}
 
@@ -933,12 +739,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 
 	// Read the response
 	var state serverSettingsModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan, id)
+	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -949,10 +750,39 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 // This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	var state serverSettingsModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if state.FederationInfo.IsNull() || state.FederationInfo.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("federation_info"),
+			providererror.InternalProviderError,
+			"Cannot delete the server settings resource because the federation_info configuration is missing or unknown")
+	}
+	resp.Diagnostics.AddWarning(providererror.ConfigurationCannotBeResetError,
+		"The pingfederate_server_settings resource has been destroyed but cannot be completely returned to its original state. "+
+			"The resource has been removed from Terraform state but the federation_info.base_url and federation_info.saml_2_entity_id configuration remains applied to the environment")
+	resetSettings := client.NewServerSettings()
+	resetSettings.FederationInfo = client.NewFederationInfo()
+	resetSettings.FederationInfo.BaseUrl = state.FederationInfo.Attributes()["base_url"].(types.String).ValueStringPointer()
+	resetSettings.FederationInfo.Saml2EntityId = state.FederationInfo.Attributes()["saml_2_entity_id"].(types.String).ValueStringPointer()
+	apiUpdateRequest := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*resetSettings)
+	_, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateServerSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the server settings", err, httpResp)
+	}
 }
 
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState serverSettingsModel
+	emptyState.ContactInfo = types.ObjectNull(contactInfoAttrType)
+	emptyState.FederationInfo = types.ObjectNull(federationInfoAttrType)
+	emptyState.Notifications = types.ObjectNull(notificationsAttrType)
+	emptyState.RolesAndProtocols = types.ObjectNull(rolesAndProtocolsAttrType)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

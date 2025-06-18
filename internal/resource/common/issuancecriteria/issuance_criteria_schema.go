@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package issuancecriteria
 
 import (
@@ -34,6 +36,9 @@ func ToSchema() schema.SingleNestedAttribute {
 						"attribute_name": schema.StringAttribute{
 							Description: "The name of the attribute to use in this issuance criterion.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"condition": schema.StringAttribute{
 							Description: "The condition that will be applied to the source attribute's value and the expected value. Options are `EQUALS`, `EQUALS_CASE_INSENSITIVE`, `EQUALS_DN`, `NOT_EQUAL`, `NOT_EQUAL_CASE_INSENSITIVE`, `NOT_EQUAL_DN`, `MULTIVALUE_CONTAINS`, `MULTIVALUE_CONTAINS_CASE_INSENSITIVE`, `MULTIVALUE_CONTAINS_DN`, `MULTIVALUE_DOES_NOT_CONTAIN`, `MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE`, `MULTIVALUE_DOES_NOT_CONTAIN_DN`.",
@@ -45,10 +50,16 @@ func ToSchema() schema.SingleNestedAttribute {
 						"value": schema.StringAttribute{
 							Required:    true,
 							Description: "The expected value of this issuance criterion.",
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"error_result": schema.StringAttribute{
 							Optional:    true,
 							Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 					},
 				},
@@ -61,10 +72,16 @@ func ToSchema() schema.SingleNestedAttribute {
 						"expression": schema.StringAttribute{
 							Required:    true,
 							Description: "The OGNL expression to evaluate.",
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"error_result": schema.StringAttribute{
 							Optional:    true,
 							Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 					},
 				},

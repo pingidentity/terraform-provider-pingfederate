@@ -146,8 +146,8 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
 ### Required
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
-- `source_id` (String) The id of the Token Processor.
-- `target_id` (String) The id of the Token Generator.
+- `source_id` (String) The id of the Token Processor. This field is immutable and will trigger a replacement plan if changed.
+- `target_id` (String) The id of the Token Generator. This field is immutable and will trigger a replacement plan if changed.
 
 ### Optional
 

@@ -306,10 +306,6 @@ resource "pingfederate_data_store" "customDataStore" {
           value = var.rest_data_store_basic_auth_username
         },
         {
-          name  = "Password"
-          value = var.rest_data_store_basic_auth_password
-        },
-        {
           name  = "Password Reference"
           value = ""
         },
@@ -324,10 +320,6 @@ resource "pingfederate_data_store" "customDataStore" {
         {
           name  = "Client ID"
           value = var.rest_data_store_oauth2_client_id
-        },
-        {
-          name  = "Client Secret"
-          value = var.rest_data_store_oauth2_client_secret
         },
         {
           name  = "Client Secret Reference"
@@ -370,6 +362,16 @@ resource "pingfederate_data_store" "customDataStore" {
           value = "{\"foo\":\"bar\"}"
         }
       ]
+      sensitive_fields = [
+        {
+          name  = "Password"
+          value = var.rest_data_store_basic_auth_password
+        },
+        {
+          name  = "Client Secret"
+          value = var.rest_data_store_oauth2_client_secret
+        }
+      ]
     }
   }
 }
@@ -381,7 +383,7 @@ resource "pingfederate_data_store" "customDataStore" {
 ### Optional
 
 - `custom_data_store` (Attributes) A custom data store. (see [below for nested schema](#nestedatt--custom_data_store))
-- `data_store_id` (String) The persistent, unique ID for the data store. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
+- `data_store_id` (String) The persistent, unique ID for the data store. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.
 - `jdbc_data_store` (Attributes) A JDBC data store. (see [below for nested schema](#nestedatt--jdbc_data_store))
 - `ldap_data_store` (Attributes) An LDAP Data Store (see [below for nested schema](#nestedatt--ldap_data_store))
 - `mask_attribute_values` (Boolean) Whether attribute values should be masked in the log. Default value is `false`.
@@ -398,7 +400,7 @@ Required:
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--custom_data_store--configuration))
 - `name` (String) The plugin instance name.
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. This field is immutable and will trigger a replacement plan if changed. (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
 
 Optional:
 
@@ -414,12 +416,13 @@ Read-Only:
 Optional:
 
 - `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables))
 
 Read-Only:
 
 - `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields_all))
-- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all))
 
 <a id="nestedatt--custom_data_store--configuration--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.fields`
@@ -427,7 +430,20 @@ Read-Only:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--custom_data_store--configuration--sensitive_fields"></a>
+### Nested Schema for `custom_data_store.configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 <a id="nestedatt--custom_data_store--configuration--tables"></a>
@@ -448,6 +464,7 @@ Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
 - `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--sensitive_fields))
 
 <a id="nestedatt--custom_data_store--configuration--tables--rows--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.tables.rows.fields`
@@ -455,7 +472,20 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--custom_data_store--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `custom_data_store.configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
 
 
 
@@ -466,7 +496,7 @@ Required:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--custom_data_store--configuration--tables_all"></a>
@@ -494,7 +524,7 @@ Optional:
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 
@@ -530,11 +560,12 @@ Optional:
 - `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. The default value is `5000` milliseconds.
 - `connection_url` (String) The default location of the JDBC database. This field is required if `connection_url_tags` is not specified.
 - `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. This is required if 'connection_url' is not provided. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
+- `encrypted_password` (String) The encrypted password needed to access the database. Either this attribute or `password` must be specified.
 - `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed. The default value is `5` minutes.
 - `max_pool_size` (Number) The largest number of database connections in the connection pool for the given data store. The default value is `100`.
 - `min_pool_size` (Number) The smallest number of database connections in the connection pool for the given data store. The default value is `10`.
 - `name` (String) The data store name with a unique value across all data sources. Defaults to a combination of the `connection_url` and `username`.
-- `password` (String, Sensitive) The password needed to access the database.
+- `password` (String, Sensitive) The password needed to access the database. Either this attribute or `encrypted_password` must be specified.
 - `user_name` (String) The name that identifies the user when connecting to the database.
 - `validate_connection_sql` (String) A simple SQL statement used by PingFederate at runtime to verify that the database connection is still active and to reconnect if needed.
 
@@ -571,15 +602,17 @@ Optional:
 - `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of `-1` causes the pool to wait indefinitely. Defaults to `0`.
 - `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached. Default value is `false`.
 - `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached. Defaults to `0`.
+- `encrypted_password` (String) The encrypted password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `password` can be set.
 - `follow_ldap_referrals` (Boolean) Follow LDAP Referrals in the domain tree. The default value is `false`. This property does not apply to PingDirectory as this functionality is configured in PingDirectory.
 - `hostnames` (List of String) The default LDAP host names. This field is required if `hostnames_tags` is not specified. Failover can be configured by providing multiple host names.
 - `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. This is required if 'hostnames' is not provided. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
 - `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record. Defaults to `_ldap._tcp`.
+- `ldaps_dns_srv_prefix` (String) The prefix value used to discover LDAPS DNS SRV record. Defaults to `_ldaps._tcp`.
 - `max_connections` (Number) The largest number of active connections that can remain in each pool without releasing extra ones. Defaults to `100`.
 - `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Setting a value of `-1` causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available). Defaults to `-1`.
 - `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones. Defaults to `10`.
 - `name` (String) The data store name with a unique value across all data sources. Defaults to a combination of the values of `hostnames` and `user_dn`.
-- `password` (String, Sensitive) The password credential required to access the data store. Requires `user_dn` to be set.
+- `password` (String, Sensitive) The password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `encrypted_password` can be set.
 - `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of `-1` causes the connection to wait indefinitely. Defaults to `0`.
 - `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is `false`. Supported in PF version `11.3` or later.
 - `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool. Default value is `false`.
@@ -588,7 +621,7 @@ Optional:
 - `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information. The default value is `false`.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`.
 - `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is `false`.
-- `user_dn` (String) The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` must also be set to use this attribute.
+- `user_dn` (String) The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` or `encrypted_password` must also be set to use this attribute.
 - `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Defaults to `true`.
 
 Read-Only:

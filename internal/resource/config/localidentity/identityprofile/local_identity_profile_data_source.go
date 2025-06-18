@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package localidentity
 
 import (
@@ -8,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -238,6 +240,19 @@ func (r *localIdentityProfileDataSource) Schema(ctx context.Context, req datasou
 									Optional:    false,
 									Computed:    true,
 									ElementType: types.BoolType,
+								},
+								"options": schema.SetAttribute{
+									Description: "The list of options for this selection field.",
+									Required:    false,
+									Optional:    false,
+									Computed:    true,
+									ElementType: types.StringType,
+								},
+								"default_value": schema.StringAttribute{
+									Description: "The default value for this field.",
+									Required:    false,
+									Optional:    false,
+									Computed:    true,
 								},
 							},
 						},

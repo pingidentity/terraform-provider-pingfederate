@@ -1,14 +1,18 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package configvalidators
 
 import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &urlValidator{}
@@ -38,12 +42,19 @@ func (v urlValidator) ValidateString(ctx context.Context, req validator.StringRe
 
 func validateUrlValue(path path.Path, value types.String, respDiags *diag.Diagnostics) {
 	// Ensure the the URL can be parsed by url.Parse
-	_, err := url.Parse(value.ValueString())
+	valueString := value.ValueString()
+
+	// Rely on PingFederate validation for values containing asterisk(s)
+	if strings.Contains(valueString, "*") {
+		return
+	}
+
+	_, err := url.Parse(valueString)
 	if err != nil {
 		respDiags.AddAttributeError(
 			path,
-			fmt.Sprintf("Invalid URL Format for '%s'", value.ValueString()),
-			err.Error(),
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("Invalid URL Format for '%s': %s", value.ValueString(), err.Error()),
 		)
 	}
 }
@@ -71,11 +82,6 @@ func (v urlListValidator) ValidateList(ctx context.Context, req validator.ListRe
 	for _, elem := range listElems {
 		elemString, ok := elem.(types.String)
 		if !ok {
-			resp.Diagnostics.AddAttributeError(
-				req.Path,
-				"URL Validation can only be applied to a list of strings",
-				"",
-			)
 			return
 		}
 		validateUrlValue(req.Path, elemString, &resp.Diagnostics)
@@ -105,12 +111,7 @@ func (v urlSetValidator) ValidateSet(ctx context.Context, req validator.SetReque
 	setElems := req.ConfigValue.Elements()
 	for _, elem := range setElems {
 		elemString, ok := elem.(types.String)
-		if !ok {
-			resp.Diagnostics.AddAttributeError(
-				req.Path,
-				"URL Validation can only be applied to a set of strings",
-				"",
-			)
+		if !ok || elemString.IsUnknown() {
 			return
 		}
 		validateUrlValue(req.Path, elemString, &resp.Diagnostics)

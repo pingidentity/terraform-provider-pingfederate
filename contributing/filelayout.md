@@ -19,7 +19,6 @@ Tests are under the **internal/acctest** folder. The ***acctest.go*** file conta
 
 ## Other packages
 
-- **internal/tools**: Defines tools needed by the project but not required elsewhere in the code
 - **internal/types**: Utilities for handling types
 
 ## Non-Go code structure

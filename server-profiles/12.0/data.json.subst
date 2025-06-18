@@ -141,6 +141,267 @@
           "dnsTtl": 60000,
           "ldapDnsSrvPrefix": "_ldap._tcp",
           "ldapsDnsSrvPrefix": "_ldaps._tcp"
+        },
+        {
+          "type": "CUSTOM",
+          "id": "customDataStore",
+          "name": "APIStubs.io Users",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
+          },
+          "configuration": {
+            "tables": [
+              {
+                "name": "Base URLs and Tags",
+                "rows": [
+                  {
+                    "fields": [
+                      {
+                        "name": "Base URL",
+                        "value": "https://demo.apistubs.io/api/v1/users"
+                      },
+                      {
+                        "name": "Tags",
+                        "value": "production"
+                      }
+                    ],
+                    "defaultRow": true
+                  }
+                ]
+              },
+              {
+                "name": "Attributes",
+                "rows": [
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/email"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "email"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/id"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "id"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/dob"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "dob"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/avatar"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "avatar"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/lastName"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "lastName"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/firstName"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "firstName"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/profile/staticData"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "staticData"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/password"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "password"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/username"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "username"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/createdAt"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "createdAt"
+                      }
+                    ],
+                    "defaultRow": false
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "JSON Response Attribute Path",
+                        "value": "/createdBy"
+                      },
+                      {
+                        "name": "Local Attribute",
+                        "value": "createdBy"
+                      }
+                    ],
+                    "defaultRow": false
+                  }
+                ]
+              },
+              {
+                "name": "HTTP Request Headers",
+                "rows": []
+              }
+            ],
+            "fields": [
+              {
+                "name": "Authentication Method",
+                "value": "None"
+              },
+              {
+                "name": "Client ID",
+                "value": ""
+              },
+              {
+                "name": "Client Secret Reference",
+                "value": ""
+              },
+              {
+                "name": "Client Secret",
+                "value": ""
+              },
+              {
+                "name": "HTTP Method",
+                "value": "GET"
+              },
+              {
+                "name": "OAuth Scope",
+                "value": "restapiscope"
+              },
+              {
+                "name": "OAuth Token Endpoint",
+                "value": "https://authservices.bxretail.org/as/token"
+              },
+              {
+                "name": "Password Reference",
+                "value": ""
+              },
+              {
+                "name": "Password",
+                "value": ""
+              },
+              {
+                "name": "Username",
+                "value": ""
+              },
+              {
+                "name": "Connection Timeout (ms)",
+                "value": "10000"
+              },
+              {
+                "name": "Enable HTTPS Hostname Verification",
+                "value": "true"
+              },
+              {
+                "name": "Max Payload Size (KB)",
+                "value": "1024"
+              },
+              {
+                "name": "Maximum Retries Limit",
+                "value": "5"
+              },
+              {
+                "name": "Read Timeout (ms)",
+                "value": "10000"
+              },
+              {
+                "name": "Retry Error Codes",
+                "value": "429"
+              },
+              {
+                "name": "Retry Request",
+                "value": "true"
+              },
+              {
+                "name": "Test Connection Body",
+                "value": "{\"foo\":\"bar\"}"
+              },
+              {
+                "name": "Test Connection URL",
+                "value": "https://demo.apistubs.io/api/v1/users"
+              }
+            ]
+          },
+          "maskAttributeValues": false
         }
       ]
     },
@@ -334,6 +595,12 @@
           "fileData": "/u3+7QAAAAIAAAABAAAAAQANZWM1MjFwcmV2aW91cwAAAZBMDLwCAAAAoDCBnTAOBgorBgEEASoCEQEBBQAEgYq5oSHCUBnWJrvkSzGx5VypbIwgPdENEiSNbd/LHElIXQoO9TYOTFnHujEsMnyAtRuKoeipa9aR5GZAs6/UbH/6eqm46iHl2GmuTmW7lNH4PPABRVr49f8OxmKS1lWr34aXdtoz79794q1TbkJR1D473mZjZ+C/B9QrZb9JrtQ9aBAZVfTkk+iLOyEAAAABAAVYLjUwOQAAAgMwggH/MIIBYKADAgECAhA2fueKsOBIIjVxVtVp84BdMAoGCCqGSM49BAMEMCwxCzAJBgNVBAYMAnVzMQwwCgYDVQQKDANvcmcxDzANBgNVBAMMBmNvbW1vbjAeFw0yNDA2MjQyMTAwMjFaFw0yNTA2MjQyMTAwMjFaMCwxCzAJBgNVBAYMAnVzMQwwCgYDVQQKDANvcmcxDzANBgNVBAMMBmNvbW1vbjCBmzAQBgcqhkjOPQIBBgUrgQQAIwOBhgAEACR/tjrlrmFne8AVUyl6Dxlh24/9Q+V23qNDQwGmKOLsjRgBVtdevWgEdX23rgZa9ocWyDPt/RzMJFHas55SH39IADxuFHHMch2VAFQtP84jEV3oSnt4xZoOkcpITXSp6pu/f3f+MdtUZxJOWLQHN0QxGNn+KQN7W1Eu5+60pualcHiHoyEwHzAdBgNVHQ4EFgQUYnCz6u1D4PY1bwJTBLpQESFWKmowCgYIKoZIzj0EAwQDgYwAMIGIAkIBPcz5S1Z/mfLjL31aGeYGtZ4TAXQv/qWAi/qmY0eBCAbhQV3wpZ3AvvxZcgIILZudvJAXEEtLftDMgK7HqBtTXYsCQgEXkE8Ji0jzdtjXa/Yjr3ciGpIW3lzi7IH7L2ig9aF5Qr4EdK9wbZyAZ3sHiuQPHoS6XOaNRl68mZK3ZEZFOPfUw1Tz4Y3aNKynRGb1sR+iyMXV1Pgz",
           "format": "PKCS12",
           "password": "2FederateM0re"
+        },
+        {
+          "id": "rotationsettingstestkey",
+          "fileData": "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",
+          "format": "PKCS12",
+          "password": "2FederateM0re"
         }
       ]
     },
@@ -344,9 +611,32 @@
           "password": "${PRIVATE_KEYSTORE_PIN}",
           "fileData": "${PRIVATE_KEYSTORE}",
           "id": "sslservercert"
+        },
+        {
+          "id": "419x9yg43rlawqwq9v6az997k",
+          "fileData": "MIIKAAIBAzCCCaoGCSqGSIb3DQEHAaCCCZsEggmXMIIJkzCCBaoGCSqGSIb3DQEHAaCCBZsEggWXMIIFkzCCBY8GCyqGSIb3DQEMCgECoIIFQDCCBTwwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFLTKPJwidJYF-vbm9h9ij2NGhf9oAgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQ79KdD_qxBVa0U7JyU_DiaASCBNDYe72YOp8awn68_hl524b1wEmFaJxXreKC3SRPDR_7NgFlD1jKQQ0CtPaUVgxgZ1LMMBqtvj2j__jF2SYxVJ-eWvz4sExEXPuyNY1RZbppB24h_4gfzpCL_F1QPAuG5agBy-7GoIjJMszuuW-RYudB-bwZqwwducg42VYBOMD8_XNT49qoVpYA0A0HeBrPkfP32AVddrdFEzJFsxYbj2NfrONCaJTwJrFHAdbvBiHRxD4Spg1VQVw6-4NjBC5DgcrKfdPl3NwVQFMxpHLrS-5dr8kFZICwm4UdlLwq0NPr7aREYsLr2G-pCJLCvGZz_9-WYmlqL-ZfGNrLpHYqv3gD7srSbwMxdz1bNoV9MfDlGspc2a2J3pASca3GSfAvAiJXS4p_VpNxc6bXDB5zwbZpksCc1ISmtM2Hoh1f6EffjeVHFI03-sWQsRLZNSiUrOV9b0qNCj2m9U5quagx9JyM3ZzFfemibTYrdoU3oPVHHf_EHKqh-MaDAowcenHfxwo5WWJapjyFUswzSgjZr8OyDE0z9Sr67VFrFLL670qHCnoMQm7ell-C9Lbt637Oqhf3eYoWlJSO5tglEt-QyOSc-G-Iw9I-0-UgQf4QaZHEXMTopSE4O_XSkTNrM-HG73zagcByj8BHTD7YyvPNs55H7wCcs_n1vtoiPaWefBwMkDUHr2vu84OOyA-9GI1hhO1nCR7p1ThLy_b8KT1i2E3ktJ5-RjQPGHIrzOv0h7AnbPB_jqlqmN1q9nwzprjmh9oYlBmuCTXOCDZk0BQpYsOaCSZt9mHrU9pcp63mG05A3YTF8_zSnBgKD3MAL3ieaTd98ki6g_czAxm3Zfv1qC7frGJOobqZQjd1v8CcZG502RmSGDttiyusH6BMMuHlJQP98n5QDRZa7MGYKz7bVt4IZC0IfGGe7hqYZId2Pt7fSgWYd3wjKDby8OdWKpEvUq74rUYKzqjHGHPaujUssJ1qxkoe2jrTCVvwvJmbDfsI-Mcd3Yt4blS1ytfD0HERnB3KJiG7nHlTlWlae0kECOCbLq1aTxtHoXBqWkz3kG6oNG5u-QmtO4EGlOVgXrbx6HuJ-h9KEInSmnFKmesDCkCGhWuy0NA3zp4xMIjGMUFkx7cgTi6jPFHmNfOIpR7Vow2b1yDYlCvV6_EOhHnE3_z9I2rh90cqsTE22MFEH9i9OLijIWP4EqAxXYLF01QJznB4Cmgxel4R8r7a0eN0gf9otWsaUcnVAJuBAtU1J5JbQKsCin9Cf6BQ64u53gaTtAEKOqCh_LUFCfrBjXvbC64CNjWHyAmRy_sM2BVqjExzh35LGpzPPvaO1PzPGOsWETzzd5fwbigOR46a4f5z_dstneLnG_WDaGQwoedXvKeHW4RDE5oQ49b-_0A8MXy-RIlsiU-r3sbYoil7rsrzy_0j3dglNAFlIVmc6zvb4xSiPdnieohN_iv2VVCZdwYBH-xux9pLV4hF2BL2s-YFIQWPUd9TiEeAtikYyXOu7l9F9cld2OqMlbdOtOVJ1V2vn8xm8al91YKJHXd9yEyDP4PUHwu4nz0KZrXVqPuXDAoZB_buoxv2mEgbGQ0WKFXTDrz-opq2L9SSoiAh5Mf9-efBC3d6sPO_jMh74q2rl2p5qjE8MBcGCSqGSIb3DQEJFDEKHggAcABpAG4AZzAhBgkqhkiG9w0BCRUxFAQSVGltZSAxNjk2NTMyNTEwODY0MIID4QYJKoZIhvcNAQcGoIID0jCCA84CAQAwggPHBgkqhkiG9w0BBwEwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFAFdj0s4XgV7ONDqUlU2K0ZGWk3nAgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQslddrqq6CVi_URYA6GwnEYCCA1C4uJ1QZpXZFFU72fKc3GWE1wrg4tOKVsMyfqewoUh88O3MdFJIcqfHn1xGc1DVD2s3GoYax1maMlfigHDHxIu5vUV6PS6z9TYdMsh8JCoUNwl_HRccRH8ssMJ0uO6dgETnjmQaTEpghx1JCN-_ssXVtGHJY3gok_SFCtRuyo8p2xiy6xOTvh_Sf1F1jbqau62Bt1W-pveqEDGe7zu9Y0q-6a7lS386oS5TSLdU0d_w-9Rteut-zkMJqzfyUhbPBS4IU8uQqm9GIRx2loNgv14is5v8A7guXUInXy2XXWFQJAJAZ5Q_fQheiGKyJJiJXyvVF9Dh9zEM5MmOwCvuu0uXarnY4PHdO4UbYF_KnEFU7z_lpZf3xrOW84zEjVaGS3erIfusQp3P7ocQHYsIpwBOYguFCCNB5ESndnKgXHquX-kOYgmFIbGVu5OOn6ThA_HNzga2hlnj19CM3T5cT_T8o1rhS15TzUP-68L6-0yZa_gCb1UtjPGya3HEncgEpnzCHSlLp-a5nc2LP8VBpTanjqmhhn8G4jnTm6odTm9-e2HptimFUEE-17T5_D6BFCZnybYhYbyAoGFWqEQun-iqC4U34vUrYabVzp6L61bwQwr2pMNHpvn19BWI7gj-5Fiv2LX_-i3RM9JNTtHxr-XyhnnObSzEE06BWDzbYc_Mix3Lo9YG1_GczqamZaFLDuw6DjsfWS46ak_s05Xb8VB5L8hvuGPLIBDTI4ekvVhnuaLz02hHGt7b6BsMu6BlnaJH0dQ823e3cqN3-6ZK1wDIevKhhfxk063K1RysbsAwD-881lotTbVy4Ni2PQo_aldUNVoO4b6Z_t1iJeIyMCyE6iLNK8dQ3jcHlJVfuQ5wiVYTPvzpyO_75X-FVzn3z7nYr_-6_ifldADvGH129NzbiIS_pyqGagNeGievYy__6mRk6eggii6FlIUmXs9gmDgN_SKTH5GrYhRvVGXYIcssLIcOWoBjCmzZcLuvnqPL26lLWREVICZAZJKFN2Z9PEeLGYjnfzf5_fWTEVnTSrUkpKuRYkt3ZHGrGaddmhifK2EnPiZNow5Deb5PnTsKDzAxde72zE1nqtqYxOKZcMO9kX2FVSkgijSLaRhKaAmetTBNMDEwDQYJYIZIAWUDBAIBBQAEINbpIfulyYknJxcBpJ1nPDeqtR-_CVqeWCqd5Rru8To8BBRJ0_5HpFO0PxATZveX8rK8cEqvtgICJxA=",
+          "format": "PKCS12",
+          "encryptedPassword": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMS4yLjUuMCJ9..QxamhMMTPjLpYZ-1uhf-ww.EL3oTIlhI-wlX1oWrWiyWKR42hCwXxpHTBA62UiReDw.0VKa9gKWPEmASgS68xCErA"
         }
       ],
       "resourceType": "/keyPairs/sslServer"
+    },
+    {
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "419x9yg43rlawqwq9v6az997k",
+          "fileData": "MIIKAAIBAzCCCaoGCSqGSIb3DQEHAaCCCZsEggmXMIIJkzCCBaoGCSqGSIb3DQEHAaCCBZsEggWXMIIFkzCCBY8GCyqGSIb3DQEMCgECoIIFQDCCBTwwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFLTKPJwidJYF-vbm9h9ij2NGhf9oAgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQ79KdD_qxBVa0U7JyU_DiaASCBNDYe72YOp8awn68_hl524b1wEmFaJxXreKC3SRPDR_7NgFlD1jKQQ0CtPaUVgxgZ1LMMBqtvj2j__jF2SYxVJ-eWvz4sExEXPuyNY1RZbppB24h_4gfzpCL_F1QPAuG5agBy-7GoIjJMszuuW-RYudB-bwZqwwducg42VYBOMD8_XNT49qoVpYA0A0HeBrPkfP32AVddrdFEzJFsxYbj2NfrONCaJTwJrFHAdbvBiHRxD4Spg1VQVw6-4NjBC5DgcrKfdPl3NwVQFMxpHLrS-5dr8kFZICwm4UdlLwq0NPr7aREYsLr2G-pCJLCvGZz_9-WYmlqL-ZfGNrLpHYqv3gD7srSbwMxdz1bNoV9MfDlGspc2a2J3pASca3GSfAvAiJXS4p_VpNxc6bXDB5zwbZpksCc1ISmtM2Hoh1f6EffjeVHFI03-sWQsRLZNSiUrOV9b0qNCj2m9U5quagx9JyM3ZzFfemibTYrdoU3oPVHHf_EHKqh-MaDAowcenHfxwo5WWJapjyFUswzSgjZr8OyDE0z9Sr67VFrFLL670qHCnoMQm7ell-C9Lbt637Oqhf3eYoWlJSO5tglEt-QyOSc-G-Iw9I-0-UgQf4QaZHEXMTopSE4O_XSkTNrM-HG73zagcByj8BHTD7YyvPNs55H7wCcs_n1vtoiPaWefBwMkDUHr2vu84OOyA-9GI1hhO1nCR7p1ThLy_b8KT1i2E3ktJ5-RjQPGHIrzOv0h7AnbPB_jqlqmN1q9nwzprjmh9oYlBmuCTXOCDZk0BQpYsOaCSZt9mHrU9pcp63mG05A3YTF8_zSnBgKD3MAL3ieaTd98ki6g_czAxm3Zfv1qC7frGJOobqZQjd1v8CcZG502RmSGDttiyusH6BMMuHlJQP98n5QDRZa7MGYKz7bVt4IZC0IfGGe7hqYZId2Pt7fSgWYd3wjKDby8OdWKpEvUq74rUYKzqjHGHPaujUssJ1qxkoe2jrTCVvwvJmbDfsI-Mcd3Yt4blS1ytfD0HERnB3KJiG7nHlTlWlae0kECOCbLq1aTxtHoXBqWkz3kG6oNG5u-QmtO4EGlOVgXrbx6HuJ-h9KEInSmnFKmesDCkCGhWuy0NA3zp4xMIjGMUFkx7cgTi6jPFHmNfOIpR7Vow2b1yDYlCvV6_EOhHnE3_z9I2rh90cqsTE22MFEH9i9OLijIWP4EqAxXYLF01QJznB4Cmgxel4R8r7a0eN0gf9otWsaUcnVAJuBAtU1J5JbQKsCin9Cf6BQ64u53gaTtAEKOqCh_LUFCfrBjXvbC64CNjWHyAmRy_sM2BVqjExzh35LGpzPPvaO1PzPGOsWETzzd5fwbigOR46a4f5z_dstneLnG_WDaGQwoedXvKeHW4RDE5oQ49b-_0A8MXy-RIlsiU-r3sbYoil7rsrzy_0j3dglNAFlIVmc6zvb4xSiPdnieohN_iv2VVCZdwYBH-xux9pLV4hF2BL2s-YFIQWPUd9TiEeAtikYyXOu7l9F9cld2OqMlbdOtOVJ1V2vn8xm8al91YKJHXd9yEyDP4PUHwu4nz0KZrXVqPuXDAoZB_buoxv2mEgbGQ0WKFXTDrz-opq2L9SSoiAh5Mf9-efBC3d6sPO_jMh74q2rl2p5qjE8MBcGCSqGSIb3DQEJFDEKHggAcABpAG4AZzAhBgkqhkiG9w0BCRUxFAQSVGltZSAxNjk2NTMyNTEwODY0MIID4QYJKoZIhvcNAQcGoIID0jCCA84CAQAwggPHBgkqhkiG9w0BBwEwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFAFdj0s4XgV7ONDqUlU2K0ZGWk3nAgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQslddrqq6CVi_URYA6GwnEYCCA1C4uJ1QZpXZFFU72fKc3GWE1wrg4tOKVsMyfqewoUh88O3MdFJIcqfHn1xGc1DVD2s3GoYax1maMlfigHDHxIu5vUV6PS6z9TYdMsh8JCoUNwl_HRccRH8ssMJ0uO6dgETnjmQaTEpghx1JCN-_ssXVtGHJY3gok_SFCtRuyo8p2xiy6xOTvh_Sf1F1jbqau62Bt1W-pveqEDGe7zu9Y0q-6a7lS386oS5TSLdU0d_w-9Rteut-zkMJqzfyUhbPBS4IU8uQqm9GIRx2loNgv14is5v8A7guXUInXy2XXWFQJAJAZ5Q_fQheiGKyJJiJXyvVF9Dh9zEM5MmOwCvuu0uXarnY4PHdO4UbYF_KnEFU7z_lpZf3xrOW84zEjVaGS3erIfusQp3P7ocQHYsIpwBOYguFCCNB5ESndnKgXHquX-kOYgmFIbGVu5OOn6ThA_HNzga2hlnj19CM3T5cT_T8o1rhS15TzUP-68L6-0yZa_gCb1UtjPGya3HEncgEpnzCHSlLp-a5nc2LP8VBpTanjqmhhn8G4jnTm6odTm9-e2HptimFUEE-17T5_D6BFCZnybYhYbyAoGFWqEQun-iqC4U34vUrYabVzp6L61bwQwr2pMNHpvn19BWI7gj-5Fiv2LX_-i3RM9JNTtHxr-XyhnnObSzEE06BWDzbYc_Mix3Lo9YG1_GczqamZaFLDuw6DjsfWS46ak_s05Xb8VB5L8hvuGPLIBDTI4ekvVhnuaLz02hHGt7b6BsMu6BlnaJH0dQ823e3cqN3-6ZK1wDIevKhhfxk063K1RysbsAwD-881lotTbVy4Ni2PQo_aldUNVoO4b6Z_t1iJeIyMCyE6iLNK8dQ3jcHlJVfuQ5wiVYTPvzpyO_75X-FVzn3z7nYr_-6_ifldADvGH129NzbiIS_pyqGagNeGievYy__6mRk6eggii6FlIUmXs9gmDgN_SKTH5GrYhRvVGXYIcssLIcOWoBjCmzZcLuvnqPL26lLWREVICZAZJKFN2Z9PEeLGYjnfzf5_fWTEVnTSrUkpKuRYkt3ZHGrGaddmhifK2EnPiZNow5Deb5PnTsKDzAxde72zE1nqtqYxOKZcMO9kX2FVSkgijSLaRhKaAmetTBNMDEwDQYJYIZIAWUDBAIBBQAEINbpIfulyYknJxcBpJ1nPDeqtR-_CVqeWCqd5Rru8To8BBRJ0_5HpFO0PxATZveX8rK8cEqvtgICJxA=",
+          "format": "PKCS12",
+          "encryptedPassword": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMS4yLjUuMCJ9..QxamhMMTPjLpYZ-1uhf-ww.EL3oTIlhI-wlX1oWrWiyWKR42hCwXxpHTBA62UiReDw.0VKa9gKWPEmASgS68xCErA"
+        },
+        {
+          "password": "${PRIVATE_KEYSTORE_PIN}",
+          "fileData": "${PRIVATE_KEYSTORE}",
+          "id": "sslclientcert"
+        }
+      ],
+      "resourceType": "/keyPairs/sslClient"
     },
     {
       "operationType": "SAVE",
@@ -791,112 +1081,6 @@
       ]
     },
     {
-      "resourceType": "/notificationPublishers",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "id": "exampleSmtpPublisher",
-          "name": "exampleSmtpPublisher",
-          "pluginDescriptorRef": {
-            "id": "com.pingidentity.email.SmtpNotificationPlugin"
-          },
-          "configuration": {
-            "tables": [],
-            "fields": [
-              {
-                "name": "From Address",
-                "value": "example@pingidentity.com"
-              },
-              {
-                "name": "Email Server",
-                "value": "example.com"
-              }
-            ]
-          }
-        },
-        {
-          "id": "exampleSmtpPublisher2",
-          "name": "exampleSmtpPublisher2",
-          "pluginDescriptorRef": {
-            "id": "com.pingidentity.email.SmtpNotificationPlugin"
-          },
-          "configuration": {
-            "tables": [],
-            "fields": [
-              {
-                "name": "From Address",
-                "value": "example@pingdemo.example"
-              },
-              {
-                "name": "Email Server",
-                "value": "pingdemo.example"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "/captchaProviders",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "id": "exampleCaptchaProviderV2",
-          "name": "exampleCaptchaProviderV2",
-          "pluginDescriptorRef": {
-            "id": "com.pingidentity.captcha.ReCaptchaV2InvisiblePlugin"
-          },
-          "configuration": {
-            "tables": [],
-            "fields": [
-              {
-                "name": "Site Key",
-                "value": "exampleCaptchaProviderV2"
-              },
-              {
-                "name": "Secret Key",
-                "value": "2FederateM0re"
-              },
-              {
-                "name": "JavaScript File Name",
-                "value": "recaptcha-v2-invisible.js"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "/captchaProviders",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "id": "exampleCaptchaProvider",
-          "name": "exampleCaptchaProvider",
-          "pluginDescriptorRef": {
-            "id": "com.pingidentity.captcha.recaptchaV3.ReCaptchaV3Plugin"
-          },
-          "configuration": {
-            "tables": [],
-            "fields": [
-              {
-                "name": "Site Key",
-                "value": "asdf"
-              },
-              {
-                "name": "Secret Key",
-                "value": "asdf"
-              },
-              {
-                "name": "Pass Score Threshold",
-                "value": "1"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "operationType": "SAVE",
       "items": [
         {
@@ -1174,11 +1358,11 @@
       "operationType": "SAVE",
       "items": [
         {
-          "id": "exampleCibaReqPolicy",
-          "name": "exampleCibaReqPolicy",
+          "id": "acctestCibaPolicy",
+          "name": "acctestCibaPolicy",
           "authenticatorRef": {
             "id": "exampleCibaAuthenticator",
-            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/oauth/outOfBandAuthPlugins/exampleCibaAuthenticator"
+            "location": "https://localhost:9999/pf-admin-api/v1/oauth/outOfBandAuthPlugins/exampleCibaAuthenticator"
           },
           "transactionLifetime": 120,
           "allowUnsignedLoginHintToken": false,
@@ -1228,48 +1412,6 @@
       ]
     },
     {
-      "resourceType": "/oauth/tokenExchange/generator/groups",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "id": "exampleGeneratorGroup",
-          "name": "exampleGeneratorGroup",
-          "resourceUris": [],
-          "generatorMappings": [
-            {
-              "requestedTokenType": "urn:ietf:params:oauth:token-type:saml2",
-              "tokenGenerator": {
-                "id": "tokengenerator",
-                "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/sp/tokenGenerators/tokengenerator"
-              },
-              "defaultMapping": true
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "resourceType": "/oauth/tokenExchange/generator/groups",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "id": "exampleGeneratorGroup2",
-          "name": "exampleGeneratorGroup2",
-          "resourceUris": [],
-          "generatorMappings": [
-            {
-              "requestedTokenType": "urn:ietf:params:oauth:token-type:saml2",
-              "tokenGenerator": {
-                "id": "tokengenerator",
-                "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/sp/tokenGenerators/tokengenerator"
-              },
-              "defaultMapping": true
-            }
-          ]
-        }
-      ]
-    },
-    {
       "resourceType": "/certificates/ca",
       "operationType": "SAVE",
       "items": [
@@ -1284,38 +1426,54 @@
       "operationType": "SAVE",
       "items": [
         {
-          "id": "jwt",
-          "name": "JSON Web Tokens",
+          "id": "acctestAtm",
+          "name": "acctestAtm",
           "pluginDescriptorRef": {
             "id": "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin",
-            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/oauth/accessTokenManagers/descriptors/com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+            "location": "https://localhost:9999/pf-admin-api/v1/oauth/accessTokenManagers/descriptors/com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
           },
           "configuration": {
             "tables": [
               {
                 "name": "Symmetric Keys",
-                "rows": []
-              },
-              {
-                "name": "Certificates",
                 "rows": [
                   {
                     "fields": [
                       {
-                        "name": "Key ID",
-                        "value": "k1"
+                        "name": "Encoding",
+                        "value": "b64u"
                       },
                       {
-                        "name": "Certificate",
-                        "value": "419x9yg43rlawqwq9v6az997k"
+                        "name": "Key ID",
+                        "value": "keyidentifier"
+                      },
+                      {
+                        "name": "Key",
+                        "encryptedValue": "OBF:JWE:eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMi4yLjAuNCJ9..F4iBb_neiNQ5IMgNBlPS5w.xGasox9o8DHfKuUKNj6zKrTXog5wDeGDpIYgDJQbof6zvwffAT9hP1f36PzSQp58RWgwM0EQyhjdO5KPc1l9w1GQA2NbFKQejJd8CpmCeRw.S_BeaRRHfQqYJtkDnwkX0w"
                       }
                     ],
                     "defaultRow": false
                   }
                 ]
+              },
+              {
+                "name": "Certificates",
+                "rows": []
               }
             ],
             "fields": [
+              {
+                "name": "Active Symmetric Encryption Key ID",
+                "value": "keyidentifier"
+              },
+              {
+                "name": "JWE Algorithm",
+                "value": "dir"
+              },
+              {
+                "name": "JWE Content Encryption Algorithm",
+                "value": "A192CBC-HS384"
+              },
               {
                 "name": "Token Lifetime",
                 "value": "120"
@@ -1326,7 +1484,7 @@
               },
               {
                 "name": "JWS Algorithm",
-                "value": "RS256"
+                "value": ""
               },
               {
                 "name": "Active Symmetric Key ID",
@@ -1334,18 +1492,6 @@
               },
               {
                 "name": "Active Signing Certificate Key ID",
-                "value": "k1"
-              },
-              {
-                "name": "JWE Algorithm",
-                "value": ""
-              },
-              {
-                "name": "JWE Content Encryption Algorithm",
-                "value": ""
-              },
-              {
-                "name": "Active Symmetric Encryption Key ID",
                 "value": ""
               },
               {
@@ -1382,7 +1528,7 @@
               },
               {
                 "name": "Client ID Claim Name",
-                "value": "client_id_name"
+                "value": "client_id"
               },
               {
                 "name": "Scope Claim Name",
@@ -1390,7 +1536,7 @@
               },
               {
                 "name": "Space Delimit Scope Values",
-                "value": "false"
+                "value": "true"
               },
               {
                 "name": "Authorization Details Claim Name",
@@ -1414,11 +1560,11 @@
               },
               {
                 "name": "JWT ID Claim Length",
-                "value": "22"
+                "value": "0"
               },
               {
                 "name": "Access Grant GUID Claim Name",
-                "value": "agid"
+                "value": ""
               },
               {
                 "name": "JWKS Endpoint Path",
@@ -1446,19 +1592,19 @@
               }
             ]
           },
+          "lastModified": "2025-02-19T20:32:48.187Z",
           "attributeContract": {
             "coreAttributes": [],
             "extendedAttributes": [
               {
-                "name": "Username",
+                "name": "another",
                 "multiValued": false
               },
               {
-                "name": "OrgName",
+                "name": "contract",
                 "multiValued": false
               }
-            ],
-            "defaultSubjectAttribute": "OrgName"
+            ]
           },
           "selectionSettings": {
             "resourceUris": []
@@ -1473,84 +1619,53 @@
             "updateAuthnSessionActivity": false,
             "includeSessionId": false
           },
-          "sequenceNumber": 2
+          "sequenceNumber": 544406
         }
       ]
     },
     {
-      "resourceType": "/oauth/accessTokenManagers/settings",
+      "resourceType": "/oauth/openIdConnect/policies",
       "operationType": "SAVE",
       "items": [
         {
-          "defaultAccessTokenManagerRef": {
-            "id": "jwt",
-            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/oauth/accessTokenManagers/jwt"
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "/oauth/authServerSettings",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "defaultScopeDescription": "",
-          "scopes": [
-            {
-              "name": "email",
-              "description": "email scope",
-              "dynamic": false
-            }
-          ],
-          "scopeGroups": [],
-          "exclusiveScopes": [],
-          "exclusiveScopeGroups": [],
-          "authorizationCodeTimeout": 60,
-          "authorizationCodeEntropy": 30,
-          "disallowPlainPKCE": false,
-          "includeIssuerInAuthorizationResponse": false,
-          "persistentGrantLifetime": -1,
-          "persistentGrantLifetimeUnit": "DAYS",
-          "persistentGrantIdleTimeout": 30,
-          "persistentGrantIdleTimeoutTimeUnit": "DAYS",
-          "refreshTokenLength": 42,
-          "rollRefreshTokenValues": false,
-          "refreshTokenRollingGracePeriod": 60,
-          "refreshRollingInterval": 0,
-          "persistentGrantReuseGrantTypes": [
-            "IMPLICIT"
-          ],
-          "persistentGrantContract": {
-            "extendedAttributes": [],
+          "id": "acctestOidcPolicy",
+          "name": "acctestOidcPolicy",
+          "idTokenLifetime": 5,
+          "attributeContract": {
             "coreAttributes": [
               {
-                "name": "USER_KEY"
-              },
-              {
-                "name": "USER_NAME"
+                "name": "sub",
+                "multiValued": false
               }
-            ]
+            ],
+            "extendedAttributes": []
           },
-          "bypassAuthorizationForApprovedGrants": false,
-          "allowUnidentifiedClientROCreds": false,
-          "allowUnidentifiedClientExtensionGrants": false,
-          "tokenEndpointBaseUrl": "",
-          "userAuthorizationUrl": "",
-          "registeredAuthorizationPath": "",
-          "pendingAuthorizationTimeout": 600,
-          "bypassActivationCodeConfirmation": false,
-          "devicePollingInterval": 5,
-          "activationCodeCheckMode": "AFTER_AUTHENTICATION",
-          "userAuthorizationConsentPageSetting": "INTERNAL",
-          "atmIdForOAuthGrantManagement": "jwt",
-          "scopeForOAuthGrantManagement": "email",
-          "allowedOrigins": [],
-          "trackUserSessionsForLogout": false,
-          "parReferenceTimeout": 60,
-          "parReferenceLength": 24,
-          "parStatus": "ENABLED",
-          "clientSecretRetentionPeriod": 0,
-          "jwtSecuredAuthorizationResponseModeLifetime": 600
+          "attributeMapping": {
+            "attributeSources": [],
+            "attributeContractFulfillment": {
+              "sub": {
+                "source": {
+                  "type": "TOKEN"
+                },
+                "value": "contract"
+              }
+            },
+            "issuanceCriteria": {
+              "conditionalCriteria": []
+            }
+          },
+          "includeSriInIdToken": false,
+          "includeUserInfoInIdToken": false,
+          "includeSHashInIdToken": false,
+          "includeX5tInIdToken": false,
+          "idTokenTypHeaderValue": "",
+          "reissueIdTokenInHybridFlow": false,
+          "accessTokenManagerRef": {
+            "id": "acctestAtm",
+            "location": "https://localhost:9999/pf-admin-api/v1/oauth/accessTokenManagers/acctestAtm"
+          },
+          "scopeAttributeMappings": {},
+          "lastModified": "2025-02-19T20:32:48.224Z"
         }
       ]
     },
@@ -1589,10 +1704,6 @@
           "exclusiveScopes": [],
           "restrictedResponseTypes": [],
           "authorizationDetailTypes": [],
-          "defaultAccessTokenManagerRef": {
-            "id": "jwt",
-            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/oauth/accessTokenManagers/jwt"
-          },
           "restrictToDefaultAccessTokenManager": false,
           "validateUsingAllEligibleAtms": false,
           "oidcPolicy": {
@@ -1613,68 +1724,6 @@
           "refreshTokenRollingGracePeriodType": "SERVER_DEFAULT",
           "clientSecretRetentionPeriodType": "SERVER_DEFAULT",
           "requireSignedRequests": false
-        }
-      ]
-    },
-    {
-      "resourceType": "/oauth/accessTokenMappings",
-      "operationType": "SAVE",
-      "items": [
-        {
-          "attributeSources": [],
-          "attributeContractFulfillment": {
-            "Username": {
-              "source": {
-                "type": "TEXT"
-              },
-              "value": "Administrator"
-            },
-            "OrgName": {
-              "source": {
-                "type": "TEXT"
-              },
-              "value": "Ping"
-            }
-          },
-          "issuanceCriteria": {
-            "conditionalCriteria": []
-          },
-          "id": "client_credentials|jwt",
-          "context": {
-            "type": "CLIENT_CREDENTIALS"
-          },
-          "accessTokenManagerRef": {
-            "id": "jwt",
-            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/oauth/accessTokenManagers/jwt"
-          }
-        },
-        {
-          "attributeSources": [],
-          "attributeContractFulfillment": {
-            "Username": {
-              "source": {
-                "type": "TEXT"
-              },
-              "value": "Administrator"
-            },
-            "OrgName": {
-              "source": {
-                "type": "TEXT"
-              },
-              "value": "Ping"
-            }
-          },
-          "issuanceCriteria": {
-            "conditionalCriteria": []
-          },
-          "id": "default|jwt",
-          "context": {
-            "type": "DEFAULT"
-          },
-          "accessTokenManagerRef": {
-            "id": "jwt",
-            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/oauth/accessTokenManagers/jwt"
-          }
         }
       ]
     },
@@ -3739,6 +3788,92 @@
                 "name": "Internal"
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "/oauth/clientRegistrationPolicies",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "clientRegistrationPolicy",
+          "name": "clientRegistrationPolicy",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin",
+            "location": "https://localhost:9999/pf-admin-api/v1/oauth/clientRegistrationPolicies/descriptors/com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
+          },
+          "configuration": {
+            "tables": [],
+            "fields": [
+              {
+                "name": "code",
+                "value": "true"
+              },
+              {
+                "name": "code id_token",
+                "value": "true"
+              },
+              {
+                "name": "code id_token token",
+                "value": "true"
+              },
+              {
+                "name": "code token",
+                "value": "true"
+              },
+              {
+                "name": "id_token",
+                "value": "true"
+              },
+              {
+                "name": "id_token token",
+                "value": "true"
+              },
+              {
+                "name": "token",
+                "value": "true"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "/identityStoreProvisioners",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "identityStoreProvisioner",
+          "name": "SP IdP Connection Dependency",
+          "pluginDescriptorRef": {
+            "id": "com.pingidentity.identitystoreprovisioners.sample.SampleIdentityStoreProvisioner",
+            "location": "https://${PF_ADMIN_PUBLIC_HOSTNAME}:${PF_ADMIN_PUBLIC_PORT_HTTPS}/pf-admin-api/v1/identityStoreProvisioners/descriptors/com.pingidentity.identitystoreprovisioners.sample.SampleIdentityStoreProvisioner"
+          },
+          "configuration": {
+            "tables": [],
+            "fields": [
+              {
+                "name": "Delete user behavior",
+                "value": "Disable User"
+              }
+            ]
+          },
+          "attributeContract": {
+            "coreAttributes": [
+              {
+                "name": "username"
+              }
+            ],
+            "inherited": false
+          },
+          "groupAttributeContract": {
+            "coreAttributes": [
+              {
+                "name": "groupname"
+              }
+            ],
+            "inherited": false
           }
         }
       ]

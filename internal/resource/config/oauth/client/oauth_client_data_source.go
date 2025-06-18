@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthclient
 
 import (
@@ -9,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -32,7 +34,7 @@ var (
 	clientAuthDataSourceAttrType = map[string]attr.Type{
 		"type":                                  types.StringType,
 		"encrypted_secret":                      types.StringType,
-		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}},
+		"secondary_secrets":                     types.ListType{ElemType: types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}},
 		"client_cert_issuer_dn":                 types.StringType,
 		"client_cert_subject_dn":                types.StringType,
 		"enforce_replay_prevention":             types.BoolType,
@@ -320,6 +322,18 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Computed:    true,
 						ElementType: types.StringType,
 					},
+					"user_info_response_content_encryption_algorithm": schema.StringAttribute{
+						Computed:    true,
+						Description: "The JSON Web Encryption [JWE] content-encryption algorithm for the UserInfo Response. Supported values are `AES_128_CBC_HMAC_SHA_256`, `AES_192_CBC_HMAC_SHA_384`, `AES_256_CBC_HMAC_SHA_512`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`. Supported in PF version `12.2` or later.",
+					},
+					"user_info_response_encryption_algorithm": schema.StringAttribute{
+						Computed:    true,
+						Description: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the UserInfo response. Supported values are `DIR`, `A128KW`, `A192KW`, `A256KW`, `A128GCMKW`, `A192GCMKW`, `A256GCMKW`, `ECDH_ES`, `ECDH_ES_A128KW`, `ECDH_ES_A192KW`, `ECDH_ES_A256KW`, `RSA_OAEP`, `RSA_OAEP_256`. Supported in PF version `12.2` or later.",
+					},
+					"user_info_response_signing_algorithm": schema.StringAttribute{
+						Computed:    true,
+						Description: "The JSON Web Signature [JWS] algorithm required to sign the UserInfo response. Supported values are `NONE`, `HS256`, `HS384`, `HS512`, `RS256`, `RS384`, `RS512`, `ES256`, `ES384`, `ES512`, `PS256`, `PS384`, `PS512`. Supported in PF version `12.2` or later.",
+					},
 				},
 			},
 			"client_auth": schema.SingleNestedAttribute{
@@ -337,7 +351,7 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Optional:    false,
 						Computed:    true,
 					},
-					"secondary_secrets": schema.SetNestedAttribute{
+					"secondary_secrets": schema.ListNestedAttribute{
 						Description: "The list of secondary client secrets that are temporarily retained.",
 						Optional:    false,
 						Computed:    true,
@@ -561,6 +575,14 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Optional:    false,
 				Computed:    true,
 			},
+			"lockout_max_malicious_actions": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.",
+			},
+			"lockout_max_malicious_actions_type": schema.StringAttribute{
+				Computed:    true,
+				Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.",
+			},
 		},
 	}
 	id.ToDataSourceSchema(&schemaDef)
@@ -589,18 +611,22 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 	diags = readOauthClientResponseCommon(ctx, r, state, nil, productVersion, false)
 
 	// state.ClientAuth
-	var secondarySecretsSetSlice []attr.Value
-	var secondarySecretsObjToState types.Set
+	var secondarySecretsListSlice []attr.Value
+	var secondarySecretsObjToState types.List
 	secondarySecretsFromClient := r.ClientAuth.GetSecondarySecrets()
 	for _, secondarySecretFromClient := range secondarySecretsFromClient {
 		secondarySecretAttrVal := map[string]attr.Value{}
 		secondarySecretAttrVal["encrypted_secret"] = types.StringPointerValue(secondarySecretFromClient.EncryptedSecret)
-		secondarySecretAttrVal["expiry_time"] = types.StringValue(secondarySecretFromClient.ExpiryTime.Format(time.RFC3339Nano))
+		if secondarySecretFromClient.ExpiryTime != nil {
+			secondarySecretAttrVal["expiry_time"] = types.StringValue(secondarySecretFromClient.ExpiryTime.Format(time.RFC3339Nano))
+		} else {
+			secondarySecretAttrVal["expiry_time"] = types.StringNull()
+		}
 		secondarySecretsAttrValObj, respDiags := types.ObjectValue(secondarySecretsDataSourceAttrType, secondarySecretAttrVal)
 		diags.Append(respDiags...)
-		secondarySecretsSetSlice = append(secondarySecretsSetSlice, secondarySecretsAttrValObj)
+		secondarySecretsListSlice = append(secondarySecretsListSlice, secondarySecretsAttrValObj)
 	}
-	secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}, secondarySecretsSetSlice)
+	secondarySecretsObjToState, respDiags = types.ListValue(types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}, secondarySecretsListSlice)
 	diags.Append(respDiags...)
 
 	clientAuthAttrValue := map[string]attr.Value{}

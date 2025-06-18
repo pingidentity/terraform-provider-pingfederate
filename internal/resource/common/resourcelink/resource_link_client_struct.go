@@ -1,10 +1,12 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package resourcelink
 
 import (
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 

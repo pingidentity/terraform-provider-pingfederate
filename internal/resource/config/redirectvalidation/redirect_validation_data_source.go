@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package redirectvalidation
 
 import (
@@ -5,9 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -163,7 +163,6 @@ func (r *redirectValidationDataSource) Schema(ctx context.Context, req datasourc
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -200,7 +199,7 @@ func (r *redirectValidationDataSource) Read(ctx context.Context, req datasource.
 	}
 
 	// Read the response into the state
-	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, pointers.String("redirect_validation_id"))
+	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

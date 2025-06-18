@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package serversettings
 
 import (
@@ -6,10 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
-	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
@@ -66,14 +66,12 @@ var (
 	}
 
 	idpSaml20ProfileAttrType = map[string]attr.Type{
-		"enable":              types.BoolType,
-		"enable_auto_connect": types.BoolType,
+		"enable": types.BoolType,
 	}
 
 	spSaml20ProfileAttrType = map[string]attr.Type{
-		"enable":              types.BoolType,
-		"enable_auto_connect": types.BoolType,
-		"enable_xasp":         types.BoolType,
+		"enable":      types.BoolType,
+		"enable_xasp": types.BoolType,
 	}
 
 	idpRoleAttrType = map[string]attr.Type{
@@ -105,34 +103,11 @@ var (
 	}
 
 	federationInfoAttrType = map[string]attr.Type{
-		"base_url":               types.StringType,
-		"saml_2_entity_id":       types.StringType,
-		"auto_connect_entity_id": types.StringType,
-		"saml_1x_issuer_id":      types.StringType,
-		"saml_1x_source_id":      types.StringType,
-		"wsfed_realm":            types.StringType,
-	}
-
-	emailServerAttrType = map[string]attr.Type{
-		"source_addr":                 types.StringType,
-		"email_server":                types.StringType,
-		"port":                        types.Int64Type,
-		"ssl_port":                    types.Int64Type,
-		"timeout":                     types.Int64Type,
-		"retry_attempts":              types.Int64Type,
-		"retry_delay":                 types.Int64Type,
-		"use_ssl":                     types.BoolType,
-		"use_tls":                     types.BoolType,
-		"verify_hostname":             types.BoolType,
-		"enable_utf8_message_headers": types.BoolType,
-		"use_debugging":               types.BoolType,
-		"username":                    types.StringType,
-		"password":                    types.StringType,
-	}
-
-	captchaSettingsAttrType = map[string]attr.Type{
-		"site_key":   types.StringType,
-		"secret_key": types.StringType,
+		"base_url":          types.StringType,
+		"saml_2_entity_id":  types.StringType,
+		"saml_1x_issuer_id": types.StringType,
+		"saml_1x_source_id": types.StringType,
+		"wsfed_realm":       types.StringType,
 	}
 
 	contactInfoDefault, _ = types.ObjectValue(contactInfoAttrType, map[string]attr.Value{
@@ -160,13 +135,11 @@ var (
 		"enable_open_id_connect": types.BoolValue(true),
 	})
 	idpSamlProfileDefault, _ = types.ObjectValue(idpSaml20ProfileAttrType, map[string]attr.Value{
-		"enable":              types.BoolValue(true),
-		"enable_auto_connect": types.BoolNull(),
+		"enable": types.BoolValue(true),
 	})
 	spSamlProfileDefault, _ = types.ObjectValue(spSaml20ProfileAttrType, map[string]attr.Value{
-		"enable":              types.BoolValue(true),
-		"enable_auto_connect": types.BoolNull(),
-		"enable_xasp":         types.BoolValue(true),
+		"enable":      types.BoolValue(true),
+		"enable_xasp": types.BoolValue(true),
 	})
 	idpRoleDefault, _ = types.ObjectValue(idpRoleAttrType, map[string]attr.Value{
 		"enable":                       types.BoolValue(true),
@@ -196,19 +169,14 @@ var (
 )
 
 type serverSettingsModel struct {
-	Id                types.String `tfsdk:"id"`
 	ContactInfo       types.Object `tfsdk:"contact_info"`
 	Notifications     types.Object `tfsdk:"notifications"`
 	RolesAndProtocols types.Object `tfsdk:"roles_and_protocols"`
 	FederationInfo    types.Object `tfsdk:"federation_info"`
-	EmailServer       types.Object `tfsdk:"email_server"`
-	CaptchaSettings   types.Object `tfsdk:"captcha_settings"`
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsModel, plan *serverSettingsModel, existingId *string) diag.Diagnostics {
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsModel, plan *serverSettingsModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	emptyString := ""
-	state.Id = id.GenerateUUIDToState(existingId)
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
 	diags.Append(respDiags...)
 	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
@@ -216,7 +184,9 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// ROLES AND PROTOCOLS
 	//////////////////////////////////////////////
-	idpSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, idpSaml20ProfileAttrType, r.RolesAndProtocols.IdpRole.Saml20Profile)
+	idpSaml20ProfileVal, respDiags := types.ObjectValue(idpSaml20ProfileAttrType, map[string]attr.Value{
+		"enable": types.BoolPointerValue(r.RolesAndProtocols.IdpRole.Saml20Profile.Enable),
+	})
 	diags.Append(respDiags...)
 	idpRoleAttrValue := map[string]attr.Value{
 		"enable":                       types.BoolPointerValue(r.RolesAndProtocols.IdpRole.Enable),
@@ -230,7 +200,10 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	idpRoleVal, respDiags := types.ObjectValue(idpRoleAttrType, idpRoleAttrValue)
 	diags.Append(respDiags...)
 
-	spSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
+	spSaml20ProfileVal, respDiags := types.ObjectValue(spSaml20ProfileAttrType, map[string]attr.Value{
+		"enable":      types.BoolPointerValue(r.RolesAndProtocols.SpRole.Saml20Profile.Enable),
+		"enable_xasp": types.BoolPointerValue(r.RolesAndProtocols.SpRole.Saml20Profile.EnableXASP),
+	})
 	diags.Append(respDiags...)
 
 	spRoleAttrValue := map[string]attr.Value{
@@ -260,68 +233,14 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	// FEDERATION INFO
 	//////////////////////////////////////////////
 	federationInfoAttrValue := map[string]attr.Value{
-		"base_url":               types.StringPointerValue(r.FederationInfo.BaseUrl),
-		"saml_2_entity_id":       types.StringPointerValue(r.FederationInfo.Saml2EntityId),
-		"auto_connect_entity_id": types.StringPointerValue(&emptyString),
-		"saml_1x_issuer_id":      types.StringPointerValue(r.FederationInfo.Saml1xIssuerId),
-		"saml_1x_source_id":      types.StringPointerValue(r.FederationInfo.Saml1xSourceId),
-		"wsfed_realm":            types.StringPointerValue(r.FederationInfo.WsfedRealm),
+		"base_url":          types.StringPointerValue(r.FederationInfo.BaseUrl),
+		"saml_2_entity_id":  types.StringPointerValue(r.FederationInfo.Saml2EntityId),
+		"saml_1x_issuer_id": types.StringPointerValue(r.FederationInfo.Saml1xIssuerId),
+		"saml_1x_source_id": types.StringPointerValue(r.FederationInfo.Saml1xSourceId),
+		"wsfed_realm":       types.StringPointerValue(r.FederationInfo.WsfedRealm),
 	}
 
 	state.FederationInfo, respDiags = types.ObjectValue(federationInfoAttrType, federationInfoAttrValue)
 	diags.Append(respDiags...)
-	//////////////////////////////////////////////
-	// EMAIL SERVER
-	//////////////////////////////////////////////
-	// get email creds with function
-	// if username and password are not set, return null values
-	if internaltypes.IsDefined(plan.EmailServer) {
-		var getEmailCreds = func() (*string, string) {
-			if plan.EmailServer.Attributes()["username"] != nil && plan.EmailServer.Attributes()["password"] != nil {
-				username := plan.EmailServer.Attributes()["username"].(types.String).ValueStringPointer()
-				password := plan.EmailServer.Attributes()["password"].(types.String).ValueString()
-				return username, password
-			} else {
-				return types.StringNull().ValueStringPointer(), types.StringNull().ValueString()
-			}
-		}
-
-		// retrieve values for saving to state
-		username, password := getEmailCreds()
-		emailServerAttrValue := map[string]attr.Value{
-			"source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
-			"email_server":                types.StringValue(r.EmailServer.EmailServer),
-			"port":                        types.Int64Value(r.EmailServer.Port),
-			"ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
-			"timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
-			"retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
-			"retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
-			"use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
-			"use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
-			"verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
-			"enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
-			"use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
-			"username":                    types.StringPointerValue(username),
-			"password":                    types.StringValue(password),
-		}
-
-		state.EmailServer, respDiags = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
-		diags.Append(respDiags...)
-	} else {
-		state.EmailServer = types.ObjectNull(emailServerAttrType)
-	}
-	//////////////////////////////////////////////
-	// CAPTCHA SETTINGS
-	//////////////////////////////////////////////
-	if internaltypes.IsDefined(plan.CaptchaSettings) {
-		captchaSettingsAttrValue := map[string]attr.Value{
-			"site_key":   types.StringPointerValue(r.CaptchaSettings.SiteKey),
-			"secret_key": types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
-		}
-		state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, captchaSettingsAttrValue)
-		diags.Append(respDiags...)
-	} else {
-		state.CaptchaSettings = types.ObjectNull(captchaSettingsAttrType)
-	}
 	return diags
 }

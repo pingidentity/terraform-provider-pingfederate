@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package authenticationpolicies
 
 import (
@@ -7,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -17,12 +18,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -53,11 +54,10 @@ var (
 )
 
 type authenticationPoliciesModel struct {
-	Id                           types.String `tfsdk:"id"`
-	AuthnSelectionTrees          types.List   `tfsdk:"authn_selection_trees"`
-	DefaultAuthenticationSources types.List   `tfsdk:"default_authentication_sources"`
-	FailIfNoSelection            types.Bool   `tfsdk:"fail_if_no_selection"`
-	TrackedHttpParameters        types.Set    `tfsdk:"tracked_http_parameters"`
+	AuthnSelectionTrees          types.List `tfsdk:"authn_selection_trees"`
+	DefaultAuthenticationSources types.List `tfsdk:"default_authentication_sources"`
+	FailIfNoSelection            types.Bool `tfsdk:"fail_if_no_selection"`
+	TrackedHttpParameters        types.Set  `tfsdk:"tracked_http_parameters"`
 }
 
 // authenticationPoliciesResource is a helper function to simplify the provider implementation.
@@ -83,7 +83,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 						"id": schema.StringAttribute{
 							Optional:    true,
 							Computed:    true,
-							Description: "The authentication policy tree id. ID is unique.",
+							Description: "The authentication policy tree id. ID is unique. This value is system-assigned if not provided.",
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},
@@ -107,7 +107,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 							Default:     booldefault.StaticBool(true),
 							Description: "Whether or not this authentication policy tree is enabled. Default is true.",
 						},
-						"root_node": authenticationpolicytreenode.ToSchema("A node inside the authentication policy tree."),
+						"root_node": authenticationpolicytreenode.ToSchemaNoValueDefault("A node inside the authentication policy tree."),
 						"handle_failures_locally": schema.BoolAttribute{
 							Optional:    true,
 							Computed:    true,
@@ -154,7 +154,6 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -174,14 +173,8 @@ func (r *authenticationPoliciesResource) Configure(_ context.Context, req resour
 
 }
 
-func readAuthenticationPoliciesResponse(ctx context.Context, r *client.AuthenticationPolicy, state *authenticationPoliciesModel, existingId *string) diag.Diagnostics {
+func readAuthenticationPoliciesResponse(ctx context.Context, r *client.AuthenticationPolicy, state *authenticationPoliciesModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
-
 	state.FailIfNoSelection = types.BoolPointerValue(r.FailIfNoSelection)
 
 	defaultAuthenticationSourcesAttrValues := []attr.Value{}
@@ -307,7 +300,7 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 	newPolicy := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(newPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for Authentication Policies", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for Authentication Policies: "+err.Error())
 		return
 	}
 
@@ -319,7 +312,7 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state, nil)
+	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -346,12 +339,7 @@ func (r *authenticationPoliciesResource) Read(ctx context.Context, req resource.
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state, id)
+	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -372,7 +360,7 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	updatedPolicies := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(updatedPolicies, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for the Authentication Policies", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for the Authentication Policies: "+err.Error())
 		return
 	}
 
@@ -384,12 +372,7 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	}
 
 	// Read the response
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	readResponseDiags := readAuthenticationPoliciesResponse(ctx, updateResponse, &state, id)
+	readResponseDiags := readAuthenticationPoliciesResponse(ctx, updateResponse, &state)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
@@ -397,10 +380,22 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	resp.Diagnostics.Append(diags...)
 }
 
-// This resource is a put operation, so we do not need to implement the Delete method
 func (r *authenticationPoliciesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This delete will remove all authentication policies.
+	authPoliciesClientData := client.NewAuthenticationPolicy()
+	authPoliciesApiUpdateRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig))
+	authPoliciesApiUpdateRequest = authPoliciesApiUpdateRequest.Body(*authPoliciesClientData)
+	_, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicyExecute(authPoliciesApiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the Authentication Policies", err, httpResp)
+	}
 }
 
 func (r *authenticationPoliciesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState authenticationPoliciesModel
+	emptyState.AuthnSelectionTrees = types.ListNull(types.ObjectType{AttrTypes: authnSelectionTreesAttrTypes})
+	emptyState.DefaultAuthenticationSources = types.ListNull(types.ObjectType{AttrTypes: defaultAuthenticationSourcesAttrTypes})
+	emptyState.TrackedHttpParameters = types.SetNull(types.StringType)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

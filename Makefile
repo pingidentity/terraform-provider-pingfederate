@@ -20,10 +20,9 @@ vet:
 	go vet ./...
 
 define productversiondir
- 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}" | cut -b 1-4)
+ 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.2.0}" | cut -b 1-4)
 endef
 
-#TODO: replace `edge` with `latest` here once a sprint release is available for PF 12.1
 starttestcontainer:
 	$(call productversiondir) && docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
@@ -31,8 +30,8 @@ starttestcontainer:
 		--env-file "${HOME}/.pingidentity/config" \
 		-e "OPERATIONAL_MODE=${OPERATIONAL_MODE}" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
-		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
-		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}-edge
+		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json$${DATA_JSON_SUFFIX}.subst:/opt/in/instance/bulk-config/data.json.subst \
+		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.2.0}-latest
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
@@ -51,7 +50,7 @@ removetestcontainer:
 spincontainer: removetestcontainer starttestcontainer
 
 define test_acc_common_env_vars
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1}
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.2}
 endef
 
 define test_acc_basic_auth_env_vars
@@ -64,18 +63,18 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v -count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 20m -run ${ACC_TEST_NAME} -v -count=1
 
 testaccfolder:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 10m -v -count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 20m -v -count=1
 
 testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 4; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping -e captchaproviders/settings` -timeout 20m -v -p 4; \
 	firstTestResult=$$?; \
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 1; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings -e oauth/openidconnect/policy -e oauth/openidconnect/settings -e oauth/clientsettings -e serversettings/wstruststssettings -e sp/targeturlmappings -e serversettings/systemkeys/rotate -e oauth/cibaserverpolicy/requestpolicies -e notificationpublishers -e oauth/accesstokenmanagers/settings -e oauth/accesstokenmapping -e captchaproviders/settings` -timeout 20m -v -p 1; \
 	secondTestResult=$$?; \
 	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0"; then \
 		false; \
@@ -93,7 +92,7 @@ testauthacc:
 testaccclustered:
 	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/cluster/... -timeout 5m -v
 
-testacccomplete: spincontainer testauthacc testacc
+testacccomplete: spincontainer testacc
 
 clearstates:
 	find . -name "*tfstate*" -delete
@@ -105,7 +104,7 @@ devchecknotest: verifycontent install golangcilint generate tfproviderlint tflin
 verifycontent:
 	python3 ./scripts/verifyContent.py
 
-devcheck: devchecknotest kaboom testauthacc testacc
+devcheck: devchecknotest kaboom testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=openIdConnectSettings \
@@ -124,24 +123,25 @@ openapp:
 	open "https://localhost:9999/pingfederate/app"
 
 golangcilint:
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint run --timeout 5m ./internal/...
+	go tool golangci-lint run --timeout 5m ./internal/...
 
 tfproviderlint: 
-	go run github.com/bflad/tfproviderlint/cmd/tfproviderlintx \
-									-c 1 \
-									-AT001.ignored-filename-suffixes=_test.go \
-									-AT003=false \
-									-XAT001=false \
-									-XR004=false \
-									-XS002=false ./internal/...
+	go tool tfproviderlintx \
+						-c 1 \
+						-AT001.ignored-filename-suffixes=_test.go \
+						-AT003=false \
+						-R018=false \
+						-XAT001=false \
+						-XR004=false \
+						-XS002=false ./internal/...
 
 tflint:
-	go run github.com/terraform-linters/tflint --recursive --disable-rule "terraform_unused_declarations" --disable-rule "terraform_required_providers" --disable-rule "terraform_required_version"
+	go tool tflint --recursive --disable-rule "terraform_unused_declarations" --disable-rule "terraform_required_providers" --disable-rule "terraform_required_version"
 
 terrafmtlint:
 	find ./internal/acctest -type f -name '*_test.go' \
 		| sort -u \
-		| xargs -I {} go run github.com/katbyte/terrafmt -f fmt {} -v
+		| xargs -I {} go tool terrafmt -f fmt {} -v
 
 importfmtlint:
-	go run github.com/pavius/impi/cmd/impi --local . --scheme stdThirdPartyLocal ./internal/...
+	go tool impi --local . --scheme stdThirdPartyLocal ./internal/...

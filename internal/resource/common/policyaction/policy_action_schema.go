@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package policyaction
 
 import (
@@ -23,6 +25,13 @@ func commonPolicyActionSchema() map[string]schema.Attribute {
 	return commonPolicyActionSchema
 }
 
+func attributeSourcesAttr(includeValueDefault bool) schema.Attribute {
+	if includeValueDefault {
+		return attributesources.ToSchema(0, false)
+	}
+	return attributesources.ToSchemaNoValueDefault(0, false)
+}
+
 func commonAttributeRulesAttr() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
@@ -37,7 +46,7 @@ func commonAttributeRulesAttr() schema.Attribute {
 							Optional:    true,
 							Description: "The name of the attribute to use in this attribute rule. This field is required if the Attribute Source type is not 'EXPRESSION'.",
 						},
-						"attribute_source": sourcetypeidkey.ToSchemaWithDescription(true, "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>"),
+						"attribute_source": sourcetypeidkey.ToSchemaWithDescription(true, "The source of the attribute, if this attribute is not provided then it is defaulted to be the previous authentication source."),
 						"condition": schema.StringAttribute{
 							Optional:    true,
 							Description: "The condition that will be applied to the attribute's expected value. This field is required if the Attribute Source type is not 'EXPRESSION'.",
@@ -83,12 +92,12 @@ func commonAttributeRulesAttr() schema.Attribute {
 
 // Complete schemas for the individual types of policy action
 
-func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
+func apcMappingPolicyActionSchema(includeValueDefault bool) schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
 	attrs["attribute_mapping"] = schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
-			"attribute_sources":              attributesources.ToSchema(0, false),
+			"attribute_sources":              attributeSourcesAttr(includeValueDefault),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    true,
@@ -182,7 +191,7 @@ func donePolicyActionSchema() schema.SingleNestedAttribute {
 	}
 }
 
-func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
+func fragmentPolicyActionSchema(includeValueDefault bool) schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
 	attrs["attribute_rules"] = commonAttributeRulesAttr()
 	attrs["fragment"] = schema.SingleNestedAttribute{
@@ -209,7 +218,7 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 					},
 				},
 			},
-			"attribute_sources": attributesources.ToSchema(0, false),
+			"attribute_sources": attributeSourcesAttr(includeValueDefault),
 			"issuance_criteria": issuancecriteria.ToSchema(),
 		},
 		Required:    false,
@@ -223,9 +232,13 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 	}
 }
 
-func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
+func localIdentityMappingPolicyActionSchema(includeValueDefault bool) schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["inbound_mapping"] = attributemapping.ToSchema(false)
+	if includeValueDefault {
+		attrs["inbound_mapping"] = attributemapping.ToSchema(false)
+	} else {
+		attrs["inbound_mapping"] = attributemapping.ToSchemaNoValueDefault(false)
+	}
 	attrs["local_identity_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
@@ -234,7 +247,7 @@ func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs["outbound_attribute_mapping"] = schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
-			"attribute_sources":              attributesources.ToSchema(0, false),
+			"attribute_sources":              attributeSourcesAttr(includeValueDefault),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    true,
@@ -257,19 +270,27 @@ func restartPolicyActionSchema() schema.SingleNestedAttribute {
 
 // Schema for the polymorphic attribute allowing you to specify a single policy action type
 func ToSchema() schema.SingleNestedAttribute {
+	return toSchemaInternal(true)
+}
+
+func ToSchemaNoValueDefault() schema.SingleNestedAttribute {
+	return toSchemaInternal(false)
+}
+
+func toSchemaInternal(includeValueDefault bool) schema.SingleNestedAttribute {
 	// In the future it may be worth adding validators to ensure only one of the policy action types is set, but
 	// currently it causes a big performance hit
 	return schema.SingleNestedAttribute{
 		Description: "The result action.",
 		Optional:    true,
 		Attributes: map[string]schema.Attribute{
-			"apc_mapping_policy_action":            apcMappingPolicyActionSchema(),
+			"apc_mapping_policy_action":            apcMappingPolicyActionSchema(includeValueDefault),
 			"authn_selector_policy_action":         authnSelectorPolicyActionSchema(),
 			"authn_source_policy_action":           authnSourcePolicyActionSchema(),
 			"continue_policy_action":               continuePolicyActionSchema(),
 			"done_policy_action":                   donePolicyActionSchema(),
-			"fragment_policy_action":               fragmentPolicyActionSchema(),
-			"local_identity_mapping_policy_action": localIdentityMappingPolicyActionSchema(),
+			"fragment_policy_action":               fragmentPolicyActionSchema(includeValueDefault),
+			"local_identity_mapping_policy_action": localIdentityMappingPolicyActionSchema(includeValueDefault),
 			"restart_policy_action":                restartPolicyActionSchema(),
 		},
 	}

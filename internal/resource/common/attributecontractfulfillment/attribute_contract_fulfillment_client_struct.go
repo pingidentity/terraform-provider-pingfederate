@@ -1,15 +1,23 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package attributecontractfulfillment
 
 import (
-	"encoding/json"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 )
 
-func ClientStruct(attributeContractFulfillmentAttr types.Map) (map[string]client.AttributeFulfillmentValue, error) {
+func ClientStruct(attributeContractFulfillmentAttr types.Map) map[string]client.AttributeFulfillmentValue {
 	attributeContractFulfillment := map[string]client.AttributeFulfillmentValue{}
-	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(attributeContractFulfillmentAttr, false)), &attributeContractFulfillment)
-	return attributeContractFulfillment, attributeContractFulfillmentErr
+	for key, fulfillment := range attributeContractFulfillmentAttr.Elements() {
+		fulfillmentValue := client.AttributeFulfillmentValue{}
+		fulfillmentAttrs := fulfillment.(types.Object).Attributes()
+		fulfillmentValue.Value = fulfillmentAttrs["value"].(types.String).ValueString()
+		fulfillmentValue.Source = client.SourceTypeIdKey{}
+		sourceAttrs := fulfillmentAttrs["source"].(types.Object).Attributes()
+		fulfillmentValue.Source.Type = sourceAttrs["type"].(types.String).ValueString()
+		fulfillmentValue.Source.Id = sourceAttrs["id"].(types.String).ValueStringPointer()
+		attributeContractFulfillment[key] = fulfillmentValue
+	}
+	return attributeContractFulfillment
 }

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package main
 
 import (
@@ -15,7 +17,7 @@ import (
 //go:generate terraform fmt -recursive ./examples/
 
 // Run the docs generation tool
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+//go:generate go tool tfplugindocs
 
 // Generate docs
 //go:generate python3 ./scripts/markdownDocFormatting.py authentication_policies.md authentication_policies_fragment.md

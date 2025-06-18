@@ -6,15 +6,13 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
 
+  attribute_contract = {}
+
   configuration = {
     fields = [
       {
         name  = "Client Id"
         value = "ping_federate_client_id"
-      },
-      {
-        name  = "Client Secret"
-        value = var.pcv_client_secret
       },
       {
         name  = "PingOne URL"
@@ -39,6 +37,12 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
       {
         name  = "Connection Pool Idle Timeout"
         value = "4000"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Client Secret"
+        value = var.pcv_client_secret
       }
     ]
   }

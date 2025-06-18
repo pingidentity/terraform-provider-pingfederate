@@ -1,18 +1,23 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package idpadapter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -89,7 +94,7 @@ type idpAdapterModel struct {
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan *idpAdapterModel, isImportRead bool) diag.Diagnostics {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan *idpAdapterModel, isImportRead, checkForUnexpectedFulfillments bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.AuthnCtxClassRef = types.StringPointerValue(r.AuthnCtxClassRef)
 	state.AdapterId = types.StringValue(r.Id)
@@ -158,6 +163,21 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		attributeMappingValues := map[string]attr.Value{}
 
 		// Build attribute_contract_fulfillment value
+		if checkForUnexpectedFulfillments && plan != nil && internaltypes.IsDefined(plan.AttributeMapping) && internaltypes.IsDefined(plan.AttributeMapping.Attributes()["attribute_contract_fulfillment"]) {
+			// If there are any attribute contract fulfillment keys not expected based on the plan, throw an error
+			plannedKeys := map[string]bool{}
+			for key := range plan.AttributeMapping.Attributes()["attribute_contract_fulfillment"].(types.Map).Elements() {
+				plannedKeys[key] = true
+			}
+			for key := range r.AttributeMapping.AttributeContractFulfillment {
+				if !plannedKeys[key] {
+					respDiags.AddAttributeError(
+						path.Root("attribute_mapping").AtMapKey("attribute_contract_fulfillment"),
+						providererror.InvalidAttributeConfiguration,
+						fmt.Sprintf("Unexpected attribute_contract_fulfillment key %s found in the response from PingFederate. Ensure this key is included in your configured attribute_contract_fulfillment.", key))
+				}
+			}
+		}
 		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, &r.AttributeMapping.AttributeContractFulfillment)
 		respDiags.Append(diags...)
 
@@ -166,8 +186,8 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		respDiags.Append(diags...)
 
 		// Build attribute_sources value
-		attributeMappingValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeMapping.AttributeSources)
-		diags.Append(respDiags...)
+		attributeMappingValues["attribute_sources"], diags = attributesources.ToState(ctx, r.AttributeMapping.AttributeSources)
+		respDiags.Append(diags...)
 
 		// Build complete attribute mapping value
 		state.AttributeMapping, diags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)

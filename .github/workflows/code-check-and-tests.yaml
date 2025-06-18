@@ -8,7 +8,6 @@ on:
       - "go.mod"
       - "go.sum"
       - "Makefile"
-      - ".golangci.yml"
   push:
     branches:
       - "main"
@@ -20,7 +19,7 @@ jobs:
   # Ensure the project can build first
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +38,7 @@ jobs:
   fmt:
     name: go fmt
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -54,7 +53,7 @@ jobs:
   vet:
     name: go vet
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -65,7 +64,7 @@ jobs:
   lint:
     name: golangcli-lint
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -76,13 +75,17 @@ jobs:
   generate:
     name: go generate
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
           cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.*"
+          terraform_wrapper: false
       # Use git add -N . to ensure that new files are listed in the git diff check
       - run: |
           go generate ./...
@@ -92,7 +95,7 @@ jobs:
   importfmt:
     name: importfmt
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -103,7 +106,7 @@ jobs:
   tfproviderlint:
     name: tfproviderlintx
     needs: [fmt, vet, lint, generate, importfmt]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -114,7 +117,7 @@ jobs:
   tflint:
     name: tflint
     needs: [fmt, vet, lint, generate, importfmt]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -125,7 +128,7 @@ jobs:
   terrafmt:
     name: terrafmt
     needs: [fmt, vet, lint, generate, importfmt]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -135,7 +138,7 @@ jobs:
       - run: |
           find ./internal/acctest -type f -name '*_test.go' \
           | sort -u \
-          | xargs -I {} go run github.com/katbyte/terrafmt diff -f --check --fmtcompat {} ; if [ $$? -ne 0 ]; then \
+          | xargs -I {} go tool terrafmt diff -f --check --fmtcompat {} ; if [ $$? -ne 0 ]; then \
           echo ""; \
           echo "terrafmt found bad formatting of HCL embedded in the test scripts. Please run "; \
           echo "\"make terrafmtlint\" before submitting the code for review."; \
@@ -146,7 +149,7 @@ jobs:
     needs:
       [fmt, vet, lint, generate, importfmt, tfproviderlint, tflint, terrafmt]
     if: ${{ github.actor != 'dependabot[bot]' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -155,19 +158,19 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.4.*"
+          terraform_version: "1.11.*"
           terraform_wrapper: false
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testaccclustered && make removetestcontainer
         env:
           TF_ACC: "1"
           CONFIG: ${{ secrets.Config }}
           OPERATIONAL_MODE: "CLUSTERED_CONSOLE"
-  acceptance:
-    name: Acceptance Tests
+  acceptanceoauth:
+    name: Acceptance Tests for OAuth Provider Authentication
     needs:
       [fmt, vet, lint, generate, importfmt, tfproviderlint, tflint, terrafmt]
     if: ${{ github.actor != 'dependabot[bot]' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -176,7 +179,28 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.4.*"
+          terraform_version: "1.11.*"
+          terraform_wrapper: false
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testauthacc && make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          DATA_JSON_SUFFIX: ".oauth"
+  acceptance:
+    name: Acceptance Tests
+    needs:
+      [fmt, vet, lint, generate, importfmt, tfproviderlint, tflint, terrafmt]
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.*"
           terraform_wrapper: false
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
         env:
@@ -194,3 +218,6 @@ jobs:
           PF_TF_P1_POPULATION_ID: ${{ secrets.PF_TF_P1_POPULATION_ID }}
           PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA: ${{ secrets.PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA }}
           PF_TF_P1_EXAMPLE_OAUTH_APP_ID: ${{ secrets.PF_TF_P1_EXAMPLE_OAUTH_APP_ID }}
+          PF_TF_ACC_TEST_CSR_RESPONSE_1: ${{ secrets.PF_TF_ACC_TEST_CSR_RESPONSE_1 }}
+          PF_TF_ACC_TEST_CSR_RESPONSE_2: ${{ secrets.PF_TF_ACC_TEST_CSR_RESPONSE_2 }}
+          PF_TF_ACC_TEST_CA_CERTIFICATE: ${{ secrets.PF_TF_ACC_TEST_CA_CERTIFICATE }}

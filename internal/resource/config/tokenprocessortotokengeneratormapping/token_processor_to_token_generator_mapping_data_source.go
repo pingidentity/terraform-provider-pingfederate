@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package tokenprocessortotokengeneratormapping
 
 import (
@@ -5,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -94,6 +96,7 @@ func (r *tokenProcessorToTokenGeneratorMappingDataSource) Read(ctx context.Conte
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Token Processor To Token Generator Mapping", err, httpResp)
+		return
 	}
 
 	// Read the response into the state

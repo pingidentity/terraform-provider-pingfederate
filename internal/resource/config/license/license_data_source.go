@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package license
 
 import (
@@ -8,8 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -32,7 +33,6 @@ type licenseDataSource struct {
 }
 
 type licenseDataSourceModel struct {
-	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	MaxConnections      types.Int64  `tfsdk:"max_connections"`
 	UsedConnections     types.Int64  `tfsdk:"used_connections"`
@@ -212,8 +212,6 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -236,13 +234,20 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("license_id")
 	state.Name = types.StringPointerValue(r.Name)
 	state.MaxConnections = types.Int64PointerValue(r.MaxConnections)
 	state.UsedConnections = types.Int64PointerValue(r.UsedConnections)
 	state.Tier = types.StringPointerValue(r.Tier)
-	state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
-	state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
+	if r.IssueDate != nil {
+		state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
+	} else {
+		state.IssueDate = types.StringNull()
+	}
+	if r.ExpirationDate != nil {
+		state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
+	} else {
+		state.ExpirationDate = types.StringNull()
+	}
 	state.EnforcementType = types.StringPointerValue(r.EnforcementType)
 	state.Version = types.StringPointerValue(r.Version)
 	state.Product = types.StringPointerValue(r.Product)

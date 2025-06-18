@@ -1,17 +1,21 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthidpadaptermappings
 
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 func (r *oauthIdpAdapterMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthIdpAdapterMappingResourceModel
+	var model *oauthIdpAdapterMappingResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
-	if resp.Diagnostics.HasError() {
+	if model == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -28,10 +32,16 @@ func (r *oauthIdpAdapterMappingResource) ValidateConfig(ctx context.Context, req
 		}
 
 		if !userKeyFound {
-			resp.Diagnostics.AddError("attribute_contract_fulfillment.USER_KEY is required", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("attribute_contract_fulfillment"),
+				providererror.InvalidAttributeConfiguration,
+				"attribute_contract_fulfillment.USER_KEY is required")
 		}
 		if !userNameFound {
-			resp.Diagnostics.AddError("attribute_contract_fulfillment.USER_NAME is required", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("attribute_contract_fulfillment"),
+				providererror.InvalidAttributeConfiguration,
+				"attribute_contract_fulfillment.USER_NAME is required")
 		}
 	}
 }

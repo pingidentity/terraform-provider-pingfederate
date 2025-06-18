@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package passwordcredentialvalidator_test
 
 import (
@@ -10,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId = "pingOneForEnterpriseDirectoryPcv"
@@ -24,6 +27,12 @@ type pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel stru
 }
 
 func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing.T) {
+	// This PCV type is only supported prior to version 12.2
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		t.Log("Skipping test for PingOneForEnterpriseDirectoryPasswordCredentialValidators as it is not supported in PingFederate 12.2.0 and later")
+		t.SkipNow()
+	}
+
 	resourceName := "pingOneForEnterpriseDirectoryPCV"
 	initialResourceModel := pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel{
 		id:                    pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
@@ -61,13 +70,12 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 			},
 			{
 				// Test importing the resource
-				Config:            testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_password_credential_validator." + resourceName,
-				ImportStateId:     pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Sensitive field values can't be imported so they can't be verified
-				ImportStateVerifyIgnore: []string{"configuration.fields"},
+				Config:                  testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_password_credential_validator." + resourceName,
+				ImportStateId:           pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"configuration.sensitive_fields.0.value", "configuration.sensitive_fields.0.encrypted_value"},
 			},
 			{
 				// Back to minimal model
@@ -108,6 +116,10 @@ func testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceNa
 			]
 	  	}
 		`
+	} else {
+		optionalHcl = `
+		attribute_contract = {}
+		`
 	}
 
 	return fmt.Sprintf(`
@@ -123,10 +135,6 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
       {
         name  = "Client Id"
         value = "ping_federate_client_id"
-      },
-      {
-        name  = "Client Secret"
-        value = "%[4]s"
       },
       {
         name  = "PingOne URL"
@@ -152,6 +160,12 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
         name  = "Connection Pool Idle Timeout"
         value = "%[5]s"
       }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Client Secret"
+        value = "%[4]s"
+      },
     ]
   }
   %[7]s

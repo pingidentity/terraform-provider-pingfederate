@@ -47,7 +47,6 @@ data "pingfederate_idp_sp_connection" "myIdpSpConnection" {
 - `name` (String) The connection name.
 - `outbound_provision` (Attributes) Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled. (see [below for nested schema](#nestedatt--outbound_provision))
 - `sp_browser_sso` (Attributes) The SAML settings used to enable secure browser-based SSO to resources at your partner's site. (see [below for nested schema](#nestedatt--sp_browser_sso))
-- `type` (String) The type of this connection.
 - `virtual_entity_ids` (Set of String) List of alternate entity IDs that identifies the local server to this partner.
 - `ws_trust` (Attributes) Ws-Trust STS provides security-token validation and creation to extend SSO access to identity-enabled Web Services (see [below for nested schema](#nestedatt--ws_trust))
 
@@ -125,11 +124,11 @@ Read-Only:
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--custom_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--attribute_query--attribute_sources--custom_attribute_source--type--source"></a>
-### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.type.source`
+<a id="nestedatt--attribute_query--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -176,11 +175,11 @@ Read-Only:
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--type--source"></a>
-### Nested Schema for `attribute_query.attribute_sources.jdbc_attribute_source.type.source`
+<a id="nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `attribute_query.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -223,11 +222,11 @@ Read-Only:
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--attribute_query--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.type.source`
+<a id="nestedatt--attribute_query--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -329,12 +328,12 @@ Optional:
 Read-Only:
 
 - `block_encryption_algorithm` (String) The algorithm used to encrypt assertions sent to this partner.
-- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
+- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
 - `inbound_back_channel_auth` (Attributes) (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth))
 - `key_transport_algorithm` (String) The algorithm used to transport keys to this partner.
 - `secondary_decryption_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--secondary_decryption_key_pair_ref))
 - `signing_settings` (Attributes) Settings related to signing messages sent to this partner. (see [below for nested schema](#nestedatt--credentials--signing_settings))
-- `verification_issuer_dn` (String) If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
 - `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
 
 <a id="nestedatt--credentials--decryption_key_pair_ref"></a>
@@ -362,7 +361,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_password` (String) For GET requests, this field contains the encrypted password, if one exists.
-- `password` (String) User password.  To update the password, specify the plaintext value in this field.
 - `username` (String) The username.
 
 
@@ -380,12 +378,12 @@ Read-Only:
 
 Read-Only:
 
-- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
 - `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--certs--cert_view))
-- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions.
-- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate.
-- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate.
-- `x509file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--certs--x509file))
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `x509_file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--certs--x509_file))
 
 <a id="nestedatt--credentials--certs--cert_view"></a>
 ### Nested Schema for `credentials.certs.cert_view`
@@ -399,24 +397,24 @@ Read-Only:
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.
 - `serial_number` (String) The serial number assigned by the CA.
-- `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
-- `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
+- `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding.
+- `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String)
+- `status` (String) Status of the item.
 - `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
 - `version` (Number) The X.509 version to which the item conforms.
 
 
-<a id="nestedatt--credentials--certs--x509file"></a>
-### Nested Schema for `credentials.certs.x509file`
+<a id="nestedatt--credentials--certs--x509_file"></a>
+### Nested Schema for `credentials.certs.x509_file`
 
 Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider.
-- `file_data` (String) The certificate data in PEM format.
-- `id` (String) The persistent, unique ID for the certificate.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.
+- `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
+- `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 
 
@@ -425,12 +423,12 @@ Read-Only:
 
 Read-Only:
 
-- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
+- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
 - `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
 - `http_basic_credentials` (Attributes) Username and password credentials. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--http_basic_credentials))
 - `require_ssl` (Boolean) Incoming HTTP transmissions must use a secure channel.
 - `type` (String) The back channel authentication type.
-- `verification_issuer_dn` (String) If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
+- `verification_issuer_dn` (String) If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.
 - `verification_subject_dn` (String) If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs"></a>
@@ -438,12 +436,12 @@ Read-Only:
 
 Read-Only:
 
-- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
+- `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate. Default is `false`.
 - `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--cert_view))
-- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions.
-- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate.
-- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate.
-- `x509file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--x509file))
+- `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set. Default is `false`.
+- `x509_file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--x509_file))
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs--cert_view"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs.cert_view`
@@ -457,24 +455,24 @@ Read-Only:
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.
 - `serial_number` (String) The serial number assigned by the CA.
-- `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
-- `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
+- `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding.
+- `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String)
+- `status` (String) Status of the item.
 - `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
 - `version` (Number) The X.509 version to which the item conforms.
 
 
-<a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509file"></a>
-### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509file`
+<a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509_file"></a>
+### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509_file`
 
 Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider.
-- `file_data` (String) The certificate data in PEM format.
-- `id` (String) The persistent, unique ID for the certificate.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.
+- `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
+- `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 
 
@@ -484,7 +482,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_password` (String) For GET requests, this field contains the encrypted password, if one exists.
-- `password` (String) User password.  To update the password, specify the plaintext value in this field.
 - `username` (String) The username.
 
 
@@ -777,25 +774,39 @@ Read-Only:
 
 Optional:
 
-- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables))
+- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--fields))
+- `sensitive_fields` (Attributes Set) List of sensitive configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--sensitive_fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables))
 
 Read-Only:
 
-- `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields_all))
-- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all))
+- `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--fields_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables_all))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.fields`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.fields`
 
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--sensitive_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.tables`
 
 Required:
 
@@ -803,38 +814,52 @@ Required:
 
 Optional:
 
-- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows))
+- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables--rows))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables.rows`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables--rows"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.tables.rows`
 
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables--rows--fields))
+- `sensitive_fields` (Attributes Set) The sensitive configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables--rows--sensitive_fields))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables.rows.fields`
-
-Required:
-
-- `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
-
-
-
-
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields_all"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.fields_all`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables--rows--fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.tables.rows.fields`
 
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables_all`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables--rows--sensitive_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.tables.rows.sensitive_fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+
+Optional:
+
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. Either this attribute or `value` must be specified.
+- `value` (String, Sensitive) The sensitive value for the configuration field. Either this attribute or `encrypted_value` must be specified`.
+
+
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--fields_all"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.fields_all`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field.
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables_all"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.tables_all`
 
 Required:
 
@@ -842,23 +867,23 @@ Required:
 
 Optional:
 
-- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows))
+- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables_all--rows))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables_all.rows`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables_all--rows"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.tables_all.rows`
 
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables_all--rows--fields))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows--fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables_all.rows.fields`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration--tables_all--rows--fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration.tables_all.rows.fields`
 
 Required:
 
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 
@@ -869,13 +894,13 @@ Required:
 
 Read-Only:
 
-- `core_attributes` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes))
-- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes))
+- `core_attributes` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract--extended_attributes))
 - `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.core_attributes`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract--core_attributes"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_contract.core_attributes`
 
 Read-Only:
 
@@ -884,8 +909,8 @@ Read-Only:
 - `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.extended_attributes`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract--extended_attributes"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_contract.extended_attributes`
 
 Read-Only:
 
@@ -900,20 +925,20 @@ Read-Only:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_contract_fulfillment))
+- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_contract_fulfillment.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -922,37 +947,37 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources`
 
 Read-Only:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.custom_attribute_source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.custom_attribute_source`
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -961,16 +986,16 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.custom_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.filter_fields`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--custom_attribute_source--filter_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.custom_attribute_source.filter_fields`
 
 Read-Only:
 
@@ -979,14 +1004,14 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.jdbc_attribute_source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.jdbc_attribute_source`
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -994,16 +1019,16 @@ Read-Only:
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1012,8 +1037,8 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.jdbc_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -1021,8 +1046,8 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.ldap_attribute_source`
 
 Optional:
 
@@ -1030,10 +1055,10 @@ Optional:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--binary_attribute_settings))
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
@@ -1041,16 +1066,16 @@ Read-Only:
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1059,16 +1084,16 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.binary_attribute_settings`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.ldap_attribute_source.binary_attribute_settings`
 
 Read-Only:
 
 - `binary_encoding` (String) Get the encoding type for this attribute. If not specified, the default is BASE64.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.attribute_sources.ldap_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -1077,27 +1102,27 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.issuance_criteria`
 
 Read-Only:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.conditional_criteria`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.issuance_criteria.conditional_criteria`
 
 Read-Only:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria--conditional_criteria--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.issuance_criteria.conditional_criteria.source`
 
 Read-Only:
 
@@ -1106,8 +1131,8 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping.issuance_criteria.expression_criteria`
 
 Read-Only:
 
@@ -1166,23 +1191,23 @@ Read-Only:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--data_store_ref))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1191,16 +1216,16 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.custom_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.filter_fields`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source--filter_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.custom_attribute_source.filter_fields`
 
 Read-Only:
 
@@ -1214,9 +1239,9 @@ Read-Only:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -1224,16 +1249,16 @@ Read-Only:
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1242,8 +1267,8 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.jdbc_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -1331,11 +1356,11 @@ Read-Only:
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.issuance_criteria.conditional_criteria.source`
 
 Read-Only:
 
@@ -1455,23 +1480,23 @@ Read-Only:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--data_store_ref))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1480,16 +1505,16 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.custom_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.filter_fields`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source--filter_fields"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.custom_attribute_source.filter_fields`
 
 Read-Only:
 
@@ -1503,9 +1528,9 @@ Read-Only:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -1513,16 +1538,16 @@ Read-Only:
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1531,8 +1556,8 @@ Read-Only:
 
 
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.jdbc_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -1620,11 +1645,11 @@ Read-Only:
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--conditional_criteria--source"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.issuance_criteria.conditional_criteria.source`
 
 Read-Only:
 
@@ -1802,23 +1827,23 @@ Read-Only:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--data_store_ref))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
+<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1827,16 +1852,16 @@ Read-Only:
 
 
 
-<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--data_store_ref"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.custom_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.filter_fields`
+<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source--filter_fields"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.custom_attribute_source.filter_fields`
 
 Read-Only:
 
@@ -1850,9 +1875,9 @@ Read-Only:
 
 Read-Only:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -1860,16 +1885,16 @@ Read-Only:
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
+<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1878,8 +1903,8 @@ Read-Only:
 
 
 
-<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--data_store_ref"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.jdbc_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -1967,11 +1992,11 @@ Read-Only:
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
-<a id="nestedatt--ws_trust--token_processor_mappings--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--ws_trust--token_processor_mappings--issuance_criteria--conditional_criteria--source"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.issuance_criteria.conditional_criteria.source`
 
 Read-Only:
 
