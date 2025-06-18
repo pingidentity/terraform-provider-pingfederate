@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -202,7 +202,6 @@ func (r *oauthOutOfBandAuthPluginResource) ModifyPlan(ctx context.Context, req r
 func (model *oauthOutOfBandAuthPluginResourceModel) buildClientStruct() (*client.OutOfBandAuthenticator, diag.Diagnostics) {
 	result := &client.OutOfBandAuthenticator{}
 	var respDiags diag.Diagnostics
-	var err error
 	// attribute_contract
 	if !model.AttributeContract.IsNull() {
 		attributeContractValue := &client.OutOfBandAuthAttributeContract{}
@@ -225,12 +224,8 @@ func (model *oauthOutOfBandAuthPluginResourceModel) buildClientStruct() (*client
 	}
 
 	// configuration
-	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
-	if err != nil {
-		respDiags.AddError("Error building client struct for configuration", err.Error())
-	} else {
-		result.Configuration = *configurationValue
-	}
+	configurationValue := pluginconfiguration.ClientStruct(model.Configuration)
+	result.Configuration = *configurationValue
 
 	// name
 	result.Name = model.Name.ValueString()
