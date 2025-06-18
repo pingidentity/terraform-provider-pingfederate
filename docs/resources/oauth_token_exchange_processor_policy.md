@@ -171,14 +171,14 @@ Required:
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources--custom_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--processor_mappings--attribute_sources--custom_attribute_source--type--source"></a>
-### Nested Schema for `processor_mappings.attribute_sources.custom_attribute_source.type.source`
+<a id="nestedatt--processor_mappings--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `processor_mappings.attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -237,14 +237,14 @@ Required:
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources--jdbc_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--processor_mappings--attribute_sources--jdbc_attribute_source--type--source"></a>
-### Nested Schema for `processor_mappings.attribute_sources.jdbc_attribute_source.type.source`
+<a id="nestedatt--processor_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `processor_mappings.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -290,14 +290,14 @@ Required:
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--processor_mappings--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `processor_mappings.attribute_sources.ldap_attribute_source.search_attributes.source`
+<a id="nestedatt--processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 

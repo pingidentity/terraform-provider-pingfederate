@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -206,7 +206,6 @@ func (r *oauthTokenExchangeProcessorPolicyResource) Schema(ctx context.Context, 
 func (model *oauthTokenExchangeProcessorPolicyResourceModel) buildClientStruct() (*client.TokenExchangeProcessorPolicy, diag.Diagnostics) {
 	result := &client.TokenExchangeProcessorPolicy{}
 	var respDiags diag.Diagnostics
-	var err error
 	// actor_token_required
 	result.ActorTokenRequired = model.ActorTokenRequired.ValueBoolPointer()
 	// attribute_contract
@@ -239,18 +238,9 @@ func (model *oauthTokenExchangeProcessorPolicyResourceModel) buildClientStruct()
 			processorMappingsValue.ActorTokenProcessor = processorMappingsActorTokenProcessorValue
 		}
 		processorMappingsValue.ActorTokenType = processorMappingsAttrs["actor_token_type"].(types.String).ValueStringPointer()
-		processorMappingsValue.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(processorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-		if err != nil {
-			respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-		}
-		processorMappingsValue.AttributeSources, err = attributesources.ClientStruct(processorMappingsAttrs["attribute_sources"].(types.Set))
-		if err != nil {
-			respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-		}
-		processorMappingsValue.IssuanceCriteria, err = issuancecriteria.ClientStruct(processorMappingsAttrs["issuance_criteria"].(types.Object))
-		if err != nil {
-			respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-		}
+		processorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(processorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
+		processorMappingsValue.AttributeSources = attributesources.ClientStruct(processorMappingsAttrs["attribute_sources"].(types.Set))
+		processorMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(processorMappingsAttrs["issuance_criteria"].(types.Object))
 		processorMappingsSubjectTokenProcessorValue := client.ResourceLink{}
 		processorMappingsSubjectTokenProcessorAttrs := processorMappingsAttrs["subject_token_processor"].(types.Object).Attributes()
 		processorMappingsSubjectTokenProcessorValue.Id = processorMappingsSubjectTokenProcessorAttrs["id"].(types.String).ValueString()

@@ -207,6 +207,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
 data "pingfederate_token_processor_to_token_generator_mapping" "example" {
   mapping_id = pingfederate_token_processor_to_token_generator_mapping.example.id
 }
+%s
 `, dependencyHCL())
 }
 
