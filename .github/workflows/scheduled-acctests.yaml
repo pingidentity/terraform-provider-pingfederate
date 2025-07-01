@@ -18,8 +18,8 @@ jobs:
         # Cover oldest and newest patch release of the major-minor releases we support
         pingfederate:
           - "12.0.6"
-          - "12.1.4"
-          - "12.2.0"
+          - "12.1.8"
+          - "12.2.3"
       max-parallel: 1
     steps:
       - uses: actions/checkout@v4
