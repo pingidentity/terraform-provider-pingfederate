@@ -1,0 +1,1 @@
+terraform import pingfederate_oauth_out_of_band_auth_plugin.authPlugin pluginId
