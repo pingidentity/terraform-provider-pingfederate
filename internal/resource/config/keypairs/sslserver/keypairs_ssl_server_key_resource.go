@@ -688,6 +688,10 @@ func (r *keypairsSslServerKeyResource) Delete(ctx context.Context, req resource.
 	// Delete API call logic
 	httpResp, err := r.apiClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+		if httpResp.StatusCode == 422 {
+			resp.Diagnostics.AddWarning("Resource In Use", "The SSL Server Key Pair is already in use and cannot be deleted")
+			return
+		}
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the ssl server key", err, httpResp, &customId)
 	}
 }
