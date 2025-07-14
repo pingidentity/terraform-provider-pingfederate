@@ -3569,24 +3569,46 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		return
 	}
 
-	if (plan.EntityId.IsUnknown() || !plan.EntityId.Equal(state.EntityId)) && internaltypes.IsDefined(plan.IdpBrowserSso) {
-		browserSsoAttributes := plan.IdpBrowserSso.Attributes()
-		oidcProviderSettings := browserSsoAttributes["oidc_provider_settings"].(types.Object)
-		if internaltypes.IsDefined(oidcProviderSettings) {
-			oidcProviderSettingsAttributes := oidcProviderSettings.Attributes()
-			oidcProviderSettingsAttributes["back_channel_logout_uri"] = types.StringUnknown()
-			oidcProviderSettingsAttributes["front_channel_logout_uri"] = types.StringUnknown()
-			oidcProviderSettingsAttributes["post_logout_redirect_uri"] = types.StringUnknown()
-			oidcProviderSettingsAttributes["redirect_uri"] = types.StringUnknown()
-			var diags diag.Diagnostics
-			oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
+		planBrowserSsoAttributes := plan.IdpBrowserSso.Attributes()
+		ssoApplicationEndpointModified := false
+		if plan.EntityId.IsUnknown() || !plan.EntityId.Equal(state.EntityId) {
+			oidcProviderSettings := planBrowserSsoAttributes["oidc_provider_settings"].(types.Object)
+			if internaltypes.IsDefined(oidcProviderSettings) {
+				oidcProviderSettingsAttributes := oidcProviderSettings.Attributes()
+				oidcProviderSettingsAttributes["back_channel_logout_uri"] = types.StringUnknown()
+				oidcProviderSettingsAttributes["front_channel_logout_uri"] = types.StringUnknown()
+				oidcProviderSettingsAttributes["post_logout_redirect_uri"] = types.StringUnknown()
+				oidcProviderSettingsAttributes["redirect_uri"] = types.StringUnknown()
+				var diags diag.Diagnostics
+				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
+				resp.Diagnostics.Append(diags...)
+				planBrowserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
+			}
+			planBrowserSsoAttributes["sso_application_endpoint"] = types.StringUnknown()
+			ssoApplicationEndpointModified = true
+			plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), planBrowserSsoAttributes)
 			resp.Diagnostics.Append(diags...)
-			browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
+			planModified = true
 		}
-		browserSsoAttributes["sso_application_endpoint"] = types.StringUnknown()
-		plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
-		resp.Diagnostics.Append(diags...)
-		planModified = true
+
+		// If idp_identity_mapping changes, mark sso_application_endpoint as unknown
+		stateBrowserSsoAttributes := state.IdpBrowserSso.Attributes()
+		if !ssoApplicationEndpointModified && !planBrowserSsoAttributes["idp_identity_mapping"].Equal(stateBrowserSsoAttributes["idp_identity_mapping"]) {
+			planBrowserSsoAttributes["sso_application_endpoint"] = types.StringUnknown()
+			ssoApplicationEndpointModified = true
+			plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), planBrowserSsoAttributes)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		}
+
+		// If no plan changes were made and sso_application_endpoint is unknown, set it to null as we don't expect it to have a value
+		if !ssoApplicationEndpointModified && planBrowserSsoAttributes["sso_application_endpoint"].IsUnknown() {
+			planBrowserSsoAttributes["sso_application_endpoint"] = types.StringNull()
+			plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), planBrowserSsoAttributes)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		}
 	}
 
 	// If the attribute_contract changes, mark the jit_provisioning.user_attributes.attribute_contract as unknown
