@@ -2,6 +2,10 @@
 ### Resources
 * **New Resource:** `pingfederate_oauth_out_of_band_auth_plugin` ([#331](https://github.com/pingidentity/terraform-provider-pingfederate/pull/331))
 
+### Bug fixes
+* Fixed an issue where the `idp_browser_sso.sso_application_endpoint` attribute in `pingfederate_sp_idp_connection` could cause repeated plans after a successful `terraform apply`. ([#527](https://github.com/pingidentity/terraform-provider-pingfederate/pull/527))
+* Warn rather than fail when the provider is unable to delete a `pingfederate_keypairs_ssl_server_key` resource due to the key being in use ([#523](https://github.com/pingidentity/terraform-provider-pingfederate/pull/523))
+
 # v1.5.0 May 28, 2025
 ### Enhancements
 * Added `formatted_file_data` field to `pingfederate_certificate_ca` and `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate` resources, to handle drift detection when the certificate is changed outside of terraform. ([#502](https://github.com/pingidentity/terraform-provider-pingfederate/pull/502))
