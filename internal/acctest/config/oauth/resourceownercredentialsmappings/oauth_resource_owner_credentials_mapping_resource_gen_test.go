@@ -98,7 +98,7 @@ resource "pingfederate_password_credential_validator" "pcv" {
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
-	attribute_contract = {}
+  attribute_contract = {}
   configuration = {
     tables = [
       {
