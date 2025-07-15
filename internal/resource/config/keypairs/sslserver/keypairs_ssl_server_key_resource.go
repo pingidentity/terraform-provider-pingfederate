@@ -1,13 +1,17 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package keypairssslserver
 
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -16,9 +20,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -26,6 +32,9 @@ import (
 var (
 	_ resource.Resource              = &keypairsSslServerKeyResource{}
 	_ resource.ResourceWithConfigure = &keypairsSslServerKeyResource{}
+
+	customId    = "key_id"
+	createMutex sync.Mutex
 )
 
 // KeypairsSslServerKeyResource is a helper function to simplify the provider implementation.
@@ -47,6 +56,7 @@ type keypairsSslServerKeyResourceModel struct {
 	Expires                 types.String `tfsdk:"expires"`
 	FileData                types.String `tfsdk:"file_data"`
 	Format                  types.String `tfsdk:"format"`
+	Id                      types.String `tfsdk:"id"`
 	IssuerDn                types.String `tfsdk:"issuer_dn"`
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
 	KeyId                   types.String `tfsdk:"key_id"`
@@ -308,6 +318,7 @@ func (r *keypairsSslServerKeyResource) Schema(ctx context.Context, req resource.
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *keypairsSslServerKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -322,63 +333,120 @@ func (r *keypairsSslServerKeyResource) ModifyPlan(ctx context.Context, req resou
 	if internaltypes.IsDefined(plan.FileData) {
 		// The key will be imported from file_data
 		if plan.Password.IsNull() {
-			resp.Diagnostics.AddError("password must be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("password"),
+				providererror.InvalidAttributeConfiguration,
+				"password must be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.CommonName) {
-			resp.Diagnostics.AddError("common_name cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("common_name"),
+				providererror.InvalidAttributeConfiguration,
+				"common_name cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.Organization) {
-			resp.Diagnostics.AddError("organization cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("organization"),
+				providererror.InvalidAttributeConfiguration,
+				"organization cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.OrganizationUnit) {
-			resp.Diagnostics.AddError("organization_unit cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("organization_unit"),
+				providererror.InvalidAttributeConfiguration,
+				"organization_unit cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.City) {
-			resp.Diagnostics.AddError("city cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("city"),
+				providererror.InvalidAttributeConfiguration,
+				"city cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.State) {
-			resp.Diagnostics.AddError("state cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("state"),
+				providererror.InvalidAttributeConfiguration,
+				"state cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.Country) {
-			resp.Diagnostics.AddError("country cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("country"),
+				providererror.InvalidAttributeConfiguration,
+				"country cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.ValidDays) {
-			resp.Diagnostics.AddError("valid_days cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("valid_days"),
+				providererror.InvalidAttributeConfiguration,
+				"valid_days cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.KeyAlgorithm) {
-			resp.Diagnostics.AddError("key_algorithm cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("key_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"key_algorithm cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.KeySize) {
-			resp.Diagnostics.AddError("key_size cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("key_size"),
+				providererror.InvalidAttributeConfiguration,
+				"key_size cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.SignatureAlgorithm) {
-			resp.Diagnostics.AddError("signature_algorithm cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("signature_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"signature_algorithm cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.SubjectAlternativeNames) {
-			resp.Diagnostics.AddError("subject_alternative_names cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("subject_alternative_names"),
+				providererror.InvalidAttributeConfiguration,
+				"subject_alternative_names cannot be configured when file_data is set")
 		}
 	} else {
 		// The key will be generated
 		if internaltypes.IsDefined(plan.Format) {
-			resp.Diagnostics.AddError("format cannot be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("format"),
+				providererror.InvalidAttributeConfiguration,
+				"format cannot be configured when file_data is not set")
 		}
 		if internaltypes.IsDefined(plan.Password) {
-			resp.Diagnostics.AddError("password cannot be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("password"),
+				providererror.InvalidAttributeConfiguration,
+				"password cannot be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.CommonName) {
-			resp.Diagnostics.AddError("common_name must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("common_name"),
+				providererror.InvalidAttributeConfiguration,
+				"common_name must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.Organization) {
-			resp.Diagnostics.AddError("organization must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("organization"),
+				providererror.InvalidAttributeConfiguration,
+				"organization must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.Country) {
-			resp.Diagnostics.AddError("country must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("country"),
+				providererror.InvalidAttributeConfiguration,
+				"country must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.ValidDays) {
-			resp.Diagnostics.AddError("valid_days must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("valid_days"),
+				providererror.InvalidAttributeConfiguration,
+				"valid_days must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.KeyAlgorithm) {
-			resp.Diagnostics.AddError("key_algorithm must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("key_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"key_algorithm must be configured when file_data is not set")
 		}
 	}
 }
@@ -439,10 +507,16 @@ func (model *keypairsSslServerKeyResourceModel) buildImportClientStruct() (*clie
 
 func (state *keypairsSslServerKeyResourceModel) readClientResponse(response *client.KeyPairView) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires
-	state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	if response.Expires != nil {
+		state.Expires = types.StringValue(response.Expires.Format(time.RFC3339))
+	} else {
+		state.Expires = types.StringNull()
+	}
 	// issuer_dn
 	state.IssuerDn = types.StringPointerValue(response.IssuerDN)
 	// key_algorithm
@@ -538,9 +612,11 @@ func (r *keypairsSslServerKeyResource) Create(ctx context.Context, req resource.
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSslServerAPI.CreateSslServerKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
+		createMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSslServerAPI.CreateSslServerKeyPairExecute(apiCreateRequest)
+		createMutex.Unlock()
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while generating the ssl server key", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while generating the ssl server key", err, httpResp, &customId)
 			return
 		}
 	} else {
@@ -548,9 +624,11 @@ func (r *keypairsSslServerKeyResource) Create(ctx context.Context, req resource.
 		resp.Diagnostics.Append(diags...)
 		apiCreateRequest := r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPair(config.AuthContext(ctx, r.providerConfig))
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
+		createMutex.Lock()
 		responseData, httpResp, err = r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPairExecute(apiCreateRequest)
+		createMutex.Unlock()
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while importing the ssl server key", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the ssl server key", err, httpResp, &customId)
 			return
 		}
 	}
@@ -579,7 +657,7 @@ func (r *keypairsSslServerKeyResource) Read(ctx context.Context, req resource.Re
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SSL Server Key Pair", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp, &customId)
 		}
 		return
 	}
@@ -610,6 +688,10 @@ func (r *keypairsSslServerKeyResource) Delete(ctx context.Context, req resource.
 	// Delete API call logic
 	httpResp, err := r.apiClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the ssl server key", err, httpResp)
+		if httpResp.StatusCode == 422 {
+			providererror.WarnConfigurationCannotBeReset("pingfederate_ssl_server_key", &resp.Diagnostics)
+			return
+		}
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the ssl server key", err, httpResp, &customId)
 	}
 }

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package importprivatestate
 
 import (
@@ -6,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 type importPrivateState struct {
@@ -31,7 +34,7 @@ func IsImportRead(ctx context.Context, req resource.ReadRequest, resp *resource.
 		var target importPrivateState
 		err := json.Unmarshal(importRead, &target)
 		if err != nil {
-			respDiags.AddError("Failed to unmarshal import state", err.Error())
+			respDiags.AddError(providererror.InternalProviderError, "Failed to unmarshal import state: "+err.Error())
 		} else {
 			isImport = target.IsImport
 		}

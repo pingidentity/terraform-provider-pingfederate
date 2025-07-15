@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -98,24 +98,15 @@ func (r *oauthResourceOwnerCredentialsMappingResource) Schema(ctx context.Contex
 func (model *oauthResourceOwnerCredentialsMappingResourceModel) buildClientStruct() (*client.ResourceOwnerCredentialsMapping, diag.Diagnostics) {
 	result := &client.ResourceOwnerCredentialsMapping{}
 	var respDiags diag.Diagnostics
-	var err error
+
 	// attribute_contract_fulfillment
-	result.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
-	if err != nil {
-		respDiags.AddError("Error building client struct for attribute_contract_fulfillment", err.Error())
-	}
+	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
 
 	// attribute_sources
-	result.AttributeSources, err = attributesources.ClientStruct(model.AttributeSources)
-	if err != nil {
-		respDiags.AddError("Error building client struct for attribute_sources", err.Error())
-	}
+	result.AttributeSources = attributesources.ClientStruct(model.AttributeSources)
 
 	// issuance_criteria
-	result.IssuanceCriteria, err = issuancecriteria.ClientStruct(model.IssuanceCriteria)
-	if err != nil {
-		respDiags.AddError("Error building client struct for issuance_criteria", err.Error())
-	}
+	result.IssuanceCriteria = issuancecriteria.ClientStruct(model.IssuanceCriteria)
 
 	// mapping_id
 	result.Id = model.MappingId.ValueString()

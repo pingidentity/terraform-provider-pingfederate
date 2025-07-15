@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package keypairsoauthopenidconnectadditionalkeysets
 
 import (
@@ -6,8 +8,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -64,28 +68,28 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefau
 		}
 	}
 	// If an active cert ref is set, then corresponding publish_x5c_parameter attribute defaults to false
-	if signingKeysAttrs["p256_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["p256_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["p256_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["p256_active_cert_ref"]) {
 			signingKeysAttrs["p256_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
 			signingKeysAttrs["p256_publish_x5c_parameter"] = types.BoolNull()
 		}
 	}
-	if signingKeysAttrs["p384_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["p384_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["p384_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["p384_active_cert_ref"]) {
 			signingKeysAttrs["p384_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
 			signingKeysAttrs["p384_publish_x5c_parameter"] = types.BoolNull()
 		}
 	}
-	if signingKeysAttrs["p521_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["p521_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["p521_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["p521_active_cert_ref"]) {
 			signingKeysAttrs["p521_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
 			signingKeysAttrs["p521_publish_x5c_parameter"] = types.BoolNull()
 		}
 	}
-	if signingKeysAttrs["rsa_publish_x5c_parameter"].IsUnknown() {
+	if signingKeysAttrs["rsa_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["rsa_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["rsa_active_cert_ref"]) {
 			signingKeysAttrs["rsa_publish_x5c_parameter"] = types.BoolValue(false)
 		} else {
@@ -96,7 +100,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefau
 	plan.SigningKeys, diags = types.ObjectValue(signingKeysAttrTypes, signingKeysAttrs)
 	resp.Diagnostics.Append(diags...)
 
-	resp.Plan.Set(ctx, plan)
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 func (m *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) validateActivePreviousCertRefs() diag.Diagnostics {
@@ -125,10 +129,19 @@ func validateActiveAndPreviousCertRef(prefix string, active, previous types.Obje
 		activeId := active.Attributes()["id"].(types.String)
 		previousId := previous.Attributes()["id"].(types.String)
 		if !activeId.IsUnknown() && activeId.Equal(previousId) {
-			respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different.", prefix), fmt.Sprintf("active id: %s, previous id: %s", activeId.ValueString(), previousId.ValueString()))
+			respDiags.AddAttributeError(
+				path.Root("signing_keys"),
+				providererror.InvalidAttributeConfiguration,
+				fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different. "+
+					"active id: %[2]s, previous id: %[3]s", prefix, activeId.ValueString(), previousId.ValueString()),
+			)
 		}
-	} else if !internaltypes.IsDefined(active) && internaltypes.IsDefined(previous) {
+	} else if active.IsNull() && internaltypes.IsDefined(previous) {
 		// active must be set to set the previous cert ref
-		respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref attribute must be set when signing_keys.%[1]sprevious_cert_ref is set.", prefix), "")
+		respDiags.AddAttributeError(
+			path.Root("signing_keys"),
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref attribute must be set when signing_keys.%[1]sprevious_cert_ref is set.", prefix),
+		)
 	}
 }

@@ -23,14 +23,15 @@ resource "pingfederate_pingone_connection" "example" {
 
 ### Required
 
-- `credential` (String, Sensitive) The credential for the PingOne connection.
 - `name` (String) The name of the PingOne Connection
 
 ### Optional
 
 - `active` (Boolean) Whether the PingOne Connection is active. Defaults to `true`.
-- `connection_id` (String) The persistent, unique ID of the connection.
+- `connection_id` (String) The persistent, unique ID of the connection. This field is immutable and will trigger a replacement plan if changed.
+- `credential` (String, Sensitive) The credential for the PingOne connection. Either this attribute or `encrypted_credential` must be specified.
 - `description` (String) The description of the PingOne Connection
+- `encrypted_credential` (String) The encrypted credential for the PingOne connection. Either this attribute or `credential` must be specified.
 
 ### Read-Only
 

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package authenticationapisettings
 
 import (
@@ -5,9 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -84,7 +84,6 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -105,7 +104,7 @@ func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req data
 	}
 
 	// Read the response into the state
-	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, pointers.String("authentication_api_settings_id"))
+	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

@@ -6,24 +6,33 @@ description: |-
 
 # PingFederate Provider
 
-The PingFederate provider manages the configuration of a PingFederate server.
+The PingFederate provider manages the configuration of a PingFederate server via the management API.
 
-# Disclaimer - Provider in Development
-The PingFederate Terraform provider is under active development. As such, consumers must have flexibility for breaking changes until the `1.0.0` release. When using the PingFederate Terraform Provider within an automated pipeline prior to `1.0.0`, it is recommended to pin the provider version similar to `version = "~> 0.5.0"` to avoid experiencing an unexpected pipeline failure as the result of a provider change. Enhancements, bug fixes, notes and breaking changes can be found on the [Changelog](CHANGELOG.md). If issues are found, please raise a [github issue](https://github.com/pingidentity/terraform-provider-pingfederate/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=) on this project.
+## PingFederate Server Support
 
-## PingFederate Version Support
+This PingFederate Terraform provider version supports versions `11.3` through `12.2` of PingFederate.
 
-The PingFederate provider supports versions `11.2` through `12.1` of PingFederate.
+Further information on PingFederate server version support and released version compatibility can be found in the [PingFederate Server Support](guides/server-support) guide.
 
-## Documentation
-Detailed documentation on PingFederate can be found in the [online docs](https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_pingfederate_landing_page)
+## Getting Started
+
+### Configure PingFederate for Terraform access
+
+For detailed instructions on how to prepare PingFederate for Terraform access, see the [PingFederate getting started guide](https://terraform.pingidentity.com/getting-started/pingfederate/) at [terraform.pingidentity.com](https://terraform.pingidentity.com).
+
+### PingFederate Server Documentation
+
+Detailed documentation on the PingFederate server can be found in the [online documentation](https://docs.pingidentity.com/r/en-us/pingfederate-121/pf_pingfederate_landing_page)
+
+## Provider Authentication
+
 ### Simple Example using basic authentication with a resource
 ```terraform
 terraform {
-  required_version = ">=1.1"
+  required_version = ">=1.4"
   required_providers {
     pingfederate = {
-      version = "~> 0.12.0"
+      version = "~> 1.0"
       source  = "pingidentity/pingfederate"
     }
   }
@@ -36,7 +45,7 @@ provider "pingfederate" {
   admin_api_path                      = "/pf-admin-api/v1"
   insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
-  product_version                     = "12.1"
+  product_version                     = "12.2"
 }
 
 resource "pingfederate_administrative_account" "administrativeAccount" {
@@ -54,7 +63,7 @@ provider "pingfederate" {
   password        = "2FederateM0re"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.1"
+  product_version = "12.2"
 }
 ```
 
@@ -67,7 +76,7 @@ provider "pingfederate" {
   token_url       = "https://localhost:9031/as/token.oauth2"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.1"
+  product_version = "12.2"
 }
 ```
 
@@ -77,11 +86,11 @@ provider "pingfederate" {
   access_token    = "accesstokenvaluefromclient"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.1"
+  product_version = "12.2"
 }
 ```
 
-### Custom User Agent information
+## Custom User Agent information
 
 The PingFederate provider allows custom information to be appended to the default user agent string (that includes Terraform provider version information) by setting the `PINGFEDERATE_TF_APPEND_USER_AGENT` environment variable.  This can be useful when troubleshooting issues with Ping Identity Support, or adding context to HTTP requests.
 
@@ -108,4 +117,4 @@ export PINGFEDERATE_TF_APPEND_USER_AGENT="Jenkins/2.426.2"
 - `scopes` (List of String) OAuth scopes for access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_SCOPES` environment variable.
 - `token_url` (String) OAuth token URL for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL` environment variable.
 - `username` (String) Username for PingFederate Admin user. Must only be set with password. Cannot be used in conjunction with access_token, or oauth. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.
-- `x_bypass_external_validation_header` (Boolean) Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.
+- `x_bypass_external_validation_header` (Boolean) Header value in request for PingFederate. When set to `true`, connectivity checks for resources such as `pingfederate_data_store` will be skipped. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.

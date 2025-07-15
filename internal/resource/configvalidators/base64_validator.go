@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package configvalidators
 
 import (
@@ -6,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 var _ validator.String = &base64Validator{}
@@ -32,7 +35,7 @@ func (v base64Validator) ValidateString(ctx context.Context, req validator.Strin
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Value is not base64-encoded",
+			providererror.InvalidAttributeConfiguration,
 			fmt.Sprintf("The value must be base64-encoded. Error when attempting to decode: %s", err.Error()),
 		)
 	}

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package sessionsettings
 
 import (
@@ -5,9 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -50,7 +50,6 @@ func (r *sessionSettingsDataSource) Schema(ctx context.Context, req datasource.S
 			},
 		},
 	}
-	id.ToDataSourceSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -85,7 +84,7 @@ func (r *sessionSettingsDataSource) Read(ctx context.Context, req datasource.Rea
 	}
 
 	// Read the response into the state
-	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state, pointers.String("session_settings_id"))
+	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

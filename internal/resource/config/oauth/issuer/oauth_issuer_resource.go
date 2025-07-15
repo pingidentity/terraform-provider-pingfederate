@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthissuer
 
 import (
@@ -10,10 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -22,6 +25,8 @@ var (
 	_ resource.Resource                = &oauthIssuerResource{}
 	_ resource.ResourceWithConfigure   = &oauthIssuerResource{}
 	_ resource.ResourceWithImportState = &oauthIssuerResource{}
+
+	customId = "issuer_id"
 )
 
 // OauthIssuerResource is a helper function to simplify the provider implementation.
@@ -50,7 +55,7 @@ func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaReq
 			"issuer_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the virtual issuer. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This property cannot be changed after initial creation.",
+				Description: "The persistent, unique ID for the virtual issuer. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -131,7 +136,7 @@ func (r *oauthIssuerResource) Create(ctx context.Context, req resource.CreateReq
 	oauthIssuer := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuerFields(ctx, oauthIssuer, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Issuer", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth Issuer: "+err.Error())
 		return
 	}
 
@@ -140,7 +145,7 @@ func (r *oauthIssuerResource) Create(ctx context.Context, req resource.CreateReq
 	oauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersAPI.AddOauthIssuerExecute(apiCreateOauthIssuer)
 
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an OAuth Issuer", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating an OAuth Issuer", err, httpResp, &customId)
 		return
 	}
 
@@ -166,7 +171,7 @@ func (r *oauthIssuerResource) Read(ctx context.Context, req resource.ReadRequest
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Issuer", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp, &customId)
 		}
 		return
 	}
@@ -196,14 +201,14 @@ func (r *oauthIssuerResource) Update(ctx context.Context, req resource.UpdateReq
 	createUpdateRequest := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuerFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for an OAuth Issuer", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for an OAuth Issuer: "+err.Error())
 		return
 	}
 
 	updateOauthIssuer = updateOauthIssuer.Body(*createUpdateRequest)
 	updateOauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersAPI.UpdateOauthIssuerExecute(updateOauthIssuer)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Issuer", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Issuer", err, httpResp, &customId)
 		return
 	}
 
@@ -226,7 +231,7 @@ func (r *oauthIssuerResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 	httpResp, err := r.apiClient.OauthIssuersAPI.DeleteOauthIssuer(config.AuthContext(ctx, r.providerConfig), state.IssuerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuer", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuer", err, httpResp, &customId)
 	}
 }
 

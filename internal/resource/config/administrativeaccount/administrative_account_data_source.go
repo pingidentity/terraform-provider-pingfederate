@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package administrativeaccount
 
 import (
@@ -6,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,6 +29,19 @@ func AdministrativeAccountDataSource() datasource.DataSource {
 type administrativeAccountDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
+}
+
+type administrativeAccountDataSourceModel struct {
+	Active            types.Bool   `tfsdk:"active"`
+	Auditor           types.Bool   `tfsdk:"auditor"`
+	Department        types.String `tfsdk:"department"`
+	Description       types.String `tfsdk:"description"`
+	EmailAddress      types.String `tfsdk:"email_address"`
+	Id                types.String `tfsdk:"id"`
+	EncryptedPassword types.String `tfsdk:"encrypted_password"`
+	PhoneNumber       types.String `tfsdk:"phone_number"`
+	Roles             types.Set    `tfsdk:"roles"`
+	Username          types.String `tfsdk:"username"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -65,13 +80,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 				Computed:    true,
 			},
 			"encrypted_password": schema.StringAttribute{
-				Description: "For GET requests, this field contains the encrypted account password. For POST and PUT requests, if you wish to re-use the password from an API response to this endpoint, this field should be passed back unchanged.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-			},
-			"password": schema.StringAttribute{
-				Description: "Password for the Account. This field is only applicable during a POST operation.",
+				Description: "For GET requests, this field contains the encrypted account password.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -83,7 +92,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 				Computed:    true,
 			},
 			"roles": schema.SetAttribute{
-				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
+				Description: "Roles available for an administrator. `USER_ADMINISTRATOR` - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. `CRYPTO_ADMINISTRATOR` - Can manage local keys and certificates. `ADMINISTRATOR` - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. `EXPRESSION_ADMINISTRATOR` - Can add and update OGNL expressions. `DATA_COLLECTION_ADMINISTRATOR` - Can run the Collect Support Data Utility",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -115,9 +124,23 @@ func (r *administrativeAccountDataSource) Configure(_ context.Context, req datas
 	r.apiClient = providerCfg.ApiClient
 }
 
+// Read a AdministrativeAccountResponse object into the model struct
+func readAdministrativeAccountDataSourceResponse(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountDataSourceModel) {
+	state.Id = types.StringValue(r.Username)
+	state.Username = types.StringValue(r.Username)
+	state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
+	state.Active = types.BoolPointerValue(r.Active)
+	state.Description = types.StringPointerValue(r.Description)
+	state.Auditor = types.BoolPointerValue(r.Auditor)
+	state.PhoneNumber = types.StringPointerValue(r.PhoneNumber)
+	state.EmailAddress = types.StringPointerValue(r.EmailAddress)
+	state.Department = types.StringPointerValue(r.Department)
+	state.Roles = internaltypes.GetStringSet(r.Roles)
+}
+
 // Read resource information
 func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state administrativeAccountModel
+	var state administrativeAccountDataSourceModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -132,7 +155,7 @@ func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasour
 	}
 
 	// Read the response into the state
-	readAdministrativeAccountResponse(ctx, apiReadAdministrativeAccount, &state, nil)
+	readAdministrativeAccountDataSourceResponse(ctx, apiReadAdministrativeAccount, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

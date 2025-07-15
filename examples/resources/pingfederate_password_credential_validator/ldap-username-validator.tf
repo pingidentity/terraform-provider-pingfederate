@@ -22,6 +22,8 @@ resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCrede
     id = "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator"
   }
 
+  attribute_contract = {}
+
   configuration = {
     tables = [
       {

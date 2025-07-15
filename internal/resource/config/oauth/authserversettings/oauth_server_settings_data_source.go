@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthauthserversettings
 
 import (
@@ -6,9 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -475,9 +475,12 @@ func (r *oauthServerSettingsDataSource) Schema(ctx context.Context, req datasour
 				Optional:    false,
 				Computed:    true,
 			},
+			"return_id_token_on_open_id_with_device_authz_grant": schema.BoolAttribute{
+				Description: "Indicates if an ID token should be returned during the device authorization grant flow when the 'openid' scope is approved. The default is `false`. Supported in PF version `12.2` or later.",
+				Computed:    true,
+			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -515,7 +518,7 @@ func (r *oauthServerSettingsDataSource) Read(ctx context.Context, req datasource
 	}
 
 	// Read the response into the state
-	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state, pointers.String("oauth_auth_server_settings_id"))
+	diags = readOauthServerSettingsResponse(ctx, apiReadOauthServerSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

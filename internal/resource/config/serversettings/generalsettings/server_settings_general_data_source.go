@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package serversettingsgeneralsettings
 
 import (
@@ -5,9 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -61,8 +61,6 @@ func (r *serverSettingsGeneralDataSource) Schema(ctx context.Context, req dataso
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -98,7 +96,7 @@ func (r *serverSettingsGeneralDataSource) Read(ctx context.Context, req datasour
 
 	// Read the response into the state
 
-	readServerSettingsGeneralResponse(ctx, apiReadServerSettingsGeneral, &state, pointers.String("server_settings_general_settings_id"))
+	readServerSettingsGeneralResponse(ctx, apiReadServerSettingsGeneral, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

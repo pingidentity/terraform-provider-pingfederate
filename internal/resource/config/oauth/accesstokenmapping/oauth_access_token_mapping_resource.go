@@ -1,8 +1,9 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthaccesstokenmapping
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -16,8 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -25,6 +25,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -67,7 +68,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 		Description: "Manages an OAuth Access Token Mapping",
 		Attributes: map[string]schema.Attribute{
 			"context": schema.SingleNestedAttribute{
-				Description: "The context of the OAuth Access Token Mapping. This property cannot be changed after the mapping is created.",
+				Description: "The context of the OAuth Access Token Mapping. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -82,17 +83,13 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 					},
 					"context_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated Access Token Mapping Context instance.",
-						Computed:    true,
 						Optional:    true,
 						Attributes:  resourcelink.ToSchema(),
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
 			"access_token_manager_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the access token manager this mapping is associated with. This property cannot be changed after the mapping is created.",
+				Description: "Reference to the access token manager this mapping is associated with. This field is immutable and will trigger a replacement plan if changed.",
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
@@ -151,11 +148,21 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	state.Id = types.StringPointerValue(r.Id)
 	state.MappingId = types.StringPointerValue(r.Id)
 
-	contextRefObjValue, objDiags := resourcelink.ToState(ctx, &r.Context.ContextRef)
-	diags.Append(objDiags...)
+	contextRefAttrTypes := map[string]attr.Type{
+		"id": types.StringType,
+	}
+	var contextRefValue types.Object
+	if r.Context.ContextRef.Id == "" {
+		contextRefValue = types.ObjectNull(contextRefAttrTypes)
+	} else {
+		contextRefValue, objDiags = types.ObjectValue(contextRefAttrTypes, map[string]attr.Value{
+			"id": types.StringValue(r.Context.ContextRef.Id),
+		})
+		diags.Append(objDiags...)
+	}
 	contextAttrValue := map[string]attr.Value{
 		"type":        types.StringValue(r.Context.Type),
-		"context_ref": contextRefObjValue,
+		"context_ref": contextRefValue,
 	}
 	state.Context, objDiags = types.ObjectValue(accessTokenMappingContext, contextAttrValue)
 	diags.Append(objDiags...)
@@ -172,33 +179,54 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	return diags
 }
 
-func addOptionalOauthAccessTokenMappingsFields(addRequest *client.AccessTokenMapping, plan oauthAccessTokenMappingResourceModel) error {
-	var err error
-	if internaltypes.IsDefined(plan.AttributeSources) {
-		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
-		addRequest.AttributeSources, err = attributesources.ClientStruct(plan.AttributeSources)
-		if err != nil {
-			return err
-		}
-	}
+func (model *oauthAccessTokenMappingResourceModel) buildClientStruct() (*client.AccessTokenMapping, diag.Diagnostics) {
+	result := &client.AccessTokenMapping{}
+	var respDiags diag.Diagnostics
+	// access_token_manager_ref
+	accessTokenManagerRefValue := client.ResourceLink{}
+	accessTokenManagerRefAttrs := model.AccessTokenManagerRef.Attributes()
+	accessTokenManagerRefValue.Id = accessTokenManagerRefAttrs["id"].(types.String).ValueString()
+	result.AccessTokenManagerRef = accessTokenManagerRefValue
 
-	if internaltypes.IsDefined(plan.IssuanceCriteria) {
-		addRequest.IssuanceCriteria, err = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
-		if err != nil {
-			return err
-		}
+	// attribute_contract_fulfillment
+	result.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(model.AttributeContractFulfillment)
+
+	// attribute_sources
+	result.AttributeSources = attributesources.ClientStruct(model.AttributeSources)
+
+	// context
+	contextValue := client.AccessTokenMappingContext{}
+	contextAttrs := model.Context.Attributes()
+	contextContextRefValue := client.ResourceLink{}
+	if internaltypes.IsDefined(contextAttrs["context_ref"]) {
+		contextContextRefAttrs := contextAttrs["context_ref"].(types.Object).Attributes()
+		contextContextRefValue.Id = contextContextRefAttrs["id"].(types.String).ValueString()
 	}
-	return nil
+	contextValue.ContextRef = contextContextRefValue
+	contextValue.Type = contextAttrs["type"].(types.String).ValueString()
+	result.Context = contextValue
+
+	// issuance_criteria
+	result.IssuanceCriteria = issuancecriteria.ClientStruct(model.IssuanceCriteria)
+
+	// mapping_id
+	result.Id = model.MappingId.ValueStringPointer()
+	return result, respDiags
 }
 
 func (r *oauthAccessTokenMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthAccessTokenMappingResourceModel
+	var model *oauthAccessTokenMappingResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+	if model == nil {
+		return
+	}
 	if internaltypes.IsDefined(model.Context) {
 		modelContextType := model.Context.Attributes()["type"].(types.String).ValueString()
 		modelContextContextRef := model.Context.Attributes()["context_ref"].(types.Object)
 		if (modelContextType == "DEFAULT" || modelContextType == "CLIENT_CREDENTIALS") && internaltypes.IsDefined(modelContextContextRef) {
-			resp.Diagnostics.AddError("Invalid attribute combination",
+			resp.Diagnostics.AddAttributeError(
+				path.Root("context").AtMapKey("context_ref"),
+				providererror.InvalidAttributeConfiguration,
 				"context_ref is not required for the Access Token Mapping Context type: "+modelContextType)
 		}
 	}
@@ -214,42 +242,11 @@ func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	var hasObjectErrMap = make(map[error]bool)
-	accessTokenMappingContext := &client.AccessTokenMappingContext{}
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Context, true)), accessTokenMappingContext)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
-
-	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
-
-	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
-
-	for errorVal, hasErr := range hasObjectErrMap {
-		if hasErr {
-			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
-		}
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	createOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
-
-	err = addOptionalOauthAccessTokenMappingsFields(createOauthAccessTokenMappings, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
-		return
-	}
+	// Create API call logic
+	clientData, diags := plan.buildClientStruct()
+	resp.Diagnostics.Append(diags...)
 	apiCreateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.CreateMapping(config.AuthContext(ctx, r.providerConfig))
-	apiCreateOauthAccessTokenMappings = apiCreateOauthAccessTokenMappings.Body(*createOauthAccessTokenMappings)
+	apiCreateOauthAccessTokenMappings = apiCreateOauthAccessTokenMappings.Body(*clientData)
 	oauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.CreateMappingExecute(apiCreateOauthAccessTokenMappings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Mapping", err, httpResp)
@@ -273,7 +270,7 @@ func (r *oauthAccessTokenMappingResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -304,42 +301,11 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 		return
 	}
 
-	var hasObjectErrMap = make(map[error]bool)
-	accessTokenMappingContext := &client.AccessTokenMappingContext{}
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Context, true)), accessTokenMappingContext)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
-
-	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
-
-	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
-	if err != nil {
-		hasObjectErrMap[err] = true
-	}
-
-	for errorVal, hasErr := range hasObjectErrMap {
-		if hasErr {
-			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
-		}
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	updateOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
-
-	err = addOptionalOauthAccessTokenMappingsFields(updateOauthAccessTokenMappings, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
-		return
-	}
-
-	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
-	apiUpdateOauthAccessTokenMappings = apiUpdateOauthAccessTokenMappings.Body(*updateOauthAccessTokenMappings)
+	// Update API call logic
+	clientData, diags := plan.buildClientStruct()
+	resp.Diagnostics.Append(diags...)
+	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString())
+	apiUpdateOauthAccessTokenMappings = apiUpdateOauthAccessTokenMappings.Body(*clientData)
 	updateOauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMappingExecute(apiUpdateOauthAccessTokenMappings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Access Token Mapping", err, httpResp)
@@ -364,7 +330,7 @@ func (r *oauthAccessTokenMappingResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.DeleteMapping(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.DeleteMapping(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Mapping", err, httpResp)
 	}
@@ -372,5 +338,5 @@ func (r *oauthAccessTokenMappingResource) Delete(ctx context.Context, req resour
 
 func (r *oauthAccessTokenMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("mapping_id"), req, resp)
 }

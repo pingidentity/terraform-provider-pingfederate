@@ -160,6 +160,7 @@ Read-Only:
 - `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
 - `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record.
 - `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically.
+- `ldaps_dns_srv_prefix` (String) The prefix value used to discover LDAPS DNS SRV record.
 - `max_connections` (Number) The largest number of active connections that can remain in each pool without releasing extra ones.
 - `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool.
 - `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones.

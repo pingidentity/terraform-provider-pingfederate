@@ -1,17 +1,18 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package oauthtokenexchangegeneratorsettings
 
 import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -34,7 +35,6 @@ type oauthTokenExchangeGeneratorSettingsResource struct {
 }
 
 type oauthTokenExchangeGeneratorSettingsResourceModel struct {
-	Id                       types.String `tfsdk:"id"`
 	DefaultGeneratorGroupRef types.Object `tfsdk:"default_generator_group_ref"`
 }
 
@@ -44,15 +44,14 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Schema(ctx context.Context
 		Description: "Manages Oauth Token Exchange Generator Settings",
 		Attributes: map[string]schema.Attribute{
 			"default_generator_group_ref": resourcelink.CompleteSingleNestedAttribute(
-				false,
-				false,
 				true,
+				false,
+				false,
 				"Reference to the default Token Exchange Generator group, if one is defined.",
 			),
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -72,14 +71,9 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Configure(_ context.Contex
 
 }
 
-func readOauthTokenExchangeGeneratorSettingsResponse(ctx context.Context, r *client.TokenExchangeGeneratorSettings, state *oauthTokenExchangeGeneratorSettingsResourceModel, existingId *string) diag.Diagnostics {
+func readOauthTokenExchangeGeneratorSettingsResponse(ctx context.Context, r *client.TokenExchangeGeneratorSettings, state *oauthTokenExchangeGeneratorSettingsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
 	state.DefaultGeneratorGroupRef, diags = resourcelink.ToState(ctx, r.DefaultGeneratorGroupRef)
 
 	// make sure all object type building appends diags
@@ -99,7 +93,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Create(ctx context.Context
 	createOauthTokenExchangeGeneratorSettings := client.NewTokenExchangeGeneratorSettings()
 	createOauthTokenExchangeGeneratorSettings.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_generator_group_ref to add request for OAuth Token Exchange Generator Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_generator_group_ref to add request for OAuth Token Exchange Generator Settings: "+err.Error())
 		return
 	}
 
@@ -114,7 +108,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Create(ctx context.Context
 	// Read the response into the state
 	var state oauthTokenExchangeGeneratorSettingsResourceModel
 
-	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, oauthTokenExchangeGeneratorSettingsResponse, &state, nil)
+	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, oauthTokenExchangeGeneratorSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -141,13 +135,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Read(ctx context.Context, 
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	// Read the response into the state
-	readOauthTokenExchangeGeneratorSettingsResponse(ctx, apiReadOauthTokenExchangeGeneratorSettings, &state, id)
+	readOauthTokenExchangeGeneratorSettingsResponse(ctx, apiReadOauthTokenExchangeGeneratorSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -167,7 +155,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 	createUpdateRequest := client.NewTokenExchangeGeneratorSettings()
 	createUpdateRequest.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_generator_group_ref to add request for OAuth Token Exchange Generator Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_generator_group_ref to add request for OAuth Token Exchange Generator Settings: "+err.Error())
 		return
 	}
 
@@ -181,13 +169,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 
 	// Read the response
 	var state oauthTokenExchangeGeneratorSettingsResourceModel
-	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, updateOauthTokenExchangeGeneratorSettingsResponse, &state, id)
+	diags = readOauthTokenExchangeGeneratorSettingsResponse(ctx, updateOauthTokenExchangeGeneratorSettingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -198,10 +180,12 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 // This config object is edit-only, so Terraform can't delete it.
 func (r *oauthTokenExchangeGeneratorSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_oauth_token_exchange_generator_settings", &resp.Diagnostics)
 }
 
 func (r *oauthTokenExchangeGeneratorSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
+	var emptyState oauthTokenExchangeGeneratorSettingsResourceModel
+	emptyState.DefaultGeneratorGroupRef = types.ObjectNull(resourcelink.AttrType())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }

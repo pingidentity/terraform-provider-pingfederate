@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package datastore
 
 import (
@@ -16,16 +18,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -38,7 +43,7 @@ var (
 		},
 	}
 
-	ldapDataStoreCommonAttrType = map[string]attr.Type{
+	ldapDataStoreEncryptedPassAttrType = map[string]attr.Type{
 		"hostnames":                  types.ListType{ElemType: types.StringType},
 		"use_start_tls":              types.BoolType,
 		"verify_host":                types.BoolType,
@@ -50,6 +55,7 @@ var (
 		"use_ssl":                    types.BoolType,
 		"test_on_borrow":             types.BoolType,
 		"ldap_dns_srv_prefix":        types.StringType,
+		"ldaps_dns_srv_prefix":       types.StringType,
 		"name":                       types.StringType,
 		"read_timeout":               types.Int64Type,
 		"use_dns_srv_records":        types.BoolType,
@@ -65,11 +71,11 @@ var (
 		"follow_ldap_referrals":      types.BoolType,
 		"client_tls_certificate_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"retry_failed_operations":    types.BoolType,
+		"encrypted_password":         types.StringType,
 	}
 
-	ldapDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "password", types.StringType)
+	ldapDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreEncryptedPassAttrType, "password", types.StringType)
 	ldapDataStoreEmptyStateObj           = types.ObjectNull(ldapDataStoreAttrType)
-	ldapDataStoreEncryptedPassAttrType   = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "encrypted_password", types.StringType)
 	ldapDataStoreEmptyDataSourceStateObj = types.ObjectNull(ldapDataStoreEncryptedPassAttrType)
 )
 
@@ -173,6 +179,12 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Optional:    true,
 			Default:     stringdefault.StaticString("_ldap._tcp"),
 		},
+		"ldaps_dns_srv_prefix": schema.StringAttribute{
+			Description: "The prefix value used to discover LDAPS DNS SRV record. Defaults to `_ldaps._tcp`.",
+			Computed:    true,
+			Optional:    true,
+			Default:     stringdefault.StaticString("_ldaps._tcp"),
+		},
 		"use_dns_srv_records": schema.BoolAttribute{
 			Description: "Use DNS SRV Records to discover LDAP server information. The default value is `false`.",
 			Computed:    true,
@@ -245,18 +257,29 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"user_dn": schema.StringAttribute{
-			Description: "The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` must also be set to use this attribute.",
+			Description: "The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` or `encrypted_password` must also be set to use this attribute.",
 			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
 			},
 		},
 		"password": schema.StringAttribute{
-			Description: "The password credential required to access the data store. Requires `user_dn` to be set.",
+			Description: "The password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `encrypted_password` can be set.",
 			Optional:    true,
 			Sensitive:   true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
+			},
+		},
+		"encrypted_password": schema.StringAttribute{
+			Description: "The encrypted password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `password` can be set.",
+			Optional:    true,
+			Computed:    true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+			Validators: []validator.String{
+				stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),
 			},
 		},
 		"bind_anonymously": schema.BoolAttribute{
@@ -377,6 +400,11 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Computed:    true,
 			Optional:    false,
 		},
+		"ldaps_dns_srv_prefix": datasourceschema.StringAttribute{
+			Description: "The prefix value used to discover LDAPS DNS SRV record.",
+			Computed:    true,
+			Optional:    false,
+		},
 		"use_dns_srv_records": datasourceschema.BoolAttribute{
 			Description: "Use DNS SRV Records to discover LDAP server information.",
 			Computed:    true,
@@ -468,7 +496,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore == nil {
-		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read Ldap data store from PingFederate. The response from PingFederate was nil.")
 		return ldapDataStoreEmptyStateObj, diags
 	}
 
@@ -510,6 +538,13 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		password = types.StringNull()
 	}
 
+	var encryptedPassword types.String
+	if internaltypes.IsDefined(plan.Attributes()["encrypted_password"]) {
+		encryptedPassword = plan.Attributes()["encrypted_password"].(types.String)
+	} else {
+		encryptedPassword = types.StringPointerValue(ldapDataStore.EncryptedPassword)
+	}
+
 	var binaryAttributes basetypes.SetValue
 	if len(ldapDataStore.BinaryAttributes) > 0 {
 		binaryAttributes = internaltypes.GetStringSet(ldapDataStore.BinaryAttributes)
@@ -536,6 +571,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		"use_ssl":                    types.BoolPointerValue(ldapDataStore.UseSsl),
 		"test_on_borrow":             types.BoolPointerValue(ldapDataStore.TestOnBorrow),
 		"ldap_dns_srv_prefix":        types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
+		"ldaps_dns_srv_prefix":       types.StringPointerValue(ldapDataStore.LdapsDnsSrvPrefix),
 		"name":                       types.StringPointerValue(ldapDataStore.Name),
 		"read_timeout":               types.Int64PointerValue(ldapDataStore.ReadTimeout),
 		"use_dns_srv_records":        types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
@@ -548,6 +584,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		"time_between_evictions":     types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
 		"type":                       types.StringValue("LDAP"),
 		"password":                   password,
+		"encrypted_password":         encryptedPassword,
 		"bind_anonymously":           types.BoolPointerValue(ldapDataStore.BindAnonymously),
 		"follow_ldap_referrals":      followLdapReferrals,
 		"client_tls_certificate_ref": clientTlsCertificateRef,
@@ -563,7 +600,7 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore == nil {
-		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read Ldap data store from PingFederate. The response from PingFederate was nil.")
 		return ldapDataStoreEmptyStateObj, diags
 	}
 
@@ -596,6 +633,7 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 		"use_ssl":                    types.BoolPointerValue(ldapDataStore.UseSsl),
 		"test_on_borrow":             types.BoolPointerValue(ldapDataStore.TestOnBorrow),
 		"ldap_dns_srv_prefix":        types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
+		"ldaps_dns_srv_prefix":       types.StringPointerValue(ldapDataStore.LdapsDnsSrvPrefix),
 		"name":                       types.StringPointerValue(ldapDataStore.Name),
 		"read_timeout":               types.Int64PointerValue(ldapDataStore.ReadTimeout),
 		"use_dns_srv_records":        types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
@@ -654,6 +692,11 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.Password = password.(types.String).ValueStringPointer()
 	}
 
+	encryptedPassword, ok := ldapDataStorePlan["encrypted_password"]
+	if ok {
+		addRequest.LdapDataStore.EncryptedPassword = encryptedPassword.(types.String).ValueStringPointer()
+	}
+
 	if internaltypes.IsDefined(plan.DataStoreId) {
 		addRequest.LdapDataStore.Id = plan.DataStoreId.ValueStringPointer()
 	}
@@ -708,6 +751,11 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 	ldapDnsSrvPrefix, ok := ldapDataStorePlan["ldap_dns_srv_prefix"]
 	if ok {
 		addRequest.LdapDataStore.LdapDnsSrvPrefix = ldapDnsSrvPrefix.(types.String).ValueStringPointer()
+	}
+
+	ldapsDnsSrvPrefix, ok := ldapDataStorePlan["ldaps_dns_srv_prefix"]
+	if ok {
+		addRequest.LdapDataStore.LdapsDnsSrvPrefix = ldapsDnsSrvPrefix.(types.String).ValueStringPointer()
 	}
 
 	name, ok := ldapDataStorePlan["name"]
@@ -793,13 +841,13 @@ func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	createLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
 	err = addOptionalLdapDataStoreFields(createLdapDataStore, con, client.LdapDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
 	response, httpResponse, err := createDataStore(createLdapDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse, &customId)
 		return
 	}
 
@@ -820,13 +868,13 @@ func updateLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	updateLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
 	err = addOptionalLdapDataStoreFields(updateLdapDataStore, con, client.LdapDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the DataStore: "+err.Error())
 		return
 	}
 
-	response, httpResponse, err := updateDataStore(updateLdapDataStore, dsr, con, resp, plan.Id.ValueString())
+	response, httpResponse, err := updateDataStore(updateLdapDataStore, dsr, con, resp, plan.DataStoreId.ValueString())
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse, &customId)
 		return
 	}
 

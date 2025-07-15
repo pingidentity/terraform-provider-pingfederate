@@ -1,15 +1,15 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package serversettingsgeneralsettings
 
 import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 )
 
 type serverSettingsGeneralModel struct {
-	Id                                      types.String `tfsdk:"id"`
 	DisableAutomaticConnectionValidation    types.Bool   `tfsdk:"disable_automatic_connection_validation"`
 	IdpConnectionTransactionLoggingOverride types.String `tfsdk:"idp_connection_transaction_logging_override"`
 	SpConnectionTransactionLoggingOverride  types.String `tfsdk:"sp_connection_transaction_logging_override"`
@@ -17,12 +17,7 @@ type serverSettingsGeneralModel struct {
 	RequestHeaderForCorrelationId           types.String `tfsdk:"request_header_for_correlation_id"`
 }
 
-func readServerSettingsGeneralResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralModel, existingId *string) {
-	if existingId != nil {
-		state.Id = types.StringValue(*existingId)
-	} else {
-		state.Id = id.GenerateUUIDToState(existingId)
-	}
+func readServerSettingsGeneralResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralModel) {
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
 	state.IdpConnectionTransactionLoggingOverride = types.StringPointerValue(r.IdpConnectionTransactionLoggingOverride)
 	state.SpConnectionTransactionLoggingOverride = types.StringPointerValue(r.SpConnectionTransactionLoggingOverride)

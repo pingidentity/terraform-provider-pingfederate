@@ -1,0 +1,32 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage - String
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-string.tf") }}
+
+## Example Usage - List
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-list.tf") }}
+
+## Example Usage - Map
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-map.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+~> "bundle/settingId" should be the name of the bundle and the id of the setting to be imported
+
+{{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}

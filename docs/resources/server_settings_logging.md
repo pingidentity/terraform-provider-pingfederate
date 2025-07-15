@@ -55,7 +55,6 @@ resource "pingfederate_server_settings_logging" "logSettings" {
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
 - `log_categories_all` (Attributes Set) The log categories defined for the system and whether they are enabled. This attribute is read-only and will include any categories returned by PingFederate that were not specified in the normal log_categories attribute. (see [below for nested schema](#nestedatt--log_categories_all))
 
 <a id="nestedatt--log_categories"></a>
@@ -63,11 +62,8 @@ resource "pingfederate_server_settings_logging" "logSettings" {
 
 Required:
 
+- `enabled` (Boolean) Determines whether or not the log category is enabled.
 - `id` (String) The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.
-
-Optional:
-
-- `enabled` (Boolean) Determines whether or not the log category is enabled. The default is `false`.
 
 Read-Only:
 

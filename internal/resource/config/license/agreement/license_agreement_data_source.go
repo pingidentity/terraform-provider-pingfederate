@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package licenseagreement
 
 import (
@@ -5,9 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -48,8 +48,6 @@ func (r *licenseAgreementDataSource) Schema(ctx context.Context, req datasource.
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -86,7 +84,7 @@ func (r *licenseAgreementDataSource) Read(ctx context.Context, req datasource.Re
 	}
 
 	// Read the response into the state
-	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state, pointers.String("license_agreement_id"))
+	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package pingoneconnection
 
 import (
@@ -11,9 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -22,6 +25,8 @@ var (
 	_ resource.Resource                = &pingoneConnectionResource{}
 	_ resource.ResourceWithConfigure   = &pingoneConnectionResource{}
 	_ resource.ResourceWithImportState = &pingoneConnectionResource{}
+
+	customId = "connection_id"
 )
 
 // PingoneConnectionResource is a helper function to simplify the provider implementation.
@@ -42,6 +47,7 @@ type pingOneConnectionResourceModel struct {
 	Description                      types.String `tfsdk:"description"`
 	Active                           types.Bool   `tfsdk:"active"`
 	Credential                       types.String `tfsdk:"credential"`
+	EncryptedCredential              types.String `tfsdk:"encrypted_credential"`
 	CredentialId                     types.String `tfsdk:"credential_id"`
 	PingOneConnectionId              types.String `tfsdk:"ping_one_connection_id"`
 	EnvironmentId                    types.String `tfsdk:"environment_id"`
@@ -78,11 +84,19 @@ func (r *pingoneConnectionResource) Schema(ctx context.Context, req resource.Sch
 				Default:     booldefault.StaticBool(true),
 			},
 			"credential": schema.StringAttribute{
-				Description: "The credential for the PingOne connection.",
-				Required:    true,
+				Description: "The credential for the PingOne connection. Either this attribute or `encrypted_credential` must be specified.",
+				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"encrypted_credential": schema.StringAttribute{
+				Description: "The encrypted credential for the PingOne connection. Either this attribute or `credential` must be specified.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("credential")),
 				},
 			},
 			"credential_id": schema.StringAttribute{
@@ -121,7 +135,7 @@ func (r *pingoneConnectionResource) Schema(ctx context.Context, req resource.Sch
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID of the connection.")
+	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID of the connection. This field is immutable and will trigger a replacement plan if changed.")
 
 	resp.Schema = schema
 }
@@ -133,6 +147,7 @@ func addOptionalPingOneConnectionFields(ctx context.Context, addRequest *client.
 	addRequest.Description = plan.Description.ValueStringPointer()
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.Credential = plan.Credential.ValueStringPointer()
+	addRequest.EncryptedCredential = plan.EncryptedCredential.ValueStringPointer()
 	addRequest.CredentialId = plan.CredentialId.ValueStringPointer()
 	addRequest.PingOneConnectionId = plan.PingOneConnectionId.ValueStringPointer()
 	addRequest.EnvironmentId = plan.EnvironmentId.ValueStringPointer()
@@ -168,7 +183,12 @@ func readPingOneConnectionResponse(ctx context.Context, r *client.PingOneConnect
 	if plan != nil && plan.Credential.ValueString() != "" {
 		state.Credential = types.StringValue(plan.Credential.ValueString())
 	} else {
-		state.Credential = types.StringValue("")
+		state.Credential = types.StringNull()
+	}
+	if plan != nil && internaltypes.IsDefined(plan.EncryptedCredential) {
+		state.EncryptedCredential = types.StringValue(plan.EncryptedCredential.ValueString())
+	} else {
+		state.EncryptedCredential = types.StringPointerValue(r.EncryptedCredential)
 	}
 	state.CredentialId = types.StringPointerValue(r.CredentialId)
 	state.PingOneConnectionId = types.StringPointerValue(r.PingOneConnectionId)
@@ -176,7 +196,7 @@ func readPingOneConnectionResponse(ctx context.Context, r *client.PingOneConnect
 	if r.CreationDate != nil {
 		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
 	} else {
-		state.CreationDate = types.StringValue("")
+		state.CreationDate = types.StringNull()
 	}
 	state.OrganizationName = types.StringPointerValue(r.OrganizationName)
 	state.Region = types.StringPointerValue(r.Region)
@@ -196,7 +216,7 @@ func (r *pingoneConnectionResource) Create(ctx context.Context, req resource.Cre
 	createPingOneConnection := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createPingOneConnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the PingOne Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the PingOne Connection: "+err.Error())
 		return
 	}
 
@@ -204,7 +224,7 @@ func (r *pingoneConnectionResource) Create(ctx context.Context, req resource.Cre
 	apiCreatePingOneConnection = apiCreatePingOneConnection.Body(*createPingOneConnection)
 	pingOneConnectionResponse, httpResp, err := r.apiClient.PingOneConnectionsAPI.CreatePingOneConnectionExecute(apiCreatePingOneConnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the the PingOne Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the the PingOne Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -225,14 +245,14 @@ func (r *pingoneConnectionResource) Read(ctx context.Context, req resource.ReadR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadPingOneConnection, httpResp, err := r.apiClient.PingOneConnectionsAPI.GetPingOneConnection(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadPingOneConnection, httpResp, err := r.apiClient.PingOneConnectionsAPI.GetPingOneConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "PingOne Connection", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  the PingOne Connection", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the  the PingOne Connection", err, httpResp, &customId)
 		}
 		return
 	}
@@ -255,18 +275,18 @@ func (r *pingoneConnectionResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	updatePingOneConnection := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnection(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updatePingOneConnection := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the PingOne Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the PingOne Connection: "+err.Error())
 		return
 	}
 
 	updatePingOneConnection = updatePingOneConnection.Body(*createUpdateRequest)
 	updatePingOneConnectionResponse, httpResp, err := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnectionExecute(updatePingOneConnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the PingOne Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the PingOne Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -287,13 +307,13 @@ func (r *pingoneConnectionResource) Delete(ctx context.Context, req resource.Del
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.PingOneConnectionsAPI.DeletePingOneConnection(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.PingOneConnectionsAPI.DeletePingOneConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the PingOne Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the PingOne Connection", err, httpResp, &customId)
 	}
 }
 
 func (r *pingoneConnectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("connection_id"), req, resp)
 }

@@ -1,3 +1,5 @@
+// Copyright © 2025 Ping Identity Corporation
+
 package id
 
 import (
@@ -10,10 +12,6 @@ import (
 )
 
 func ToSchema(s *schema.Schema) {
-	ToSchemaDeprecated(s, false)
-}
-
-func ToSchemaDeprecated(s *schema.Schema, deprecated bool) {
 	schemaId := schema.StringAttribute{}
 	schemaId.Description = "The ID of this resource."
 	schemaId.Required = false
@@ -21,9 +19,6 @@ func ToSchemaDeprecated(s *schema.Schema, deprecated bool) {
 	schemaId.Computed = true
 	schemaId.PlanModifiers = []planmodifier.String{
 		stringplanmodifier.UseStateForUnknown(),
-	}
-	if deprecated {
-		schemaId.DeprecationMessage = "This attribute is deprecated and will be removed in a future release."
 	}
 	s.Attributes["id"] = schemaId
 }
@@ -42,7 +37,7 @@ func ToSchemaCustomId(s *schema.Schema, idName string, required, characterLimit 
 		stringvalidator.LengthAtLeast(1),
 	}
 	if characterLimit {
-		customId.Validators = append(customId.Validators, configvalidators.ValidChars())
+		customId.Validators = append(customId.Validators, configvalidators.PingFederateIdWithCharLimit())
 	}
 	s.Attributes[idName] = customId
 }
