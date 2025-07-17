@@ -200,7 +200,7 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 			authenticationApiApplicationRef, respDiags := resourcelink.ToState(ctx, authnSelectionTree.AuthenticationApiApplicationRef)
 			diags.Append(respDiags...)
 
-			rootNode, respDiags := authenticationpolicytreenode.ToState(ctx, authnSelectionTree.RootNode)
+			rootNode, respDiags := authenticationpolicytreenode.ToState(ctx, &authnSelectionTree.RootNode)
 			diags.Append(respDiags...)
 
 			authnSelectionTreeAttrValues := map[string]attr.Value{
@@ -261,7 +261,7 @@ func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPoli
 			if err != nil {
 				return err
 			}
-			authenticationPolicyTree.RootNode = rootNodeObj
+			authenticationPolicyTree.RootNode = *rootNodeObj
 		}
 		if handleFailuresLocally, ok := authnSelectionTreeObjElements["handle_failures_locally"]; ok {
 			authenticationPolicyTree.HandleFailuresLocally = handleFailuresLocally.(types.Bool).ValueBoolPointer()

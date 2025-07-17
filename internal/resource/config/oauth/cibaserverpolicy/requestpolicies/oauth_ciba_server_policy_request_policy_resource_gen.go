@@ -277,7 +277,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 		identityHintMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(identityHintMappingAttrs["attribute_contract_fulfillment"].(types.Map))
 		identityHintMappingValue.AttributeSources = attributesources.ClientStruct(identityHintMappingAttrs["attribute_sources"].(types.Set))
 		identityHintMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(identityHintMappingAttrs["issuance_criteria"].(types.Object))
-		result.IdentityHintMapping = identityHintMappingValue
+		result.IdentityHintMapping = *identityHintMappingValue
 	}
 
 	// name
@@ -287,7 +287,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 	// require_token_for_identity_hint
 	result.RequireTokenForIdentityHint = model.RequireTokenForIdentityHint.ValueBoolPointer()
 	// transaction_lifetime
-	result.TransactionLifetime = model.TransactionLifetime.ValueInt64Pointer()
+	result.TransactionLifetime = model.TransactionLifetime.ValueInt64()
 	// user_code_pcv_ref
 	if !model.UserCodePcvRef.IsNull() {
 		userCodePcvRefValue := &client.ResourceLink{}
@@ -417,25 +417,19 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 		"attribute_sources":              types.SetType{ElemType: identityHintMappingAttributeSourcesElementType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: identityHintMappingIssuanceCriteriaAttrTypes},
 	}
-	var identityHintMappingValue types.Object
-	if response.IdentityHintMapping == nil {
-		identityHintMappingValue = types.ObjectNull(identityHintMappingAttrTypes)
-	} else {
-		identityHintMappingAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.IdentityHintMapping.AttributeContractFulfillment)
-		respDiags.Append(diags...)
-		identityHintMappingAttributeSourcesValue, diags := attributesources.ToState(context.Background(), response.IdentityHintMapping.AttributeSources)
-		respDiags.Append(diags...)
-		identityHintMappingIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), response.IdentityHintMapping.IssuanceCriteria)
-		respDiags.Append(diags...)
-		identityHintMappingValue, diags = types.ObjectValue(identityHintMappingAttrTypes, map[string]attr.Value{
-			"attribute_contract_fulfillment": identityHintMappingAttributeContractFulfillmentValue,
-			"attribute_sources":              identityHintMappingAttributeSourcesValue,
-			"issuance_criteria":              identityHintMappingIssuanceCriteriaValue,
-		})
-		respDiags.Append(diags...)
-	}
+	identityHintMappingAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.IdentityHintMapping.AttributeContractFulfillment)
+	respDiags.Append(diags...)
+	identityHintMappingAttributeSourcesValue, diags := attributesources.ToState(context.Background(), response.IdentityHintMapping.AttributeSources)
+	respDiags.Append(diags...)
+	identityHintMappingIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), response.IdentityHintMapping.IssuanceCriteria)
+	respDiags.Append(diags...)
+	state.IdentityHintMapping, diags = types.ObjectValue(identityHintMappingAttrTypes, map[string]attr.Value{
+		"attribute_contract_fulfillment": identityHintMappingAttributeContractFulfillmentValue,
+		"attribute_sources":              identityHintMappingAttributeSourcesValue,
+		"issuance_criteria":              identityHintMappingIssuanceCriteriaValue,
+	})
+	respDiags.Append(diags...)
 
-	state.IdentityHintMapping = identityHintMappingValue
 	// name
 	state.Name = types.StringValue(response.Name)
 	// policy_id
@@ -443,7 +437,7 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 	// require_token_for_identity_hint
 	state.RequireTokenForIdentityHint = types.BoolPointerValue(response.RequireTokenForIdentityHint)
 	// transaction_lifetime
-	state.TransactionLifetime = types.Int64PointerValue(response.TransactionLifetime)
+	state.TransactionLifetime = types.Int64Value(response.TransactionLifetime)
 	// user_code_pcv_ref
 	userCodePcvRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,

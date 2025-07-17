@@ -2134,7 +2134,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 			spBrowserSsoArtifactResolverLocationsValue, diags := types.SetValue(spBrowserSsoArtifactResolverLocationsElementType, spBrowserSsoArtifactResolverLocationsValues)
 			respDiags.Append(diags...)
 			spBrowserSsoArtifactValue, diags = types.ObjectValue(spBrowserSsoArtifactAttrTypes, map[string]attr.Value{
-				"lifetime":           types.Int64PointerValue(r.SpBrowserSso.Artifact.Lifetime),
+				"lifetime":           types.Int64Value(r.SpBrowserSso.Artifact.Lifetime),
 				"resolver_locations": spBrowserSsoArtifactResolverLocationsValue,
 				"source_id":          types.StringPointerValue(r.SpBrowserSso.Artifact.SourceId),
 			})

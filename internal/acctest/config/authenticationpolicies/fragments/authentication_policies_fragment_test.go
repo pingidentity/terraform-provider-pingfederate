@@ -730,7 +730,7 @@ func testAccCheckExpectedAuthenticationPoliciesFragmentAttributes(id string, isC
 		}
 
 		// Check for the expected root action
-		if response.RootNode == nil || response.RootNode.Action.AuthnSourcePolicyAction == nil {
+		if response.RootNode.Action.AuthnSourcePolicyAction == nil {
 			return errors.New("Expected root node with AUTHN_SOURCE policy action")
 		}
 

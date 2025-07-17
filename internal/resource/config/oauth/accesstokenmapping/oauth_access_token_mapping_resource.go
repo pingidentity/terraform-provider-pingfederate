@@ -145,8 +145,8 @@ func (r *oauthAccessTokenMappingResource) Configure(_ context.Context, req resou
 func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessTokenMapping, state *oauthAccessTokenMappingResourceModel) diag.Diagnostics {
 	var diags, objDiags diag.Diagnostics
 
-	state.Id = types.StringPointerValue(r.Id)
-	state.MappingId = types.StringPointerValue(r.Id)
+	state.Id = types.StringValue(r.Id)
+	state.MappingId = types.StringValue(r.Id)
 
 	contextRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,

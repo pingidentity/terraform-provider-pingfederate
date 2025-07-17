@@ -225,8 +225,8 @@ func (model *certificatesRevocationSettingsResourceModel) buildClientStruct() (*
 	if !model.ProxySettings.IsNull() {
 		proxySettingsValue := &client.ProxySettings{}
 		proxySettingsAttrs := model.ProxySettings.Attributes()
-		proxySettingsValue.Host = proxySettingsAttrs["host"].(types.String).ValueStringPointer()
-		proxySettingsValue.Port = proxySettingsAttrs["port"].(types.Int64).ValueInt64Pointer()
+		proxySettingsValue.Host = proxySettingsAttrs["host"].(types.String).ValueString()
+		proxySettingsValue.Port = proxySettingsAttrs["port"].(types.Int64).ValueInt64()
 		result.ProxySettings = proxySettingsValue
 	}
 
@@ -311,8 +311,8 @@ func (state *certificatesRevocationSettingsResourceModel) readClientResponse(res
 		proxySettingsValue = types.ObjectNull(proxySettingsAttrTypes)
 	} else {
 		proxySettingsValue, diags = types.ObjectValue(proxySettingsAttrTypes, map[string]attr.Value{
-			"host": types.StringPointerValue(response.ProxySettings.Host),
-			"port": types.Int64PointerValue(response.ProxySettings.Port),
+			"host": types.StringValue(response.ProxySettings.Host),
+			"port": types.Int64Value(response.ProxySettings.Port),
 		})
 		respDiags.Append(diags...)
 	}

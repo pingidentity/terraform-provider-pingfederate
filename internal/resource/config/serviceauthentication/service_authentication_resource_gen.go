@@ -126,7 +126,7 @@ func (model *serviceAuthenticationResourceModel) buildClientStruct() (*client.Se
 	if !model.AttributeQuery.IsNull() {
 		attributeQueryValue := &client.ServiceModel{}
 		attributeQueryAttrs := model.AttributeQuery.Attributes()
-		attributeQueryValue.Id = attributeQueryAttrs["id"].(types.String).ValueStringPointer()
+		attributeQueryValue.Id = attributeQueryAttrs["id"].(types.String).ValueString()
 		attributeQueryValue.SharedSecret = attributeQueryAttrs["shared_secret"].(types.String).ValueStringPointer()
 		attributeQueryValue.EncryptedSharedSecret = attributeQueryAttrs["encrypted_shared_secret"].(types.String).ValueStringPointer()
 		result.AttributeQuery = attributeQueryValue
@@ -136,7 +136,7 @@ func (model *serviceAuthenticationResourceModel) buildClientStruct() (*client.Se
 	if !model.Jmx.IsNull() {
 		jmxValue := &client.ServiceModel{}
 		jmxAttrs := model.Jmx.Attributes()
-		jmxValue.Id = jmxAttrs["id"].(types.String).ValueStringPointer()
+		jmxValue.Id = jmxAttrs["id"].(types.String).ValueString()
 		jmxValue.SharedSecret = jmxAttrs["shared_secret"].(types.String).ValueStringPointer()
 		jmxValue.EncryptedSharedSecret = jmxAttrs["encrypted_shared_secret"].(types.String).ValueStringPointer()
 		result.Jmx = jmxValue
@@ -158,7 +158,7 @@ func (state *serviceAuthenticationResourceModel) readClientResponse(response *cl
 		attributeQueryValue = types.ObjectNull(attributeQueryAttrTypes)
 	} else {
 		attributeQueryValue, diags = types.ObjectValue(attributeQueryAttrTypes, map[string]attr.Value{
-			"id":                      types.StringPointerValue(response.AttributeQuery.Id),
+			"id":                      types.StringValue(response.AttributeQuery.Id),
 			"shared_secret":           state.readClientResponseSharedSecret(state.AttributeQuery),
 			"encrypted_shared_secret": state.readClientResponseEncryptedSharedSecret(state.AttributeQuery, response.AttributeQuery.EncryptedSharedSecret),
 		})
@@ -177,7 +177,7 @@ func (state *serviceAuthenticationResourceModel) readClientResponse(response *cl
 		jmxValue = types.ObjectNull(jmxAttrTypes)
 	} else {
 		jmxValue, diags = types.ObjectValue(jmxAttrTypes, map[string]attr.Value{
-			"id":                      types.StringPointerValue(response.Jmx.Id),
+			"id":                      types.StringValue(response.Jmx.Id),
 			"shared_secret":           state.readClientResponseSharedSecret(state.Jmx),
 			"encrypted_shared_secret": state.readClientResponseEncryptedSharedSecret(state.Jmx, response.Jmx.EncryptedSharedSecret),
 		})
