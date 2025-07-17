@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -145,8 +145,8 @@ func (r *oauthAccessTokenMappingResource) Configure(_ context.Context, req resou
 func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessTokenMapping, state *oauthAccessTokenMappingResourceModel) diag.Diagnostics {
 	var diags, objDiags diag.Diagnostics
 
-	state.Id = types.StringValue(r.Id)
-	state.MappingId = types.StringValue(r.Id)
+	state.Id = types.StringPointerValue(r.Id)
+	state.MappingId = types.StringPointerValue(r.Id)
 
 	contextRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,

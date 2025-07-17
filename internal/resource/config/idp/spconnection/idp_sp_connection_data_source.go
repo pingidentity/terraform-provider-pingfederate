@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	datasourceattributecontractfulfillment "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	datasourceattributesources "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/connectioncert"
@@ -2134,7 +2134,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 			spBrowserSsoArtifactResolverLocationsValue, diags := types.SetValue(spBrowserSsoArtifactResolverLocationsElementType, spBrowserSsoArtifactResolverLocationsValues)
 			respDiags.Append(diags...)
 			spBrowserSsoArtifactValue, diags = types.ObjectValue(spBrowserSsoArtifactAttrTypes, map[string]attr.Value{
-				"lifetime":           types.Int64Value(r.SpBrowserSso.Artifact.Lifetime),
+				"lifetime":           types.Int64PointerValue(r.SpBrowserSso.Artifact.Lifetime),
 				"resolver_locations": spBrowserSsoArtifactResolverLocationsValue,
 				"source_id":          types.StringPointerValue(r.SpBrowserSso.Artifact.SourceId),
 			})
