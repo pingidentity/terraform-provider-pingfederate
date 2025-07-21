@@ -633,9 +633,9 @@ resource "pingfederate_sp_idp_connection" "example" {
           mail = {
             source = {
               id   = null
-              type = "EXPRESSION"
+              type = "SCIM_USER"
             }
-            value = "'test1|test2|test3'.split(\"\\\\|\")[1]"
+            value = "emails.work.value"
           }
           mobile = {
             source = {
@@ -807,7 +807,7 @@ func spIdpConnection_CheckComputedValuesInboundProvisioningComplete() resource.T
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "inbound_provisioning.groups.read_groups.attribute_contract.core_attributes.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "inbound_provisioning.groups.read_groups.attribute_contract.core_attributes.0.name", "displayName"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "inbound_provisioning.groups.read_groups.attribute_contract.core_attributes.0.masked", "false"),
-		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "inbound_provisioning.users.read_users.attribute_contract.core_attributes.#", "23"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "inbound_provisioning.users.read_users.attribute_contract.core_attributes.#", "24"),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_sp_idp_connection.example", "inbound_provisioning.users.read_users.attribute_contract.core_attributes.*",
 			map[string]string{
 				"name":   "userName",
