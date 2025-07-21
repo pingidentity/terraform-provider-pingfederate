@@ -477,7 +477,7 @@ var (
 	}
 	inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesSubAttributesAttrTypes}
 	inboundProvisioningCustomScim2SchemaAttributesAttrTypes                = map[string]attr.Type{
-		"canonical_values": types.ListType{ElemType: types.StringType},
+		"canonical_values": types.SetType{ElemType: types.StringType},
 		"case_exact":       types.BoolType,
 		"description":      types.StringType,
 		"multi_valued":     types.BoolType,
@@ -485,13 +485,13 @@ var (
 		"name":             types.StringType,
 		"required":         types.BoolType,
 		"returned":         types.StringType,
-		"sub_attributes":   types.ListType{ElemType: inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType},
+		"sub_attributes":   types.SetType{ElemType: inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType},
 		"type":             types.StringType,
 		"uniqueness":       types.StringType,
 	}
 	inboundProvisioningCustomScim2SchemaAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesAttrTypes}
 	inboundProvisioningCustomScim2SchemaAttrTypes             = map[string]attr.Type{
-		"attributes": types.ListType{ElemType: inboundProvisioningCustomScim2SchemaAttributesElementType},
+		"attributes": types.SetType{ElemType: inboundProvisioningCustomScim2SchemaAttributesElementType},
 		"namespace":  types.StringType,
 	}
 	inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesAttrTypes = map[string]attr.Type{
@@ -662,38 +662,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	}
 
 	// inbound_provisioning.custom_scim2_schema.attributes default
-	inboundProvisioningCustomScim2SchemaAttributesSubAttributesAttrTypes := map[string]attr.Type{
-		"case_exact":  types.BoolType,
-		"description": types.StringType,
-		"mutability":  types.StringType,
-		"name":        types.StringType,
-		"required":    types.BoolType,
-		"returned":    types.StringType,
-		"type":        types.StringType,
-		"uniqueness":  types.StringType,
-	}
-	inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType := types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesSubAttributesAttrTypes}
-	inboundProvisioningCustomScim2SchemaAttributesAttrTypes := map[string]attr.Type{
-		"canonical_values": types.ListType{ElemType: types.StringType},
-		"case_exact":       types.BoolType,
-		"description":      types.StringType,
-		"multi_valued":     types.BoolType,
-		"mutability":       types.StringType,
-		"name":             types.StringType,
-		"required":         types.BoolType,
-		"returned":         types.StringType,
-		"sub_attributes":   types.ListType{ElemType: inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType},
-		"type":             types.StringType,
-		"uniqueness":       types.StringType,
-	}
 	inboundProvisioningCustomScim2SchemaAttributesElementType := types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesAttrTypes}
-	inboundProvisioningCustomScim2SchemaAttributesDefault, diags := types.ListValue(inboundProvisioningCustomScim2SchemaAttributesElementType, nil)
+	inboundProvisioningCustomScim2SchemaAttributesDefault, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesElementType, nil)
 	resp.Diagnostics.Append(diags...)
 	// inbound_provisioning.custom_scim2_schema.attributes.canonical_values default
-	inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesDefault, diags := types.ListValue(types.StringType, nil)
+	inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesDefault, diags := types.SetValue(types.StringType, nil)
 	resp.Diagnostics.Append(diags...)
 	// inbound_provisioning.custom_scim2_schema.attributes.sub_attributes default
-	inboundProvisioningCustomScim2SchemaAttributesSubAttributesDefault, diags := types.ListValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType, nil)
+	inboundProvisioningCustomScim2SchemaAttributesSubAttributesDefault, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType, nil)
 	resp.Diagnostics.Append(diags...)
 
 	schema := schema.Schema{
@@ -2671,15 +2647,15 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"custom_scim2_schema": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"attributes": schema.ListNestedAttribute{
+							"attributes": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
-										"canonical_values": schema.ListAttribute{
+										"canonical_values": schema.SetAttribute{
 											ElementType: types.StringType,
 											Optional:    true,
 											Computed:    true,
 											Description: "List of canonical values for multi-valued attributes.",
-											Default:     listdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesDefault),
+											Default:     setdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesDefault),
 										},
 										"case_exact": schema.BoolAttribute{
 											Optional:    true,
@@ -2733,7 +2709,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												),
 											},
 										},
-										"sub_attributes": schema.ListNestedAttribute{
+										"sub_attributes": schema.SetNestedAttribute{
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"case_exact": schema.BoolAttribute{
@@ -2818,7 +2794,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Optional:    true,
 											Computed:    true,
 											Description: "List of sub-attributes for complex attributes.",
-											Default:     listdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesDefault),
+											Default:     setdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesDefault),
 										},
 										"type": schema.StringAttribute{
 											Optional:            true,
@@ -2853,7 +2829,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 								Optional: true,
 								Computed: true,
-								Default:  listdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesDefault),
+								Default:  setdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesDefault),
 							},
 							"namespace": schema.StringAttribute{
 								Optional: true,
@@ -4662,20 +4638,20 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			inboundProvisioningCustomSchemaAttrs := inboundProvisioningAttrs["custom_schema"].(types.Object).Attributes()
 			if !inboundProvisioningCustomSchemaAttrs["attributes"].IsNull() && !inboundProvisioningCustomSchemaAttrs["attributes"].IsUnknown() {
 				inboundProvisioningCustomSchemaValue.Attributes = []client.SchemaAttribute{}
-				for _, attributesElement := range inboundProvisioningCustomSchemaAttrs["attributes"].(types.List).Elements() {
+				for _, attributesElement := range inboundProvisioningCustomSchemaAttrs["attributes"].(types.Set).Elements() {
 					attributesValue := client.SchemaAttribute{}
 					attributesAttrs := attributesElement.(types.Object).Attributes()
 					attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
 					attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
 					if !attributesAttrs["sub_attributes"].IsNull() && !attributesAttrs["sub_attributes"].IsUnknown() {
 						attributesValue.SubAttributes = []string{}
-						for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.List).Elements() {
+						for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
 							attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesElement.(types.String).ValueString())
 						}
 					}
 					if !attributesAttrs["types"].IsNull() && !attributesAttrs["types"].IsUnknown() {
 						attributesValue.Types = []string{}
-						for _, typesElement := range attributesAttrs["types"].(types.List).Elements() {
+						for _, typesElement := range attributesAttrs["types"].(types.Set).Elements() {
 							attributesValue.Types = append(attributesValue.Types, typesElement.(types.String).ValueString())
 						}
 					}
@@ -4690,12 +4666,12 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			inboundProvisioningCustomScim2SchemaAttrs := inboundProvisioningAttrs["custom_scim2_schema"].(types.Object).Attributes()
 			if !inboundProvisioningCustomScim2SchemaAttrs["attributes"].IsNull() && !inboundProvisioningCustomScim2SchemaAttrs["attributes"].IsUnknown() {
 				inboundProvisioningCustomScim2SchemaValue.Attributes = []client.Scim2SchemaAttribute{}
-				for _, attributesElement := range inboundProvisioningCustomScim2SchemaAttrs["attributes"].(types.List).Elements() {
+				for _, attributesElement := range inboundProvisioningCustomScim2SchemaAttrs["attributes"].(types.Set).Elements() {
 					attributesValue := client.Scim2SchemaAttribute{}
 					attributesAttrs := attributesElement.(types.Object).Attributes()
 					if !attributesAttrs["canonical_values"].IsNull() && !attributesAttrs["canonical_values"].IsUnknown() {
 						attributesValue.CanonicalValues = []string{}
-						for _, canonicalValuesElement := range attributesAttrs["canonical_values"].(types.List).Elements() {
+						for _, canonicalValuesElement := range attributesAttrs["canonical_values"].(types.Set).Elements() {
 							attributesValue.CanonicalValues = append(attributesValue.CanonicalValues, canonicalValuesElement.(types.String).ValueString())
 						}
 					}
@@ -4708,7 +4684,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 					attributesValue.Returned = attributesAttrs["returned"].(types.String).ValueStringPointer()
 					if !attributesAttrs["sub_attributes"].IsNull() && !attributesAttrs["sub_attributes"].IsUnknown() {
 						attributesValue.SubAttributes = []client.Scim2SchemaSubAttribute{}
-						for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.List).Elements() {
+						for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
 							subAttributesValue := client.Scim2SchemaSubAttribute{}
 							subAttributesAttrs := subAttributesElement.(types.Object).Attributes()
 							subAttributesValue.CaseExact = subAttributesAttrs["case_exact"].(types.Bool).ValueBoolPointer()
@@ -5778,9 +5754,9 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		} else {
 			var inboundProvisioningCustomSchemaAttributesValues []attr.Value
 			for _, inboundProvisioningCustomSchemaAttributesResponseValue := range r.InboundProvisioning.CustomSchema.Attributes {
-				inboundProvisioningCustomSchemaAttributesSubAttributesValue, diags := types.ListValueFrom(context.Background(), types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.SubAttributes)
+				inboundProvisioningCustomSchemaAttributesSubAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.SubAttributes)
 				respDiags.Append(diags...)
-				inboundProvisioningCustomSchemaAttributesTypesValue, diags := types.ListValueFrom(context.Background(), types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.Types)
+				inboundProvisioningCustomSchemaAttributesTypesValue, diags := types.SetValueFrom(context.Background(), types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.Types)
 				respDiags.Append(diags...)
 				inboundProvisioningCustomSchemaAttributesValue, diags := types.ObjectValue(inboundProvisioningCustomSchemaAttributesAttrTypes, map[string]attr.Value{
 					"multi_valued":   types.BoolPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.MultiValued),
@@ -5791,7 +5767,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				respDiags.Append(diags...)
 				inboundProvisioningCustomSchemaAttributesValues = append(inboundProvisioningCustomSchemaAttributesValues, inboundProvisioningCustomSchemaAttributesValue)
 			}
-			inboundProvisioningCustomSchemaAttributesValue, diags := types.ListValue(inboundProvisioningCustomSchemaAttributesElementType, inboundProvisioningCustomSchemaAttributesValues)
+			inboundProvisioningCustomSchemaAttributesValue, diags := types.SetValue(inboundProvisioningCustomSchemaAttributesElementType, inboundProvisioningCustomSchemaAttributesValues)
 			respDiags.Append(diags...)
 			inboundProvisioningCustomSchemaValue, diags = types.ObjectValue(inboundProvisioningCustomSchemaAttrTypes, map[string]attr.Value{
 				"attributes": inboundProvisioningCustomSchemaAttributesValue,
@@ -5805,7 +5781,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		} else {
 			var inboundProvisioningCustomScim2SchemaAttributesValues []attr.Value
 			for _, inboundProvisioningCustomScim2SchemaAttributesResponseValue := range r.InboundProvisioning.CustomScim2Schema.Attributes {
-				inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesValue, diags := types.ListValueFrom(context.Background(), types.StringType, inboundProvisioningCustomScim2SchemaAttributesResponseValue.CanonicalValues)
+				inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesValue, diags := types.SetValueFrom(context.Background(), types.StringType, inboundProvisioningCustomScim2SchemaAttributesResponseValue.CanonicalValues)
 				respDiags.Append(diags...)
 				var inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues []attr.Value
 				for _, inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue := range inboundProvisioningCustomScim2SchemaAttributesResponseValue.SubAttributes {
@@ -5822,7 +5798,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					respDiags.Append(diags...)
 					inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues = append(inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues, inboundProvisioningCustomScim2SchemaAttributesSubAttributesValue)
 				}
-				inboundProvisioningCustomScim2SchemaAttributesSubAttributesValue, diags := types.ListValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType, inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues)
+				inboundProvisioningCustomScim2SchemaAttributesSubAttributesValue, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType, inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues)
 				respDiags.Append(diags...)
 				inboundProvisioningCustomScim2SchemaAttributesValue, diags := types.ObjectValue(inboundProvisioningCustomScim2SchemaAttributesAttrTypes, map[string]attr.Value{
 					"canonical_values": inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesValue,
@@ -5840,7 +5816,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				respDiags.Append(diags...)
 				inboundProvisioningCustomScim2SchemaAttributesValues = append(inboundProvisioningCustomScim2SchemaAttributesValues, inboundProvisioningCustomScim2SchemaAttributesValue)
 			}
-			inboundProvisioningCustomScim2SchemaAttributesValue, diags := types.ListValue(inboundProvisioningCustomScim2SchemaAttributesElementType, inboundProvisioningCustomScim2SchemaAttributesValues)
+			inboundProvisioningCustomScim2SchemaAttributesValue, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesElementType, inboundProvisioningCustomScim2SchemaAttributesValues)
 			respDiags.Append(diags...)
 			inboundProvisioningCustomScim2SchemaValue, diags = types.ObjectValue(inboundProvisioningCustomScim2SchemaAttrTypes, map[string]attr.Value{
 				"attributes": inboundProvisioningCustomScim2SchemaAttributesValue,

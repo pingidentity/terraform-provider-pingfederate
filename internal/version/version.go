@@ -106,6 +106,7 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1213,
 		PingFederate1214,
 		PingFederate1220,
+		PingFederate1230,
 	}
 }
 
@@ -153,6 +154,9 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 		// Use the first version prior to 12.2.0
 		versionIndex = getSortedVersionIndex(PingFederate1220) - 1
 	case "12.2.0":
+		// Use the first version prior to 12.3.0
+		versionIndex = getSortedVersionIndex(PingFederate1230) - 1
+	case "12.3.0":
 		// This is the latest major-minor version, so just use the latest patch version available
 		versionIndex = len(sortedVersions) - 1
 	}
