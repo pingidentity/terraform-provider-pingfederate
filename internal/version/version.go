@@ -52,6 +52,7 @@ const (
 	PingFederate1213  SupportedVersion = "12.1.3"
 	PingFederate1214  SupportedVersion = "12.1.4"
 	PingFederate1220  SupportedVersion = "12.2.0"
+	PingFederate1230  SupportedVersion = "12.3.0"
 )
 
 func IsValid(versionString string) bool {
