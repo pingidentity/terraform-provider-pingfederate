@@ -1964,8 +1964,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"include_not_before_claim": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Include the claim \"nbf\" in the JWT body. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate 12.3 and later.",
-								MarkdownDescription: "Include the claim `nbf` in the JWT body. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later.",
+								Computed:            true,
+								Description:         "Include the claim \"nbf\" in the JWT body. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate 12.3 and later. Default value is \"false\".",
+								MarkdownDescription: "Include the claim `nbf` in the JWT body. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later. Default value is `false`.",
 							},
 							"jwks_url": schema.StringAttribute{
 								Required:            true,
@@ -3816,7 +3817,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		}
 	}
 
-	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+
+	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+, and include_not_before_claim if version is 12.3+
 	planModified := false
 	var diags diag.Diagnostics
 	if internaltypes.IsDefined(plan.IdpBrowserSso) {
@@ -3838,6 +3839,35 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 				resp.Diagnostics.Append(diags...)
 				planModified = true
 			}
+			// Set default for include_not_before_claim
+			if oidcProviderSettingsAttributes["include_not_before_claim"].IsUnknown() {
+				if pfVersionAtLeast1230 {
+					oidcProviderSettingsAttributes["include_not_before_claim"] = types.BoolValue(false)
+				} else {
+					oidcProviderSettingsAttributes["include_not_before_claim"] = types.BoolNull()
+				}
+				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
+				resp.Diagnostics.Append(diags...)
+				browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
+				plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
+				resp.Diagnostics.Append(diags...)
+				planModified = true
+			}
+		}
+	}
+
+	// Set default for inbound_provisioning.scim_version if version is 12.3+
+	if internaltypes.IsDefined(plan.InboundProvisioning) {
+		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
+		if inboundProvisioningAttrs["scim_version"].IsUnknown() {
+			if pfVersionAtLeast1230 {
+				inboundProvisioningAttrs["scim_version"] = types.StringValue("SCIM20")
+			} else {
+				inboundProvisioningAttrs["scim_version"] = types.StringNull()
+			}
+			plan.InboundProvisioning, diags = types.ObjectValue(plan.InboundProvisioning.AttributeTypes(ctx), inboundProvisioningAttrs)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
 		}
 	}
 
@@ -3900,21 +3930,6 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			plan.ErrorPageMsgId = types.StringNull()
 		}
 		planModified = true
-	}
-
-	// Set default for inbound_provisioning.scim_version
-	if internaltypes.IsDefined(plan.InboundProvisioning) {
-		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
-		if inboundProvisioningAttrs["scim_version"].IsUnknown() {
-			if pfVersionAtLeast1230 {
-				inboundProvisioningAttrs["scim_version"] = types.StringValue("SCIM20")
-			} else {
-				inboundProvisioningAttrs["scim_version"] = types.StringNull()
-			}
-			plan.InboundProvisioning, diags = types.ObjectValue(plan.InboundProvisioning.AttributeTypes(ctx), inboundProvisioningAttrs)
-			resp.Diagnostics.Append(diags...)
-			planModified = true
-		}
 	}
 
 	if planModified {
