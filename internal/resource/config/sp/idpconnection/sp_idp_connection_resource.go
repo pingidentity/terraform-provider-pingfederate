@@ -3090,6 +3090,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"scim_version": schema.StringAttribute{
 						Optional:            true,
+						Computed:            true,
 						Description:         "SCIM version to use for provisioning. The default is \"SCIM11\". Options are \"SCIM11\", \"SCIM20\". Supported in PingFederate 12.3 and later.",
 						MarkdownDescription: "SCIM version to use for provisioning. The default is `SCIM11`. Options are `SCIM11`, `SCIM20`. Supported in PingFederate `12.3` and later.",
 						Validators: []validator.String{
@@ -3861,7 +3862,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
 		if inboundProvisioningAttrs["scim_version"].IsUnknown() {
 			if pfVersionAtLeast1230 {
-				inboundProvisioningAttrs["scim_version"] = types.StringValue("SCIM20")
+				inboundProvisioningAttrs["scim_version"] = types.StringValue("SCIM11")
 			} else {
 				inboundProvisioningAttrs["scim_version"] = types.StringNull()
 			}
@@ -4083,8 +4084,14 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel) diag.Diagnostics {
+func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel, productVersion version.SupportedVersion) diag.Diagnostics {
 	var respDiags diag.Diagnostics
+	compare, err := version.Compare(productVersion, version.PingFederate1230)
+	if err != nil {
+		respDiags.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
+	}
+	pfVersionAtLeast1230 := compare >= 0
+
 	addRequest.ErrorPageMsgId = plan.ErrorPageMsgId.ValueStringPointer()
 	if !plan.ConnectionId.IsUnknown() {
 		addRequest.Id = plan.ConnectionId.ValueStringPointer()
@@ -4673,7 +4680,9 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 					inboundProvisioningCustomSchemaValue.Attributes = append(inboundProvisioningCustomSchemaValue.Attributes, attributesValue)
 				}
 			}
-			inboundProvisioningCustomSchemaValue.Namespace = inboundProvisioningCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
+			if !inboundProvisioningCustomSchemaAttrs["namespace"].IsUnknown() {
+				inboundProvisioningCustomSchemaValue.Namespace = inboundProvisioningCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
+			}
 			inboundProvisioningValue.CustomSchema = inboundProvisioningCustomSchemaValue
 		}
 		if !inboundProvisioningAttrs["custom_scim2_schema"].IsNull() && !inboundProvisioningAttrs["custom_scim2_schema"].IsUnknown() {
@@ -4729,12 +4738,14 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			inboundProvisioningGroupsReadGroupsAttrs := inboundProvisioningGroupsAttrs["read_groups"].(types.Object).Attributes()
 			inboundProvisioningGroupsReadGroupsAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
 			inboundProvisioningGroupsReadGroupsAttributeContractAttrs := inboundProvisioningGroupsReadGroupsAttrs["attribute_contract"].(types.Object).Attributes()
-			// PF requires core_attributes to be set, even though the property is read-only.
+			// Prior to 12.3, PF requires core_attributes to be set, even though the property is read-only.
 			// Provide a placeholder value here to prevent the API from returning an error.
-			inboundProvisioningGroupsReadGroupsAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
-				{
-					Name: "placeholder",
-				},
+			if !pfVersionAtLeast1230 {
+				inboundProvisioningGroupsReadGroupsAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+					{
+						Name: "placeholder",
+					},
+				}
 			}
 			inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
 			for _, extendedAttributesElement := range inboundProvisioningGroupsReadGroupsAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
@@ -4821,12 +4832,14 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		inboundProvisioningUsersReadUsersAttrs := inboundProvisioningUsersAttrs["read_users"].(types.Object).Attributes()
 		inboundProvisioningUsersReadUsersAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
 		inboundProvisioningUsersReadUsersAttributeContractAttrs := inboundProvisioningUsersReadUsersAttrs["attribute_contract"].(types.Object).Attributes()
-		// PF requires core_attributes to be set, even though the property is read-only.
+		// Prior to 12.3, PF requires core_attributes to be set, even though the property is read-only.
 		// Provide a placeholder value here to prevent the API from returning an error.
-		inboundProvisioningUsersReadUsersAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
-			{
-				Name: "placeholder",
-			},
+		if !pfVersionAtLeast1230 {
+			inboundProvisioningUsersReadUsersAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+				{
+					Name: "placeholder",
+				},
+			}
 		}
 		inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
 		for _, extendedAttributesElement := range inboundProvisioningUsersReadUsersAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
@@ -6150,7 +6163,7 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	createSpIdpConnection := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createSpIdpConnection, plan)...)
+	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createSpIdpConnection, plan, r.providerConfig.ProductVersion)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -6214,7 +6227,7 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	updateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.UpdateConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan)...)
+	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan, r.providerConfig.ProductVersion)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
