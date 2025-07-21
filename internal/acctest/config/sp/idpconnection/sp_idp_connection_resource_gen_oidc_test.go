@@ -217,6 +217,14 @@ func spIdpConnection_OidcCompleteHCL() string {
       jwt_secured_authorization_response_mode_type = "DISABLED"
     `
 	}
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		versionedOidcProviderSettingsHcl += `
+      audience = "myaud"
+      include_not_before_claim = true
+      lifetime = "3"
+      type = "mytyp"
+    `
+	}
 
 	return fmt.Sprintf(`
 %s
@@ -525,6 +533,8 @@ resource "pingfederate_sp_idp_connection" "example" {
       token_endpoint                 = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/token"
       track_user_sessions_for_logout = true
       user_info_endpoint             = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/userinfo"
+
+      %s
     }
     protocol            = "OIDC"
     sign_authn_requests = false
@@ -614,7 +624,8 @@ resource "pingfederate_sp_idp_connection" "example" {
 }
 `, spIdpConnection_OidcDependencyHCL(),
 		accesstokenmanager.AccessTokenManagerTestHCL("idpConnOidcAtm"),
-		idpConnOidcId)
+		idpConnOidcId,
+		versionedOidcProviderSettingsHcl)
 }
 
 // HCL to reproduce unexpected plan seen in issue #525
@@ -699,13 +710,17 @@ func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 
 // Validate any computed values when applying complete HCL
 func spIdpConnection_CheckComputedValuesOidcComplete() resource.TestCheckFunc {
+	postLogoutRedirectUriCheck := resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri")
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		postLogoutRedirectUriCheck = resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri")
+	}
 	testCheckFuncs := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnOidcId),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "sub"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.jit_provisioning.user_attributes.attribute_contract.#", "15"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.back_channel_logout_uri"),
-		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
+		postLogoutRedirectUriCheck,
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.redirect_uri"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.#", "1"),
