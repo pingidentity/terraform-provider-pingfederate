@@ -215,14 +215,15 @@ resource "pingfederate_captcha_provider" "example" {
       {
         "name" : "Proxy Settings",
         "value" : "System Defaults"
-      }
+      },
+		%s
     ]
   }
   plugin_descriptor_ref = {
     id = "com.pingidentity.adapters.pingone.protect.PingOneProtectProvider"
   }
 }
-`, captchaProviderProviderId, captchaProviderProviderId, testEnvConnId)
+`, captchaProviderProviderId, captchaProviderProviderId, testEnvConnId, additionalVersionedFields)
 	} else {
 		// For earlier versions use captcha v3
 		return fmt.Sprintf(`
