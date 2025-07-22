@@ -665,9 +665,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	inboundProvisioningCustomScim2SchemaAttributesElementType := types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesAttrTypes}
 	inboundProvisioningCustomScim2SchemaAttributesDefault, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesElementType, nil)
 	resp.Diagnostics.Append(diags...)
-	// inbound_provisioning.custom_scim2_schema.attributes.canonical_values default
-	inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesDefault, diags := types.SetValue(types.StringType, nil)
-	resp.Diagnostics.Append(diags...)
 	// inbound_provisioning.custom_scim2_schema.attributes.sub_attributes default
 	inboundProvisioningCustomScim2SchemaAttributesSubAttributesDefault, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType, nil)
 	resp.Diagnostics.Append(diags...)
@@ -2642,7 +2639,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 						},
-						Required:            true,
+						Optional:            true,
 						Description:         "Custom SCIM Attributes configuration.",
 						MarkdownDescription: "Custom SCIM Attributes configuration.",
 					},
@@ -2654,9 +2651,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"canonical_values": schema.SetAttribute{
 											ElementType: types.StringType,
 											Optional:    true,
-											Computed:    true,
 											Description: "List of canonical values for multi-valued attributes.",
-											Default:     setdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesDefault),
+											Validators: []validator.Set{
+												setvalidator.SizeAtLeast(1),
+											},
 										},
 										"case_exact": schema.BoolAttribute{
 											Optional:    true,
@@ -2841,6 +2839,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 						Optional:    true,
 						Description: "Custom SCIM 2.0 Attributes configuration. Supported in PingFederate 12.3 and later.",
+						Validators: []validator.Object{
+							objectvalidator.ExactlyOneOf(
+								path.MatchRelative().AtParent().AtName("custom_schema"),
+								path.MatchRelative().AtParent().AtName("custom_scim2_schema"),
+							),
+						},
 					},
 					"group_support": schema.BoolAttribute{
 						Required:            true,

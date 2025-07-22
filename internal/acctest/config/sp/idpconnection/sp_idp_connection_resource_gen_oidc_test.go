@@ -704,6 +704,11 @@ func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 			resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type", "DISABLED"),
 		)
 	}
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		testCheckFuncs = append(testCheckFuncs,
+			resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.include_not_before_claim", "false"),
+		)
+	}
 
 	return resource.ComposeTestCheckFunc(testCheckFuncs...)
 }
