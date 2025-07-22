@@ -153,19 +153,7 @@ data "pingfederate_data_store" "example" {
 
 // Maximal HCL with all values set where possible
 func customDataStore_CompleteHCL() string {
-	versionedFields := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedFields += `
-        {
-          name  = "Client TLS Certificate"
-          value = ""
-        },
-        {
-          name  = "Maximum Connections"
-          value = "32"
-        },
-		`
-	}
+	var versionedFields string
 	if acctest.VersionAtLeast(version.PingFederate1214) {
 		versionedFields += `
 		{
@@ -343,7 +331,15 @@ resource "pingfederate_data_store" "example" {
           name  = "Test Connection Body"
           value = "{\"foo\":\"bar\"}"
         },
-		%[2]s
+		{
+          name  = "Client TLS Certificate"
+          value = ""
+        },
+        {
+          name  = "Maximum Connections"
+          value = "32"
+        },
+        %[2]s
       ]
       sensitive_fields = [
         {
@@ -372,10 +368,7 @@ data "pingfederate_data_store" "example" {
 
 // Validate any computed values when applying minimal HCL
 func customDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	fieldsCount := 19
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		fieldsCount += 2
-	}
+	fieldsCount := 21
 	if acctest.VersionAtLeast(version.PingFederate1214) {
 		fieldsCount += 1
 	}
@@ -391,10 +384,7 @@ func customDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 
 // Validate any computed values when applying complete HCL
 func customDataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
-	fieldsCount := 19
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		fieldsCount += 2
-	}
+	fieldsCount := 21
 	if acctest.VersionAtLeast(version.PingFederate1214) {
 		fieldsCount += 1
 	}

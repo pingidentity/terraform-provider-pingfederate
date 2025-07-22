@@ -117,7 +117,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 								Attributes:  resourcelink.ToDataSourceSchema(),
 							},
 							"notification_mode": schema.StringAttribute{
-								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.",
+								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER.",
 								Optional:    false,
 								Computed:    true,
 							},

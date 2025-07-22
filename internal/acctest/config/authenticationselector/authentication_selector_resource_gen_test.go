@@ -112,15 +112,6 @@ resource "pingfederate_authentication_selector" "example" {
 
 // Maximal HCL with all values set where possible
 func authenticationSelector_CompleteHCL() string {
-	versionedConfigurationFields := ""
-	if acctest.VersionAtLeast("11.3.0") {
-		versionedConfigurationFields = `
-		{
-			name  = "Override AuthN Context for Flow"
-			value = "true"
-		},
-		`
-	}
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_selector" "example" {
   selector_id = "%s"
@@ -137,7 +128,10 @@ resource "pingfederate_authentication_selector" "example" {
   configuration = {
     tables = []
     fields = [
-		%s
+		{
+			name  = "Override AuthN Context for Flow"
+			value = "true"
+		},
       {
         name  = "Add or Update AuthN Context Attribute"
         value = "true"
@@ -157,18 +151,14 @@ resource "pingfederate_authentication_selector" "example" {
     id = "com.pingidentity.pf.selectors.saml.SamlAuthnContextAdapterSelector"
   }
 }
-`, authenticationSelectorSelectorId, versionedConfigurationFields)
+`, authenticationSelectorSelectorId)
 }
 
 // Validate any computed values when applying HCL
 func authenticationSelector_CheckComputedValues() resource.TestCheckFunc {
-	expectedFieldCount := "3"
-	if acctest.VersionAtLeast("11.3.0") {
-		expectedFieldCount = "4"
-	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_authentication_selector.example", "configuration.tables_all.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_authentication_selector.example", "configuration.fields_all.#", expectedFieldCount),
+		resource.TestCheckResourceAttr("pingfederate_authentication_selector.example", "configuration.fields_all.#", "4"),
 	)
 }
 

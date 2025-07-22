@@ -1662,7 +1662,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"sso_application_endpoint": schema.StringAttribute{
 						Optional:    false,
 						Computed:    true,
-						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version `11.3` or later.",
+						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 					},
 				},
 				Optional:    true,

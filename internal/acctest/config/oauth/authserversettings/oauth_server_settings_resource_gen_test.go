@@ -68,15 +68,7 @@ data "pingfederate_oauth_server_settings" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthServerSettings_CompleteHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedHcl += `
-dpop_proof_require_nonce = true
-dpop_proof_lifetime_seconds = 60
-dpop_proof_enforce_replay_prevention = false
-		`
-	}
-
+	var versionedHcl string
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		versionedHcl += `
 bypass_authorization_for_approved_consents = true
@@ -365,6 +357,9 @@ resource "pingfederate_oauth_server_settings" "example" {
   user_authorization_consent_page_setting = "INTERNAL"
   user_authorization_url                  = "https://example.com"
 
+  dpop_proof_require_nonce = true
+dpop_proof_lifetime_seconds = 60
+dpop_proof_enforce_replay_prevention = false
   %s
 
   # Ensures this resource will be updated before deleting the dependencies
@@ -381,20 +376,7 @@ data "pingfederate_oauth_server_settings" "example" {
 }
 
 func checkPf121ComputedAttrs() resource.TestCheckFunc {
-	versionedChecks := []resource.TestCheckFunc{}
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_require_nonce", "false"),
-			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_lifetime_seconds", "120"),
-			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_enforce_replay_prevention", "false"),
-		)
-	} else {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_require_nonce"),
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_lifetime_seconds"),
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_enforce_replay_prevention"),
-		)
-	}
+	var versionedChecks []resource.TestCheckFunc
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		versionedChecks = append(versionedChecks,
 			resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "bypass_authorization_for_approved_consents", "false"),
@@ -476,6 +458,9 @@ func oauthServerSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "user_authorization_consent_adapter"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "user_authorization_consent_page_setting", "INTERNAL"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "user_authorization_url", ""),
+		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_require_nonce", "false"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_lifetime_seconds", "120"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "dpop_proof_enforce_replay_prevention", "false"),
 		checkPf121ComputedAttrs(),
 	)
 }
