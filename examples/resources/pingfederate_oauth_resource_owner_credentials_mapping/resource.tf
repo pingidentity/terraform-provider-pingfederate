@@ -16,16 +16,18 @@ resource "pingfederate_password_credential_validator" "pcv" {
                 value = "example"
               },
               {
+                name  = "Relax Password Requirements"
+                value = "true"
+              }
+            ],
+            sensitive_fields = [
+              {
                 name  = "Password"
                 value = var.password_credential_validator_password
               },
               {
                 name  = "Confirm Password"
                 value = var.password_credential_validator_password
-              },
-              {
-                name  = "Relax Password Requirements"
-                value = "true"
               }
             ]
             default_row = false
@@ -41,9 +43,9 @@ resource "pingfederate_oauth_resource_owner_credentials_mapping" "mapping" {
   attribute_contract_fulfillment = {
     "USER_KEY" = {
       source = {
-        type = "CONTEXT"
+        type = "PASSWORD_CREDENTIAL_VALIDATOR"
       }
-      value = "ClientId"
+      value = "username"
     }
   }
 }
