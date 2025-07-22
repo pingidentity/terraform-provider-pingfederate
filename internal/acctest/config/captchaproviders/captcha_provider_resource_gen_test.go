@@ -261,10 +261,14 @@ func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		// The PingOneProtectProvider was added in PF version 12.0+
+		fieldsAllCount := "12"
+		if acctest.VersionAtLeast(version.PingFederate1230) {
+			fieldsAllCount = "15"
+		}
 		return resource.ComposeTestCheckFunc(
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
-			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "12"),
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", fieldsAllCount),
 			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
 				map[string]string{
 					"value": "true",
