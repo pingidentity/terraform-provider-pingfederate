@@ -2848,8 +2848,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"group_support": schema.BoolAttribute{
 						Required:            true,
-						Description:         "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
-						MarkdownDescription: "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
+						Description:         "Specify support for provisioning of groups. This only applies when using SCIM 1.1. Must be `true` to configure `groups` attribute.",
+						MarkdownDescription: "Specify support for provisioning of groups. This only applies when using SCIM 1.1. Must be `true` to configure `groups` attribute.",
 					},
 					"groups": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
