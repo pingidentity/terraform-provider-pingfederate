@@ -39,6 +39,8 @@ const (
 	PingFederate1138  SupportedVersion = "11.3.8"
 	PingFederate1139  SupportedVersion = "11.3.9"
 	PingFederate11310 SupportedVersion = "11.3.10"
+	PingFederate11311 SupportedVersion = "11.3.11"
+	PingFederate11312 SupportedVersion = "11.3.12"
 	PingFederate1200  SupportedVersion = "12.0.0"
 	PingFederate1201  SupportedVersion = "12.0.1"
 	PingFederate1202  SupportedVersion = "12.0.2"
@@ -46,12 +48,23 @@ const (
 	PingFederate1204  SupportedVersion = "12.0.4"
 	PingFederate1205  SupportedVersion = "12.0.5"
 	PingFederate1206  SupportedVersion = "12.0.6"
+	PingFederate1207  SupportedVersion = "12.0.7"
+	PingFederate1208  SupportedVersion = "12.0.8"
+	PingFederate1209  SupportedVersion = "12.0.9"
 	PingFederate1210  SupportedVersion = "12.1.0"
 	PingFederate1211  SupportedVersion = "12.1.1"
 	PingFederate1212  SupportedVersion = "12.1.2"
 	PingFederate1213  SupportedVersion = "12.1.3"
 	PingFederate1214  SupportedVersion = "12.1.4"
+	PingFederate1215  SupportedVersion = "12.1.5"
+	PingFederate1216  SupportedVersion = "12.1.6"
+	PingFederate1217  SupportedVersion = "12.1.7"
+	PingFederate1218  SupportedVersion = "12.1.8"
 	PingFederate1220  SupportedVersion = "12.2.0"
+	PingFederate1221  SupportedVersion = "12.2.1"
+	PingFederate1222  SupportedVersion = "12.2.2"
+	PingFederate1223  SupportedVersion = "12.2.3"
+	PingFederate1224  SupportedVersion = "12.2.4"
 	PingFederate1230  SupportedVersion = "12.3.0"
 )
 
@@ -93,6 +106,8 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1138,
 		PingFederate1139,
 		PingFederate11310,
+		PingFederate11311,
+		PingFederate11312,
 		PingFederate1200,
 		PingFederate1201,
 		PingFederate1202,
@@ -100,12 +115,23 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1204,
 		PingFederate1205,
 		PingFederate1206,
+		PingFederate1207,
+		PingFederate1208,
+		PingFederate1209,
 		PingFederate1210,
 		PingFederate1211,
 		PingFederate1212,
 		PingFederate1213,
 		PingFederate1214,
+		PingFederate1215,
+		PingFederate1216,
+		PingFederate1217,
+		PingFederate1218,
 		PingFederate1220,
+		PingFederate1221,
+		PingFederate1222,
+		PingFederate1223,
+		PingFederate1224,
 		PingFederate1230,
 	}
 }
