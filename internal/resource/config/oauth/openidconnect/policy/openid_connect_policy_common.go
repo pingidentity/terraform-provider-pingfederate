@@ -45,6 +45,7 @@ type oauthOpenIdConnectPolicyModel struct {
 	PolicyId                          types.String `tfsdk:"policy_id"`
 	Name                              types.String `tfsdk:"name"`
 	AccessTokenManagerRef             types.Object `tfsdk:"access_token_manager_ref"`
+	AllowIdTokenIntrospection         types.Bool   `tfsdk:"allow_id_token_introspection"`
 	IdTokenLifetime                   types.Int64  `tfsdk:"id_token_lifetime"`
 	IncludeSriInIdToken               types.Bool   `tfsdk:"include_sri_in_id_token"`
 	IncludeUserInfoInIdToken          types.Bool   `tfsdk:"include_user_info_in_id_token"`
@@ -68,6 +69,7 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	state.AccessTokenManagerRef, diags = resourcelink.ToState(ctx, &response.AccessTokenManagerRef)
 	respDiags.Append(diags...)
 
+	state.AllowIdTokenIntrospection = types.BoolPointerValue(response.AllowIdTokenIntrospection)
 	state.IdTokenLifetime = types.Int64PointerValue(response.IdTokenLifetime)
 	state.IncludeSriInIdToken = types.BoolPointerValue(response.IncludeSriInIdToken)
 	state.IncludeUserInfoInIdToken = types.BoolPointerValue(response.IncludeUserInfoInIdToken)
