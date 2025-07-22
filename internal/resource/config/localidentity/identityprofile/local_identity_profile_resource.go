@@ -1204,7 +1204,7 @@ func (r *localIdentityProfileResource) Create(ctx context.Context, req resource.
 	apiCreateLocalIdentityProfiles = apiCreateLocalIdentityProfiles.Body(*createLocalIdentityProfiles)
 	localIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfileExecute(apiCreateLocalIdentityProfiles)
 	if err != nil {
-		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp, &customId)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profile", err, httpResp, &customId)
 		return
 	}
 
