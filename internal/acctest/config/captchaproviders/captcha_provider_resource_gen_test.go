@@ -144,6 +144,23 @@ resource "pingfederate_captcha_provider" "example" {
 func captchaProvider_CompleteHCL() string {
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		// The PingOneProtectProvider was added in PF version 12.0+
+		additionalVersionedFields := ""
+		if acctest.VersionAtLeast(version.PingFederate1230) {
+			additionalVersionedFields += `
+      {
+        name : "Collect PingID Device Trust Attributes"
+        value : "false"
+      },
+      {
+        name : "PingID Device Trust Agent Port"
+        value : ""
+      },
+      {
+        name : "PingID Device Trust Agent Timeout"
+        value : ""
+      },
+`
+		}
 		return fmt.Sprintf(`
 resource "pingfederate_captcha_provider" "example" {
   provider_id = "%s"
