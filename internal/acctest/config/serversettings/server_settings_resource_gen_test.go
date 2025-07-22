@@ -167,7 +167,7 @@ resource "pingfederate_server_settings" "example" {
       notification_publisher_ref = {
         id = pingfederate_notification_publisher.example.id
       }
-	  notification_mode = "NOTIFICATION_PUBLISHER"
+      notification_mode = "NOTIFICATION_PUBLISHER"
     }
     license_events = {
       email_address = "licensenotif@example.com"

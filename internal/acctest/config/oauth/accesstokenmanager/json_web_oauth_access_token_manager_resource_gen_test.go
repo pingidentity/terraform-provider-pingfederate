@@ -350,14 +350,14 @@ resource "pingfederate_oauth_access_token_manager" "example" {
         name  = "Include X.509 Thumbprint Header Parameter",
         value = "false"
       },
-        {
-	name  = "Not Before Claim Offset"
-	value = ""
-  },
-  {
-	name  = "Include Issued At Claim",
-	value = "false"
-  },
+      {
+        name  = "Not Before Claim Offset"
+        value = ""
+      },
+      {
+        name  = "Include Issued At Claim",
+        value = "false"
+      },
 	  %s
     ]
   }

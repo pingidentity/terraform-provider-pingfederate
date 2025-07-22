@@ -348,7 +348,7 @@ resource "pingfederate_openid_connect_policy" "example" {
       values = ["extended"]
     }
   }
-    include_x5t_in_id_token = true
+  include_x5t_in_id_token   = true
   id_token_typ_header_value = "Example"
   %s
 }

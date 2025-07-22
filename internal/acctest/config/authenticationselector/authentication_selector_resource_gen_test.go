@@ -128,10 +128,10 @@ resource "pingfederate_authentication_selector" "example" {
   configuration = {
     tables = []
     fields = [
-		{
-			name  = "Override AuthN Context for Flow"
-			value = "true"
-		},
+      {
+        name  = "Override AuthN Context for Flow"
+        value = "true"
+      },
       {
         name  = "Add or Update AuthN Context Attribute"
         value = "true"

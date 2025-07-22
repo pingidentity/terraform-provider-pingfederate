@@ -215,8 +215,8 @@ resource "pingfederate_oauth_client" "example" {
     pairwise_identifier_user_type               = true
     ping_access_logout_capable                  = false
     sector_identifier_uri                       = "https://example.com"
-	logout_mode = "OIDC_BACK_CHANNEL"
-	back_channel_logout_uri = "https://example.com"	
+    logout_mode                                 = "OIDC_BACK_CHANNEL"
+    back_channel_logout_uri                     = "https://example.com"
 	%s
   }
   persistent_grant_expiration_time                 = 5
@@ -244,7 +244,7 @@ resource "pingfederate_oauth_client" "example" {
   token_introspection_encryption_algorithm         = "A128KW"
   token_introspection_signing_algorithm            = "RS256"
   validate_using_all_eligible_atms                 = true
-  require_dpop = true	
+  require_dpop                                     = true
   %s
 }
 data "pingfederate_oauth_client" "example" {

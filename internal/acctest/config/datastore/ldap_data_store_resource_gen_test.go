@@ -158,20 +158,20 @@ resource "pingfederate_data_store" "example" {
         tags = "us-east-2"
       }
     ]
-    ldap_dns_srv_prefix    = "_ldapcustom._tcp"
-    ldaps_dns_srv_prefix   = "_ldapscustom._tcp"
-    max_connections        = 200
-    max_wait               = 500
-    min_connections        = 15
-    name                   = "mypddatastore"
-    read_timeout           = 100
-    test_on_borrow         = true
-    test_on_return         = true
-    time_between_evictions = 100
-    use_dns_srv_records    = false
-    use_ssl                = true
-    verify_host            = false
-	retry_failed_operations = true
+    ldap_dns_srv_prefix     = "_ldapcustom._tcp"
+    ldaps_dns_srv_prefix    = "_ldapscustom._tcp"
+    max_connections         = 200
+    max_wait                = 500
+    min_connections         = 15
+    name                    = "mypddatastore"
+    read_timeout            = 100
+    test_on_borrow          = true
+    test_on_return          = true
+    time_between_evictions  = 100
+    use_dns_srv_records     = false
+    use_ssl                 = true
+    verify_host             = false
+    retry_failed_operations = true
 	%s
   }
 }

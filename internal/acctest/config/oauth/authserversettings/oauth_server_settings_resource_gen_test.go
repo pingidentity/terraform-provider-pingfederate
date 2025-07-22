@@ -357,9 +357,9 @@ resource "pingfederate_oauth_server_settings" "example" {
   user_authorization_consent_page_setting = "INTERNAL"
   user_authorization_url                  = "https://example.com"
 
-  dpop_proof_require_nonce = true
-dpop_proof_lifetime_seconds = 60
-dpop_proof_enforce_replay_prevention = false
+  dpop_proof_require_nonce             = true
+  dpop_proof_lifetime_seconds          = 60
+  dpop_proof_enforce_replay_prevention = false
   %s
 
   # Ensures this resource will be updated before deleting the dependencies

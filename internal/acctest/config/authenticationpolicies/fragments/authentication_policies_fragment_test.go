@@ -325,26 +325,26 @@ resource "pingfederate_idp_adapter" "myadapter" {
         name  = "PingOne Population",
         value = "%s"
       },
-    {
-      name  = "Email Chained Attribute",
-      value = "mail"
-    },
-    {
-      name  = "Phone Chained Attribute",
-      value = "mobile"
-    },
-    {
-      name  = "Reference Image Chained Attribute",
-      value = "photo"
-    },
-    {
-      name  = "Verification URL Delivery Method",
-      value = "User Selection"
-    },
-    {
-      name  = "Verify Policy",
-      value = ""
-    },
+      {
+        name  = "Email Chained Attribute",
+        value = "mail"
+      },
+      {
+        name  = "Phone Chained Attribute",
+        value = "mobile"
+      },
+      {
+        name  = "Reference Image Chained Attribute",
+        value = "photo"
+      },
+      {
+        name  = "Verification URL Delivery Method",
+        value = "User Selection"
+      },
+      {
+        name  = "Verify Policy",
+        value = ""
+      },
       {
         name  = "Test Username",
         value = ""
@@ -484,25 +484,25 @@ resource "pingfederate_idp_adapter" "myadapter" {
         pseudonym = false
       },
       {
-      name      = "gender",
-      masked    = false,
-      pseudonym = false
-    },
-    {
-      name      = "weight",
-      masked    = false,
-      pseudonym = false
-    },
-    {
-      name      = "nationality",
-      masked    = false,
-      pseudonym = false
-    },
-    {
-      name      = "issuingCountry",
-      masked    = false,
-      pseudonym = false
-    },
+        name      = "gender",
+        masked    = false,
+        pseudonym = false
+      },
+      {
+        name      = "weight",
+        masked    = false,
+        pseudonym = false
+      },
+      {
+        name      = "nationality",
+        masked    = false,
+        pseudonym = false
+      },
+      {
+        name      = "issuingCountry",
+        masked    = false,
+        pseudonym = false
+      },
     ],
     extended_attributes = [
       {
@@ -645,30 +645,30 @@ resource "pingfederate_idp_adapter" "myadapter" {
         },
         value = "expirationDate"
       },
-          "gender" : {
-      source = {
-        type = "ADAPTER"
+      "gender" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "gender"
       },
-      value = "gender"
-    },
-    "weight" : {
-      source = {
-        type = "ADAPTER"
+      "weight" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "weight"
       },
-      value = "weight"
-    },
-    "nationality" : {
-      source = {
-        type = "ADAPTER"
+      "nationality" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "nationality"
       },
-      value = "nationality"
-    },
-    "issuingCountry" : {
-      source = {
-        type = "ADAPTER"
+      "issuingCountry" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "issuingCountry"
       },
-      value = "issuingCountry"
-    },
     }
   }
 }`, pingOneConnection, pingOneEnvironment, pingOnePopulation)

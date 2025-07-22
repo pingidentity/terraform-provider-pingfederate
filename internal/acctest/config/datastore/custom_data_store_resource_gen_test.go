@@ -331,7 +331,7 @@ resource "pingfederate_data_store" "example" {
           name  = "Test Connection Body"
           value = "{\"foo\":\"bar\"}"
         },
-		{
+        {
           name  = "Client TLS Certificate"
           value = ""
         },
