@@ -1,4 +1,7 @@
 # v1.6.0 (Unreleased)
+### Enhancements
+* Added support for PingFederate `12.3.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, and `12.2`. ([#528]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/528)))
+
 ### Resources
 * **New Resource:** `pingfederate_oauth_out_of_band_auth_plugin` ([#331](https://github.com/pingidentity/terraform-provider-pingfederate/pull/331))
 
