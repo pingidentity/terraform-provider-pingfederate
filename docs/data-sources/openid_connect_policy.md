@@ -32,6 +32,7 @@ data "pingfederate_openid_connect_policy" "myOIDCPolicy" {
 ### Read-Only
 
 - `access_token_manager_ref` (Attributes) The access token manager associated with this Open ID Connect policy. (see [below for nested schema](#nestedatt--access_token_manager_ref))
+- `allow_id_token_introspection` (Boolean) Determines whether the introspection endpoint should validate an ID token.
 - `attribute_contract` (Attributes) The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint. (see [below for nested schema](#nestedatt--attribute_contract))
 - `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `id` (String) ID of this resource.

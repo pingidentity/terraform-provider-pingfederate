@@ -866,34 +866,34 @@ resource "pingfederate_sp_idp_connection" "example" {
     custom_scim2_schema = {
       attributes = [
         {
-          case_exact = false
-          description = "Custom attribute for testing"
+          case_exact   = false
+          description  = "Custom attribute for testing"
           multi_valued = false
-          mutability = "READWRITE"
+          mutability   = "READWRITE"
           name         = "customAttribute"
-          required = false
-          returned = "DEFAULT"
+          required     = false
+          returned     = "DEFAULT"
           sub_attributes = [
             {
-              case_exact = true
-              description = "Custom subattribute for testing"
+              case_exact   = true
+              description  = "Custom subattribute for testing"
               multi_valued = true
-              mutability = "IMMUTABLE"
+              mutability   = "IMMUTABLE"
               name         = "customSubAttribute"
-              required = true
-              returned = "ALWAYS"
-              type = "INTEGER"
-              uniqueness = "NONE"
+              required     = true
+              returned     = "ALWAYS"
+              type         = "INTEGER"
+              uniqueness   = "NONE"
             }
           ]
-          type = "STRING"
+          type       = "STRING"
           uniqueness = "GLOBAL"
         }
       ]
       namespace = "urn:scim:schemas:extension:custom:1.0"
     }
     group_support = false
-    scim_version = "SCIM20"
+    scim_version  = "SCIM20"
     service_provider_config = {
       documentation_uri = "https://example.com/docs"
     }
@@ -903,7 +903,7 @@ resource "pingfederate_sp_idp_connection" "example" {
         data_store_ref = {
           id = pingfederate_data_store.example.id
         }
-        unique_user_id_filter  = "CN=$${userName}"
+        unique_user_id_filter = "CN=$${userName}"
       }
     }
     users = {
