@@ -1,6 +1,7 @@
 # v1.6.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_oauth_out_of_band_auth_plugin` ([#331](https://github.com/pingidentity/terraform-provider-pingfederate/pull/331))
+* **New Resource:** `pingfederate_oauth_resource_owner_credentials_mapping` ([#327](https://github.com/pingidentity/terraform-provider-pingfederate/pull/327))
 
 ### Bug fixes
 * Fixed an issue where the `idp_browser_sso.sso_application_endpoint` attribute in `pingfederate_sp_idp_connection` could cause repeated plans after a successful `terraform apply`. ([#527](https://github.com/pingidentity/terraform-provider-pingfederate/pull/527))
@@ -257,7 +258,7 @@ As this is the first major release of the provider, there are breaking changes f
 
 ### Bug Fixes
 * Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.
-* Fixed config validation error when using variables for password and username in the `pingfederate_kerberos_realm` resource. 
+* Fixed config validation error when using variables for password and username in the `pingfederate_kerberos_realm` resource.
 
 # v0.13.0 August 1, 2024
 ### Resources
@@ -376,8 +377,8 @@ As this is the first major release of the provider, there are breaking changes f
 
 ### BUG FIXES
 * **Server Settings Log Settings Resource:** Fixed provider errors when not specifying all log categories in the server log settings ([#164](https://github.com/pingidentity/terraform-provider-pingfederate/pull/164))
-* **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
-* **Resource Link Update:** Resolved issue where updating a ResourceLink type in resources resulted in an invalid apply ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159)) 
+* **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156))
+* **Resource Link Update:** Resolved issue where updating a ResourceLink type in resources resulted in an invalid apply ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159))
 
 ### FEATURES
 * Added support for PingFederate version `11.3` and full support for all `11.2.x` versions ([#149](https://github.com/pingidentity/terraform-provider-pingfederate/pull/149))
@@ -436,7 +437,7 @@ As this is the first major release of the provider, there are breaking changes f
 
 # v0.2.1 November 10, 2023
 ### BUG FIXES
-* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
+* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86))
 ### ENHANCEMENTS
 * Include values computed from PingFederate in provider state ([#72](https://github.com/pingidentity/terraform-provider-pingfederate/pull/72))
 * Use lists instead of sets in most cases ([#81](https://github.com/pingidentity/terraform-provider-pingfederate/pull/81))
