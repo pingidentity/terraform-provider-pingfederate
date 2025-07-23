@@ -2,6 +2,9 @@
 ### Enhancements
 * Added support for PingFederate `12.3.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, and `12.2`. ([#528]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/528)))
 
+### Breaking changes
+* Removed support for PingFederate `11.2.x`, in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#529]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/529)))
+
 ### Resources
 * **New Resource:** `pingfederate_oauth_out_of_band_auth_plugin` ([#331](https://github.com/pingidentity/terraform-provider-pingfederate/pull/331))
 * **New Resource:** `pingfederate_oauth_resource_owner_credentials_mapping` ([#327](https://github.com/pingidentity/terraform-provider-pingfederate/pull/327))
