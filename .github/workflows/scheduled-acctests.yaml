@@ -65,7 +65,7 @@ jobs:
           PF_TF_ACC_TEST_CA_CERTIFICATE: ${{ secrets.PF_TF_ACC_TEST_CA_CERTIFICATE }}
 
   onfailure:
-    if: ${{ always() && github.event_name == 'schedule' && contains(needs.*.result, 'failure') }}
+    if: ${{ failure() }}
     needs: [acceptance]
     name: Send failure webhook
     runs-on: ubuntu-latest
