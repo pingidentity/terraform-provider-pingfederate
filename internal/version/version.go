@@ -16,18 +16,6 @@ type SupportedVersion string
 
 // Supported PingFederate versions
 const (
-	PingFederate1120  SupportedVersion = "11.2.0"
-	PingFederate1121  SupportedVersion = "11.2.1"
-	PingFederate1122  SupportedVersion = "11.2.2"
-	PingFederate1123  SupportedVersion = "11.2.3"
-	PingFederate1124  SupportedVersion = "11.2.4"
-	PingFederate1125  SupportedVersion = "11.2.5"
-	PingFederate1126  SupportedVersion = "11.2.6"
-	PingFederate1127  SupportedVersion = "11.2.7"
-	PingFederate1128  SupportedVersion = "11.2.8"
-	PingFederate1129  SupportedVersion = "11.2.9"
-	PingFederate11210 SupportedVersion = "11.2.10"
-	PingFederate11211 SupportedVersion = "11.2.11"
 	PingFederate1130  SupportedVersion = "11.3.0"
 	PingFederate1131  SupportedVersion = "11.3.1"
 	PingFederate1132  SupportedVersion = "11.3.2"
@@ -83,18 +71,6 @@ func getSortedVersionIndex(versionString SupportedVersion) int {
 
 func getSortedVersions() []SupportedVersion {
 	return []SupportedVersion{
-		PingFederate1120,
-		PingFederate1121,
-		PingFederate1122,
-		PingFederate1123,
-		PingFederate1124,
-		PingFederate1125,
-		PingFederate1126,
-		PingFederate1127,
-		PingFederate1128,
-		PingFederate1129,
-		PingFederate11210,
-		PingFederate11211,
 		PingFederate1130,
 		PingFederate1131,
 		PingFederate1132,
@@ -167,9 +143,6 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 	sortedVersions := getSortedVersions()
 	versionIndex := -1
 	switch majorMinorVersionString {
-	case "11.2.0":
-		// Use the first version prior to 11.3.0
-		versionIndex = getSortedVersionIndex(PingFederate1130) - 1
 	case "11.3.0":
 		// Use the first version prior to 12.0.0
 		versionIndex = getSortedVersionIndex(PingFederate1200) - 1

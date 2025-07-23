@@ -446,19 +446,19 @@ func (r *oauthServerSettingsDataSource) Schema(ctx context.Context, req datasour
 				Computed:    true,
 			},
 			"dpop_proof_require_nonce": schema.BoolAttribute{
-				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. Supported in PF version `11.3` or later.",
+				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
-				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. Supported in PF version `11.3` or later.",
+				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
-				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. Supported in PF version `11.3` or later.",
+				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,

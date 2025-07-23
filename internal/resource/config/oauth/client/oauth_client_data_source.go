@@ -307,12 +307,12 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Computed:    true,
 					},
 					"logout_mode": schema.StringAttribute{
-						Description: "The logout mode for this client. The default is 'NONE'. Supported in PF version 11.3 or later.",
+						Description: "The logout mode for this client. The default is 'NONE'.",
 						Optional:    false,
 						Computed:    true,
 					},
 					"back_channel_logout_uri": schema.StringAttribute{
-						Description: "The back-channel logout URI for this client. Supported in PF version 11.3 or later.",
+						Description: "The back-channel logout URI for this client.",
 						Optional:    false,
 						Computed:    true,
 					},
@@ -560,8 +560,8 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed:            true,
 			},
 			"require_dpop": schema.BoolAttribute{
-				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
-				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
+				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client.",
+				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client.",
 				Optional:            false,
 				Computed:            true,
 			},

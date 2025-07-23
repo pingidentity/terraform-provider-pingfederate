@@ -296,14 +296,14 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 		},
 		"client_tls_certificate_ref": schema.SingleNestedAttribute{
 			Optional:    true,
-			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later. In order to use this authentication method, you must set either `use_start_tls` or `use_ssl` to `true`. Mutually exclusive with `bind_anonymously` and `user_dn`",
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. In order to use this authentication method, you must set either `use_start_tls` or `use_ssl` to `true`. Mutually exclusive with `bind_anonymously` and `user_dn`",
 			Attributes:  resourcelink.ToSchema(),
 		},
 		"retry_failed_operations": schema.BoolAttribute{
-			Description: "Indicates whether failed operations should be retried. The default is `false`. Supported in PF version `11.3` or later.",
+			Description: "Indicates whether failed operations should be retried. The default is `false`.",
 			Computed:    true,
 			Optional:    true,
-			// The default is set in ModifyPlan, since it is dependent on PF version 11.3+
+			Default:     booldefault.StaticBool(false),
 		},
 	}
 
@@ -479,11 +479,11 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 		"client_tls_certificate_ref": datasourceschema.SingleNestedAttribute{
 			Computed:    true,
 			Optional:    false,
-			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later.",
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates.",
 			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 		},
 		"retry_failed_operations": datasourceschema.BoolAttribute{
-			Description: "Indicates whether failed operations should be retried. Supported in PF version `11.3` or later.",
+			Description: "Indicates whether failed operations should be retried.",
 			Computed:    true,
 			Optional:    false,
 		},

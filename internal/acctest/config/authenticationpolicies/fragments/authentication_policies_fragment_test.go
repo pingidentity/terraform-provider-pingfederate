@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var pingOneConnection, pingOneEnvironment, pingOnePopulation string
@@ -266,102 +265,6 @@ data "pingfederate_authentication_policies_fragment" "%[1]s" {
 	)
 }
 
-func verifyFields() string {
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		return `
-    {
-      name  = "Email Chained Attribute",
-      value = "mail"
-    },
-    {
-      name  = "Phone Chained Attribute",
-      value = "mobile"
-    },
-    {
-      name  = "Reference Image Chained Attribute",
-      value = "photo"
-    },
-    {
-      name  = "Verification URL Delivery Method",
-      value = "User Selection"
-    },
-    {
-      name  = "Verify Policy",
-      value = ""
-    },
-    `
-	} else {
-		return `
-    {
-      name  = "Verify App Name",
-      value = "myappname"
-    },
-     `
-	}
-}
-
-func additionalCoreAttributes() string {
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		return `
-    {
-      name      = "gender",
-      masked    = false,
-      pseudonym = false
-    },
-    {
-      name      = "weight",
-      masked    = false,
-      pseudonym = false
-    },
-    {
-      name      = "nationality",
-      masked    = false,
-      pseudonym = false
-    },
-    {
-      name      = "issuingCountry",
-      masked    = false,
-      pseudonym = false
-    },
-    `
-	} else {
-		return ""
-	}
-}
-
-func additionalAttributeContractFulfillments() string {
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		return `
-    "gender" : {
-      source = {
-        type = "ADAPTER"
-      },
-      value = "gender"
-    },
-    "weight" : {
-      source = {
-        type = "ADAPTER"
-      },
-      value = "weight"
-    },
-    "nationality" : {
-      source = {
-        type = "ADAPTER"
-      },
-      value = "nationality"
-    },
-    "issuingCountry" : {
-      source = {
-        type = "ADAPTER"
-      },
-      value = "issuingCountry"
-    },
-    `
-	} else {
-		return ""
-	}
-}
-
 func dependencyHcl() string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "mycontract" {
@@ -422,7 +325,26 @@ resource "pingfederate_idp_adapter" "myadapter" {
         name  = "PingOne Population",
         value = "%s"
       },
-      %s
+      {
+        name  = "Email Chained Attribute",
+        value = "mail"
+      },
+      {
+        name  = "Phone Chained Attribute",
+        value = "mobile"
+      },
+      {
+        name  = "Reference Image Chained Attribute",
+        value = "photo"
+      },
+      {
+        name  = "Verification URL Delivery Method",
+        value = "User Selection"
+      },
+      {
+        name  = "Verify Policy",
+        value = ""
+      },
       {
         name  = "Test Username",
         value = ""
@@ -561,7 +483,26 @@ resource "pingfederate_idp_adapter" "myadapter" {
         masked    = false,
         pseudonym = false
       },
-      %s
+      {
+        name      = "gender",
+        masked    = false,
+        pseudonym = false
+      },
+      {
+        name      = "weight",
+        masked    = false,
+        pseudonym = false
+      },
+      {
+        name      = "nationality",
+        masked    = false,
+        pseudonym = false
+      },
+      {
+        name      = "issuingCountry",
+        masked    = false,
+        pseudonym = false
+      },
     ],
     extended_attributes = [
       {
@@ -704,10 +645,33 @@ resource "pingfederate_idp_adapter" "myadapter" {
         },
         value = "expirationDate"
       },
-      %s
+      "gender" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "gender"
+      },
+      "weight" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "weight"
+      },
+      "nationality" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "nationality"
+      },
+      "issuingCountry" : {
+        source = {
+          type = "ADAPTER"
+        },
+        value = "issuingCountry"
+      },
     }
   }
-}`, pingOneConnection, pingOneEnvironment, pingOnePopulation, verifyFields(), additionalCoreAttributes(), additionalAttributeContractFulfillments())
+}`, pingOneConnection, pingOneEnvironment, pingOnePopulation)
 }
 
 // Test that the expected attributes are set on the PingFederate server

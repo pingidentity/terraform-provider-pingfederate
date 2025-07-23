@@ -181,11 +181,11 @@ resource "pingfederate_openid_connect_policy" "OIDCPolicy" {
 
 - `allow_id_token_introspection` (Boolean) Determines whether the introspection endpoint should validate an ID token. The default value is `false`.
 - `id_token_lifetime` (Number) The ID Token Lifetime, in minutes. The default value is `5`.
-- `id_token_typ_header_value` (String) ID Token Type (typ) Header Value. Supported in PF version `11.3` or later.
+- `id_token_typ_header_value` (String) ID Token Type (typ) Header Value.
 - `include_s_hash_in_id_token` (Boolean) Determines whether the State Hash should be included in the ID token. The default value is `false`.
 - `include_sri_in_id_token` (Boolean) Determines whether a Session Reference Identifier is included in the ID token. The default value is `false`.
 - `include_user_info_in_id_token` (Boolean) Determines whether the User Info is always included in the ID token. The default value is `false`.
-- `include_x5t_in_id_token` (Boolean) Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version `11.3` or later. The default value is `false`.
+- `include_x5t_in_id_token` (Boolean) Determines whether the X.509 thumbprint header should be included in the ID Token. The default value is `false`.
 - `reissue_id_token_in_hybrid_flow` (Boolean) Determines whether a new ID Token should be returned during token request of the hybrid flow. The default value is `false`.
 - `return_id_token_on_refresh_grant` (Boolean) Determines whether an ID Token should be returned when refresh grant is requested or not. The default value is `false`.
 - `return_id_token_on_token_exchange_grant` (Boolean) Determines whether an ID Token should be returned when token exchange is requested or not. Defaults to `false`. Supported in PF version `12.2` or later.

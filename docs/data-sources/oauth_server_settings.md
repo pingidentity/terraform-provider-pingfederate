@@ -40,9 +40,9 @@ data "pingfederate_oauth_server_settings" "myOauthAuthServerSettings" {
 - `default_scope_description` (String) The default scope description.
 - `device_polling_interval` (Number) The amount of time client should wait between polling requests, in seconds.
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed.
-- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. Supported in PF version `11.3` or later.
-- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. Supported in PF version `11.3` or later.
-- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. Supported in PF version `11.3` or later.
+- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced.
+- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT.
+- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT.
 - `enable_cookieless_user_authorization_authentication_api` (Boolean) Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode
 - `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
 - `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))

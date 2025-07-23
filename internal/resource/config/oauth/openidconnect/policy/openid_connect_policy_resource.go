@@ -195,13 +195,13 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 				},
 			},
 			"include_x5t_in_id_token": schema.BoolAttribute{
-				Description: "Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version `11.3` or later. The default value is `false`.",
+				Description: "Determines whether the X.509 thumbprint header should be included in the ID Token. The default value is `false`.",
 				Optional:    true,
 				Computed:    true,
-				// Default is set in modify plan since it depends on PF version
+				Default:     booldefault.StaticBool(false),
 			},
 			"id_token_typ_header_value": schema.StringAttribute{
-				Description: "ID Token Type (typ) Header Value. Supported in PF version `11.3` or later.",
+				Description: "ID Token Type (typ) Header Value.",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -220,15 +220,8 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 }
 
 func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast113 := compare >= 0
 	// Compare to version 12.2 of PF
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
@@ -247,29 +240,6 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	planModified := false
-	// If include_x5t_in_id_token or id_token_typ_header_value is set prior to PF version 11.3, throw an error
-	if !pfVersionAtLeast113 {
-		if internaltypes.IsDefined(plan.IncludeX5tInIdToken) {
-			version.AddUnsupportedAttributeError("include_x5t_in_id_token",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.IncludeX5tInIdToken.IsUnknown() {
-			plan.IncludeX5tInIdToken = types.BoolNull()
-			planModified = true
-		}
-		if internaltypes.IsDefined(plan.IdTokenTypHeaderValue) {
-			version.AddUnsupportedAttributeError("id_token_typ_header_value",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.IdTokenTypHeaderValue.IsUnknown() {
-			plan.IdTokenTypHeaderValue = types.StringNull()
-			planModified = true
-		}
-	}
-	// Set default if PF version is new enough
-	if pfVersionAtLeast113 && plan.IncludeX5tInIdToken.IsUnknown() {
-		plan.IncludeX5tInIdToken = types.BoolValue(false)
-		planModified = true
-	}
-
 	if !pfVersionAtLeast122 {
 		if internaltypes.IsDefined(plan.ReturnIdTokenOnTokenExchangeGrant) {
 			version.AddUnsupportedAttributeError("return_id_token_on_token_exchange_grant",

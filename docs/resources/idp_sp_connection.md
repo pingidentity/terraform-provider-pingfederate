@@ -1192,7 +1192,7 @@ Optional:
 
 Read-Only:
 
-- `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version `11.3` or later.
+- `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings`

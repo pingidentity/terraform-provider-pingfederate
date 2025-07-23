@@ -470,9 +470,10 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"logout_mode": schema.StringAttribute{
-						Description: "The logout mode for this client. The default is 'NONE'. Supported in PF version `11.3` or later. Supported values are `NONE`, `PING_FRONT_CHANNEL`, `OIDC_FRONT_CHANNEL`, and `OIDC_BACK_CHANNEL`.",
+						Description: "The logout mode for this client. The default is 'NONE'. Supported values are `NONE`, `PING_FRONT_CHANNEL`, `OIDC_FRONT_CHANNEL`, and `OIDC_BACK_CHANNEL`.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString("NONE"),
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"NONE",
@@ -483,7 +484,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"back_channel_logout_uri": schema.StringAttribute{
-						Description: "The back-channel logout URI for this client. Supported in PF version `11.3` or later.",
+						Description: "The back-channel logout URI for this client.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
@@ -952,11 +953,11 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"require_dpop": schema.BoolAttribute{
-				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version `11.3` or later. Defaults to `false`.",
-				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version `11.3` or later. Defaults to `false`.",
+				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Defaults to `false`.",
+				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Defaults to `false`.",
 				Optional:            true,
 				Computed:            true,
-				// Default set when appropriate in ModifyPlan before
+				Default:             booldefault.StaticBool(false),
 			},
 			"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
 				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.",
@@ -1250,14 +1251,8 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 and 12.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast113 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	// Compare to version 12.0 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
@@ -1285,49 +1280,8 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	planModified := false
-	// If require_dpop is set prior to PF version 11.3, throw an error
-	if !pfVersionAtLeast113 {
-		if internaltypes.IsDefined(plan.RequireDpop) {
-			version.AddUnsupportedAttributeError("require_dpop",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.RequireDpop.IsUnknown() {
-			// Ensure require_dpop is not unknown for older versions of PF, so that it gets passed in as nil rather than false.
-			// Passing it in as false would break older versions of PF, since it is an unrecognized property.
-			plan.RequireDpop = types.BoolNull()
-			planModified = true
-		}
-	} else if plan.RequireDpop.IsUnknown() {
-		// Set a default of false if the PF version is new enough
-		plan.RequireDpop = types.BoolValue(false)
-		planModified = true
-	}
 	if internaltypes.IsDefined(plan.OidcPolicy) {
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
-		// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
-		planLogoutMode := planOidcPolicyAttrs["logout_mode"].(types.String)
-		planBackChannelLogoutUri := planOidcPolicyAttrs["back_channel_logout_uri"].(types.String)
-		if !pfVersionAtLeast113 {
-			if internaltypes.IsDefined(planLogoutMode) {
-				version.AddUnsupportedAttributeError("oidc_policy.logout_mode",
-					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-			} else if planLogoutMode.IsUnknown() {
-				// Ensure logout_mode is not unknown for older versions of PF
-				planOidcPolicyAttrs["logout_mode"] = types.StringNull()
-				plan.OidcPolicy, diags = types.ObjectValue(plan.OidcPolicy.AttributeTypes(ctx), planOidcPolicyAttrs)
-				resp.Diagnostics.Append(diags...)
-				planModified = true
-			}
-			if internaltypes.IsDefined(planBackChannelLogoutUri) {
-				version.AddUnsupportedAttributeError("oidc_policy.back_channel_logout_uri",
-					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-			}
-		} else if planLogoutMode.IsUnknown() {
-			// Set a default logout_mode if the PF version is new enough
-			planOidcPolicyAttrs["logout_mode"] = types.StringValue("NONE")
-			plan.OidcPolicy, diags = types.ObjectValue(plan.OidcPolicy.AttributeTypes(ctx), planOidcPolicyAttrs)
-			resp.Diagnostics.Append(diags...)
-			planModified = true
-		}
 		// If oidc_policy.post_logout_redirect_uris is set prior to PF version 12.0, throw an error.
 		planPostLogoutRedirectUris := planOidcPolicyAttrs["post_logout_redirect_uris"].(types.Set)
 		if !pfVersionAtLeast120 && internaltypes.IsDefined(planPostLogoutRedirectUris) {
