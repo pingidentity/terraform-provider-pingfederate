@@ -196,6 +196,12 @@ func openidConnectPolicy_CompleteHCL() string {
     `
 	}
 
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		versionedHcl += `
+  allow_id_token_introspection = true
+    `
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_server_settings" "example" {
   authorization_code_entropy = 30
@@ -383,6 +389,16 @@ func openidConnectPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	} else {
 		versionedChecks = append(versionedChecks,
 			resource.TestCheckNoResourceAttr("pingfederate_openid_connect_policy.example", "return_id_token_on_token_exchange_grant"),
+		)
+	}
+
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "allow_id_token_introspection", "false"),
+		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_openid_connect_policy.example", "allow_id_token_introspection"),
 		)
 	}
 	return resource.ComposeTestCheckFunc(

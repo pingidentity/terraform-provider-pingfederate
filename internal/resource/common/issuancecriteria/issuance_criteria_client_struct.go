@@ -4,7 +4,7 @@ package issuancecriteria
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 )
 
 func ClientStruct(issuanceCriteria types.Object) *client.IssuanceCriteria {

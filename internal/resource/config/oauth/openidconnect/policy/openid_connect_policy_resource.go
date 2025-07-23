@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
@@ -68,6 +68,11 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 				Description: "The access token manager associated with this Open ID Connect policy.",
 				Required:    true,
 				Attributes:  resourcelink.ToSchema(),
+			},
+			"allow_id_token_introspection": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Determines whether the introspection endpoint should validate an ID token. The default value is `false`.",
 			},
 			"id_token_lifetime": schema.Int64Attribute{
 				Description: "The ID Token Lifetime, in minutes. The default value is `5`.",
@@ -229,6 +234,13 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	pfVersionAtLeast122 := compare >= 0
+	// Compare to version 12.3.0 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1230 := compare >= 0
 	var plan *oauthOpenIdConnectPolicyModel
 	req.Plan.Get(ctx, &plan)
 	if plan == nil {
@@ -271,6 +283,17 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		planModified = true
 	}
 
+	if !pfVersionAtLeast1230 {
+		if internaltypes.IsDefined(plan.AllowIdTokenIntrospection) {
+			version.AddUnsupportedAttributeError("allow_id_token_introspection",
+				r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+		}
+	}
+	if pfVersionAtLeast1230 && plan.AllowIdTokenIntrospection.IsUnknown() {
+		plan.AllowIdTokenIntrospection = types.BoolValue(false)
+		planModified = true
+	}
+
 	if planModified {
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
@@ -299,6 +322,11 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	accessTokenManagerRefAttrs := model.AccessTokenManagerRef.Attributes()
 	accessTokenManagerRefValue.Id = accessTokenManagerRefAttrs["id"].(types.String).ValueString()
 	result.AccessTokenManagerRef = accessTokenManagerRefValue
+
+	// allow_id_token_introspection
+	if !model.AllowIdTokenIntrospection.IsNull() && !model.AllowIdTokenIntrospection.IsUnknown() {
+		result.AllowIdTokenIntrospection = model.AllowIdTokenIntrospection.ValueBoolPointer()
+	}
 
 	// attribute_contract
 	attributeContractValue := client.OpenIdConnectAttributeContract{}

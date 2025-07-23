@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -23,7 +23,7 @@ var (
 	emptyRsaKeyListDefault, _ = types.SetValue(types.ObjectType{AttrTypes: rsaKeyIdAttrTypes}, nil)
 )
 
-func (r *keypairsOauthOpenidConnectResource) setConditionalDefaults(ctx context.Context, isVersionAtLeast1201 bool, plan *keypairsOauthOpenidConnectResourceModel, resp *resource.ModifyPlanResponse) {
+func (r *keypairsOauthOpenidConnectResource) setConditionalDefaults(ctx context.Context, isVersionAtLeast1201, isVersionAtLeast1230 bool, plan *keypairsOauthOpenidConnectResourceModel, resp *resource.ModifyPlanResponse) {
 	if isVersionAtLeast1201 {
 		// RSA key id lists default to empty sets
 		if plan.RsaAlgorithmActiveKeyIds.IsUnknown() {
@@ -31,6 +31,35 @@ func (r *keypairsOauthOpenidConnectResource) setConditionalDefaults(ctx context.
 		}
 		if plan.RsaAlgorithmPreviousKeyIds.IsUnknown() {
 			plan.RsaAlgorithmPreviousKeyIds = emptyRsaKeyListDefault
+		}
+	}
+	if plan.DynamicKeyCertificateInformation.IsUnknown() {
+		dynamicKeyCertificateInformationAttrTypes := map[string]attr.Type{
+			"city":              types.StringType,
+			"country":           types.StringType,
+			"organization":      types.StringType,
+			"organization_unit": types.StringType,
+			"state":             types.StringType,
+		}
+		if isVersionAtLeast1230 {
+			var diags diag.Diagnostics
+			plan.DynamicKeyCertificateInformation, diags = types.ObjectValue(dynamicKeyCertificateInformationAttrTypes, map[string]attr.Value{
+				"city":              types.StringNull(),
+				"country":           types.StringNull(),
+				"organization":      types.StringNull(),
+				"organization_unit": types.StringNull(),
+				"state":             types.StringNull(),
+			})
+			resp.Diagnostics.Append(diags...)
+		} else {
+			plan.DynamicKeyCertificateInformation = types.ObjectNull(dynamicKeyCertificateInformationAttrTypes)
+		}
+	}
+	if plan.PublishDynamicKeyX5cs.IsUnknown() {
+		if isVersionAtLeast1230 {
+			plan.PublishDynamicKeyX5cs = types.BoolValue(false)
+		} else {
+			plan.PublishDynamicKeyX5cs = types.BoolNull()
 		}
 	}
 	// Nothing else can be set if static_jwks_enabled is set to false
@@ -217,6 +246,15 @@ func validateActiveAndPreviousCertRef(prefix string, active, previous types.Obje
 }
 
 func (m *keypairsOauthOpenidConnectResourceModel) setNullObjectValues() {
+	// dynamic_key_certificate_information
+	dynamicKeyCertificateInformationAttrTypes := map[string]attr.Type{
+		"city":              types.StringType,
+		"country":           types.StringType,
+		"organization":      types.StringType,
+		"organization_unit": types.StringType,
+		"state":             types.StringType,
+	}
+	m.DynamicKeyCertificateInformation = types.ObjectNull(dynamicKeyCertificateInformationAttrTypes)
 	certRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}

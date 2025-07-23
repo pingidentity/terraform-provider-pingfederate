@@ -179,6 +179,7 @@ resource "pingfederate_openid_connect_policy" "OIDCPolicy" {
 
 ### Optional
 
+- `allow_id_token_introspection` (Boolean) Determines whether the introspection endpoint should validate an ID token. The default value is `false`.
 - `id_token_lifetime` (Number) The ID Token Lifetime, in minutes. The default value is `5`.
 - `id_token_typ_header_value` (String) ID Token Type (typ) Header Value. Supported in PF version `11.3` or later.
 - `include_s_hash_in_id_token` (Boolean) Determines whether the State Hash should be included in the ID token. The default value is `false`.

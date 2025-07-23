@@ -156,7 +156,7 @@ resource "pingfederate_oauth_client" "rs_client" {
 `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `ciba_require_signed_requests` (Boolean) Determines whether CIBA signed requests are required for this client.
 - `ciba_user_code_supported` (Boolean) Determines whether the CIBA user code parameter is supported by this client.
 - `client_auth` (Attributes) Client authentication settings. If this model is null, it indicates that no client authentication will be used. (see [below for nested schema](#nestedatt--client_auth))
@@ -206,7 +206,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `lockout_max_malicious_actions` (Number) The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.
 - `lockout_max_malicious_actions_type` (String) Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.
 - `logo_url` (String) The location of the logo used on user-facing OAuth grant authorization and revocation pages.
@@ -319,7 +319,7 @@ Optional:
 `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
-`RSASSA-PSS` is only supported with SafeNet Luna, Thales nCipher or Java 11.
+`RSASSA-PSS` is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 `HS256` - HMAC using SHA-256
 `HS384` - HMAC using SHA-384
 `HS512` - HMAC using SHA-512.
@@ -408,7 +408,7 @@ Optional:
 `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `logout_mode` (String) The logout mode for this client. The default is 'NONE'. Supported in PF version `11.3` or later. Supported values are `NONE`, `PING_FRONT_CHANNEL`, `OIDC_FRONT_CHANNEL`, and `OIDC_BACK_CHANNEL`.
 - `logout_uris` (Set of String) A list of front-channel logout URIs for this client.
 - `pairwise_identifier_user_type` (Boolean) Determines whether the subject identifier type is pairwise. The default is `false`.
