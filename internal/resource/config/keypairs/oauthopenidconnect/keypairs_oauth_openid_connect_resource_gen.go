@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -51,6 +51,7 @@ func (r *keypairsOauthOpenidConnectResource) Configure(_ context.Context, req re
 }
 
 type keypairsOauthOpenidConnectResourceModel struct {
+	DynamicKeyCertificateInformation  types.Object `tfsdk:"dynamic_key_certificate_information"`
 	P256activeCertRef                 types.Object `tfsdk:"p256_active_cert_ref"`
 	P256activeKeyId                   types.String `tfsdk:"p256_active_key_id"`
 	P256decryptionActiveCertRef       types.Object `tfsdk:"p256_decryption_active_cert_ref"`
@@ -81,6 +82,7 @@ type keypairsOauthOpenidConnectResourceModel struct {
 	P521previousCertRef               types.Object `tfsdk:"p521_previous_cert_ref"`
 	P521previousKeyId                 types.String `tfsdk:"p521_previous_key_id"`
 	P521publishX5cParameter           types.Bool   `tfsdk:"p521_publish_x5c_parameter"`
+	PublishDynamicKeyX5cs             types.Bool   `tfsdk:"publish_dynamic_key_x5cs"`
 	RsaActiveCertRef                  types.Object `tfsdk:"rsa_active_cert_ref"`
 	RsaActiveKeyId                    types.String `tfsdk:"rsa_active_key_id"`
 	RsaAlgorithmActiveKeyIds          types.Set    `tfsdk:"rsa_algorithm_active_key_ids"`
@@ -100,6 +102,48 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 	resp.Schema = schema.Schema{
 		Description: "Resource to manage the Oauth/OpenID Connect key settings",
 		Attributes: map[string]schema.Attribute{
+			"dynamic_key_certificate_information": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"city": schema.StringAttribute{
+						Optional:    true,
+						Description: "The city name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"country": schema.StringAttribute{
+						Optional:    true,
+						Description: "The country name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"organization": schema.StringAttribute{
+						Optional:    true,
+						Description: "The organization name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"organization_unit": schema.StringAttribute{
+						Optional:    true,
+						Description: "The organization unit name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"state": schema.StringAttribute{
+						Optional:    true,
+						Description: "The state name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
+				},
+				Optional:    true,
+				Computed:    true,
+				Description: "The attributes used to configure an OAuth/OpenID Connect Dynamic key signing certificate. Supported in PingFederate 12.3 and later.",
+			},
 			"p256_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
@@ -334,6 +378,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Computed:    true,
 				Description: "Enable publishing of the P-521 certificate chain associated with the active key.",
 			},
+			"publish_dynamic_key_x5cs": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable publishing of the dynamic key x5c parameters. Supported in PingFederate 12.3 and later.",
+			},
 			"rsa_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
@@ -468,6 +517,13 @@ func (r *keypairsOauthOpenidConnectResource) ModifyPlan(ctx context.Context, req
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
+	// Compare to version 12.3.0 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1230 := compare >= 0
 	var plan *keypairsOauthOpenidConnectResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {
@@ -548,14 +604,36 @@ func (r *keypairsOauthOpenidConnectResource) ModifyPlan(ctx context.Context, req
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 	}
+	if !pfVersionAtLeast1230 {
+		if internaltypes.IsDefined(plan.DynamicKeyCertificateInformation) {
+			version.AddUnsupportedAttributeError("dynamic_key_certificate_information",
+				r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+		}
+		if internaltypes.IsDefined(plan.PublishDynamicKeyX5cs) {
+			version.AddUnsupportedAttributeError("publish_dynamic_key_x5cs",
+				r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+		}
+	}
 	// Set default values that can't be set in schema
-	r.setConditionalDefaults(ctx, pfVersionAtLeast1201, plan, resp)
+	r.setConditionalDefaults(ctx, pfVersionAtLeast1201, pfVersionAtLeast1230, plan, resp)
 	// Validation that may be affected by default values
 	resp.Diagnostics.Append(plan.validatePlan()...)
 }
 
 func (model *keypairsOauthOpenidConnectResourceModel) buildClientStruct(versionAtLeast1201 bool) *client.OAuthOidcKeysSettings {
 	result := &client.OAuthOidcKeysSettings{}
+	// dynamic_key_certificate_information
+	if !model.DynamicKeyCertificateInformation.IsNull() && !model.DynamicKeyCertificateInformation.IsUnknown() {
+		dynamicKeyCertificateInformationValue := &client.OAuthOidcKeysSettingsCertificateInformation{}
+		dynamicKeyCertificateInformationAttrs := model.DynamicKeyCertificateInformation.Attributes()
+		dynamicKeyCertificateInformationValue.City = dynamicKeyCertificateInformationAttrs["city"].(types.String).ValueStringPointer()
+		dynamicKeyCertificateInformationValue.Country = dynamicKeyCertificateInformationAttrs["country"].(types.String).ValueStringPointer()
+		dynamicKeyCertificateInformationValue.Organization = dynamicKeyCertificateInformationAttrs["organization"].(types.String).ValueStringPointer()
+		dynamicKeyCertificateInformationValue.OrganizationUnit = dynamicKeyCertificateInformationAttrs["organization_unit"].(types.String).ValueStringPointer()
+		dynamicKeyCertificateInformationValue.State = dynamicKeyCertificateInformationAttrs["state"].(types.String).ValueStringPointer()
+		result.DynamicKeyCertificateInformation = dynamicKeyCertificateInformationValue
+	}
+
 	// p256_active_cert_ref
 	if !model.P256activeCertRef.IsNull() {
 		p256ActiveCertRefValue := &client.ResourceLink{}
@@ -695,6 +773,10 @@ func (model *keypairsOauthOpenidConnectResourceModel) buildClientStruct(versionA
 		rsaActiveCertRefValue.Id = rsaActiveCertRefAttrs["id"].(types.String).ValueString()
 		result.RsaActiveCertRef = rsaActiveCertRefValue
 	}
+	// publish_dynamic_key_x5cs
+	if !model.PublishDynamicKeyX5cs.IsNull() && !model.PublishDynamicKeyX5cs.IsUnknown() {
+		result.PublishDynamicKeyX5cs = model.PublishDynamicKeyX5cs.ValueBoolPointer()
+	}
 
 	// rsa_active_key_id
 	result.RsaActiveKeyId = model.RsaActiveKeyId.ValueStringPointer()
@@ -762,6 +844,28 @@ func (model *keypairsOauthOpenidConnectResourceModel) buildClientStruct(versionA
 
 func (state *keypairsOauthOpenidConnectResourceModel) readClientResponse(response *client.OAuthOidcKeysSettings, versionAtLeast1201 bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// dynamic_key_certificate_information
+	dynamicKeyCertificateInformationAttrTypes := map[string]attr.Type{
+		"city":              types.StringType,
+		"country":           types.StringType,
+		"organization":      types.StringType,
+		"organization_unit": types.StringType,
+		"state":             types.StringType,
+	}
+	var dynamicKeyCertificateInformationValue types.Object
+	if response.DynamicKeyCertificateInformation == nil {
+		dynamicKeyCertificateInformationValue = types.ObjectNull(dynamicKeyCertificateInformationAttrTypes)
+	} else {
+		dynamicKeyCertificateInformationValue, diags = types.ObjectValue(dynamicKeyCertificateInformationAttrTypes, map[string]attr.Value{
+			"city":              types.StringPointerValue(response.DynamicKeyCertificateInformation.City),
+			"country":           types.StringPointerValue(response.DynamicKeyCertificateInformation.Country),
+			"organization":      types.StringPointerValue(response.DynamicKeyCertificateInformation.Organization),
+			"organization_unit": types.StringPointerValue(response.DynamicKeyCertificateInformation.OrganizationUnit),
+			"state":             types.StringPointerValue(response.DynamicKeyCertificateInformation.State),
+		})
+		respDiags.Append(diags...)
+	}
+	state.DynamicKeyCertificateInformation = dynamicKeyCertificateInformationValue
 	// p256_active_cert_ref
 	p256ActiveCertRefAttrrTypes := map[string]attr.Type{
 		"id": types.StringType,
@@ -978,6 +1082,8 @@ func (state *keypairsOauthOpenidConnectResourceModel) readClientResponse(respons
 	state.P521previousKeyId = types.StringPointerValue(response.P521PreviousKeyId)
 	// p521_publish_x5c_parameter
 	state.P521publishX5cParameter = types.BoolPointerValue(response.P521PublishX5cParameter)
+	// publish_dynamic_key_x5cs
+	state.PublishDynamicKeyX5cs = types.BoolPointerValue(response.PublishDynamicKeyX5cs)
 	// rsa_active_cert_ref
 	rsaActiveCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,

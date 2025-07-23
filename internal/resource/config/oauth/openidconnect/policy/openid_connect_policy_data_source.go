@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -48,6 +48,10 @@ func (r *openidConnectPolicyDataSource) Schema(ctx context.Context, req datasour
 				Computed:    true,
 				Optional:    false,
 				Attributes:  resourcelink.ToDataSourceSchema(),
+			},
+			"allow_id_token_introspection": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Determines whether the introspection endpoint should validate an ID token.",
 			},
 			"id_token_lifetime": schema.Int64Attribute{
 				Description: "The ID Token Lifetime, in minutes. The default value is 5.",

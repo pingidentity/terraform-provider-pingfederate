@@ -27,7 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -296,14 +296,17 @@ var (
 	}
 	idpBrowserSsoOidcProviderSettingsRequestParametersElementType = types.ObjectType{AttrTypes: idpBrowserSsoOidcProviderSettingsRequestParametersAttrTypes}
 	idpBrowserSsoOidcProviderSettingsAttrTypes                    = map[string]attr.Type{
+		"audience":                                     types.StringType,
 		"authentication_scheme":                        types.StringType,
 		"authentication_signing_algorithm":             types.StringType,
 		"authorization_endpoint":                       types.StringType,
 		"back_channel_logout_uri":                      types.StringType,
 		"enable_pkce":                                  types.BoolType,
 		"front_channel_logout_uri":                     types.StringType,
+		"include_not_before_claim":                     types.BoolType,
 		"jwks_url":                                     types.StringType,
 		"jwt_secured_authorization_response_mode_type": types.StringType,
+		"lifetime":                                     types.StringType,
 		"login_type":                                   types.StringType,
 		"logout_endpoint":                              types.StringType,
 		"post_logout_redirect_uri":                     types.StringType,
@@ -314,6 +317,7 @@ var (
 		"scopes":                                       types.StringType,
 		"token_endpoint":                               types.StringType,
 		"track_user_sessions_for_logout":               types.BoolType,
+		"type":                                         types.StringType,
 		"user_info_endpoint":                           types.StringType,
 	}
 	idpBrowserSsoSloServiceEndpointsAttrTypes = map[string]attr.Type{
@@ -461,6 +465,35 @@ var (
 		"attributes": types.SetType{ElemType: inboundProvisioningCustomSchemaAttributesElementType},
 		"namespace":  types.StringType,
 	}
+	inboundProvisioningCustomScim2SchemaAttributesSubAttributesAttrTypes = map[string]attr.Type{
+		"case_exact":  types.BoolType,
+		"description": types.StringType,
+		"mutability":  types.StringType,
+		"name":        types.StringType,
+		"required":    types.BoolType,
+		"returned":    types.StringType,
+		"type":        types.StringType,
+		"uniqueness":  types.StringType,
+	}
+	inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesSubAttributesAttrTypes}
+	inboundProvisioningCustomScim2SchemaAttributesAttrTypes                = map[string]attr.Type{
+		"canonical_values": types.SetType{ElemType: types.StringType},
+		"case_exact":       types.BoolType,
+		"description":      types.StringType,
+		"multi_valued":     types.BoolType,
+		"mutability":       types.StringType,
+		"name":             types.StringType,
+		"required":         types.BoolType,
+		"returned":         types.StringType,
+		"sub_attributes":   types.SetType{ElemType: inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType},
+		"type":             types.StringType,
+		"uniqueness":       types.StringType,
+	}
+	inboundProvisioningCustomScim2SchemaAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesAttrTypes}
+	inboundProvisioningCustomScim2SchemaAttrTypes             = map[string]attr.Type{
+		"attributes": types.SetType{ElemType: inboundProvisioningCustomScim2SchemaAttributesElementType},
+		"namespace":  types.StringType,
+	}
 	inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesAttrTypes = map[string]attr.Type{
 		"masked": types.BoolType,
 		"name":   types.StringType,
@@ -508,6 +541,9 @@ var (
 	inboundProvisioningGroupsAttrTypes = map[string]attr.Type{
 		"read_groups":  types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttrTypes},
 		"write_groups": types.ObjectType{AttrTypes: inboundProvisioningGroupsWriteGroupsAttrTypes},
+	}
+	inboundProvisioningServiceProviderConfigAttrTypes = map[string]attr.Type{
+		"documentation_uri": types.StringType,
 	}
 
 	inboundProvisioningUsersReadUsersAttributeContractCoreAttributesAttrTypes = map[string]attr.Type{
@@ -559,12 +595,15 @@ var (
 		"write_users": types.ObjectType{AttrTypes: inboundProvisioningUsersWriteUsersAttrTypes},
 	}
 	inboundProvisioningAttrTypes = map[string]attr.Type{
-		"action_on_delete": types.StringType,
-		"custom_schema":    types.ObjectType{AttrTypes: inboundProvisioningCustomSchemaAttrTypes},
-		"group_support":    types.BoolType,
-		"groups":           types.ObjectType{AttrTypes: inboundProvisioningGroupsAttrTypes},
-		"user_repository":  types.ObjectType{AttrTypes: inboundprovisioninguserrepository.ElemAttrType()},
-		"users":            types.ObjectType{AttrTypes: inboundProvisioningUsersAttrTypes},
+		"action_on_delete":        types.StringType,
+		"custom_schema":           types.ObjectType{AttrTypes: inboundProvisioningCustomSchemaAttrTypes},
+		"custom_scim2_schema":     types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttrTypes},
+		"group_support":           types.BoolType,
+		"groups":                  types.ObjectType{AttrTypes: inboundProvisioningGroupsAttrTypes},
+		"scim_version":            types.StringType,
+		"service_provider_config": types.ObjectType{AttrTypes: inboundProvisioningServiceProviderConfigAttrTypes},
+		"user_repository":         types.ObjectType{AttrTypes: inboundprovisioninguserrepository.ElemAttrType()},
+		"users":                   types.ObjectType{AttrTypes: inboundProvisioningUsersAttrTypes},
 	}
 
 	tokenGeneratorAttrTypes = map[string]attr.Type{
@@ -621,6 +660,15 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	adapterMappingsAttrSources.Validators = []validator.Set{
 		setvalidator.SizeAtMost(1),
 	}
+
+	// inbound_provisioning.custom_scim2_schema.attributes default
+	inboundProvisioningCustomScim2SchemaAttributesElementType := types.ObjectType{AttrTypes: inboundProvisioningCustomScim2SchemaAttributesAttrTypes}
+	inboundProvisioningCustomScim2SchemaAttributesDefault, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesElementType, nil)
+	resp.Diagnostics.Append(diags...)
+	// inbound_provisioning.custom_scim2_schema.attributes.sub_attributes default
+	inboundProvisioningCustomScim2SchemaAttributesSubAttributesDefault, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType, nil)
+	resp.Diagnostics.Append(diags...)
+
 	schema := schema.Schema{
 		Description: "Manages a partner Identity Provider connection",
 		Attributes: map[string]schema.Attribute{
@@ -1842,6 +1890,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"oidc_provider_settings": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
+							"audience": schema.StringAttribute{
+								Optional:            true,
+								Description:         "The claim \"aud\", that goes into the JWT body if specified. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate 12.3 and later.",
+								MarkdownDescription: "The claim `aud`, that goes into the JWT body if specified. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
+							},
 							"authentication_scheme": schema.StringAttribute{
 								Optional:            true,
 								Description:         "The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. Options are `BASIC`, `CLIENT_SECRET_JWT`, `POST`, `PRIVATE_KEY_JWT`.",
@@ -1903,6 +1959,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description:         "The Front-Channel Logout URI. This is a read-only parameter.",
 								MarkdownDescription: "The Front-Channel Logout URI. This is a read-only parameter.",
 							},
+							"include_not_before_claim": schema.BoolAttribute{
+								Optional:            true,
+								Computed:            true,
+								Description:         "Include the claim \"nbf\" in the JWT body. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate 12.3 and later. Default value is \"false\".",
+								MarkdownDescription: "Include the claim `nbf` in the JWT body. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later. Default value is `false`.",
+							},
 							"jwks_url": schema.StringAttribute{
 								Required:            true,
 								Description:         "URL of the OpenID Provider's JSON Web Key Set [JWK] document.",
@@ -1918,6 +1980,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
 									stringvalidator.OneOf("DISABLED", "QUERY_JWT", "FORM_POST_JWT"),
+								},
+							},
+							"lifetime": schema.StringAttribute{
+								Optional:    true,
+								Description: "The lifetime of the JWT in minutes. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate 12.3 and later.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
 								},
 							},
 							"login_type": schema.StringAttribute{
@@ -2105,6 +2174,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Default:             booldefault.StaticBool(false),
 								Description:         "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.",
 								MarkdownDescription: "Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.",
+							},
+							"type": schema.StringAttribute{
+								Optional:            true,
+								Description:         "The header \"typ\", that goes into the JWT header if specified. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate 12.3 and later.",
+								MarkdownDescription: "The header `typ`, that goes into the JWT header if specified. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"user_info_endpoint": schema.StringAttribute{
 								Optional:            true,
@@ -2562,14 +2639,217 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 						},
-						Required:            true,
+						Optional:            true,
 						Description:         "Custom SCIM Attributes configuration.",
 						MarkdownDescription: "Custom SCIM Attributes configuration.",
 					},
+					"custom_scim2_schema": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"attributes": schema.SetNestedAttribute{
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"canonical_values": schema.SetAttribute{
+											ElementType: types.StringType,
+											Optional:    true,
+											Description: "List of canonical values for multi-valued attributes.",
+											Validators: []validator.Set{
+												setvalidator.SizeAtLeast(1),
+											},
+										},
+										"case_exact": schema.BoolAttribute{
+											Optional:    true,
+											Description: "Whether the attribute is case exact.",
+										},
+										"description": schema.StringAttribute{
+											Optional:    true,
+											Description: "Description of the attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
+										},
+										"multi_valued": schema.BoolAttribute{
+											Optional:    true,
+											Description: "Indicates whether the attribute is multi-valued.",
+										},
+										"mutability": schema.StringAttribute{
+											Optional:            true,
+											Description:         "Mutability of the attribute. Options are \"READONLY\", \"WRITEONLY\", \"READWRITE\", \"IMMUTABLE\".",
+											MarkdownDescription: "Mutability of the attribute. Options are `READONLY`, `WRITEONLY`, `READWRITE`, `IMMUTABLE`.",
+											Validators: []validator.String{
+												stringvalidator.OneOf(
+													"READONLY",
+													"WRITEONLY",
+													"READWRITE",
+													"IMMUTABLE",
+												),
+											},
+										},
+										"name": schema.StringAttribute{
+											Optional:    true,
+											Description: "Name of the attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
+										},
+										"required": schema.BoolAttribute{
+											Optional:    true,
+											Description: "Whether the attribute is required.",
+										},
+										"returned": schema.StringAttribute{
+											Optional:            true,
+											Description:         "Whether the attribute is returned in the response. Options are \"ALWAYS\", \"DEFAULT\", \"NEVER\", \"REQUEST\".",
+											MarkdownDescription: "Whether the attribute is returned in the response. Options are `ALWAYS`, `DEFAULT`, `NEVER`, `REQUEST`.",
+											Validators: []validator.String{
+												stringvalidator.OneOf(
+													"ALWAYS",
+													"DEFAULT",
+													"NEVER",
+													"REQUEST",
+												),
+											},
+										},
+										"sub_attributes": schema.SetNestedAttribute{
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"case_exact": schema.BoolAttribute{
+														Optional:    true,
+														Description: "Whether the sub-attribute is case exact.",
+													},
+													"description": schema.StringAttribute{
+														Optional:    true,
+														Description: "Description of the sub-attribute.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
+													},
+													"mutability": schema.StringAttribute{
+														Optional:            true,
+														Description:         "Mutability of the sub-attribute. Options are \"READONLY\", \"WRITEONLY\", \"READWRITE\", \"IMMUTABLE\".",
+														MarkdownDescription: "Mutability of the sub-attribute. Options are `READONLY`, `WRITEONLY`, `READWRITE`, `IMMUTABLE`.",
+														Validators: []validator.String{
+															stringvalidator.OneOf(
+																"READONLY",
+																"WRITEONLY",
+																"READWRITE",
+																"IMMUTABLE",
+															),
+														},
+													},
+													"name": schema.StringAttribute{
+														Optional:    true,
+														Description: "Name of the sub-attribute.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
+													},
+													"required": schema.BoolAttribute{
+														Optional:    true,
+														Description: "Whether the sub-attribute is required.",
+													},
+													"returned": schema.StringAttribute{
+														Optional:            true,
+														Description:         "Whether the sub-attribute is returned in the response. Options are \"ALWAYS\", \"DEFAULT\", \"NEVER\", \"REQUEST\".",
+														MarkdownDescription: "Whether the sub-attribute is returned in the response. Options are `ALWAYS`, `DEFAULT`, `NEVER`, `REQUEST`.",
+														Validators: []validator.String{
+															stringvalidator.OneOf(
+																"ALWAYS",
+																"DEFAULT",
+																"NEVER",
+																"REQUEST",
+															),
+														},
+													},
+													"type": schema.StringAttribute{
+														Optional:            true,
+														Description:         "Type of the sub-attribute. Options are \"STRING\", \"BOOLEAN\", \"INTEGER\", \"DECIMAL\", \"DATETIME\", \"BINARY\", \"REFERENCE\", \"COMPLEX\".",
+														MarkdownDescription: "Type of the sub-attribute. Options are `STRING`, `BOOLEAN`, `INTEGER`, `DECIMAL`, `DATETIME`, `BINARY`, `REFERENCE`, `COMPLEX`.",
+														Validators: []validator.String{
+															stringvalidator.OneOf(
+																"STRING",
+																"BOOLEAN",
+																"INTEGER",
+																"DECIMAL",
+																"DATETIME",
+																"BINARY",
+																"REFERENCE",
+																"COMPLEX",
+															),
+														},
+													},
+													"uniqueness": schema.StringAttribute{
+														Optional:            true,
+														Description:         "The uniqueness of the sub-attribute. Options are \"NONE\", \"GLOBAL\", \"SERVER\".",
+														MarkdownDescription: "The uniqueness of the sub-attribute. Options are `NONE`, `GLOBAL`, `SERVER`.",
+														Validators: []validator.String{
+															stringvalidator.OneOf(
+																"NONE",
+																"GLOBAL",
+																"SERVER",
+															),
+														},
+													},
+												},
+											},
+											Optional:    true,
+											Computed:    true,
+											Description: "List of sub-attributes for complex attributes.",
+											Default:     setdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesDefault),
+										},
+										"type": schema.StringAttribute{
+											Optional:            true,
+											Description:         "Type of the attribute. Options are \"STRING\", \"BOOLEAN\", \"INTEGER\", \"DECIMAL\", \"DATETIME\", \"BINARY\", \"REFERENCE\", \"COMPLEX\".",
+											MarkdownDescription: "Type of the attribute. Options are `STRING`, `BOOLEAN`, `INTEGER`, `DECIMAL`, `DATETIME`, `BINARY`, `REFERENCE`, `COMPLEX`.",
+											Validators: []validator.String{
+												stringvalidator.OneOf(
+													"STRING",
+													"BOOLEAN",
+													"INTEGER",
+													"DECIMAL",
+													"DATETIME",
+													"BINARY",
+													"REFERENCE",
+													"COMPLEX",
+												),
+											},
+										},
+										"uniqueness": schema.StringAttribute{
+											Optional:            true,
+											Description:         "The uniqueness of the attribute. Options are \"NONE\", \"GLOBAL\", \"SERVER\".",
+											MarkdownDescription: "The uniqueness of the attribute. Options are `NONE`, `GLOBAL`, `SERVER`.",
+											Validators: []validator.String{
+												stringvalidator.OneOf(
+													"NONE",
+													"GLOBAL",
+													"SERVER",
+												),
+											},
+										},
+									},
+								},
+								Optional: true,
+								Computed: true,
+								Default:  setdefault.StaticValue(inboundProvisioningCustomScim2SchemaAttributesDefault),
+							},
+							"namespace": schema.StringAttribute{
+								Optional: true,
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
+							},
+						},
+						Optional:    true,
+						Description: "Custom SCIM 2.0 Attributes configuration. Supported in PingFederate 12.3 and later.",
+						Validators: []validator.Object{
+							objectvalidator.ExactlyOneOf(
+								path.MatchRelative().AtParent().AtName("custom_schema"),
+								path.MatchRelative().AtParent().AtName("custom_scim2_schema"),
+							),
+						},
+					},
 					"group_support": schema.BoolAttribute{
 						Required:            true,
-						Description:         "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
-						MarkdownDescription: "Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.",
+						Description:         "Specify support for provisioning of groups. This only applies when using SCIM 1.1. Must be `true` to configure `groups` attribute.",
+						MarkdownDescription: "Specify support for provisioning of groups. This only applies when using SCIM 1.1. Must be `true` to configure `groups` attribute.",
 					},
 					"groups": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2811,6 +3091,30 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "Group creation and read configuration. Requires `group_support` to be `true`.",
 						MarkdownDescription: "Group creation and read configuration. Requires `group_support` to be `true`.",
+					},
+					"scim_version": schema.StringAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "SCIM version to use for provisioning. The default is \"SCIM11\". Options are \"SCIM11\", \"SCIM20\". Supported in PingFederate 12.3 and later.",
+						MarkdownDescription: "SCIM version to use for provisioning. The default is `SCIM11`. Options are `SCIM11`, `SCIM20`. Supported in PingFederate `12.3` and later.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"SCIM11",
+								"SCIM20",
+							),
+						},
+					},
+					"service_provider_config": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{
+							"documentation_uri": schema.StringAttribute{
+								Optional:    true,
+								Description: "The URI for the service provider's documentation. This only applies when using SCIM 2.0. Supported in PingFederate 12.3 and later.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
+							},
+						},
+						Optional: true,
 					},
 					"user_repository": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -3400,6 +3704,13 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		return
 	}
 	pfVersionAtLeast1210 := compare >= 0
+	// Compare to version 12.3.0 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1230 := compare >= 0
 	var plan *spIdpConnectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -3443,6 +3754,45 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			}
 		}
 	}
+	if !pfVersionAtLeast1230 {
+		if internaltypes.IsDefined(plan.InboundProvisioning) {
+			inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
+			if internaltypes.IsDefined(inboundProvisioningAttrs["custom_scim2_schema"]) {
+				version.AddUnsupportedAttributeError("idp_browser_sso.inbound_provisioning.custom_scim2_schema",
+					r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+			}
+			if internaltypes.IsDefined(inboundProvisioningAttrs["scim_version"]) {
+				version.AddUnsupportedAttributeError("idp_browser_sso.inbound_provisioning.scim_version",
+					r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+			}
+			if internaltypes.IsDefined(inboundProvisioningAttrs["service_provider_config"]) {
+				version.AddUnsupportedAttributeError("idp_browser_sso.inbound_provisioning.service_provider_config",
+					r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+			}
+		}
+		if internaltypes.IsDefined(plan.IdpBrowserSso) {
+			browserSsoAttrs := plan.IdpBrowserSso.Attributes()
+			if internaltypes.IsDefined(browserSsoAttrs["oidc_provider_settings"]) {
+				oidcProviderSettingsAttrs := browserSsoAttrs["oidc_provider_settings"].(types.Object).Attributes()
+				if internaltypes.IsDefined(oidcProviderSettingsAttrs["audience"]) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.audience",
+						r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+				}
+				if internaltypes.IsDefined(oidcProviderSettingsAttrs["include_not_before_claim"]) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.include_not_before_claim",
+						r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+				}
+				if internaltypes.IsDefined(oidcProviderSettingsAttrs["lifetime"]) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.lifetime",
+						r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+				}
+				if internaltypes.IsDefined(oidcProviderSettingsAttrs["type"]) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.type",
+						r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+				}
+			}
+		}
+	}
 
 	// Ensure that group attributes have appropriate values
 	if internaltypes.IsDefined(plan.InboundProvisioning) {
@@ -3472,7 +3822,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		}
 	}
 
-	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+
+	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+, and include_not_before_claim if version is 12.3+
 	planModified := false
 	var diags diag.Diagnostics
 	if internaltypes.IsDefined(plan.IdpBrowserSso) {
@@ -3494,6 +3844,35 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 				resp.Diagnostics.Append(diags...)
 				planModified = true
 			}
+			// Set default for include_not_before_claim
+			if oidcProviderSettingsAttributes["include_not_before_claim"].IsUnknown() {
+				if pfVersionAtLeast1230 {
+					oidcProviderSettingsAttributes["include_not_before_claim"] = types.BoolValue(false)
+				} else {
+					oidcProviderSettingsAttributes["include_not_before_claim"] = types.BoolNull()
+				}
+				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
+				resp.Diagnostics.Append(diags...)
+				browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
+				plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
+				resp.Diagnostics.Append(diags...)
+				planModified = true
+			}
+		}
+	}
+
+	// Set default for inbound_provisioning.scim_version if version is 12.3+
+	if internaltypes.IsDefined(plan.InboundProvisioning) {
+		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
+		if inboundProvisioningAttrs["scim_version"].IsUnknown() {
+			if pfVersionAtLeast1230 {
+				inboundProvisioningAttrs["scim_version"] = types.StringValue("SCIM11")
+			} else {
+				inboundProvisioningAttrs["scim_version"] = types.StringNull()
+			}
+			plan.InboundProvisioning, diags = types.ObjectValue(plan.InboundProvisioning.AttributeTypes(ctx), inboundProvisioningAttrs)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
 		}
 	}
 
@@ -3709,8 +4088,14 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel) diag.Diagnostics {
+func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel, productVersion version.SupportedVersion) diag.Diagnostics {
 	var respDiags diag.Diagnostics
+	compare, err := version.Compare(productVersion, version.PingFederate1230)
+	if err != nil {
+		respDiags.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
+	}
+	pfVersionAtLeast1230 := compare >= 0
+
 	addRequest.ErrorPageMsgId = plan.ErrorPageMsgId.ValueStringPointer()
 	if !plan.ConnectionId.IsUnknown() {
 		addRequest.Id = plan.ConnectionId.ValueStringPointer()
@@ -4072,15 +4457,18 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			idpBrowserSsoOauthAuthenticationPolicyContractRefValue.Id = idpBrowserSsoOauthAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
 			idpBrowserSsoValue.OauthAuthenticationPolicyContractRef = idpBrowserSsoOauthAuthenticationPolicyContractRefValue
 		}
-		if !idpBrowserSsoAttrs["oidc_provider_settings"].IsNull() {
+		if !idpBrowserSsoAttrs["oidc_provider_settings"].IsNull() && !idpBrowserSsoAttrs["oidc_provider_settings"].IsUnknown() {
 			idpBrowserSsoOidcProviderSettingsValue := &client.OIDCProviderSettings{}
 			idpBrowserSsoOidcProviderSettingsAttrs := idpBrowserSsoAttrs["oidc_provider_settings"].(types.Object).Attributes()
+			idpBrowserSsoOidcProviderSettingsValue.Audience = idpBrowserSsoOidcProviderSettingsAttrs["audience"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.AuthenticationScheme = idpBrowserSsoOidcProviderSettingsAttrs["authentication_scheme"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.AuthenticationSigningAlgorithm = idpBrowserSsoOidcProviderSettingsAttrs["authentication_signing_algorithm"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.AuthorizationEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["authorization_endpoint"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.EnablePKCE = idpBrowserSsoOidcProviderSettingsAttrs["enable_pkce"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoOidcProviderSettingsValue.IncludeNotBeforeClaim = idpBrowserSsoOidcProviderSettingsAttrs["include_not_before_claim"].(types.Bool).ValueBoolPointer()
 			idpBrowserSsoOidcProviderSettingsValue.JwksURL = idpBrowserSsoOidcProviderSettingsAttrs["jwks_url"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.JwtSecuredAuthorizationResponseModeType = idpBrowserSsoOidcProviderSettingsAttrs["jwt_secured_authorization_response_mode_type"].(types.String).ValueStringPointer()
+			idpBrowserSsoOidcProviderSettingsValue.Lifetime = idpBrowserSsoOidcProviderSettingsAttrs["lifetime"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.LoginType = idpBrowserSsoOidcProviderSettingsAttrs["login_type"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.LogoutEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["logout_endpoint"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.PushedAuthorizationRequestEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["pushed_authorization_request_endpoint"].(types.String).ValueStringPointer()
@@ -4106,6 +4494,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			idpBrowserSsoOidcProviderSettingsValue.Scopes = idpBrowserSsoOidcProviderSettingsAttrs["scopes"].(types.String).ValueString()
 			idpBrowserSsoOidcProviderSettingsValue.TokenEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["token_endpoint"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.TrackUserSessionsForLogout = idpBrowserSsoOidcProviderSettingsAttrs["track_user_sessions_for_logout"].(types.Bool).ValueBoolPointer()
+			idpBrowserSsoOidcProviderSettingsValue.Type = idpBrowserSsoOidcProviderSettingsAttrs["type"].(types.String).ValueStringPointer()
 			idpBrowserSsoOidcProviderSettingsValue.UserInfoEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["user_info_endpoint"].(types.String).ValueStringPointer()
 			idpBrowserSsoValue.OidcProviderSettings = idpBrowserSsoOidcProviderSettingsValue
 		}
@@ -4270,32 +4659,81 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		inboundProvisioningValue := &client.IdpInboundProvisioning{}
 		inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
 		inboundProvisioningValue.ActionOnDelete = inboundProvisioningAttrs["action_on_delete"].(types.String).ValueStringPointer()
-		inboundProvisioningCustomSchemaValue := client.Schema{}
-		inboundProvisioningCustomSchemaAttrs := inboundProvisioningAttrs["custom_schema"].(types.Object).Attributes()
-		inboundProvisioningCustomSchemaValue.Attributes = []client.SchemaAttribute{}
-		for _, attributesElement := range inboundProvisioningCustomSchemaAttrs["attributes"].(types.Set).Elements() {
-			attributesValue := client.SchemaAttribute{}
-			attributesAttrs := attributesElement.(types.Object).Attributes()
-			attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
-			attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
-			if !attributesAttrs["sub_attributes"].IsNull() {
-				attributesValue.SubAttributes = []string{}
-				for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
-					attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesElement.(types.String).ValueString())
+		if !inboundProvisioningAttrs["custom_schema"].IsNull() && !inboundProvisioningAttrs["custom_schema"].IsUnknown() {
+			inboundProvisioningCustomSchemaValue := &client.Schema{}
+			inboundProvisioningCustomSchemaAttrs := inboundProvisioningAttrs["custom_schema"].(types.Object).Attributes()
+			if !inboundProvisioningCustomSchemaAttrs["attributes"].IsNull() && !inboundProvisioningCustomSchemaAttrs["attributes"].IsUnknown() {
+				inboundProvisioningCustomSchemaValue.Attributes = []client.SchemaAttribute{}
+				for _, attributesElement := range inboundProvisioningCustomSchemaAttrs["attributes"].(types.Set).Elements() {
+					attributesValue := client.SchemaAttribute{}
+					attributesAttrs := attributesElement.(types.Object).Attributes()
+					attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+					attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
+					if !attributesAttrs["sub_attributes"].IsNull() && !attributesAttrs["sub_attributes"].IsUnknown() {
+						attributesValue.SubAttributes = []string{}
+						for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
+							attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesElement.(types.String).ValueString())
+						}
+					}
+					if !attributesAttrs["types"].IsNull() && !attributesAttrs["types"].IsUnknown() {
+						attributesValue.Types = []string{}
+						for _, typesElement := range attributesAttrs["types"].(types.Set).Elements() {
+							attributesValue.Types = append(attributesValue.Types, typesElement.(types.String).ValueString())
+						}
+					}
+					inboundProvisioningCustomSchemaValue.Attributes = append(inboundProvisioningCustomSchemaValue.Attributes, attributesValue)
 				}
 			}
-			if !attributesAttrs["types"].IsNull() {
-				attributesValue.Types = []string{}
-				for _, typesElement := range attributesAttrs["types"].(types.Set).Elements() {
-					attributesValue.Types = append(attributesValue.Types, typesElement.(types.String).ValueString())
+			if !inboundProvisioningCustomSchemaAttrs["namespace"].IsUnknown() {
+				inboundProvisioningCustomSchemaValue.Namespace = inboundProvisioningCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
+			}
+			inboundProvisioningValue.CustomSchema = inboundProvisioningCustomSchemaValue
+		}
+		if !inboundProvisioningAttrs["custom_scim2_schema"].IsNull() && !inboundProvisioningAttrs["custom_scim2_schema"].IsUnknown() {
+			inboundProvisioningCustomScim2SchemaValue := &client.Scim2Schema{}
+			inboundProvisioningCustomScim2SchemaAttrs := inboundProvisioningAttrs["custom_scim2_schema"].(types.Object).Attributes()
+			if !inboundProvisioningCustomScim2SchemaAttrs["attributes"].IsNull() && !inboundProvisioningCustomScim2SchemaAttrs["attributes"].IsUnknown() {
+				inboundProvisioningCustomScim2SchemaValue.Attributes = []client.Scim2SchemaAttribute{}
+				for _, attributesElement := range inboundProvisioningCustomScim2SchemaAttrs["attributes"].(types.Set).Elements() {
+					attributesValue := client.Scim2SchemaAttribute{}
+					attributesAttrs := attributesElement.(types.Object).Attributes()
+					if !attributesAttrs["canonical_values"].IsNull() && !attributesAttrs["canonical_values"].IsUnknown() {
+						attributesValue.CanonicalValues = []string{}
+						for _, canonicalValuesElement := range attributesAttrs["canonical_values"].(types.Set).Elements() {
+							attributesValue.CanonicalValues = append(attributesValue.CanonicalValues, canonicalValuesElement.(types.String).ValueString())
+						}
+					}
+					attributesValue.CaseExact = attributesAttrs["case_exact"].(types.Bool).ValueBoolPointer()
+					attributesValue.Description = attributesAttrs["description"].(types.String).ValueStringPointer()
+					attributesValue.MultiValued = attributesAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+					attributesValue.Mutability = attributesAttrs["mutability"].(types.String).ValueStringPointer()
+					attributesValue.Name = attributesAttrs["name"].(types.String).ValueStringPointer()
+					attributesValue.Required = attributesAttrs["required"].(types.Bool).ValueBoolPointer()
+					attributesValue.Returned = attributesAttrs["returned"].(types.String).ValueStringPointer()
+					if !attributesAttrs["sub_attributes"].IsNull() && !attributesAttrs["sub_attributes"].IsUnknown() {
+						attributesValue.SubAttributes = []client.Scim2SchemaSubAttribute{}
+						for _, subAttributesElement := range attributesAttrs["sub_attributes"].(types.Set).Elements() {
+							subAttributesValue := client.Scim2SchemaSubAttribute{}
+							subAttributesAttrs := subAttributesElement.(types.Object).Attributes()
+							subAttributesValue.CaseExact = subAttributesAttrs["case_exact"].(types.Bool).ValueBoolPointer()
+							subAttributesValue.Description = subAttributesAttrs["description"].(types.String).ValueStringPointer()
+							subAttributesValue.Mutability = subAttributesAttrs["mutability"].(types.String).ValueStringPointer()
+							subAttributesValue.Name = subAttributesAttrs["name"].(types.String).ValueStringPointer()
+							subAttributesValue.Required = subAttributesAttrs["required"].(types.Bool).ValueBoolPointer()
+							subAttributesValue.Returned = subAttributesAttrs["returned"].(types.String).ValueStringPointer()
+							subAttributesValue.Type = subAttributesAttrs["type"].(types.String).ValueStringPointer()
+							subAttributesValue.Uniqueness = subAttributesAttrs["uniqueness"].(types.String).ValueStringPointer()
+							attributesValue.SubAttributes = append(attributesValue.SubAttributes, subAttributesValue)
+						}
+					}
+					attributesValue.Type = attributesAttrs["type"].(types.String).ValueStringPointer()
+					attributesValue.Uniqueness = attributesAttrs["uniqueness"].(types.String).ValueStringPointer()
+					inboundProvisioningCustomScim2SchemaValue.Attributes = append(inboundProvisioningCustomScim2SchemaValue.Attributes, attributesValue)
 				}
 			}
-			inboundProvisioningCustomSchemaValue.Attributes = append(inboundProvisioningCustomSchemaValue.Attributes, attributesValue)
+			inboundProvisioningCustomScim2SchemaValue.Namespace = inboundProvisioningCustomScim2SchemaAttrs["namespace"].(types.String).ValueStringPointer()
+			inboundProvisioningValue.CustomScim2Schema = inboundProvisioningCustomScim2SchemaValue
 		}
-		if !inboundProvisioningCustomSchemaAttrs["namespace"].IsUnknown() {
-			inboundProvisioningCustomSchemaValue.Namespace = inboundProvisioningCustomSchemaAttrs["namespace"].(types.String).ValueStringPointer()
-		}
-		inboundProvisioningValue.CustomSchema = inboundProvisioningCustomSchemaValue
 		inboundProvisioningValue.GroupSupport = inboundProvisioningAttrs["group_support"].(types.Bool).ValueBool()
 		if !inboundProvisioningAttrs["groups"].IsNull() {
 			inboundProvisioningGroupsValue := &client.Groups{}
@@ -4304,12 +4742,14 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			inboundProvisioningGroupsReadGroupsAttrs := inboundProvisioningGroupsAttrs["read_groups"].(types.Object).Attributes()
 			inboundProvisioningGroupsReadGroupsAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
 			inboundProvisioningGroupsReadGroupsAttributeContractAttrs := inboundProvisioningGroupsReadGroupsAttrs["attribute_contract"].(types.Object).Attributes()
-			// PF requires core_attributes to be set, even though the property is read-only.
+			// Prior to 12.3, PF requires core_attributes to be set, even though the property is read-only.
 			// Provide a placeholder value here to prevent the API from returning an error.
-			inboundProvisioningGroupsReadGroupsAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
-				{
-					Name: "placeholder",
-				},
+			if !pfVersionAtLeast1230 {
+				inboundProvisioningGroupsReadGroupsAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+					{
+						Name: "placeholder",
+					},
+				}
 			}
 			inboundProvisioningGroupsReadGroupsAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
 			for _, extendedAttributesElement := range inboundProvisioningGroupsReadGroupsAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
@@ -4357,6 +4797,13 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			inboundProvisioningGroupsValue.WriteGroups = inboundProvisioningGroupsWriteGroupsValue
 			inboundProvisioningValue.Groups = inboundProvisioningGroupsValue
 		}
+		inboundProvisioningValue.ScimVersion = inboundProvisioningAttrs["scim_version"].(types.String).ValueStringPointer()
+		if !inboundProvisioningAttrs["service_provider_config"].IsNull() && !inboundProvisioningAttrs["service_provider_config"].IsUnknown() {
+			inboundProvisioningServiceProviderConfigValue := &client.ServiceProviderConfig{}
+			inboundProvisioningServiceProviderConfigAttrs := inboundProvisioningAttrs["service_provider_config"].(types.Object).Attributes()
+			inboundProvisioningServiceProviderConfigValue.DocumentationUri = inboundProvisioningServiceProviderConfigAttrs["documentation_uri"].(types.String).ValueStringPointer()
+			inboundProvisioningValue.ServiceProviderConfig = inboundProvisioningServiceProviderConfigValue
+		}
 		inboundProvisioningUserRepositoryValue := client.InboundProvisioningUserRepositoryAggregation{}
 		inboundProvisioningUserRepositoryAttrs := inboundProvisioningAttrs["user_repository"].(types.Object).Attributes()
 		if !inboundProvisioningUserRepositoryAttrs["identity_store"].IsNull() {
@@ -4389,12 +4836,14 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		inboundProvisioningUsersReadUsersAttrs := inboundProvisioningUsersAttrs["read_users"].(types.Object).Attributes()
 		inboundProvisioningUsersReadUsersAttributeContractValue := client.IdpInboundProvisioningAttributeContract{}
 		inboundProvisioningUsersReadUsersAttributeContractAttrs := inboundProvisioningUsersReadUsersAttrs["attribute_contract"].(types.Object).Attributes()
-		// PF requires core_attributes to be set, even though the property is read-only.
+		// Prior to 12.3, PF requires core_attributes to be set, even though the property is read-only.
 		// Provide a placeholder value here to prevent the API from returning an error.
-		inboundProvisioningUsersReadUsersAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
-			{
-				Name: "placeholder",
-			},
+		if !pfVersionAtLeast1230 {
+			inboundProvisioningUsersReadUsersAttributeContractValue.CoreAttributes = []client.IdpInboundProvisioningAttribute{
+				{
+					Name: "placeholder",
+				},
+			}
 		}
 		inboundProvisioningUsersReadUsersAttributeContractValue.ExtendedAttributes = []client.IdpInboundProvisioningAttribute{}
 		for _, extendedAttributesElement := range inboundProvisioningUsersReadUsersAttributeContractAttrs["extended_attributes"].(types.Set).Elements() {
@@ -5331,28 +5780,82 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	if r.InboundProvisioning == nil {
 		inboundProvisioningValue = types.ObjectNull(inboundProvisioningAttrTypes)
 	} else {
-		var inboundProvisioningCustomSchemaAttributesValues []attr.Value
-		for _, inboundProvisioningCustomSchemaAttributesResponseValue := range r.InboundProvisioning.CustomSchema.Attributes {
-			inboundProvisioningCustomSchemaAttributesSubAttributesValue, objDiags := types.SetValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.SubAttributes)
-			respDiags.Append(objDiags...)
-			inboundProvisioningCustomSchemaAttributesTypesValue, objDiags := types.SetValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.Types)
-			respDiags.Append(objDiags...)
-			inboundProvisioningCustomSchemaAttributesValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttributesAttrTypes, map[string]attr.Value{
-				"multi_valued":   types.BoolPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.MultiValued),
-				"name":           types.StringPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.Name),
-				"sub_attributes": inboundProvisioningCustomSchemaAttributesSubAttributesValue,
-				"types":          inboundProvisioningCustomSchemaAttributesTypesValue,
+		var inboundProvisioningCustomSchemaValue types.Object
+		if r.InboundProvisioning.CustomSchema == nil {
+			inboundProvisioningCustomSchemaValue = types.ObjectNull(inboundProvisioningCustomSchemaAttrTypes)
+		} else {
+			var inboundProvisioningCustomSchemaAttributesValues []attr.Value
+			for _, inboundProvisioningCustomSchemaAttributesResponseValue := range r.InboundProvisioning.CustomSchema.Attributes {
+				inboundProvisioningCustomSchemaAttributesSubAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.SubAttributes)
+				respDiags.Append(diags...)
+				inboundProvisioningCustomSchemaAttributesTypesValue, diags := types.SetValueFrom(context.Background(), types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.Types)
+				respDiags.Append(diags...)
+				inboundProvisioningCustomSchemaAttributesValue, diags := types.ObjectValue(inboundProvisioningCustomSchemaAttributesAttrTypes, map[string]attr.Value{
+					"multi_valued":   types.BoolPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.MultiValued),
+					"name":           types.StringPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.Name),
+					"sub_attributes": inboundProvisioningCustomSchemaAttributesSubAttributesValue,
+					"types":          inboundProvisioningCustomSchemaAttributesTypesValue,
+				})
+				respDiags.Append(diags...)
+				inboundProvisioningCustomSchemaAttributesValues = append(inboundProvisioningCustomSchemaAttributesValues, inboundProvisioningCustomSchemaAttributesValue)
+			}
+			inboundProvisioningCustomSchemaAttributesValue, diags := types.SetValue(inboundProvisioningCustomSchemaAttributesElementType, inboundProvisioningCustomSchemaAttributesValues)
+			respDiags.Append(diags...)
+			inboundProvisioningCustomSchemaValue, diags = types.ObjectValue(inboundProvisioningCustomSchemaAttrTypes, map[string]attr.Value{
+				"attributes": inboundProvisioningCustomSchemaAttributesValue,
+				"namespace":  types.StringPointerValue(r.InboundProvisioning.CustomSchema.Namespace),
 			})
-			respDiags.Append(objDiags...)
-			inboundProvisioningCustomSchemaAttributesValues = append(inboundProvisioningCustomSchemaAttributesValues, inboundProvisioningCustomSchemaAttributesValue)
+			respDiags.Append(diags...)
 		}
-		inboundProvisioningCustomSchemaAttributesValue, objDiags := types.SetValue(inboundProvisioningCustomSchemaAttributesElementType, inboundProvisioningCustomSchemaAttributesValues)
-		respDiags.Append(objDiags...)
-		inboundProvisioningCustomSchemaValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttrTypes, map[string]attr.Value{
-			"attributes": inboundProvisioningCustomSchemaAttributesValue,
-			"namespace":  types.StringPointerValue(r.InboundProvisioning.CustomSchema.Namespace),
-		})
-		respDiags.Append(objDiags...)
+		var inboundProvisioningCustomScim2SchemaValue types.Object
+		if r.InboundProvisioning.CustomScim2Schema == nil {
+			inboundProvisioningCustomScim2SchemaValue = types.ObjectNull(inboundProvisioningCustomScim2SchemaAttrTypes)
+		} else {
+			var inboundProvisioningCustomScim2SchemaAttributesValues []attr.Value
+			for _, inboundProvisioningCustomScim2SchemaAttributesResponseValue := range r.InboundProvisioning.CustomScim2Schema.Attributes {
+				inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesValue, diags := types.SetValueFrom(context.Background(), types.StringType, inboundProvisioningCustomScim2SchemaAttributesResponseValue.CanonicalValues)
+				respDiags.Append(diags...)
+				var inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues []attr.Value
+				for _, inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue := range inboundProvisioningCustomScim2SchemaAttributesResponseValue.SubAttributes {
+					inboundProvisioningCustomScim2SchemaAttributesSubAttributesValue, diags := types.ObjectValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesAttrTypes, map[string]attr.Value{
+						"case_exact":  types.BoolPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.CaseExact),
+						"description": types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.Description),
+						"mutability":  types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.Mutability),
+						"name":        types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.Name),
+						"required":    types.BoolPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.Required),
+						"returned":    types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.Returned),
+						"type":        types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.Type),
+						"uniqueness":  types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesResponseValue.Uniqueness),
+					})
+					respDiags.Append(diags...)
+					inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues = append(inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues, inboundProvisioningCustomScim2SchemaAttributesSubAttributesValue)
+				}
+				inboundProvisioningCustomScim2SchemaAttributesSubAttributesValue, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesSubAttributesElementType, inboundProvisioningCustomScim2SchemaAttributesSubAttributesValues)
+				respDiags.Append(diags...)
+				inboundProvisioningCustomScim2SchemaAttributesValue, diags := types.ObjectValue(inboundProvisioningCustomScim2SchemaAttributesAttrTypes, map[string]attr.Value{
+					"canonical_values": inboundProvisioningCustomScim2SchemaAttributesCanonicalValuesValue,
+					"case_exact":       types.BoolPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.CaseExact),
+					"description":      types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.Description),
+					"multi_valued":     types.BoolPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.MultiValued),
+					"mutability":       types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.Mutability),
+					"name":             types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.Name),
+					"required":         types.BoolPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.Required),
+					"returned":         types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.Returned),
+					"sub_attributes":   inboundProvisioningCustomScim2SchemaAttributesSubAttributesValue,
+					"type":             types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.Type),
+					"uniqueness":       types.StringPointerValue(inboundProvisioningCustomScim2SchemaAttributesResponseValue.Uniqueness),
+				})
+				respDiags.Append(diags...)
+				inboundProvisioningCustomScim2SchemaAttributesValues = append(inboundProvisioningCustomScim2SchemaAttributesValues, inboundProvisioningCustomScim2SchemaAttributesValue)
+			}
+			inboundProvisioningCustomScim2SchemaAttributesValue, diags := types.SetValue(inboundProvisioningCustomScim2SchemaAttributesElementType, inboundProvisioningCustomScim2SchemaAttributesValues)
+			respDiags.Append(diags...)
+			inboundProvisioningCustomScim2SchemaValue, diags = types.ObjectValue(inboundProvisioningCustomScim2SchemaAttrTypes, map[string]attr.Value{
+				"attributes": inboundProvisioningCustomScim2SchemaAttributesValue,
+				"namespace":  types.StringPointerValue(r.InboundProvisioning.CustomScim2Schema.Namespace),
+			})
+			respDiags.Append(diags...)
+		}
 		if r.InboundProvisioning.Groups != nil {
 			var inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues []attr.Value
 			for _, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeContract.CoreAttributes {
@@ -5440,6 +5943,15 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			respDiags.Append(objDiags...)
 		} else {
 			inboundProvisioningGroupsValue = types.ObjectNull(inboundProvisioningGroupsAttrTypes)
+		}
+		var inboundProvisioningServiceProviderConfigValue types.Object
+		if r.InboundProvisioning.ServiceProviderConfig == nil {
+			inboundProvisioningServiceProviderConfigValue = types.ObjectNull(inboundProvisioningServiceProviderConfigAttrTypes)
+		} else {
+			inboundProvisioningServiceProviderConfigValue, diags = types.ObjectValue(inboundProvisioningServiceProviderConfigAttrTypes, map[string]attr.Value{
+				"documentation_uri": types.StringPointerValue(r.InboundProvisioning.ServiceProviderConfig.DocumentationUri),
+			})
+			respDiags.Append(diags...)
 		}
 
 		var identityStoreInboundProvisioningUserRepository, ldapInboundProvisioningUserRepository types.Object
@@ -5545,12 +6057,15 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		})
 		respDiags.Append(objDiags...)
 		inboundProvisioningValue, objDiags = types.ObjectValue(inboundProvisioningAttrTypes, map[string]attr.Value{
-			"action_on_delete": types.StringPointerValue(r.InboundProvisioning.ActionOnDelete),
-			"custom_schema":    inboundProvisioningCustomSchemaValue,
-			"group_support":    types.BoolValue(r.InboundProvisioning.GroupSupport),
-			"groups":           inboundProvisioningGroupsValue,
-			"user_repository":  inboundProvisioningUserRepositoryValue,
-			"users":            inboundProvisioningUsersValue,
+			"action_on_delete":        types.StringPointerValue(r.InboundProvisioning.ActionOnDelete),
+			"custom_schema":           inboundProvisioningCustomSchemaValue,
+			"custom_scim2_schema":     inboundProvisioningCustomScim2SchemaValue,
+			"group_support":           types.BoolValue(r.InboundProvisioning.GroupSupport),
+			"groups":                  inboundProvisioningGroupsValue,
+			"scim_version":            types.StringPointerValue(r.InboundProvisioning.ScimVersion),
+			"service_provider_config": inboundProvisioningServiceProviderConfigValue,
+			"user_repository":         inboundProvisioningUserRepositoryValue,
+			"users":                   inboundProvisioningUsersValue,
 		})
 		respDiags.Append(objDiags...)
 	}
@@ -5652,7 +6167,7 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	createSpIdpConnection := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createSpIdpConnection, plan)...)
+	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createSpIdpConnection, plan, r.providerConfig.ProductVersion)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -5716,7 +6231,7 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	updateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.UpdateConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan)...)
+	resp.Diagnostics.Append(addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan, r.providerConfig.ProductVersion)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

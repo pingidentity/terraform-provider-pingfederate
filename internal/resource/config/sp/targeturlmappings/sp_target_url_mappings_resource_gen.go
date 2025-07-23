@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -117,14 +117,12 @@ func (model *spTargetUrlMappingsResourceModel) buildClientStruct() *client.SpUrl
 	for _, itemsElement := range model.Items.Elements() {
 		itemsValue := client.SpUrlMapping{}
 		itemsAttrs := itemsElement.(types.Object).Attributes()
-		if !itemsAttrs["ref"].IsNull() {
-			itemsRefValue := &client.ResourceLink{}
-			itemsRefAttrs := itemsAttrs["ref"].(types.Object).Attributes()
-			itemsRefValue.Id = itemsRefAttrs["id"].(types.String).ValueString()
-			itemsValue.Ref = itemsRefValue
-		}
-		itemsValue.Type = itemsAttrs["type"].(types.String).ValueStringPointer()
-		itemsValue.Url = itemsAttrs["url"].(types.String).ValueStringPointer()
+		itemsRefValue := client.ResourceLink{}
+		itemsRefAttrs := itemsAttrs["ref"].(types.Object).Attributes()
+		itemsRefValue.Id = itemsRefAttrs["id"].(types.String).ValueString()
+		itemsValue.Ref = itemsRefValue
+		itemsValue.Type = itemsAttrs["type"].(types.String).ValueString()
+		itemsValue.Url = itemsAttrs["url"].(types.String).ValueString()
 		result.Items = append(result.Items, itemsValue)
 	}
 
@@ -146,18 +144,15 @@ func (state *spTargetUrlMappingsResourceModel) readClientResponse(response *clie
 	var itemsValues []attr.Value
 	for _, itemsResponseValue := range response.Items {
 		var itemsRefValue types.Object
-		if itemsResponseValue.Ref == nil {
-			itemsRefValue = types.ObjectNull(itemsRefAttrTypes)
-		} else {
-			itemsRefValue, diags = types.ObjectValue(itemsRefAttrTypes, map[string]attr.Value{
-				"id": types.StringValue(itemsResponseValue.Ref.Id),
-			})
-			respDiags.Append(diags...)
-		}
+		itemsRefValue, diags = types.ObjectValue(itemsRefAttrTypes, map[string]attr.Value{
+			"id": types.StringValue(itemsResponseValue.Ref.Id),
+		})
+		respDiags.Append(diags...)
+
 		itemsValue, diags := types.ObjectValue(itemsAttrTypes, map[string]attr.Value{
 			"ref":  itemsRefValue,
-			"type": types.StringPointerValue(itemsResponseValue.Type),
-			"url":  types.StringPointerValue(itemsResponseValue.Url),
+			"type": types.StringValue(itemsResponseValue.Type),
+			"url":  types.StringValue(itemsResponseValue.Url),
 		})
 		respDiags.Append(diags...)
 		itemsValues = append(itemsValues, itemsValue)

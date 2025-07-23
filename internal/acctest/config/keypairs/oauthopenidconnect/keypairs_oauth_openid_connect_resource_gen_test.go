@@ -50,9 +50,10 @@ func TestAccKeypairsOauthOpenidConnect_MinimalMaximal(t *testing.T) {
 	})
 }
 
-func keyspairsOauthOpenidConnect_VersionRestrictedHCL() string {
+func keypairsOauthOpenidConnect_VersionRestrictedHCL() string {
+	var versionedHcl string
 	if acctest.VersionAtLeast(version.PingFederate1201) {
-		return `
+		versionedHcl += `
   p256_active_key_id = "ec256active"
   p256_decryption_active_key_id = "ec256decryptactive"
   p256_decryption_previous_key_id = "ec256decryptprevious"
@@ -87,7 +88,19 @@ func keyspairsOauthOpenidConnect_VersionRestrictedHCL() string {
   ]
 `
 	}
-	return ""
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		versionedHcl += `
+  dynamic_key_certificate_information = {
+    city              = "Austin"
+    country           = "US"
+    organization      = "Example Organization"
+    organization_unit = "Example Organizational Unit"
+    state             = "TX"
+  }
+  publish_dynamic_key_x5cs = true
+`
+	}
+	return versionedHcl
 }
 
 // Minimal HCL with only required values set
@@ -158,21 +171,39 @@ resource "pingfederate_keypairs_oauth_openid_connect" "example" {
   static_jwks_enabled       = true
   %s
 }
-`, keyspairsOauthOpenidConnect_VersionRestrictedHCL())
+`, keypairsOauthOpenidConnect_VersionRestrictedHCL())
 }
 
 // Validate any computed values when applying minimal HCL
 func keypairsOauthOpenidConnect_CheckComputedValuesMinimal() resource.TestCheckFunc {
+	var versionedChecks []resource.TestCheckFunc
 	if acctest.VersionAtLeast(version.PingFederate1201) {
-		return resource.ComposeTestCheckFunc(
+		versionedChecks = append(versionedChecks,
 			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids.#", "0"),
 			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids.#", "0"),
 		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids"),
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids"),
+		)
 	}
-	return resource.ComposeTestCheckFunc(
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids"),
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids"),
-	)
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "publish_dynamic_key_x5cs", "false"),
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "dynamic_key_certificate_information.city"),
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "dynamic_key_certificate_information.country"),
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "dynamic_key_certificate_information.organization"),
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "dynamic_key_certificate_information.organization_unit"),
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "dynamic_key_certificate_information.state"),
+		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "publish_dynamic_key_x5cs"),
+			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "dynamic_key_certificate_information"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(versionedChecks...)
 }
 
 // Validate any computed values when applying complete HCL

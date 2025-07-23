@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -200,7 +200,7 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 			authenticationApiApplicationRef, respDiags := resourcelink.ToState(ctx, authnSelectionTree.AuthenticationApiApplicationRef)
 			diags.Append(respDiags...)
 
-			rootNode, respDiags := authenticationpolicytreenode.ToState(ctx, authnSelectionTree.RootNode)
+			rootNode, respDiags := authenticationpolicytreenode.ToState(ctx, &authnSelectionTree.RootNode)
 			diags.Append(respDiags...)
 
 			authnSelectionTreeAttrValues := map[string]attr.Value{
@@ -261,7 +261,7 @@ func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPoli
 			if err != nil {
 				return err
 			}
-			authenticationPolicyTree.RootNode = rootNodeObj
+			authenticationPolicyTree.RootNode = *rootNodeObj
 		}
 		if handleFailuresLocally, ok := authnSelectionTreeObjElements["handle_failures_locally"]; ok {
 			authenticationPolicyTree.HandleFailuresLocally = handleFailuresLocally.(types.Bool).ValueBoolPointer()

@@ -15,12 +15,12 @@ jobs:
         terraform:
           - "1.4.*"
           - "1.11.*"
-        # Cover oldest and newest patch release of the major-minor releases we support
+        # Cover newest patch release of the major-minor releases we support
         pingfederate:
           - "12.0.6"
           - "12.1.8"
-          - "12.2.3"
-      max-parallel: 1
+          - "12.2.4"
+          - "12.3.0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
