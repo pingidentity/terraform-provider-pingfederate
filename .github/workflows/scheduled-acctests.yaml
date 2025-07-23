@@ -20,7 +20,6 @@ jobs:
           - "12.0.6"
           - "12.1.8"
           - "12.2.3"
-      max-parallel: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
