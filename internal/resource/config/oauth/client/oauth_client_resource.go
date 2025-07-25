@@ -211,10 +211,9 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"persistent_grant_expiration_time": schema.Int64Attribute{
-				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0`.",
+				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0` for PF versions > `11.3`.",
 				Computed:    true,
 				Optional:    true,
-				Default:     int64default.StaticInt64(0),
 			},
 			"persistent_grant_expiration_time_unit": schema.StringAttribute{
 				Description: "The persistent grant expiration time unit. Defaults to `DAYS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`.",
@@ -1301,6 +1300,20 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		plan.RequireDpop = types.BoolValue(false)
 		planModified = true
 	}
+
+	if pfVersionAtLeast113 &&
+		!pfVersionAtLeast120 &&
+		!pfVersionAtLeast121 &&
+		!pfVersionAtLeast122 {
+		if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
+			plan.PersistentGrantExpirationTime = types.Int64PointerValue(plan.PersistentGrantExpirationTime.ValueInt64Pointer())
+		} else {
+			plan.PersistentGrantExpirationTime = types.Int64Null()
+		}
+	} else {
+		plan.PersistentGrantExpirationTime = types.Int64PointerValue(plan.PersistentGrantExpirationTime.ValueInt64Pointer())
+	}
+
 	if internaltypes.IsDefined(plan.OidcPolicy) {
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
 		// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
@@ -1584,7 +1597,10 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.RefreshTokenRollingInterval = plan.RefreshTokenRollingInterval.ValueInt64Pointer()
 	addRequest.RefreshTokenRollingIntervalTimeUnit = plan.RefreshTokenRollingIntervalTimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantExpirationType = plan.PersistentGrantExpirationType.ValueStringPointer()
-	addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
+	if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
+		addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
+	}
+	// addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
 	addRequest.PersistentGrantExpirationTimeUnit = plan.PersistentGrantExpirationTimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantIdleTimeoutType = plan.PersistentGrantIdleTimeoutType.ValueStringPointer()
 	addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()

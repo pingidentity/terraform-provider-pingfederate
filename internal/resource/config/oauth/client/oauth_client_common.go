@@ -225,10 +225,15 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	// since they can only be configured when the type is set to "OVERRIDE_SERVER_DEFAULT"
 	state.PersistentGrantExpirationType = types.StringPointerValue(r.PersistentGrantExpirationType)
 	if isImportRead && state.PersistentGrantExpirationType.ValueString() == "SERVER_DEFAULT" {
-		state.PersistentGrantExpirationTime = types.Int64Null()
 		state.PersistentGrantExpirationTimeUnit = types.StringNull()
 	} else {
-		state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
+		persistentGrantExpirationTime, ok := r.GetPersistentGrantExpirationTimeOk()
+		if !ok || persistentGrantExpirationTime == nil {
+			state.PersistentGrantExpirationTime = types.Int64Null()
+		} else {
+			state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
+		}
+
 		if r.GetPersistentGrantExpirationTimeUnit() == "" {
 			state.PersistentGrantExpirationTimeUnit = types.StringValue("DAYS")
 		} else {
