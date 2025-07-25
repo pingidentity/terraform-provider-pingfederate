@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapiapplication "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/application"
@@ -90,6 +90,7 @@ import (
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
 	oauthopenidconnectsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/settings"
 	oauthoutofbandauthplugins "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/outofbandauthplugins"
+	oauthresourceownercredentialsmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/resourceownercredentialsmappings"
 	oauthtokenexchangegeneratorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/generator/settings"
 	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
@@ -807,6 +808,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthopenidconnectpolicy.OpenidConnectPolicyResource,
 		oauthopenidconnectsettings.OpenidConnectSettingsResource,
 		oauthoutofbandauthplugins.OauthOutOfBandAuthPluginResource,
+		oauthresourceownercredentialsmappings.OauthResourceOwnerCredentialsMappingResource,
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,

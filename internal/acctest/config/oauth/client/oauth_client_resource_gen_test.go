@@ -113,12 +113,7 @@ data "pingfederate_oauth_client" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthClient_CompleteHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedHcl += `
-	require_dpop = true	
-		`
-	}
+	var versionedHcl string
 	if acctest.VersionAtLeast(version.PingFederate1210) {
 		versionedHcl += `
 		// HCL necessary to use refresh token rolling interval time unit
@@ -137,13 +132,7 @@ func oauthClient_CompleteHCL() string {
 	lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
 		`
 	}
-	versionedOidcPolicyHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedOidcPolicyHcl += `
-	logout_mode = "OIDC_BACK_CHANNEL"
-	back_channel_logout_uri = "https://example.com"	
-		`
-	}
+	var versionedOidcPolicyHcl string
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		versionedOidcPolicyHcl += `
 	post_logout_redirect_uris = ["https://example.com", "https://pingidentity.com"]
@@ -226,6 +215,8 @@ resource "pingfederate_oauth_client" "example" {
     pairwise_identifier_user_type               = true
     ping_access_logout_capable                  = false
     sector_identifier_uri                       = "https://example.com"
+    logout_mode                                 = "OIDC_BACK_CHANNEL"
+    back_channel_logout_uri                     = "https://example.com"
 	%s
   }
   persistent_grant_expiration_time                 = 5
@@ -253,6 +244,7 @@ resource "pingfederate_oauth_client" "example" {
   token_introspection_encryption_algorithm         = "A128KW"
   token_introspection_signing_algorithm            = "RS256"
   validate_using_all_eligible_atms                 = true
+  require_dpop                                     = true
   %s
 }
 data "pingfederate_oauth_client" "example" {
@@ -262,14 +254,7 @@ data "pingfederate_oauth_client" "example" {
 }
 
 func oauthClient_CheckVersionedComputedValues() resource.TestCheckFunc {
-	versionedChecks := []resource.TestCheckFunc{}
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_dpop", "false"),
-			resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "oidc_policy.logout_mode", "NONE"),
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.back_channel_logout_uri"),
-		)
-	}
+	var versionedChecks []resource.TestCheckFunc
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		versionedChecks = append(versionedChecks,
 			resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.post_logout_redirect_uris"))
@@ -368,6 +353,9 @@ func oauthClient_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "token_introspection_signing_algorithm"),
 		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "user_authorization_url_override"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "validate_using_all_eligible_atms", "false"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_dpop", "false"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "oidc_policy.logout_mode", "NONE"),
+		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.back_channel_logout_uri"),
 		oauthClient_CheckVersionedComputedValues(),
 	)
 }

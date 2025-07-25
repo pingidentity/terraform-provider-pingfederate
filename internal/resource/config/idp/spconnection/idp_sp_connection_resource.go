@@ -27,7 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -1662,7 +1662,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"sso_application_endpoint": schema.StringAttribute{
 						Optional:    false,
 						Computed:    true,
-						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version `11.3` or later.",
+						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 					},
 				},
 				Optional:    true,

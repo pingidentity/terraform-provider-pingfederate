@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -53,7 +53,7 @@ var (
 		"logout_uris":                                     types.SetNull(types.StringType),
 		"pairwise_identifier_user_type":                   types.BoolValue(false),
 		"sector_identifier_uri":                           types.StringNull(),
-		"logout_mode":                                     types.StringNull(),
+		"logout_mode":                                     types.StringValue("NONE"),
 		"back_channel_logout_uri":                         types.StringNull(),
 		"post_logout_redirect_uris":                       types.SetNull(types.StringType),
 		"user_info_response_content_encryption_algorithm": types.StringNull(),

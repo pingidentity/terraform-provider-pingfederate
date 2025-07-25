@@ -29,7 +29,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
@@ -370,8 +370,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     objectdefault.StaticValue(oidcPolicyDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"id_token_signing_algorithm": schema.StringAttribute{
-						MarkdownDescription: "The JSON Web Signature [JWS] algorithm required for the ID Token.\n`NONE` - No signing algorithm\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256 `- ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
-						Description:         "The JSON Web Signature [JWS] algorithm required for the ID Token. `NONE` - No signing algorithm, `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256. RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+						MarkdownDescription: "The JSON Web Signature [JWS] algorithm required for the ID Token.\n`NONE` - No signing algorithm\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256 `- ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.",
+						Description:         "The JSON Web Signature [JWS] algorithm required for the ID Token. `NONE` - No signing algorithm, `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256. RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.",
 						Optional:            true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -469,9 +469,10 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"logout_mode": schema.StringAttribute{
-						Description: "The logout mode for this client. The default is 'NONE'. Supported in PF version `11.3` or later. Supported values are `NONE`, `PING_FRONT_CHANNEL`, `OIDC_FRONT_CHANNEL`, and `OIDC_BACK_CHANNEL`.",
+						Description: "The logout mode for this client. The default is 'NONE'. Supported values are `NONE`, `PING_FRONT_CHANNEL`, `OIDC_FRONT_CHANNEL`, and `OIDC_BACK_CHANNEL`.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString("NONE"),
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"NONE",
@@ -482,7 +483,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"back_channel_logout_uri": schema.StringAttribute{
-						Description: "The back-channel logout URI for this client. Supported in PF version `11.3` or later.",
+						Description: "The back-channel logout URI for this client.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
@@ -645,8 +646,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Optional:    true,
 					},
 					"token_endpoint_auth_signing_algorithm": schema.StringAttribute{
-						MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\n`RSASSA-PSS` is only supported with SafeNet Luna, Thales nCipher or Java 11.\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512.",
-						Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11. `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512.",
+						MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\n`RSASSA-PSS` is only supported with Thales Luna, Entrust nShield Connect or Java 11.\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512.",
+						Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.. `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512.",
 						Optional:            true,
 						Validators: []validator.String{
 							stringvalidator.OneOf(
@@ -770,8 +771,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 			},
 			"ciba_request_object_signing_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
-				Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
+				MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.",
+				Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("RS256",
@@ -896,8 +897,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"jwt_secured_authorization_response_mode_signing_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response.\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
-				Description:         "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response. `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256., RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+				MarkdownDescription: "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response.\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.",
+				Description:         "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response. `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256., RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("RS256",
@@ -951,11 +952,11 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"require_dpop": schema.BoolAttribute{
-				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version `11.3` or later. Defaults to `false`.",
-				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version `11.3` or later. Defaults to `false`.",
+				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Defaults to `false`.",
+				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Defaults to `false`.",
 				Optional:            true,
 				Computed:            true,
-				// Default set when appropriate in ModifyPlan before
+				Default:             booldefault.StaticBool(false),
 			},
 			"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
 				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.",
@@ -1249,14 +1250,8 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 and 12.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast113 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	// Compare to version 12.0 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
@@ -1284,25 +1279,8 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	planModified := false
-	// If require_dpop is set prior to PF version 11.3, throw an error
-	if !pfVersionAtLeast113 {
-		if internaltypes.IsDefined(plan.RequireDpop) {
-			version.AddUnsupportedAttributeError("require_dpop",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.RequireDpop.IsUnknown() {
-			// Ensure require_dpop is not unknown for older versions of PF, so that it gets passed in as nil rather than false.
-			// Passing it in as false would break older versions of PF, since it is an unrecognized property.
-			plan.RequireDpop = types.BoolNull()
-			planModified = true
-		}
-	} else if plan.RequireDpop.IsUnknown() {
-		// Set a default of false if the PF version is new enough
-		plan.RequireDpop = types.BoolValue(false)
-		planModified = true
-	}
 
-	if pfVersionAtLeast113 &&
-		!pfVersionAtLeast120 &&
+	if !pfVersionAtLeast120 &&
 		!pfVersionAtLeast121 &&
 		!pfVersionAtLeast122 {
 		if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
@@ -1316,31 +1294,6 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 
 	if internaltypes.IsDefined(plan.OidcPolicy) {
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
-		// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
-		planLogoutMode := planOidcPolicyAttrs["logout_mode"].(types.String)
-		planBackChannelLogoutUri := planOidcPolicyAttrs["back_channel_logout_uri"].(types.String)
-		if !pfVersionAtLeast113 {
-			if internaltypes.IsDefined(planLogoutMode) {
-				version.AddUnsupportedAttributeError("oidc_policy.logout_mode",
-					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-			} else if planLogoutMode.IsUnknown() {
-				// Ensure logout_mode is not unknown for older versions of PF
-				planOidcPolicyAttrs["logout_mode"] = types.StringNull()
-				plan.OidcPolicy, diags = types.ObjectValue(plan.OidcPolicy.AttributeTypes(ctx), planOidcPolicyAttrs)
-				resp.Diagnostics.Append(diags...)
-				planModified = true
-			}
-			if internaltypes.IsDefined(planBackChannelLogoutUri) {
-				version.AddUnsupportedAttributeError("oidc_policy.back_channel_logout_uri",
-					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-			}
-		} else if planLogoutMode.IsUnknown() {
-			// Set a default logout_mode if the PF version is new enough
-			planOidcPolicyAttrs["logout_mode"] = types.StringValue("NONE")
-			plan.OidcPolicy, diags = types.ObjectValue(plan.OidcPolicy.AttributeTypes(ctx), planOidcPolicyAttrs)
-			resp.Diagnostics.Append(diags...)
-			planModified = true
-		}
 		// If oidc_policy.post_logout_redirect_uris is set prior to PF version 12.0, throw an error.
 		planPostLogoutRedirectUris := planOidcPolicyAttrs["post_logout_redirect_uris"].(types.Set)
 		if !pfVersionAtLeast120 && internaltypes.IsDefined(planPostLogoutRedirectUris) {

@@ -104,7 +104,7 @@ Read-Only:
 - `email_address` (String) The email address where notifications are sent.
 - `final_warning_period` (Number) Time before certificate expiration when final warning is sent (in days).
 - `initial_warning_period` (Number) Time before certificate expiration when initial warning is sent (in days).
-- `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.
+- `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--certificate_expirations--notification_publisher_ref))
 
 <a id="nestedatt--notifications--certificate_expirations--notification_publisher_ref"></a>

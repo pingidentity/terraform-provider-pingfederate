@@ -4,7 +4,7 @@ package attributecontractfulfillment
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 )
 
 func ClientStruct(attributeContractFulfillmentAttr types.Map) map[string]client.AttributeFulfillmentValue {

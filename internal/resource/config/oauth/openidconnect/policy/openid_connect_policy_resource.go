@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
@@ -68,6 +68,11 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 				Description: "The access token manager associated with this Open ID Connect policy.",
 				Required:    true,
 				Attributes:  resourcelink.ToSchema(),
+			},
+			"allow_id_token_introspection": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Determines whether the introspection endpoint should validate an ID token. The default value is `false`.",
 			},
 			"id_token_lifetime": schema.Int64Attribute{
 				Description: "The ID Token Lifetime, in minutes. The default value is `5`.",
@@ -190,13 +195,13 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 				},
 			},
 			"include_x5t_in_id_token": schema.BoolAttribute{
-				Description: "Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version `11.3` or later. The default value is `false`.",
+				Description: "Determines whether the X.509 thumbprint header should be included in the ID Token. The default value is `false`.",
 				Optional:    true,
 				Computed:    true,
-				// Default is set in modify plan since it depends on PF version
+				Default:     booldefault.StaticBool(false),
 			},
 			"id_token_typ_header_value": schema.StringAttribute{
-				Description: "ID Token Type (typ) Header Value. Supported in PF version `11.3` or later.",
+				Description: "ID Token Type (typ) Header Value.",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -215,49 +220,26 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 }
 
 func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast113 := compare >= 0
 	// Compare to version 12.2 of PF
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast122 := compare >= 0
+	// Compare to version 12.3.0 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1230 := compare >= 0
 	var plan *oauthOpenIdConnectPolicyModel
 	req.Plan.Get(ctx, &plan)
 	if plan == nil {
 		return
 	}
 	planModified := false
-	// If include_x5t_in_id_token or id_token_typ_header_value is set prior to PF version 11.3, throw an error
-	if !pfVersionAtLeast113 {
-		if internaltypes.IsDefined(plan.IncludeX5tInIdToken) {
-			version.AddUnsupportedAttributeError("include_x5t_in_id_token",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.IncludeX5tInIdToken.IsUnknown() {
-			plan.IncludeX5tInIdToken = types.BoolNull()
-			planModified = true
-		}
-		if internaltypes.IsDefined(plan.IdTokenTypHeaderValue) {
-			version.AddUnsupportedAttributeError("id_token_typ_header_value",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.IdTokenTypHeaderValue.IsUnknown() {
-			plan.IdTokenTypHeaderValue = types.StringNull()
-			planModified = true
-		}
-	}
-	// Set default if PF version is new enough
-	if pfVersionAtLeast113 && plan.IncludeX5tInIdToken.IsUnknown() {
-		plan.IncludeX5tInIdToken = types.BoolValue(false)
-		planModified = true
-	}
-
 	if !pfVersionAtLeast122 {
 		if internaltypes.IsDefined(plan.ReturnIdTokenOnTokenExchangeGrant) {
 			version.AddUnsupportedAttributeError("return_id_token_on_token_exchange_grant",
@@ -268,6 +250,17 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		}
 	} else if plan.ReturnIdTokenOnTokenExchangeGrant.IsUnknown() {
 		plan.ReturnIdTokenOnTokenExchangeGrant = types.BoolValue(false)
+		planModified = true
+	}
+
+	if !pfVersionAtLeast1230 {
+		if internaltypes.IsDefined(plan.AllowIdTokenIntrospection) {
+			version.AddUnsupportedAttributeError("allow_id_token_introspection",
+				r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
+		}
+	}
+	if pfVersionAtLeast1230 && plan.AllowIdTokenIntrospection.IsUnknown() {
+		plan.AllowIdTokenIntrospection = types.BoolValue(false)
 		planModified = true
 	}
 
@@ -299,6 +292,11 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	accessTokenManagerRefAttrs := model.AccessTokenManagerRef.Attributes()
 	accessTokenManagerRefValue.Id = accessTokenManagerRefAttrs["id"].(types.String).ValueString()
 	result.AccessTokenManagerRef = accessTokenManagerRefValue
+
+	// allow_id_token_introspection
+	if !model.AllowIdTokenIntrospection.IsNull() && !model.AllowIdTokenIntrospection.IsUnknown() {
+		result.AllowIdTokenIntrospection = model.AllowIdTokenIntrospection.ValueBoolPointer()
+	}
 
 	// attribute_contract
 	attributeContractValue := client.OpenIdConnectAttributeContract{}

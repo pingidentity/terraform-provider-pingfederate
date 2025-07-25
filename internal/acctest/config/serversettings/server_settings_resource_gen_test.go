@@ -66,12 +66,6 @@ data "pingfederate_server_settings" "example" {
 
 // Maximal HCL with all values set where possible
 func serverSettings_CompleteHCL() string {
-	certExpirationsVersionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		certExpirationsVersionedHcl = `
-      notification_mode = "NOTIFICATION_PUBLISHER"
-		`
-	}
 	notificationsVersionedHcl := ""
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		notificationsVersionedHcl += `
@@ -173,7 +167,7 @@ resource "pingfederate_server_settings" "example" {
       notification_publisher_ref = {
         id = pingfederate_notification_publisher.example.id
       }
-	  %s
+      notification_mode = "NOTIFICATION_PUBLISHER"
     }
     license_events = {
       email_address = "licensenotif@example.com"
@@ -198,7 +192,7 @@ resource "pingfederate_server_settings" "example" {
 data "pingfederate_server_settings" "example" {
   depends_on = [pingfederate_server_settings.example]
 }
-`, certExpirationsVersionedHcl, notificationsVersionedHcl)
+`, notificationsVersionedHcl)
 }
 
 // Validate any computed values when applying minimal HCL

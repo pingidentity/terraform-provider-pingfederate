@@ -442,6 +442,12 @@ resource "pingfederate_sp_idp_connection" "example" {
             }
             value = "username"
           }
+          "username" = {
+            source = {
+              type = "TEXT"
+            }
+            value = "username"
+          }
         }
       }
     }

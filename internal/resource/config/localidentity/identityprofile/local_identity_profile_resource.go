@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -1204,7 +1204,7 @@ func (r *localIdentityProfileResource) Create(ctx context.Context, req resource.
 	apiCreateLocalIdentityProfiles = apiCreateLocalIdentityProfiles.Body(*createLocalIdentityProfiles)
 	localIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfileExecute(apiCreateLocalIdentityProfiles)
 	if err != nil {
-		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp, &customId)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profile", err, httpResp, &customId)
 		return
 	}
 

@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -149,10 +149,10 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Attributes:  resourcelink.ToSchema(),
 							},
 							"notification_mode": schema.StringAttribute{
-								Description: "The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `NOTIFICATION_PUBLISHER`. Supported in PF version `11.3` or later.",
+								Description: "The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `NOTIFICATION_PUBLISHER`.",
 								Optional:    true,
 								Computed:    true,
-								// Default value is set in ModifyPlan below. When PF 11.3+ is all that is supported, the default can be moved to the schema here.
+								Default:     stringdefault.StaticString("NOTIFICATION_PUBLISHER"),
 								Validators: []validator.String{
 									stringvalidator.OneOf(
 										"NOTIFICATION_PUBLISHER",
@@ -486,14 +486,8 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 }
 
 func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to versions 11.3 and 12.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast113 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	// Compare to version 12.0 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
@@ -514,32 +508,6 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 	var diags diag.Diagnostics
 	updatePlan := false
 	planNotificationsAttrs := plan.Notifications.Attributes()
-	planCertificateExpirations := planNotificationsAttrs["certificate_expirations"].(types.Object)
-	if internaltypes.IsDefined(planCertificateExpirations) {
-		planCertificateExpirationsAttrs := planCertificateExpirations.Attributes()
-		planNotificationMode := planCertificateExpirationsAttrs["notification_mode"].(types.String)
-
-		// If notification_mode is set and the PF version is not new enough, throw an error
-		if !pfVersionAtLeast113 {
-			if internaltypes.IsDefined(planNotificationMode) {
-				version.AddUnsupportedAttributeError("notifications.certificate_expirations.notification_mode",
-					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-			} else if planNotificationMode.IsUnknown() {
-				// Set a null default when the version isn't new enough to use this attribute
-				planNotificationMode = types.StringNull()
-				updatePlan = true
-			}
-		} else if planNotificationMode.IsUnknown() { //PF version is new enough for these attributes, set defaults
-			planNotificationMode = types.StringValue("NOTIFICATION_PUBLISHER")
-			updatePlan = true
-		}
-
-		if updatePlan {
-			planCertificateExpirationsAttrs["notification_mode"] = planNotificationMode
-			planCertificateExpirations, diags = types.ObjectValue(planCertificateExpirations.AttributeTypes(ctx), planCertificateExpirationsAttrs)
-			resp.Diagnostics.Append(diags...)
-		}
-	}
 
 	// Check for attributes only allowed after version 12.0
 	planExpiredCertWarningDays := planNotificationsAttrs["expired_certificate_administrative_console_warning_days"].(types.Int64)
@@ -585,7 +553,6 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 
 	// Update plan if necessary
 	if updatePlan && !resp.Diagnostics.HasError() {
-		planNotificationsAttrs["certificate_expirations"] = planCertificateExpirations
 		planNotificationsAttrs["expired_certificate_administrative_console_warning_days"] = planExpiredCertWarningDays
 		planNotificationsAttrs["expiring_certificate_administrative_console_warning_days"] = planExpiringCertWarningDays
 

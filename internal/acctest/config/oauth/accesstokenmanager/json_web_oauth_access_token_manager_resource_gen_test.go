@@ -133,19 +133,7 @@ data "pingfederate_oauth_access_token_manager" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthAccessTokenManager_CompleteJsonWebHCL() string {
-	versionedFields := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedFields += `
-  {
-	name  = "Not Before Claim Offset"
-	value = ""
-  },
-  {
-	name  = "Include Issued At Claim",
-	value = "false"
-  },
-`
-	}
+	var versionedFields string
 	if acctest.VersionAtLeast(version.PingFederate1210) {
 		versionedFields += `
   {
@@ -362,6 +350,14 @@ resource "pingfederate_oauth_access_token_manager" "example" {
         name  = "Include X.509 Thumbprint Header Parameter",
         value = "false"
       },
+      {
+        name  = "Not Before Claim Offset"
+        value = ""
+      },
+      {
+        name  = "Include Issued At Claim",
+        value = "false"
+      },
 	  %s
     ]
   }
@@ -388,10 +384,7 @@ data "pingfederate_oauth_access_token_manager" "example" {
 
 func oauthAccessTokenManager_CheckVersionedFields(minimal bool) resource.TestCheckFunc {
 	checks := []resource.TestCheckFunc{}
-	numFields := 30
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		numFields += 2
-	}
+	numFields := 32
 	if acctest.VersionAtLeast(version.PingFederate1210) {
 		numFields += 1
 	}

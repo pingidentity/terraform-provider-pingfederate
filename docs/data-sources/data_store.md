@@ -150,7 +150,7 @@ Read-Only:
 
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
 - `bind_anonymously` (Boolean) Whether username and password are required.
-- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later. (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
+- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
 - `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error.
 - `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached.
 - `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached.
@@ -165,7 +165,7 @@ Read-Only:
 - `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool.
 - `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones.
 - `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error.
-- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. Supported in PF version `11.3` or later.
+- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried.
 - `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool.
 - `test_on_return` (Boolean) Indicates whether objects are validated before being returned to the pool.
 - `time_between_evictions` (Number) The frequency, in milliseconds, that the evictor cleans up the connections in the pool.

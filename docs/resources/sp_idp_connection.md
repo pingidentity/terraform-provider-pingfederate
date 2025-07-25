@@ -1577,16 +1577,20 @@ Required:
 
 Optional:
 
+- `audience` (String) The claim `aud`, that goes into the JWT body if specified. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later.
 - `authentication_scheme` (String) The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. Options are `BASIC`, `CLIENT_SECRET_JWT`, `POST`, `PRIVATE_KEY_JWT`.
 - `authentication_signing_algorithm` (String) The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `NONE`, `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `PS256`, `PS384`, `PS512` `RS256`, `RS384`, `RS512`.
 - `enable_pkce` (Boolean) Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow. The default value is `false`.
+- `include_not_before_claim` (Boolean) Include the claim `nbf` in the JWT body. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later. Default value is `false`.
 - `jwt_secured_authorization_response_mode_type` (String) The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL. Supported in PingFederate `12.1` and later.
+- `lifetime` (String) The lifetime of the JWT in minutes. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate 12.3 and later.
 - `logout_endpoint` (String) URL of the OpenID Provider's RP-Initiated Logout Endpoint.
 - `pushed_authorization_request_endpoint` (String) URL of the OpenID Provider's OAuth 2.0 Pushed Authorization Request Endpoint.
 - `request_parameters` (Attributes Set) A list of request parameters. Request parameters with same name but different attribute values are treated as a multi-valued request parameter. (see [below for nested schema](#nestedatt--idp_browser_sso--oidc_provider_settings--request_parameters))
 - `request_signing_algorithm` (String) The request signing algorithm. Required only if you wish to use signed requests. Only asymmetric algorithms are allowed. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `NONE`, `PS256`, `PS384`, `PS512`, `RS256`, `RS384`, `RS512`.
 - `token_endpoint` (String) URL of the OpenID Provider's OAuth 2.0 Token Endpoint.
 - `track_user_sessions_for_logout` (Boolean) Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO. Default value is `false`.
+- `type` (String) The header `typ`, that goes into the JWT header if specified. This is only used for client secret jwt and private key jwt auth schemes. Supported in PingFederate `12.3` and later.
 - `user_info_endpoint` (String) URL of the OpenID Provider's UserInfo Endpoint.
 
 Read-Only:
@@ -2274,35 +2278,18 @@ Read-Only:
 
 Required:
 
-- `custom_schema` (Attributes) Custom SCIM Attributes configuration. (see [below for nested schema](#nestedatt--inbound_provisioning--custom_schema))
-- `group_support` (Boolean) Specify support for provisioning of groups. Must be `true` to configure `groups` attribute.
+- `group_support` (Boolean) Specify support for provisioning of groups. This only applies when using SCIM 1.1. Must be `true` to configure `groups` attribute.
 - `user_repository` (Attributes) SCIM Inbound Provisioning user repository. (see [below for nested schema](#nestedatt--inbound_provisioning--user_repository))
 - `users` (Attributes) User creation and read configuration. (see [below for nested schema](#nestedatt--inbound_provisioning--users))
 
 Optional:
 
 - `action_on_delete` (String) Specify behavior of how SCIM DELETE requests are handled. Options are `DISABLE_USER`, `PERMANENTLY_DELETE_USER`.
+- `custom_schema` (Attributes) Custom SCIM Attributes configuration. (see [below for nested schema](#nestedatt--inbound_provisioning--custom_schema))
+- `custom_scim2_schema` (Attributes) Custom SCIM 2.0 Attributes configuration. Supported in PingFederate 12.3 and later. (see [below for nested schema](#nestedatt--inbound_provisioning--custom_scim2_schema))
 - `groups` (Attributes) Group creation and read configuration. Requires `group_support` to be `true`. (see [below for nested schema](#nestedatt--inbound_provisioning--groups))
-
-<a id="nestedatt--inbound_provisioning--custom_schema"></a>
-### Nested Schema for `inbound_provisioning.custom_schema`
-
-Optional:
-
-- `attributes` (Attributes Set) A custom SCIM attribute. (see [below for nested schema](#nestedatt--inbound_provisioning--custom_schema--attributes))
-- `namespace` (String) Custom SCIM namespace.
-
-<a id="nestedatt--inbound_provisioning--custom_schema--attributes"></a>
-### Nested Schema for `inbound_provisioning.custom_schema.attributes`
-
-Optional:
-
-- `multi_valued` (Boolean) Indicates whether the attribute is multi-valued.
-- `name` (String) Name of the attribute.
-- `sub_attributes` (Set of String) List of sub-attributes for an attribute.
-- `types` (Set of String) Represents the name of each attribute type in case of multi-valued attribute.
-
-
+- `scim_version` (String) SCIM version to use for provisioning. The default is `SCIM11`. Options are `SCIM11`, `SCIM20`. Supported in PingFederate `12.3` and later.
+- `service_provider_config` (Attributes) (see [below for nested schema](#nestedatt--inbound_provisioning--service_provider_config))
 
 <a id="nestedatt--inbound_provisioning--user_repository"></a>
 ### Nested Schema for `inbound_provisioning.user_repository`
@@ -2467,6 +2454,68 @@ Optional:
 
 
 
+<a id="nestedatt--inbound_provisioning--custom_schema"></a>
+### Nested Schema for `inbound_provisioning.custom_schema`
+
+Optional:
+
+- `attributes` (Attributes Set) A custom SCIM attribute. (see [below for nested schema](#nestedatt--inbound_provisioning--custom_schema--attributes))
+- `namespace` (String) Custom SCIM namespace.
+
+<a id="nestedatt--inbound_provisioning--custom_schema--attributes"></a>
+### Nested Schema for `inbound_provisioning.custom_schema.attributes`
+
+Optional:
+
+- `multi_valued` (Boolean) Indicates whether the attribute is multi-valued.
+- `name` (String) Name of the attribute.
+- `sub_attributes` (Set of String) List of sub-attributes for an attribute.
+- `types` (Set of String) Represents the name of each attribute type in case of multi-valued attribute.
+
+
+
+<a id="nestedatt--inbound_provisioning--custom_scim2_schema"></a>
+### Nested Schema for `inbound_provisioning.custom_scim2_schema`
+
+Optional:
+
+- `attributes` (Attributes Set) (see [below for nested schema](#nestedatt--inbound_provisioning--custom_scim2_schema--attributes))
+- `namespace` (String)
+
+<a id="nestedatt--inbound_provisioning--custom_scim2_schema--attributes"></a>
+### Nested Schema for `inbound_provisioning.custom_scim2_schema.attributes`
+
+Optional:
+
+- `canonical_values` (Set of String) List of canonical values for multi-valued attributes.
+- `case_exact` (Boolean) Whether the attribute is case exact.
+- `description` (String) Description of the attribute.
+- `multi_valued` (Boolean) Indicates whether the attribute is multi-valued.
+- `mutability` (String) Mutability of the attribute. Options are `READONLY`, `WRITEONLY`, `READWRITE`, `IMMUTABLE`.
+- `name` (String) Name of the attribute.
+- `required` (Boolean) Whether the attribute is required.
+- `returned` (String) Whether the attribute is returned in the response. Options are `ALWAYS`, `DEFAULT`, `NEVER`, `REQUEST`.
+- `sub_attributes` (Attributes Set) List of sub-attributes for complex attributes. (see [below for nested schema](#nestedatt--inbound_provisioning--custom_scim2_schema--attributes--sub_attributes))
+- `type` (String) Type of the attribute. Options are `STRING`, `BOOLEAN`, `INTEGER`, `DECIMAL`, `DATETIME`, `BINARY`, `REFERENCE`, `COMPLEX`.
+- `uniqueness` (String) The uniqueness of the attribute. Options are `NONE`, `GLOBAL`, `SERVER`.
+
+<a id="nestedatt--inbound_provisioning--custom_scim2_schema--attributes--sub_attributes"></a>
+### Nested Schema for `inbound_provisioning.custom_scim2_schema.attributes.sub_attributes`
+
+Optional:
+
+- `case_exact` (Boolean) Whether the sub-attribute is case exact.
+- `description` (String) Description of the sub-attribute.
+- `mutability` (String) Mutability of the sub-attribute. Options are `READONLY`, `WRITEONLY`, `READWRITE`, `IMMUTABLE`.
+- `name` (String) Name of the sub-attribute.
+- `required` (Boolean) Whether the sub-attribute is required.
+- `returned` (String) Whether the sub-attribute is returned in the response. Options are `ALWAYS`, `DEFAULT`, `NEVER`, `REQUEST`.
+- `type` (String) Type of the sub-attribute. Options are `STRING`, `BOOLEAN`, `INTEGER`, `DECIMAL`, `DATETIME`, `BINARY`, `REFERENCE`, `COMPLEX`.
+- `uniqueness` (String) The uniqueness of the sub-attribute. Options are `NONE`, `GLOBAL`, `SERVER`.
+
+
+
+
 <a id="nestedatt--inbound_provisioning--groups"></a>
 ### Nested Schema for `inbound_provisioning.groups`
 
@@ -2584,6 +2633,14 @@ Optional:
 
 
 
+
+
+<a id="nestedatt--inbound_provisioning--service_provider_config"></a>
+### Nested Schema for `inbound_provisioning.service_provider_config`
+
+Optional:
+
+- `documentation_uri` (String) The URI for the service provider's documentation. This only applies when using SCIM 2.0. Supported in PingFederate 12.3 and later.
 
 
 

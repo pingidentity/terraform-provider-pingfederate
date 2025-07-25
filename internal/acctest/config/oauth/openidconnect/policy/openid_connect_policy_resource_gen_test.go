@@ -182,17 +182,16 @@ data "pingfederate_openid_connect_policy" "example" {
 
 // Maximal HCL with all values set where possible
 func openidConnectPolicy_CompleteHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedHcl += `
-  include_x5t_in_id_token = true
-  id_token_typ_header_value = "Example"
-    `
-	}
-
+	var versionedHcl string
 	if acctest.VersionAtLeast(version.PingFederate1220) {
 		versionedHcl += `
   return_id_token_on_token_exchange_grant = true
+    `
+	}
+
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		versionedHcl += `
+  allow_id_token_introspection = true
     `
 	}
 
@@ -355,6 +354,8 @@ resource "pingfederate_openid_connect_policy" "example" {
       values = ["extended"]
     }
   }
+  include_x5t_in_id_token   = true
+  id_token_typ_header_value = "Example"
   %s
 }
 data "pingfederate_openid_connect_policy" "example" {
@@ -365,17 +366,7 @@ data "pingfederate_openid_connect_policy" "example" {
 
 // Validate any computed values when applying minimal HCL
 func openidConnectPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	versionedChecks := []resource.TestCheckFunc{}
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "include_x5t_in_id_token", "false"),
-		)
-	} else {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckNoResourceAttr("pingfederate_openid_connect_policy.example", "include_x5t_in_id_token"),
-		)
-	}
-
+	var versionedChecks []resource.TestCheckFunc
 	if acctest.VersionAtLeast(version.PingFederate1220) {
 		versionedChecks = append(versionedChecks,
 			resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "return_id_token_on_token_exchange_grant", "false"),
@@ -383,6 +374,16 @@ func openidConnectPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	} else {
 		versionedChecks = append(versionedChecks,
 			resource.TestCheckNoResourceAttr("pingfederate_openid_connect_policy.example", "return_id_token_on_token_exchange_grant"),
+		)
+	}
+
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "allow_id_token_introspection", "false"),
+		)
+	} else {
+		versionedChecks = append(versionedChecks,
+			resource.TestCheckNoResourceAttr("pingfederate_openid_connect_policy.example", "allow_id_token_introspection"),
 		)
 	}
 	return resource.ComposeTestCheckFunc(
@@ -403,6 +404,7 @@ func openidConnectPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "reissue_id_token_in_hybrid_flow", "false"),
 		resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "return_id_token_on_refresh_grant", "false"),
 		resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "scope_attribute_mappings.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "include_x5t_in_id_token", "false"),
 		resource.ComposeTestCheckFunc(versionedChecks...),
 	)
 }
