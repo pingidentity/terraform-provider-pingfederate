@@ -211,7 +211,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"persistent_grant_expiration_time": schema.Int64Attribute{
-				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0` for PF versions > `11.3`.",
+				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
