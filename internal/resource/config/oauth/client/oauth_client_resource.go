@@ -214,6 +214,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0` for PF versions > `11.3`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(0),
 			},
 			"persistent_grant_expiration_time_unit": schema.StringAttribute{
 				Description: "The persistent grant expiration time unit. Defaults to `DAYS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`.",
@@ -1279,18 +1280,6 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	planModified := false
-
-	if pfVersionAtLeast120 ||
-		pfVersionAtLeast121 ||
-		pfVersionAtLeast122 {
-		plan.PersistentGrantExpirationTime = types.Int64PointerValue(plan.PersistentGrantExpirationTime.ValueInt64Pointer())
-	} else {
-		if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
-			plan.PersistentGrantExpirationTime = types.Int64PointerValue(plan.PersistentGrantExpirationTime.ValueInt64Pointer())
-		} else {
-			plan.PersistentGrantExpirationTime = types.Int64Null()
-		}
-	}
 
 	if internaltypes.IsDefined(plan.OidcPolicy) {
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
