@@ -1280,16 +1280,16 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 
 	planModified := false
 
-	if !pfVersionAtLeast120 &&
-		!pfVersionAtLeast121 &&
-		!pfVersionAtLeast122 {
+	if pfVersionAtLeast120 ||
+		pfVersionAtLeast121 ||
+		pfVersionAtLeast122 {
+		plan.PersistentGrantExpirationTime = types.Int64PointerValue(plan.PersistentGrantExpirationTime.ValueInt64Pointer())
+	} else {
 		if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
 			plan.PersistentGrantExpirationTime = types.Int64PointerValue(plan.PersistentGrantExpirationTime.ValueInt64Pointer())
 		} else {
 			plan.PersistentGrantExpirationTime = types.Int64Null()
 		}
-	} else {
-		plan.PersistentGrantExpirationTime = types.Int64PointerValue(plan.PersistentGrantExpirationTime.ValueInt64Pointer())
 	}
 
 	if internaltypes.IsDefined(plan.OidcPolicy) {
@@ -1553,7 +1553,7 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
 		addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
 	}
-	// addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
+
 	addRequest.PersistentGrantExpirationTimeUnit = plan.PersistentGrantExpirationTimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantIdleTimeoutType = plan.PersistentGrantIdleTimeoutType.ValueStringPointer()
 	addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
