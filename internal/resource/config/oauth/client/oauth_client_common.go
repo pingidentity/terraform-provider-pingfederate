@@ -229,10 +229,8 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		state.PersistentGrantExpirationTimeUnit = types.StringNull()
 	} else {
 		// Conditional Check for PingFederate version 11.3
-		if state.PersistentGrantExpirationType.ValueString() == "SERVER_DEFAULT" {
-			if r.PersistentGrantExpirationTime == nil {
-				state.PersistentGrantExpirationTime = types.Int64Value(0)
-			}
+		if state.PersistentGrantExpirationType.ValueString() == "SERVER_DEFAULT" && r.PersistentGrantExpirationTime == nil {
+			state.PersistentGrantExpirationTime = types.Int64Value(0)
 		} else {
 			state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
 		}
