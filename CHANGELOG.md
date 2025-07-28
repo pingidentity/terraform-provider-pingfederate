@@ -1,3 +1,7 @@
+# v1.6.1 (Unreleased)
+### Bug fixes
+* Fixed an inconsistent result error that would occur when configuring OAuth Clients with no `persistent_grant_expiration_time` supplied in the `pingfederate_oauth_client` resource for PF version `11.3`. ([#531]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/531)))
+
 # v1.6.0 July 23, 2025
 ### Enhancements
 * Added support for PingFederate `12.3.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, and `12.2`. ([#528]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/528)))
