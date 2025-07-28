@@ -211,7 +211,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"persistent_grant_expiration_time": schema.Int64Attribute{
-				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time.",
+				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
@@ -1280,7 +1280,6 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	planModified := false
-
 	if internaltypes.IsDefined(plan.OidcPolicy) {
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
 		// If oidc_policy.post_logout_redirect_uris is set prior to PF version 12.0, throw an error.
@@ -1539,10 +1538,7 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.RefreshTokenRollingInterval = plan.RefreshTokenRollingInterval.ValueInt64Pointer()
 	addRequest.RefreshTokenRollingIntervalTimeUnit = plan.RefreshTokenRollingIntervalTimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantExpirationType = plan.PersistentGrantExpirationType.ValueStringPointer()
-	if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
-		addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
-	}
-
+	addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
 	addRequest.PersistentGrantExpirationTimeUnit = plan.PersistentGrantExpirationTimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantIdleTimeoutType = plan.PersistentGrantIdleTimeoutType.ValueStringPointer()
 	addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()

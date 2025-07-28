@@ -213,7 +213,7 @@ RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 1
 - `offline_access_require_consent_prompt` (String) Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.
 - `oidc_policy` (Attributes) Open ID Connect Policy settings. This is included in the message only when OIDC is enabled. (see [below for nested schema](#nestedatt--oidc_policy))
 - `pending_authorization_timeout_override` (Number) The `device_code` and `user_code` timeout, in seconds. This overrides the `pending_authorization_timeout` value present in Authorization Server Settings.
-- `persistent_grant_expiration_time` (Number) The persistent grant expiration time. `-1` indicates an indefinite amount of time.
+- `persistent_grant_expiration_time` (Number) The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0`.
 - `persistent_grant_expiration_time_unit` (String) The persistent grant expiration time unit. Defaults to `DAYS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`.
 - `persistent_grant_expiration_type` (String) Allows an administrator to override the Persistent Grant Lifetime set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`.
 - `persistent_grant_idle_timeout` (Number) The persistent grant idle timeout. Defaults to `0`.
