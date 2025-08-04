@@ -193,7 +193,7 @@ func keypairsSigningKey_CheckComputedValuesGenerateMinimal() resource.TestCheckF
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "sha1_fingerprint"),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
-			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "EXPIRED"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example, O=Ping Identity, C=US"),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "valid_from"),
