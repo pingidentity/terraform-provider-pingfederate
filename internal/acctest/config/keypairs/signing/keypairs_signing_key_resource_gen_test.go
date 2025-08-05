@@ -273,7 +273,7 @@ func keypairsSigningKey_CheckComputedValuesImportComplete() resource.TestCheckFu
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha1_fingerprint", "60CB3F8861673E1E814D87D84C8FADDDC37AE270"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint", "8AA7D3C77D5053A9C8781D4F3E123712667E6B9A3E103DB74D035D2751695938"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
-			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "EXPIRED"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Another Authority, O=Example Corporation, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "valid_from", "2024-08-01T15:16:44Z"),
