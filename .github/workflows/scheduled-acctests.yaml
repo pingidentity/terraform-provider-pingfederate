@@ -7,69 +7,59 @@ on:
 
 jobs:
   acceptance:
-    name: Debug Failure Test
+    name: Acceptance Tests
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - "1.4.*"
+          - "1.11.*"
+        # Cover newest patch release of the major-minor releases we support
+        pingfederate:
+          - "12.0.6"
+          - "12.1.8"
+          - "12.2.4"
+          - "12.3.0"
     steps:
-      - name: Fail immediately for debugging
-        run: |
-          echo "This job is deliberately failing for debugging purposes"
-          exit 1
-          
-  # Original acceptance test job - commented out for debugging
-  # acceptance_original:
-  #   name: Acceptance Tests
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       terraform:
-  #         - "1.4.*"
-  #         - "1.11.*"
-  #       # Cover newest patch release of the major-minor releases we support
-  #       pingfederate:
-  #         - "12.0.6"
-  #         - "12.1.8"
-  #         - "12.2.4"
-  #         - "12.3.0"
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-go@v5
-  #       with:
-  #         go-version-file: "go.mod"
-  #         cache: true
-  #     - uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: ${{ matrix.terraform }}
-  #         terraform_wrapper: false
-  #     - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testaccclustered && make removetestcontainer
-  #       env:
-  #         TF_ACC: "1"
-  #         CONFIG: ${{ secrets.Config }}
-  #         PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
-  #         OPERATIONAL_MODE: "CLUSTERED_CONSOLE"
-  #     - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testauthacc && make removetestcontainer
-  #       env:
-  #         TF_ACC: "1"
-  #         CONFIG: ${{ secrets.Config }}
-  #         PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
-  #         DATA_JSON_SUFFIX: ".oauth"
-  #     - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
-  #       env:
-  #         TF_ACC: "1"
-  #         CONFIG: ${{ secrets.Config }}
-  #         PF_TF_P1_CONNECTION_ID: ${{ secrets.PF_TF_P1_CONNECTION_ID }}
-  #         PF_TF_P1_CONNECTION_ENV_ID: ${{ secrets.PF_TF_P1_CONNECTION_ENV_ID }}
-  #         PF_TF_P1_LDAP_GATEWAY_ID: ${{ secrets.PF_TF_P1_LDAP_GATEWAY_ID }}
-  #         PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1: ${{ secrets.PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 }}
-  #         PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2: ${{ secrets.PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2 }}
-  #         PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1: ${{ secrets.PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1 }}
-  #         PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2: ${{ secrets.PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2 }}
-  #         PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
-  #         PF_TF_ACC_TEST_LICENSE_11: ${{ secrets.PF_TF_ACC_TEST_LICENSE_11 }}
-  #         PF_TF_ACC_TEST_LICENSE_12: ${{ secrets.PF_TF_ACC_TEST_LICENSE_12 }}
-  #         PF_TF_P1_POPULATION_ID: ${{ secrets.PF_TF_P1_POPULATION_ID }}
-  #         PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA: ${{ secrets.PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA }}
-  #         PF_TF_P1_EXAMPLE_OAUTH_APP_ID: ${{ secrets.PF_TF_P1_EXAMPLE_OAUTH_APP_ID }}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testaccclustered && make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
+          OPERATIONAL_MODE: "CLUSTERED_CONSOLE"
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testauthacc && make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
+          DATA_JSON_SUFFIX: ".oauth"
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          PF_TF_P1_CONNECTION_ID: ${{ secrets.PF_TF_P1_CONNECTION_ID }}
+          PF_TF_P1_CONNECTION_ENV_ID: ${{ secrets.PF_TF_P1_CONNECTION_ENV_ID }}
+          PF_TF_P1_LDAP_GATEWAY_ID: ${{ secrets.PF_TF_P1_LDAP_GATEWAY_ID }}
+          PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1: ${{ secrets.PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 }}
+          PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2: ${{ secrets.PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2 }}
+          PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1: ${{ secrets.PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1 }}
+          PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2: ${{ secrets.PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2 }}
+          PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
+          PF_TF_ACC_TEST_LICENSE_11: ${{ secrets.PF_TF_ACC_TEST_LICENSE_11 }}
+          PF_TF_ACC_TEST_LICENSE_12: ${{ secrets.PF_TF_ACC_TEST_LICENSE_12 }}
+          PF_TF_P1_POPULATION_ID: ${{ secrets.PF_TF_P1_POPULATION_ID }}
+          PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA: ${{ secrets.PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA }}
+          PF_TF_P1_EXAMPLE_OAUTH_APP_ID: ${{ secrets.PF_TF_P1_EXAMPLE_OAUTH_APP_ID }}
 
   onfailure:
     if: ${{ failure() && github.event_name == 'schedule' }}
