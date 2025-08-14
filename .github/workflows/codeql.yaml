@@ -81,7 +81,7 @@ jobs:
         category: "/language:${{matrix.language}}"
 
   onfailure:
-    if: ${{ always() && github.event_name == 'schedule' && contains(needs.*.result, 'failure') }}
+    if: ${{ failure() && github.event_name == 'schedule' }}
     needs: [analyze]
     name: Send failure webhook
     runs-on: ubuntu-latest
