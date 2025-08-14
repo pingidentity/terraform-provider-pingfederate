@@ -72,7 +72,7 @@ jobs:
   #         PF_TF_P1_EXAMPLE_OAUTH_APP_ID: ${{ secrets.PF_TF_P1_EXAMPLE_OAUTH_APP_ID }}
 
   onfailure:
-    if: ${{ failure() }}
+    if: ${{ failure() && github.event_name == 'schedule' }}
     needs: [acceptance]
     name: Send failure webhook
     runs-on: ubuntu-latest
