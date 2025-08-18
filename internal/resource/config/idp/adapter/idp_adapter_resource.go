@@ -4,7 +4,6 @@ package idpadapter
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -18,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -247,12 +245,33 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 		addRequest.AttributeMapping.AttributeSources = attributesources.ClientStruct(attributeSourcesAttr)
 	}
 
-	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = &client.IdpAdapterAttributeContract{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), addRequest.AttributeContract)
-		if err != nil {
-			return err
+	// attribute_contract
+	if !plan.AttributeContract.IsNull() && !plan.AttributeContract.IsUnknown() {
+		attributeContractValue := &client.IdpAdapterAttributeContract{}
+		attributeContractAttrs := plan.AttributeContract.Attributes()
+		attributeContractValue.CoreAttributes = []client.IdpAdapterAttribute{}
+		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.IdpAdapterAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Masked = coreAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			coreAttributesValue.Pseudonym = coreAttributesAttrs["pseudonym"].(types.Bool).ValueBoolPointer()
+			attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
 		}
+		if !attributeContractAttrs["extended_attributes"].IsNull() && !attributeContractAttrs["extended_attributes"].IsUnknown() {
+			attributeContractValue.ExtendedAttributes = []client.IdpAdapterAttribute{}
+			for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.IdpAdapterAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Masked = extendedAttributesAttrs["masked"].(types.Bool).ValueBoolPointer()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				extendedAttributesValue.Pseudonym = extendedAttributesAttrs["pseudonym"].(types.Bool).ValueBoolPointer()
+				attributeContractValue.ExtendedAttributes = append(attributeContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
+		}
+		attributeContractValue.MaskOgnlValues = attributeContractAttrs["mask_ognl_values"].(types.Bool).ValueBoolPointer()
+		attributeContractValue.UniqueUserKeyAttribute = attributeContractAttrs["unique_user_key_attribute"].(types.String).ValueStringPointer()
+		addRequest.AttributeContract = attributeContractValue
 	}
 
 	return nil
@@ -337,17 +356,15 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var pluginDescriptorRef client.ResourceLink
-	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
-		return
-	}
+	// plugin_descriptor_ref
+	pluginDescriptorRefValue := client.ResourceLink{}
+	pluginDescriptorRefAttrs := plan.PluginDescriptorRef.Attributes()
+	pluginDescriptorRefValue.Id = pluginDescriptorRefAttrs["id"].(types.String).ValueString()
 
 	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
-	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
-	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
+	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRefValue, *configuration)
+	err := addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return
@@ -415,18 +432,16 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.AuthContext(ctx, r.providerConfig), plan.AdapterId.ValueString())
 
-	var pluginDescriptorRef client.ResourceLink
-	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
-		return
-	}
+	// plugin_descriptor_ref
+	pluginDescriptorRefValue := client.ResourceLink{}
+	pluginDescriptorRefAttrs := plan.PluginDescriptorRef.Attributes()
+	pluginDescriptorRefValue.Id = pluginDescriptorRefAttrs["id"].(types.String).ValueString()
 
 	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
-	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, *configuration)
+	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRefValue, *configuration)
 
-	err = addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
+	err := addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return
