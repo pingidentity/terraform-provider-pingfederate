@@ -4,7 +4,6 @@ package authenticationselector
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -18,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -131,12 +129,20 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 }
 
 func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationSelector, plan authenticationSelectorResourceModel) error {
-	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = &client.AuthenticationSelectorAttributeContract{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
-		if err != nil {
-			return err
+	// attribute_contract
+	if !plan.AttributeContract.IsNull() && !plan.AttributeContract.IsUnknown() {
+		attributeContractValue := &client.AuthenticationSelectorAttributeContract{}
+		attributeContractAttrs := plan.AttributeContract.Attributes()
+		if !attributeContractAttrs["extended_attributes"].IsNull() && !attributeContractAttrs["extended_attributes"].IsUnknown() {
+			attributeContractValue.ExtendedAttributes = []client.AuthenticationSelectorAttribute{}
+			for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.AuthenticationSelectorAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				attributeContractValue.ExtendedAttributes = append(attributeContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
 		}
+		addRequest.AttributeContract = attributeContractValue
 	}
 
 	// parent_ref
