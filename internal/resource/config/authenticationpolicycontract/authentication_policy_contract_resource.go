@@ -4,7 +4,6 @@ package authenticationpolicycontract
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -18,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -122,25 +120,25 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractModel) error {
 	addRequest.Id = plan.ContractId.ValueStringPointer()
 
-	addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
-	for _, coreAttribute := range plan.CoreAttributes.Elements() {
-		unmarshalled := client.AuthenticationPolicyContractAttribute{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(coreAttribute, false)), &unmarshalled)
-		if err != nil {
-			return err
+	// core_attributes
+	if !plan.CoreAttributes.IsNull() && !plan.CoreAttributes.IsUnknown() {
+		addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
+		for _, coreAttributesElement := range plan.CoreAttributes.Elements() {
+			coreAttributesValue := client.AuthenticationPolicyContractAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			addRequest.CoreAttributes = append(addRequest.CoreAttributes, coreAttributesValue)
 		}
-		addRequest.CoreAttributes = append(addRequest.CoreAttributes, unmarshalled)
 	}
 
-	if internaltypes.IsDefined(plan.ExtendedAttributes) {
+	// extended_attributes
+	if !plan.ExtendedAttributes.IsNull() && !plan.ExtendedAttributes.IsUnknown() {
 		addRequest.ExtendedAttributes = []client.AuthenticationPolicyContractAttribute{}
-		for _, extendedAttribute := range plan.ExtendedAttributes.Elements() {
-			unmarshalled := client.AuthenticationPolicyContractAttribute{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(extendedAttribute, false)), &unmarshalled)
-			if err != nil {
-				return err
-			}
-			addRequest.ExtendedAttributes = append(addRequest.ExtendedAttributes, unmarshalled)
+		for _, extendedAttributesElement := range plan.ExtendedAttributes.Elements() {
+			extendedAttributesValue := client.AuthenticationPolicyContractAttribute{}
+			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+			addRequest.ExtendedAttributes = append(addRequest.ExtendedAttributes, extendedAttributesValue)
 		}
 	}
 
