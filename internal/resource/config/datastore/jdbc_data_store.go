@@ -4,7 +4,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -23,7 +22,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -401,12 +399,15 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.JdbcDataStore.MinPoolSize = minPoolSize.(types.Int64).ValueInt64Pointer()
 	}
 
-	connectionUrlTags, ok := jdbcDataStorePlan["connection_url_tags"]
-	if ok {
+	if !jdbcDataStorePlan["connection_url_tags"].IsNull() && !jdbcDataStorePlan["connection_url_tags"].IsUnknown() {
 		addRequest.JdbcDataStore.ConnectionUrlTags = []client.JdbcTagConfig{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(connectionUrlTags, true)), &addRequest.JdbcDataStore.ConnectionUrlTags)
-		if err != nil {
-			return err
+		for _, connectionUrlTagsElement := range jdbcDataStorePlan["connection_url_tags"].(types.Set).Elements() {
+			connectionUrlTagsValue := client.JdbcTagConfig{}
+			connectionUrlTagsAttrs := connectionUrlTagsElement.(types.Object).Attributes()
+			connectionUrlTagsValue.ConnectionUrl = connectionUrlTagsAttrs["connection_url"].(types.String).ValueString()
+			connectionUrlTagsValue.DefaultSource = connectionUrlTagsAttrs["default_source"].(types.Bool).ValueBoolPointer()
+			connectionUrlTagsValue.Tags = connectionUrlTagsAttrs["tags"].(types.String).ValueStringPointer()
+			addRequest.JdbcDataStore.ConnectionUrlTags = append(addRequest.JdbcDataStore.ConnectionUrlTags, connectionUrlTagsValue)
 		}
 	}
 

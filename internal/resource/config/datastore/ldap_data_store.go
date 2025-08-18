@@ -4,7 +4,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -27,7 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -791,12 +789,18 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.MaxWait = ldapDataStorePlan["max_wait"].(types.Int64).ValueInt64Pointer()
 	}
 
-	hostnamesTags, ok := ldapDataStorePlan["hostnames_tags"]
-	if ok {
+	if !ldapDataStorePlan["hostnames_tags"].IsNull() && !ldapDataStorePlan["hostnames_tags"].IsUnknown() {
 		addRequest.LdapDataStore.HostnamesTags = []client.LdapTagConfig{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(hostnamesTags, true)), &addRequest.LdapDataStore.HostnamesTags)
-		if err != nil {
-			return err
+		for _, hostnamesTagsElement := range ldapDataStorePlan["hostnames_tags"].(types.Set).Elements() {
+			hostnamesTagsValue := client.LdapTagConfig{}
+			hostnamesTagsAttrs := hostnamesTagsElement.(types.Object).Attributes()
+			hostnamesTagsValue.DefaultSource = hostnamesTagsAttrs["default_source"].(types.Bool).ValueBoolPointer()
+			hostnamesTagsValue.Hostnames = []string{}
+			for _, hostnamesElement := range hostnamesTagsAttrs["hostnames"].(types.List).Elements() {
+				hostnamesTagsValue.Hostnames = append(hostnamesTagsValue.Hostnames, hostnamesElement.(types.String).ValueString())
+			}
+			hostnamesTagsValue.Tags = hostnamesTagsAttrs["tags"].(types.String).ValueStringPointer()
+			addRequest.LdapDataStore.HostnamesTags = append(addRequest.LdapDataStore.HostnamesTags, hostnamesTagsValue)
 		}
 	}
 
