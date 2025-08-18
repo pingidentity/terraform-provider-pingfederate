@@ -673,7 +673,7 @@ func readLdapDataStoreResponse(ctx context.Context, r *client.DataStoreAggregati
 	return diags
 }
 
-func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.LdapDataStore, plan dataStoreModel) error {
+func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, plan dataStoreModel) {
 	ldapDataStorePlan := plan.LdapDataStore.Attributes()
 
 	if internaltypes.IsDefined(plan.MaskAttributeValues) {
@@ -819,21 +819,17 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.FollowLDAPReferrals = followLdapReferrals.(types.Bool).ValueBoolPointer()
 	}
 
-	clientTlsCertificateRef, ok := ldapDataStorePlan["client_tls_certificate_ref"]
-	if ok {
-		ref, err := resourcelink.ClientStruct(clientTlsCertificateRef.(types.Object))
-		if err != nil {
-			return err
-		}
-		addRequest.LdapDataStore.ClientTlsCertificateRef = ref
+	if !ldapDataStorePlan["client_tls_certificate_ref"].IsNull() && !ldapDataStorePlan["client_tls_certificate_ref"].IsUnknown() {
+		ldapDataStoreClientTlsCertificateRefValue := &client.ResourceLink{}
+		ldapDataStoreClientTlsCertificateRefAttrs := ldapDataStorePlan["client_tls_certificate_ref"].(types.Object).Attributes()
+		ldapDataStoreClientTlsCertificateRefValue.Id = ldapDataStoreClientTlsCertificateRefAttrs["id"].(types.String).ValueString()
+		addRequest.LdapDataStore.ClientTlsCertificateRef = ldapDataStoreClientTlsCertificateRefValue
 	}
 
 	retryFailedOperations, ok := ldapDataStorePlan["retry_failed_operations"]
 	if ok {
 		addRequest.LdapDataStore.RetryFailedOperations = retryFailedOperations.(types.Bool).ValueBoolPointer()
 	}
-
-	return nil
 }
 
 func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
@@ -843,11 +839,7 @@ func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	ldapPlan := plan.LdapDataStore.Attributes()
 	ldapType := ldapPlan["ldap_type"].(types.String).ValueString()
 	createLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
-	err = addOptionalLdapDataStoreFields(createLdapDataStore, con, client.LdapDataStore{}, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
-		return
-	}
+	addOptionalLdapDataStoreFields(createLdapDataStore, plan)
 
 	response, httpResponse, err := createDataStore(createLdapDataStore, dsr, con, resp)
 	if err != nil {
@@ -870,11 +862,7 @@ func updateLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	ldapPlan := plan.LdapDataStore.Attributes()
 	ldapType := ldapPlan["ldap_type"].(types.String).ValueString()
 	updateLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
-	err = addOptionalLdapDataStoreFields(updateLdapDataStore, con, client.LdapDataStore{}, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the DataStore: "+err.Error())
-		return
-	}
+	addOptionalLdapDataStoreFields(updateLdapDataStore, plan)
 
 	response, httpResponse, err := updateDataStore(updateLdapDataStore, dsr, con, resp, plan.DataStoreId.ValueString())
 	if err != nil {

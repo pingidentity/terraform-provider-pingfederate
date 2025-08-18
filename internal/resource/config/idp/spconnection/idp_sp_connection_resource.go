@@ -1991,8 +1991,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) diag.Diagnostics {
-	var respDiags diag.Diagnostics
+func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpSpConnectionModel) {
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = utils.Pointer("SP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
@@ -2633,8 +2632,6 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 		outboundProvisionValue.Type = outboundProvisionAttrs["type"].(types.String).ValueString()
 		addRequest.OutboundProvision = outboundProvisionValue
 	}
-
-	return respDiags
 }
 
 func (state *idpSpConnectionModel) getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex int) types.Object {
@@ -4064,10 +4061,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	addOptionalIdpSpconnectionFields(createIdpSpconnection, plan)
 
 	apiCreateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.CreateSpConnection(config.AuthContext(ctx, r.providerConfig))
 	apiCreateIdpSpconnection = apiCreateIdpSpconnection.Body(*createIdpSpconnection)
@@ -4128,10 +4122,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	addOptionalIdpSpconnectionFields(createUpdateRequest, plan)
 
 	updateIdpSpconnection = updateIdpSpconnection.Body(*createUpdateRequest)
 	updateIdpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnectionExecute(updateIdpSpconnection)

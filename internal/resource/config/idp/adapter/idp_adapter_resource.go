@@ -217,7 +217,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 	resp.Schema = schema
 }
 
-func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdapter, plan idpAdapterModel) error {
+func addOptionalIdpAdapterFields(addRequest *client.IdpAdapter, plan idpAdapterModel) error {
 	var err error
 	if internaltypes.IsDefined(plan.AuthnCtxClassRef) {
 		addRequest.AuthnCtxClassRef = plan.AuthnCtxClassRef.ValueStringPointer()
@@ -364,7 +364,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRefValue, *configuration)
-	err := addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
+	err := addOptionalIdpAdapterFields(createIdpAdapter, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return
@@ -441,7 +441,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRefValue, *configuration)
 
-	err := addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
+	err := addOptionalIdpAdapterFields(createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdpAdapter: "+err.Error())
 		return

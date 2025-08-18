@@ -378,8 +378,7 @@ func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregati
 	return diags
 }
 
-func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.JdbcDataStore, plan dataStoreModel) error {
-
+func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, plan dataStoreModel) {
 	if internaltypes.IsDefined(plan.MaskAttributeValues) {
 		addRequest.JdbcDataStore.MaskAttributeValues = plan.MaskAttributeValues.ValueBoolPointer()
 	}
@@ -455,7 +454,6 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 	if ok {
 		addRequest.JdbcDataStore.EncryptedPassword = encryptedPassword.(types.String).ValueStringPointer()
 	}
-	return nil
 }
 
 func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
@@ -466,11 +464,7 @@ func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
 
 	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
-	err = addOptionalJdbcDataStoreFields(createJdbcDataStore, con, client.JdbcDataStore{}, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
-		return
-	}
+	addOptionalJdbcDataStoreFields(createJdbcDataStore, plan)
 
 	response, httpResponse, err := createDataStore(createJdbcDataStore, dsr, con, resp)
 	if err != nil {
@@ -494,11 +488,7 @@ func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
 
 	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
-	err = addOptionalJdbcDataStoreFields(updateJdbcDataStore, con, client.JdbcDataStore{}, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the DataStore: "+err.Error())
-		return
-	}
+	addOptionalJdbcDataStoreFields(updateJdbcDataStore, plan)
 
 	response, httpResponse, err := updateDataStore(updateJdbcDataStore, dsr, con, resp, plan.DataStoreId.ValueString())
 	if err != nil {

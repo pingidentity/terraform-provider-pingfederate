@@ -128,7 +128,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema
 }
 
-func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationSelector, plan authenticationSelectorResourceModel) error {
+func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationSelector, plan authenticationSelectorResourceModel) {
 	// attribute_contract
 	if !plan.AttributeContract.IsNull() && !plan.AttributeContract.IsUnknown() {
 		attributeContractValue := &client.AuthenticationSelectorAttributeContract{}
@@ -152,9 +152,6 @@ func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationS
 		parentRefValue.Id = parentRefAttrs["id"].(types.String).ValueString()
 		addRequest.ParentRef = parentRefValue
 	}
-
-	return nil
-
 }
 
 // Metadata returns the resource type name.
@@ -236,11 +233,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	}
 
 	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
-	err = addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
-		return
-	}
+	addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
 
 	apiCreateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationSelectors = apiCreateAuthenticationSelectors.Body(*createAuthenticationSelectors)
@@ -321,11 +314,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 
 	updateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), plan.SelectorId.ValueString())
 	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
-	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
-		return
-	}
+	addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 
 	updateAuthenticationSelectors = updateAuthenticationSelectors.Body(*createUpdateRequest)
 	updateAuthenticationSelectorsResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelectorExecute(updateAuthenticationSelectors)

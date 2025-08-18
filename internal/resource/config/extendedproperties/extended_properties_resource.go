@@ -83,7 +83,7 @@ func (r *extendedPropertiesResource) Schema(ctx context.Context, req resource.Sc
 	resp.Schema = schema
 }
 
-func addExtendedPropertiesFields(ctx context.Context, addRequest *client.ExtendedProperties, plan extendedPropertiesResourceModel) {
+func addExtendedPropertiesFields(addRequest *client.ExtendedProperties, plan extendedPropertiesResourceModel) {
 	// items
 	if !plan.Items.IsNull() && !plan.Items.IsUnknown() {
 		addRequest.Items = []client.ExtendedProperty{}
@@ -133,7 +133,7 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	createExtendedProperties := client.NewExtendedProperties()
-	addExtendedPropertiesFields(ctx, createExtendedProperties, plan)
+	addExtendedPropertiesFields(createExtendedProperties, plan)
 
 	apiCreateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	apiCreateExtendedProperties = apiCreateExtendedProperties.Body(*createExtendedProperties)
@@ -193,7 +193,7 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 
 	updateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewExtendedProperties()
-	addExtendedPropertiesFields(ctx, createUpdateRequest, plan)
+	addExtendedPropertiesFields(createUpdateRequest, plan)
 
 	updateExtendedProperties = updateExtendedProperties.Body(*createUpdateRequest)
 	updateExtendedPropertiesResponse, httpResp, err := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedPropertiesExecute(updateExtendedProperties)

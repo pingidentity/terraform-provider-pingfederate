@@ -20,7 +20,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -117,7 +116,7 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	resp.Schema = schema
 }
 
-func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractModel) error {
+func addAuthenticationPolicyContractsFields(addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractModel) {
 	addRequest.Id = plan.ContractId.ValueStringPointer()
 
 	// core_attributes
@@ -143,8 +142,6 @@ func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *cli
 	}
 
 	addRequest.Name = plan.Name.ValueStringPointer()
-	return nil
-
 }
 
 // Metadata returns the resource type name.
@@ -173,11 +170,7 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 	}
 
 	createAuthenticationPolicyContracts := client.NewAuthenticationPolicyContract()
-	err := addAuthenticationPolicyContractsFields(ctx, createAuthenticationPolicyContracts, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an authentication policy contract: "+err.Error())
-		return
-	}
+	addAuthenticationPolicyContractsFields(createAuthenticationPolicyContracts, plan)
 
 	apiCreateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationPolicyContracts = apiCreateAuthenticationPolicyContracts.Body(*createAuthenticationPolicyContracts)
@@ -239,11 +232,7 @@ func (r *authenticationPolicyContractResource) Update(ctx context.Context, req r
 	var state authenticationPolicyContractModel
 	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig), plan.ContractId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
-	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an authentication policy contract: "+err.Error())
-		return
-	}
+	addAuthenticationPolicyContractsFields(createUpdateRequest, plan)
 
 	updateAuthenticationPolicyContracts = updateAuthenticationPolicyContracts.Body(*createUpdateRequest)
 	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
