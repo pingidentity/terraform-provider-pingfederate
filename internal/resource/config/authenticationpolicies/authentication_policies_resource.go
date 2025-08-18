@@ -4,7 +4,6 @@ package authenticationpolicies
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -19,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -231,8 +229,6 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 }
 
 func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPolicy, plan authenticationPoliciesModel) error {
-	addRequest.FailIfNoSelection = plan.FailIfNoSelection.ValueBoolPointer()
-
 	addRequest.AuthnSelectionTrees = []client.AuthenticationPolicyTree{}
 	for _, authnSelectionTree := range plan.AuthnSelectionTrees.Elements() {
 		authenticationPolicyTree := client.AuthenticationPolicyTree{}
@@ -269,19 +265,29 @@ func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPoli
 		addRequest.AuthnSelectionTrees = append(addRequest.AuthnSelectionTrees, authenticationPolicyTree)
 	}
 
-	if internaltypes.IsDefined(plan.DefaultAuthenticationSources) {
+	if !plan.DefaultAuthenticationSources.IsNull() && !plan.DefaultAuthenticationSources.IsUnknown() {
 		addRequest.DefaultAuthenticationSources = []client.AuthenticationSource{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.DefaultAuthenticationSources, true)), &addRequest.DefaultAuthenticationSources)
-		if err != nil {
-			return err
+		for _, defaultAuthenticationSourcesElement := range plan.DefaultAuthenticationSources.Elements() {
+			defaultAuthenticationSourcesValue := client.AuthenticationSource{}
+			defaultAuthenticationSourcesAttrs := defaultAuthenticationSourcesElement.(types.Object).Attributes()
+			defaultAuthenticationSourcesSourceRefValue := client.ResourceLink{}
+			defaultAuthenticationSourcesSourceRefAttrs := defaultAuthenticationSourcesAttrs["source_ref"].(types.Object).Attributes()
+			defaultAuthenticationSourcesSourceRefValue.Id = defaultAuthenticationSourcesSourceRefAttrs["id"].(types.String).ValueString()
+			defaultAuthenticationSourcesValue.SourceRef = defaultAuthenticationSourcesSourceRefValue
+			defaultAuthenticationSourcesValue.Type = defaultAuthenticationSourcesAttrs["type"].(types.String).ValueString()
+			addRequest.DefaultAuthenticationSources = append(addRequest.DefaultAuthenticationSources, defaultAuthenticationSourcesValue)
 		}
 	}
 
-	if internaltypes.IsDefined(plan.TrackedHttpParameters) {
+	// fail_if_no_selection
+	if !plan.FailIfNoSelection.IsNull() && !plan.FailIfNoSelection.IsUnknown() {
+		addRequest.FailIfNoSelection = plan.FailIfNoSelection.ValueBoolPointer()
+	}
+	// tracked_http_parameters
+	if !plan.TrackedHttpParameters.IsNull() && !plan.TrackedHttpParameters.IsUnknown() {
 		addRequest.TrackedHttpParameters = []string{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.TrackedHttpParameters, true)), &addRequest.TrackedHttpParameters)
-		if err != nil {
-			return err
+		for _, trackedHttpParametersElement := range plan.TrackedHttpParameters.Elements() {
+			addRequest.TrackedHttpParameters = append(addRequest.TrackedHttpParameters, trackedHttpParametersElement.(types.String).ValueString())
 		}
 	}
 
