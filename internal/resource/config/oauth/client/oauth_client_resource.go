@@ -4,7 +4,6 @@ package oauthclient
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -30,7 +29,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -1527,153 +1525,225 @@ func grantTypes(grantTypesSet types.Set) []string {
 	return grantTypesSlice
 }
 
-func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client, plan oauthClientModel) error {
-	addRequest.Enabled = plan.Enabled.ValueBoolPointer()
-	addRequest.Description = plan.Description.ValueStringPointer()
-	addRequest.LogoUrl = plan.LogoUrl.ValueStringPointer()
-	addRequest.RestrictToDefaultAccessTokenManager = plan.RestrictToDefaultAccessTokenManager.ValueBoolPointer()
-	addRequest.ValidateUsingAllEligibleAtms = plan.ValidateUsingAllEligibleAtms.ValueBoolPointer()
-	addRequest.RefreshRolling = plan.RefreshRolling.ValueStringPointer()
-	addRequest.RefreshTokenRollingIntervalType = plan.RefreshTokenRollingIntervalType.ValueStringPointer()
-	addRequest.RefreshTokenRollingInterval = plan.RefreshTokenRollingInterval.ValueInt64Pointer()
-	addRequest.RefreshTokenRollingIntervalTimeUnit = plan.RefreshTokenRollingIntervalTimeUnit.ValueStringPointer()
-	addRequest.PersistentGrantExpirationType = plan.PersistentGrantExpirationType.ValueStringPointer()
-	addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
-	addRequest.PersistentGrantExpirationTimeUnit = plan.PersistentGrantExpirationTimeUnit.ValueStringPointer()
-	addRequest.PersistentGrantIdleTimeoutType = plan.PersistentGrantIdleTimeoutType.ValueStringPointer()
-	addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
-	addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
-	addRequest.PersistentGrantReuseType = plan.PersistentGrantReuseType.ValueStringPointer()
-	addRequest.AllowAuthenticationApiInit = plan.AllowAuthenticationApiInit.ValueBoolPointer()
-	addRequest.EnableCookielessAuthenticationApi = plan.EnableCookielessAuthenticationApi.ValueBoolPointer()
-	addRequest.BypassApprovalPage = plan.BypassApprovalPage.ValueBoolPointer()
-	addRequest.RequirePushedAuthorizationRequests = plan.RequirePushedAuthorizationRequests.ValueBoolPointer()
-	addRequest.RequireJwtSecuredAuthorizationResponseMode = plan.RequireJwtSecuredAuthorizationResponseMode.ValueBoolPointer()
-	addRequest.RequireSignedRequests = plan.RequireSignedRequests.ValueBoolPointer()
-	addRequest.RequestObjectSigningAlgorithm = plan.RequestObjectSigningAlgorithm.ValueStringPointer()
-	addRequest.DeviceFlowSettingType = plan.DeviceFlowSettingType.ValueStringPointer()
-	addRequest.UserAuthorizationUrlOverride = plan.UserAuthorizationUrlOverride.ValueStringPointer()
-	addRequest.PendingAuthorizationTimeoutOverride = plan.PendingAuthorizationTimeoutOverride.ValueInt64Pointer()
-	addRequest.DevicePollingIntervalOverride = plan.DevicePollingIntervalOverride.ValueInt64Pointer()
-	addRequest.BypassActivationCodeConfirmationOverride = plan.BypassActivationCodeConfirmationOverride.ValueBoolPointer()
-	addRequest.RequireProofKeyForCodeExchange = plan.RequireProofKeyForCodeExchange.ValueBoolPointer()
-	addRequest.CibaDeliveryMode = plan.CibaDeliveryMode.ValueStringPointer()
-	addRequest.CibaNotificationEndpoint = plan.CibaNotificationEndpoint.ValueStringPointer()
-	addRequest.CibaPollingInterval = plan.CibaPollingInterval.ValueInt64Pointer()
-	addRequest.CibaRequireSignedRequests = plan.CibaRequireSignedRequests.ValueBoolPointer()
-	addRequest.CibaRequestObjectSigningAlgorithm = plan.CibaRequestObjectSigningAlgorithm.ValueStringPointer()
-	addRequest.CibaUserCodeSupported = plan.CibaUserCodeSupported.ValueBoolPointer()
-	addRequest.RefreshTokenRollingGracePeriodType = plan.RefreshTokenRollingGracePeriodType.ValueStringPointer()
-	addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
-	addRequest.ClientSecretRetentionPeriodType = plan.ClientSecretRetentionPeriodType.ValueStringPointer()
-	addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
-	addRequest.TokenIntrospectionSigningAlgorithm = plan.TokenIntrospectionSigningAlgorithm.ValueStringPointer()
-	addRequest.TokenIntrospectionEncryptionAlgorithm = plan.TokenIntrospectionEncryptionAlgorithm.ValueStringPointer()
-	addRequest.TokenIntrospectionContentEncryptionAlgorithm = plan.TokenIntrospectionContentEncryptionAlgorithm.ValueStringPointer()
-	addRequest.JwtSecuredAuthorizationResponseModeSigningAlgorithm = plan.JwtSecuredAuthorizationResponseModeSigningAlgorithm.ValueStringPointer()
-	addRequest.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm.ValueStringPointer()
-	addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
-	addRequest.RequireDpop = plan.RequireDpop.ValueBoolPointer()
-	addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
-	addRequest.RequireOfflineAccessScopeToIssueRefreshTokens = plan.RequireOfflineAccessScopeToIssueRefreshTokens.ValueStringPointer()
-	addRequest.OfflineAccessRequireConsentPrompt = plan.OfflineAccessRequireConsentPrompt.ValueStringPointer()
-	addRequest.LockoutMaxMaliciousActions = plan.LockoutMaxMaliciousActions.ValueInt64Pointer()
-	addRequest.LockoutMaxMaliciousActionsType = plan.LockoutMaxMaliciousActionsType.ValueStringPointer()
+func addOptionalOauthClientFields(addRequest *client.Client, model oauthClientModel) error {
+	addRequest.Enabled = model.Enabled.ValueBoolPointer()
+	addRequest.Description = model.Description.ValueStringPointer()
+	addRequest.LogoUrl = model.LogoUrl.ValueStringPointer()
+	addRequest.RestrictToDefaultAccessTokenManager = model.RestrictToDefaultAccessTokenManager.ValueBoolPointer()
+	addRequest.ValidateUsingAllEligibleAtms = model.ValidateUsingAllEligibleAtms.ValueBoolPointer()
+	addRequest.RefreshRolling = model.RefreshRolling.ValueStringPointer()
+	addRequest.RefreshTokenRollingIntervalType = model.RefreshTokenRollingIntervalType.ValueStringPointer()
+	addRequest.RefreshTokenRollingInterval = model.RefreshTokenRollingInterval.ValueInt64Pointer()
+	addRequest.RefreshTokenRollingIntervalTimeUnit = model.RefreshTokenRollingIntervalTimeUnit.ValueStringPointer()
+	addRequest.PersistentGrantExpirationType = model.PersistentGrantExpirationType.ValueStringPointer()
+	addRequest.PersistentGrantExpirationTime = model.PersistentGrantExpirationTime.ValueInt64Pointer()
+	addRequest.PersistentGrantExpirationTimeUnit = model.PersistentGrantExpirationTimeUnit.ValueStringPointer()
+	addRequest.PersistentGrantIdleTimeoutType = model.PersistentGrantIdleTimeoutType.ValueStringPointer()
+	addRequest.PersistentGrantIdleTimeout = model.PersistentGrantIdleTimeout.ValueInt64Pointer()
+	addRequest.PersistentGrantIdleTimeoutTimeUnit = model.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
+	addRequest.PersistentGrantReuseType = model.PersistentGrantReuseType.ValueStringPointer()
+	addRequest.AllowAuthenticationApiInit = model.AllowAuthenticationApiInit.ValueBoolPointer()
+	addRequest.EnableCookielessAuthenticationApi = model.EnableCookielessAuthenticationApi.ValueBoolPointer()
+	addRequest.BypassApprovalPage = model.BypassApprovalPage.ValueBoolPointer()
+	addRequest.RequirePushedAuthorizationRequests = model.RequirePushedAuthorizationRequests.ValueBoolPointer()
+	addRequest.RequireJwtSecuredAuthorizationResponseMode = model.RequireJwtSecuredAuthorizationResponseMode.ValueBoolPointer()
+	addRequest.RequireSignedRequests = model.RequireSignedRequests.ValueBoolPointer()
+	addRequest.RequestObjectSigningAlgorithm = model.RequestObjectSigningAlgorithm.ValueStringPointer()
+	addRequest.DeviceFlowSettingType = model.DeviceFlowSettingType.ValueStringPointer()
+	addRequest.UserAuthorizationUrlOverride = model.UserAuthorizationUrlOverride.ValueStringPointer()
+	addRequest.PendingAuthorizationTimeoutOverride = model.PendingAuthorizationTimeoutOverride.ValueInt64Pointer()
+	addRequest.DevicePollingIntervalOverride = model.DevicePollingIntervalOverride.ValueInt64Pointer()
+	addRequest.BypassActivationCodeConfirmationOverride = model.BypassActivationCodeConfirmationOverride.ValueBoolPointer()
+	addRequest.RequireProofKeyForCodeExchange = model.RequireProofKeyForCodeExchange.ValueBoolPointer()
+	addRequest.CibaDeliveryMode = model.CibaDeliveryMode.ValueStringPointer()
+	addRequest.CibaNotificationEndpoint = model.CibaNotificationEndpoint.ValueStringPointer()
+	addRequest.CibaPollingInterval = model.CibaPollingInterval.ValueInt64Pointer()
+	addRequest.CibaRequireSignedRequests = model.CibaRequireSignedRequests.ValueBoolPointer()
+	addRequest.CibaRequestObjectSigningAlgorithm = model.CibaRequestObjectSigningAlgorithm.ValueStringPointer()
+	addRequest.CibaUserCodeSupported = model.CibaUserCodeSupported.ValueBoolPointer()
+	addRequest.RefreshTokenRollingGracePeriodType = model.RefreshTokenRollingGracePeriodType.ValueStringPointer()
+	addRequest.RefreshTokenRollingGracePeriod = model.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
+	addRequest.ClientSecretRetentionPeriodType = model.ClientSecretRetentionPeriodType.ValueStringPointer()
+	addRequest.ClientSecretRetentionPeriod = model.ClientSecretRetentionPeriod.ValueInt64Pointer()
+	addRequest.TokenIntrospectionSigningAlgorithm = model.TokenIntrospectionSigningAlgorithm.ValueStringPointer()
+	addRequest.TokenIntrospectionEncryptionAlgorithm = model.TokenIntrospectionEncryptionAlgorithm.ValueStringPointer()
+	addRequest.TokenIntrospectionContentEncryptionAlgorithm = model.TokenIntrospectionContentEncryptionAlgorithm.ValueStringPointer()
+	addRequest.JwtSecuredAuthorizationResponseModeSigningAlgorithm = model.JwtSecuredAuthorizationResponseModeSigningAlgorithm.ValueStringPointer()
+	addRequest.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = model.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm.ValueStringPointer()
+	addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = model.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
+	addRequest.RequireDpop = model.RequireDpop.ValueBoolPointer()
+	addRequest.RestrictScopes = model.RestrictScopes.ValueBoolPointer()
+	addRequest.RequireOfflineAccessScopeToIssueRefreshTokens = model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueStringPointer()
+	addRequest.OfflineAccessRequireConsentPrompt = model.OfflineAccessRequireConsentPrompt.ValueStringPointer()
+	addRequest.LockoutMaxMaliciousActions = model.LockoutMaxMaliciousActions.ValueInt64Pointer()
+	addRequest.LockoutMaxMaliciousActionsType = model.LockoutMaxMaliciousActionsType.ValueStringPointer()
 
-	// addRequest.RestrictedScopes
-	var restrictedScopes []string
-	plan.RestrictedScopes.ElementsAs(ctx, &restrictedScopes, false)
-	addRequest.RestrictedScopes = restrictedScopes
-
-	if internaltypes.IsDefined(plan.ExclusiveScopes) {
-		var slice []string
-		plan.ExclusiveScopes.ElementsAs(ctx, &slice, false)
-		addRequest.ExclusiveScopes = slice
-	}
-
-	if internaltypes.IsDefined(plan.RedirectUris) {
-		var slice []string
-		plan.RedirectUris.ElementsAs(ctx, &slice, false)
-		addRequest.RedirectUris = slice
-	}
-
-	if internaltypes.IsDefined(plan.DefaultAccessTokenManagerRef) {
-		addRequest.DefaultAccessTokenManagerRef = client.NewResourceLinkWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.DefaultAccessTokenManagerRef, false)), addRequest.DefaultAccessTokenManagerRef)
-		if err != nil {
-			return err
+	// authorization_detail_types
+	if !model.AuthorizationDetailTypes.IsNull() && !model.AuthorizationDetailTypes.IsUnknown() {
+		addRequest.AuthorizationDetailTypes = []string{}
+		for _, authorizationDetailTypesElement := range model.AuthorizationDetailTypes.Elements() {
+			addRequest.AuthorizationDetailTypes = append(addRequest.AuthorizationDetailTypes, authorizationDetailTypesElement.(types.String).ValueString())
 		}
 	}
 
-	if internaltypes.IsDefined(plan.PersistentGrantReuseGrantTypes) {
-		var slice []string
-		plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &slice, false)
-		addRequest.PersistentGrantReuseGrantTypes = slice
+	// client_auth
+	if !model.ClientAuth.IsNull() && !model.ClientAuth.IsUnknown() {
+		clientAuthValue := &client.ClientAuth{}
+		clientAuthAttrs := model.ClientAuth.Attributes()
+		clientAuthValue.ClientCertIssuerDn = clientAuthAttrs["client_cert_issuer_dn"].(types.String).ValueStringPointer()
+		clientAuthValue.ClientCertSubjectDn = clientAuthAttrs["client_cert_subject_dn"].(types.String).ValueStringPointer()
+		clientAuthValue.EncryptedSecret = clientAuthAttrs["encrypted_secret"].(types.String).ValueStringPointer()
+		clientAuthValue.EnforceReplayPrevention = clientAuthAttrs["enforce_replay_prevention"].(types.Bool).ValueBoolPointer()
+		if !clientAuthAttrs["secondary_secrets"].IsNull() && !clientAuthAttrs["secondary_secrets"].IsUnknown() {
+			clientAuthValue.SecondarySecrets = []client.SecondarySecret{}
+			for _, secondarySecretsElement := range clientAuthAttrs["secondary_secrets"].(types.List).Elements() {
+				secondarySecretsValue := client.SecondarySecret{}
+				secondarySecretsAttrs := secondarySecretsElement.(types.Object).Attributes()
+				secondarySecretsValue.EncryptedSecret = secondarySecretsAttrs["encrypted_secret"].(types.String).ValueStringPointer()
+				secondarySecretsValue.Secret = secondarySecretsAttrs["secret"].(types.String).ValueStringPointer()
+				if !secondarySecretsAttrs["expiry_time"].IsNull() && !secondarySecretsAttrs["expiry_time"].IsUnknown() {
+					expiryTime, err := time.Parse(time.RFC3339Nano, secondarySecretsAttrs["expiry_time"].(types.String).ValueString())
+					if err != nil {
+						return err
+					}
+					secondarySecretsValue.ExpiryTime = &expiryTime
+				}
+				clientAuthValue.SecondarySecrets = append(clientAuthValue.SecondarySecrets, secondarySecretsValue)
+			}
+		}
+		clientAuthValue.Secret = clientAuthAttrs["secret"].(types.String).ValueStringPointer()
+		clientAuthValue.TokenEndpointAuthSigningAlgorithm = clientAuthAttrs["token_endpoint_auth_signing_algorithm"].(types.String).ValueStringPointer()
+		clientAuthValue.Type = clientAuthAttrs["type"].(types.String).ValueStringPointer()
+		addRequest.ClientAuth = clientAuthValue
 	}
 
-	if internaltypes.IsDefined(plan.AuthorizationDetailTypes) {
-		var slice []string
-		plan.AuthorizationDetailTypes.ElementsAs(ctx, &slice, false)
-		addRequest.AuthorizationDetailTypes = slice
+	// default_access_token_manager_ref
+	if !model.DefaultAccessTokenManagerRef.IsNull() && !model.DefaultAccessTokenManagerRef.IsUnknown() {
+		defaultAccessTokenManagerRefValue := &client.ResourceLink{}
+		defaultAccessTokenManagerRefAttrs := model.DefaultAccessTokenManagerRef.Attributes()
+		defaultAccessTokenManagerRefValue.Id = defaultAccessTokenManagerRefAttrs["id"].(types.String).ValueString()
+		addRequest.DefaultAccessTokenManagerRef = defaultAccessTokenManagerRefValue
 	}
 
-	if internaltypes.IsDefined(plan.RestrictedResponseTypes) {
-		var slice []string
-		plan.RestrictedResponseTypes.ElementsAs(ctx, &slice, false)
-		addRequest.RestrictedResponseTypes = slice
-	}
-
-	if internaltypes.IsDefined(plan.OidcPolicy) {
-
-		addRequest.OidcPolicy = &client.ClientOIDCPolicy{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OidcPolicy, true)), addRequest.OidcPolicy)
-		if err != nil {
-			return err
+	// exclusive_scopes
+	if !model.ExclusiveScopes.IsNull() && !model.ExclusiveScopes.IsUnknown() {
+		addRequest.ExclusiveScopes = []string{}
+		for _, exclusiveScopesElement := range model.ExclusiveScopes.Elements() {
+			addRequest.ExclusiveScopes = append(addRequest.ExclusiveScopes, exclusiveScopesElement.(types.String).ValueString())
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ClientAuth) {
-		addRequest.ClientAuth = &client.ClientAuth{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ClientAuth, true)), addRequest.ClientAuth)
-		if err != nil {
-			return err
+	// extended_parameters
+	if !model.ExtendedParameters.IsNull() && !model.ExtendedParameters.IsUnknown() {
+		addRequest.ExtendedParameters = &map[string]client.ParameterValues{}
+		for key, extendedParametersElement := range model.ExtendedParameters.Elements() {
+			extendedParametersValue := client.ParameterValues{}
+			extendedParametersAttrs := extendedParametersElement.(types.Object).Attributes()
+			if !extendedParametersAttrs["values"].IsNull() && !extendedParametersAttrs["values"].IsUnknown() {
+				extendedParametersValue.Values = []string{}
+				for _, valuesElement := range extendedParametersAttrs["values"].(types.Set).Elements() {
+					extendedParametersValue.Values = append(extendedParametersValue.Values, valuesElement.(types.String).ValueString())
+				}
+			}
+			(*addRequest.ExtendedParameters)[key] = extendedParametersValue
 		}
 	}
 
-	if internaltypes.IsDefined(plan.JwksSettings) {
-		addRequest.JwksSettings = &client.JwksSettings{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.JwksSettings, false)), addRequest.JwksSettings)
-		if err != nil {
-			return err
+	// jwks_settings
+	if !model.JwksSettings.IsNull() && !model.JwksSettings.IsUnknown() {
+		jwksSettingsValue := &client.JwksSettings{}
+		jwksSettingsAttrs := model.JwksSettings.Attributes()
+		jwksSettingsValue.Jwks = jwksSettingsAttrs["jwks"].(types.String).ValueStringPointer()
+		jwksSettingsValue.JwksUrl = jwksSettingsAttrs["jwks_url"].(types.String).ValueStringPointer()
+		addRequest.JwksSettings = jwksSettingsValue
+	}
+
+	// oidc_policy
+	if !model.OidcPolicy.IsNull() && !model.OidcPolicy.IsUnknown() {
+		oidcPolicyValue := &client.ClientOIDCPolicy{}
+		oidcPolicyAttrs := model.OidcPolicy.Attributes()
+		oidcPolicyValue.BackChannelLogoutUri = oidcPolicyAttrs["back_channel_logout_uri"].(types.String).ValueStringPointer()
+		oidcPolicyValue.GrantAccessSessionRevocationApi = oidcPolicyAttrs["grant_access_session_revocation_api"].(types.Bool).ValueBoolPointer()
+		oidcPolicyValue.GrantAccessSessionSessionManagementApi = oidcPolicyAttrs["grant_access_session_session_management_api"].(types.Bool).ValueBoolPointer()
+		oidcPolicyValue.IdTokenContentEncryptionAlgorithm = oidcPolicyAttrs["id_token_content_encryption_algorithm"].(types.String).ValueStringPointer()
+		oidcPolicyValue.IdTokenEncryptionAlgorithm = oidcPolicyAttrs["id_token_encryption_algorithm"].(types.String).ValueStringPointer()
+		oidcPolicyValue.IdTokenSigningAlgorithm = oidcPolicyAttrs["id_token_signing_algorithm"].(types.String).ValueStringPointer()
+		oidcPolicyValue.LogoutMode = oidcPolicyAttrs["logout_mode"].(types.String).ValueStringPointer()
+		if !oidcPolicyAttrs["logout_uris"].IsNull() && !oidcPolicyAttrs["logout_uris"].IsUnknown() {
+			oidcPolicyValue.LogoutUris = []string{}
+			for _, logoutUrisElement := range oidcPolicyAttrs["logout_uris"].(types.Set).Elements() {
+				oidcPolicyValue.LogoutUris = append(oidcPolicyValue.LogoutUris, logoutUrisElement.(types.String).ValueString())
+			}
+		}
+		oidcPolicyValue.PairwiseIdentifierUserType = oidcPolicyAttrs["pairwise_identifier_user_type"].(types.Bool).ValueBoolPointer()
+		oidcPolicyValue.PingAccessLogoutCapable = oidcPolicyAttrs["ping_access_logout_capable"].(types.Bool).ValueBoolPointer()
+		if !oidcPolicyAttrs["policy_group"].IsNull() && !oidcPolicyAttrs["policy_group"].IsUnknown() {
+			oidcPolicyPolicyGroupValue := &client.ResourceLink{}
+			oidcPolicyPolicyGroupAttrs := oidcPolicyAttrs["policy_group"].(types.Object).Attributes()
+			oidcPolicyPolicyGroupValue.Id = oidcPolicyPolicyGroupAttrs["id"].(types.String).ValueString()
+			oidcPolicyValue.PolicyGroup = oidcPolicyPolicyGroupValue
+		}
+		if !oidcPolicyAttrs["post_logout_redirect_uris"].IsNull() && !oidcPolicyAttrs["post_logout_redirect_uris"].IsUnknown() {
+			oidcPolicyValue.PostLogoutRedirectUris = []string{}
+			for _, postLogoutRedirectUrisElement := range oidcPolicyAttrs["post_logout_redirect_uris"].(types.Set).Elements() {
+				oidcPolicyValue.PostLogoutRedirectUris = append(oidcPolicyValue.PostLogoutRedirectUris, postLogoutRedirectUrisElement.(types.String).ValueString())
+			}
+		}
+		oidcPolicyValue.SectorIdentifierUri = oidcPolicyAttrs["sector_identifier_uri"].(types.String).ValueStringPointer()
+		oidcPolicyValue.UserInfoResponseContentEncryptionAlgorithm = oidcPolicyAttrs["user_info_response_content_encryption_algorithm"].(types.String).ValueStringPointer()
+		oidcPolicyValue.UserInfoResponseEncryptionAlgorithm = oidcPolicyAttrs["user_info_response_encryption_algorithm"].(types.String).ValueStringPointer()
+		oidcPolicyValue.UserInfoResponseSigningAlgorithm = oidcPolicyAttrs["user_info_response_signing_algorithm"].(types.String).ValueStringPointer()
+		addRequest.OidcPolicy = oidcPolicyValue
+	}
+
+	// persistent_grant_reuse_grant_types
+	if !model.PersistentGrantReuseGrantTypes.IsNull() && !model.PersistentGrantReuseGrantTypes.IsUnknown() {
+		addRequest.PersistentGrantReuseGrantTypes = []string{}
+		for _, persistentGrantReuseGrantTypesElement := range model.PersistentGrantReuseGrantTypes.Elements() {
+			addRequest.PersistentGrantReuseGrantTypes = append(addRequest.PersistentGrantReuseGrantTypes, persistentGrantReuseGrantTypesElement.(types.String).ValueString())
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ExtendedParameters) {
-		mapValue := map[string]client.ParameterValues{}
-		addRequest.ExtendedParameters = &mapValue
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedParameters, false)), addRequest.ExtendedParameters)
-		if err != nil {
-			return err
+	// redirect_uris
+	if !model.RedirectUris.IsNull() && !model.RedirectUris.IsUnknown() {
+		addRequest.RedirectUris = []string{}
+		for _, redirectUrisElement := range model.RedirectUris.Elements() {
+			addRequest.RedirectUris = append(addRequest.RedirectUris, redirectUrisElement.(types.String).ValueString())
 		}
 	}
 
-	if internaltypes.IsDefined(plan.RequestPolicyRef) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RequestPolicyRef, false)), addRequest.RequestPolicyRef)
-		if err != nil {
-			return err
+	// request_policy_ref
+	if !model.RequestPolicyRef.IsNull() && !model.RequestPolicyRef.IsUnknown() {
+		requestPolicyRefValue := &client.ResourceLink{}
+		requestPolicyRefAttrs := model.RequestPolicyRef.Attributes()
+		requestPolicyRefValue.Id = requestPolicyRefAttrs["id"].(types.String).ValueString()
+		addRequest.RequestPolicyRef = requestPolicyRefValue
+	}
+
+	// restricted_response_types
+	if !model.RestrictedResponseTypes.IsNull() && !model.RestrictedResponseTypes.IsUnknown() {
+		addRequest.RestrictedResponseTypes = []string{}
+		for _, restrictedResponseTypesElement := range model.RestrictedResponseTypes.Elements() {
+			addRequest.RestrictedResponseTypes = append(addRequest.RestrictedResponseTypes, restrictedResponseTypesElement.(types.String).ValueString())
 		}
 	}
 
-	if internaltypes.IsDefined(plan.TokenExchangeProcessorPolicyRef) {
-		addRequest.TokenExchangeProcessorPolicyRef = &client.ResourceLink{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.TokenExchangeProcessorPolicyRef, false)), addRequest.TokenExchangeProcessorPolicyRef)
-		if err != nil {
-			return err
+	// restricted_scopes
+	if !model.RestrictedScopes.IsNull() && !model.RestrictedScopes.IsUnknown() {
+		addRequest.RestrictedScopes = []string{}
+		for _, restrictedScopesElement := range model.RestrictedScopes.Elements() {
+			addRequest.RestrictedScopes = append(addRequest.RestrictedScopes, restrictedScopesElement.(types.String).ValueString())
 		}
 	}
 
+	// token_exchange_processor_policy_ref
+	if !model.TokenExchangeProcessorPolicyRef.IsNull() && !model.TokenExchangeProcessorPolicyRef.IsUnknown() {
+		tokenExchangeProcessorPolicyRefValue := &client.ResourceLink{}
+		tokenExchangeProcessorPolicyRefAttrs := model.TokenExchangeProcessorPolicyRef.Attributes()
+		tokenExchangeProcessorPolicyRefValue.Id = tokenExchangeProcessorPolicyRefAttrs["id"].(types.String).ValueString()
+		addRequest.TokenExchangeProcessorPolicyRef = tokenExchangeProcessorPolicyRefValue
+	}
 	return nil
-
 }
 
 func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -1686,7 +1756,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	createOauthClient := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
-	err := addOptionalOauthClientFields(ctx, createOauthClient, plan)
+	err := addOptionalOauthClientFields(createOauthClient, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Client: "+err.Error())
 		return
@@ -1753,7 +1823,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 
 	updateOauthClient := r.apiClient.OauthClientsAPI.UpdateOauthClient(config.AuthContext(ctx, r.providerConfig), plan.ClientId.ValueString())
 	createUpdateRequest := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
-	err := addOptionalOauthClientFields(ctx, createUpdateRequest, plan)
+	err := addOptionalOauthClientFields(createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the OAuth Client: "+err.Error())
 		return
