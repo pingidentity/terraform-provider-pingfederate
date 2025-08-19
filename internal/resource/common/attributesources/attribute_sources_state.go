@@ -41,7 +41,7 @@ func jdbcAttributeSourceAttrType(includeIdAttr bool) map[string]attr.Type {
 	jdbcAttributeSourceAttrType := commonAttributeSourceAttrType(includeIdAttr)
 	jdbcAttributeSourceAttrType["schema"] = types.StringType
 	jdbcAttributeSourceAttrType["table"] = types.StringType
-	jdbcAttributeSourceAttrType["column_names"] = types.ListType{ElemType: types.StringType}
+	jdbcAttributeSourceAttrType["column_names"] = types.SetType{ElemType: types.StringType}
 	jdbcAttributeSourceAttrType["filter"] = types.StringType
 	return jdbcAttributeSourceAttrType
 }
@@ -128,7 +128,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 			jdbcAttrSourceValues := map[string]attr.Value{}
 			jdbcAttrSourceValues["schema"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Schema)
 			jdbcAttrSourceValues["table"] = types.StringValue(attrSource.JdbcAttributeSource.Table)
-			jdbcAttrSourceValues["column_names"], valueFromDiags = types.ListValueFrom(con, types.StringType, attrSource.JdbcAttributeSource.ColumnNames)
+			jdbcAttrSourceValues["column_names"], valueFromDiags = types.SetValueFrom(con, types.StringType, attrSource.JdbcAttributeSource.ColumnNames)
 			diags.Append(valueFromDiags...)
 			jdbcAttrSourceValues["filter"] = types.StringValue(attrSource.JdbcAttributeSource.Filter)
 			jdbcAttrSourceValues["type"] = types.StringValue("JDBC")

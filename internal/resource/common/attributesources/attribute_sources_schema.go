@@ -99,7 +99,7 @@ func jdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 		Description: "The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.",
 		Required:    true,
 	}
-	jdbcAttributeSourceSchema["column_names"] = schema.ListAttribute{
+	jdbcAttributeSourceSchema["column_names"] = schema.SetAttribute{
 		ElementType: types.StringType,
 		Optional:    true,
 		Description: "A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.",
