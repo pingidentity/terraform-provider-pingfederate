@@ -45,12 +45,12 @@ type licenseDataSourceModel struct {
 	Organization        types.String `tfsdk:"organization"`
 	GracePeriod         types.Int64  `tfsdk:"grace_period"`
 	NodeLimit           types.Int64  `tfsdk:"node_limit"`
-	LicenseGroups       types.List   `tfsdk:"license_groups"`
+	LicenseGroups       types.Set    `tfsdk:"license_groups"`
 	OauthEnabled        types.Bool   `tfsdk:"oauth_enabled"`
 	WsTrustEnabled      types.Bool   `tfsdk:"ws_trust_enabled"`
 	ProvisioningEnabled types.Bool   `tfsdk:"provisioning_enabled"`
 	BridgeMode          types.Bool   `tfsdk:"bridge_mode"`
-	Features            types.List   `tfsdk:"features"`
+	Features            types.Set    `tfsdk:"features"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -130,7 +130,7 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Optional:    false,
 				Computed:    true,
 			},
-			"license_groups": schema.ListNestedAttribute{
+			"license_groups": schema.SetNestedAttribute{
 				Description: "License connection groups, if applicable.",
 				Required:    false,
 				Optional:    false,
@@ -188,7 +188,7 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Optional:    false,
 				Computed:    true,
 			},
-			"features": schema.ListNestedAttribute{
+			"features": schema.SetNestedAttribute{
 				Description: "Other licence features, if applicable.",
 				Required:    false,
 				Optional:    false,
@@ -259,10 +259,10 @@ func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, s
 	state.ProvisioningEnabled = types.BoolValue(*r.ProvisioningEnabled)
 	state.BridgeMode = types.BoolValue(*r.BridgeMode)
 
-	state.LicenseGroups, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, r.LicenseGroups)
+	state.LicenseGroups, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, r.LicenseGroups)
 	diags.Append(respDiags...)
 
-	state.Features, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, r.Features)
+	state.Features, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, r.Features)
 	diags.Append(respDiags...)
 	return diags
 }
