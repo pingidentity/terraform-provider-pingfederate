@@ -51,7 +51,7 @@ func TestAccOauthServerSettings_MinimalMaximal(t *testing.T) {
 
 // Minimal HCL with only required values set
 func oauthServerSettings_MinimalHCL() string {
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_oauth_server_settings" "example" {
   authorization_code_entropy = 30
   authorization_code_timeout = 60
@@ -63,7 +63,7 @@ data "pingfederate_oauth_server_settings" "example" {
     pingfederate_oauth_server_settings.example
   ]
 }
-`)
+`
 }
 
 // Maximal HCL with all values set where possible

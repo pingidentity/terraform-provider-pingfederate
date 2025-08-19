@@ -4,7 +4,6 @@ package serversettingslogsettings
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -17,10 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -155,19 +152,20 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 	resp.Schema = schema
 }
 
-func addOptionalServerSettingsLoggingFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLoggingResourceModel) error {
-	if internaltypes.IsDefined(plan.LogCategories) {
+func addOptionalServerSettingsLoggingFields(addRequest *client.LogSettings, model serverSettingsLoggingResourceModel) {
+	// log_categories
+	if !model.LogCategories.IsNull() && !model.LogCategories.IsUnknown() {
 		addRequest.LogCategories = []client.LogCategorySettings{}
-		for _, logCategoriesSetting := range plan.LogCategories.Elements() {
-			unmarshalled := client.LogCategorySettings{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(logCategoriesSetting, false)), &unmarshalled)
-			if err != nil {
-				return err
-			}
-			addRequest.LogCategories = append(addRequest.LogCategories, unmarshalled)
+		for _, logCategoriesElement := range model.LogCategories.Elements() {
+			logCategoriesValue := client.LogCategorySettings{}
+			logCategoriesAttrs := logCategoriesElement.(types.Object).Attributes()
+			logCategoriesValue.Description = logCategoriesAttrs["description"].(types.String).ValueStringPointer()
+			logCategoriesValue.Enabled = logCategoriesAttrs["enabled"].(types.Bool).ValueBoolPointer()
+			logCategoriesValue.Id = logCategoriesAttrs["id"].(types.String).ValueString()
+			logCategoriesValue.Name = logCategoriesAttrs["name"].(types.String).ValueStringPointer()
+			addRequest.LogCategories = append(addRequest.LogCategories, logCategoriesValue)
 		}
 	}
-	return nil
 
 }
 
@@ -236,11 +234,7 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 	}
 
 	createServerSettingsLogging := client.NewLogSettings()
-	err := addOptionalServerSettingsLoggingFields(ctx, createServerSettingsLogging, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
-		return
-	}
+	addOptionalServerSettingsLoggingFields(createServerSettingsLogging, plan)
 
 	apiCreateServerSettingsLogging := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsLogging = apiCreateServerSettingsLogging.Body(*createServerSettingsLogging)
@@ -302,11 +296,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 
 	updateServerSettingsLogging := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLogSettings()
-	err := addOptionalServerSettingsLoggingFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
-		return
-	}
+	addOptionalServerSettingsLoggingFields(createUpdateRequest, plan)
 
 	updateServerSettingsLogging = updateServerSettingsLogging.Body(*createUpdateRequest)
 	updateServerSettingsLoggingResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateLogSettingsExecute(updateServerSettingsLogging)

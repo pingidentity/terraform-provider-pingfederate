@@ -4,7 +4,6 @@ package passwordcredentialvalidator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -18,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -349,30 +347,40 @@ func (r *passwordCredentialValidatorResource) ModifyPlan(ctx context.Context, re
 	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
-func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorModel) error {
-	if internaltypes.IsDefined(plan.ParentRef) {
-		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
-			addRequest.ParentRef = client.NewResourceLinkWithDefaults()
-			addRequest.ParentRef.Id = plan.ParentRef.Attributes()["id"].(types.String).ValueString()
-			err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef, true)), addRequest.ParentRef)
-			if err != nil {
-				return err
+func addOptionalPasswordCredentialValidatorFields(addRequest *client.PasswordCredentialValidator, model passwordCredentialValidatorModel) {
+	// attribute_contract
+	if !model.AttributeContract.IsNull() && !model.AttributeContract.IsUnknown() {
+		attributeContractValue := &client.PasswordCredentialValidatorAttributeContract{}
+		attributeContractAttrs := model.AttributeContract.Attributes()
+		if !attributeContractAttrs["core_attributes"].IsNull() && !attributeContractAttrs["core_attributes"].IsUnknown() {
+			attributeContractValue.CoreAttributes = []client.PasswordCredentialValidatorAttribute{}
+			for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
+				coreAttributesValue := client.PasswordCredentialValidatorAttribute{}
+				coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+				coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+				attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
 			}
 		}
+		if !attributeContractAttrs["extended_attributes"].IsNull() && !attributeContractAttrs["extended_attributes"].IsUnknown() &&
+			len(attributeContractAttrs["extended_attributes"].(types.Set).Elements()) > 0 {
+			attributeContractValue.ExtendedAttributes = []client.PasswordCredentialValidatorAttribute{}
+			for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.PasswordCredentialValidatorAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				attributeContractValue.ExtendedAttributes = append(attributeContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
+		}
+		addRequest.AttributeContract = attributeContractValue
 	}
 
-	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = client.NewPasswordCredentialValidatorAttributeContractWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
-		if err != nil {
-			return err
-		}
-		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements())
-		if extendedAttrsLength == 0 {
-			addRequest.AttributeContract.ExtendedAttributes = nil
-		}
+	// parent_ref
+	if !model.ParentRef.IsNull() && !model.ParentRef.IsUnknown() {
+		parentRefValue := &client.ResourceLink{}
+		parentRefAttrs := model.ParentRef.Attributes()
+		parentRefValue.Id = parentRefAttrs["id"].(types.String).ValueString()
+		addRequest.ParentRef = parentRefValue
 	}
-	return nil
 }
 
 func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -395,11 +403,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	configuration := pluginconfiguration.ClientStruct(plan.Configuration)
 
 	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.ValidatorId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err = addOptionalPasswordCredentialValidatorFields(ctx, createPasswordCredentialValidators, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a Password Credential Validator: "+err.Error())
-		return
-	}
+	addOptionalPasswordCredentialValidatorFields(createPasswordCredentialValidators, plan)
 
 	apiCreatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig))
 	apiCreatePasswordCredentialValidators = apiCreatePasswordCredentialValidators.Body(*createPasswordCredentialValidators)
@@ -470,11 +474,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 
 	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig), plan.ValidatorId.ValueString())
 	createUpdateRequest := client.NewPasswordCredentialValidator(plan.ValidatorId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err = addOptionalPasswordCredentialValidatorFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a Password Credential Validator: "+err.Error())
-		return
-	}
+	addOptionalPasswordCredentialValidatorFields(createUpdateRequest, plan)
 
 	updatePasswordCredentialValidators = updatePasswordCredentialValidators.Body(*createUpdateRequest)
 	updatePasswordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidatorExecute(updatePasswordCredentialValidators)
