@@ -67,13 +67,6 @@ resource "pingfederate_sp_target_url_mappings" "example" {
       }
       type = "SP_ADAPTER"
       url  = "*"
-    },
-    {
-      ref = {
-        id = "spadapter"
-      }
-      type = "SP_ADAPTER"
-      url  = "example.com"
     }
   ]
 }
