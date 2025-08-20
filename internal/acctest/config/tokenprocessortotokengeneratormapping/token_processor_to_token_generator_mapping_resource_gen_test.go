@@ -83,6 +83,11 @@ func TestAccTokenProcessorToTokenGeneratorMapping_MinimalMaximal(t *testing.T) {
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 			},
+			{
+				// Back to complete model, but reorder some attributes
+				Config: tokenProcessorToTokenGeneratorMapping_CompleteHCLReordered(),
+				Check:  tokenProcessorToTokenGeneratorMapping_CheckComputedValuesComplete(),
+			},
 		},
 	})
 }
@@ -145,7 +150,80 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
     {
       jdbc_attribute_source = {
         attribute_contract_fulfillment = null
-        column_names                   = ["GRANTEE"]
+        column_names                   = ["GRANTEE", "ROLE_NAME", "IS_GRANTABLE"]
+        data_store_ref = {
+          id = "ProvisionerDS"
+        }
+        description = "JDBC"
+        filter      = "subject"
+        id          = "jdbcguy"
+        schema      = "INFORMATION_SCHEMA"
+        table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
+      }
+    },
+  ]
+  default_target_resource = "https://example.com/haha"
+  issuance_criteria = {
+    conditional_criteria = [
+      {
+        attribute_name = "ClientIp"
+        condition      = "EQUALS"
+        error_result   = "myerrorresult"
+        source = {
+          type = "CONTEXT"
+        }
+        value = "value"
+      },
+    ]
+    expression_criteria = null
+  }
+  source_id = "tokenprocessor"
+  target_id = "tokengenerator"
+}
+data "pingfederate_token_processor_to_token_generator_mapping" "example" {
+  mapping_id = pingfederate_token_processor_to_token_generator_mapping.example.id
+}
+`)
+}
+
+// Maximal HCL with all values set where possible, with set values reordered
+func tokenProcessorToTokenGeneratorMapping_CompleteHCLReordered() string {
+	return fmt.Sprintf(`
+resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
+  attribute_contract_fulfillment = {
+    "SAML_SUBJECT" = {
+      source = {
+        type = "CONTEXT"
+      }
+      value = "ClientIp"
+    }
+  }
+  attribute_sources = [
+    {
+      custom_attribute_source = {
+        data_store_ref = {
+          id = "customDataStore"
+        }
+        description = "APIStubs"
+        filter_fields = [
+          {
+            name = "Authorization Header"
+          },
+          {
+            name = "Body"
+          },
+          {
+            name  = "Resource Path"
+            value = "/users/external"
+          },
+        ]
+        id = "APIStubs"
+      }
+    },
+    {
+      jdbc_attribute_source = {
+        attribute_contract_fulfillment = null
+        column_names                   = ["ROLE_NAME", "IS_GRANTABLE"]
         data_store_ref = {
           id = "ProvisionerDS"
         }

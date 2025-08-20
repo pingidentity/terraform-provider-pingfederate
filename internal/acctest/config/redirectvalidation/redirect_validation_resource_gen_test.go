@@ -40,6 +40,10 @@ func TestAccRedirectValidation_MinimalMaximal(t *testing.T) {
 				ImportStateVerify:                    true,
 			},
 			{
+				// Reorder values in the complete model
+				Config: redirectValidation_CompleteHCLReordered(),
+			},
+			{
 				// Back to minimal model
 				Config: redirectValidation_MinimalHCL(),
 				Check:  redirectValidation_CheckComputedValuesMinimal(),
@@ -72,7 +76,15 @@ func redirectValidation_CompleteHCL() string {
         idp_discovery            = false
         allow_query_and_fragment = true
         valid_uri                = "https://example.com"
-      }
+      },
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = true
+        valid_uri                = "https://anotherone.example.com"
+      },
     ]
 		`
 	}
@@ -104,6 +116,72 @@ resource "pingfederate_redirect_validation" "example" {
         valid_domain             = "second.example.com"
         valid_path               = "/second/path"
       }
+    ]
+	%s
+  }
+  redirect_validation_partner_settings = {
+    enable_wreply_validation_slo = true
+  }
+}
+data "pingfederate_redirect_validation" "example" {
+  depends_on = [pingfederate_redirect_validation.example]
+}
+`, versionedHcl)
+}
+
+// Maximal HCL with all values set where possible, with collection attributes reordered
+func redirectValidation_CompleteHCLReordered() string {
+	versionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		versionedHcl += `
+    uri_allow_list = [
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = true
+        valid_uri                = "https://anotherone.example.com"
+      },
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = true
+        valid_uri                = "https://example.com"
+      },
+    ]
+		`
+	}
+	return fmt.Sprintf(`
+resource "pingfederate_redirect_validation" "example" {
+  redirect_validation_local_settings = {
+    enable_in_error_resource_validation                 = true
+    enable_target_resource_validation_for_idp_discovery = true
+    enable_target_resource_validation_for_slo           = true
+    enable_target_resource_validation_for_sso           = true
+    white_list = [
+      {
+        allow_query_and_fragment = true
+        idp_discovery            = true
+        in_error_resource        = true
+        require_https            = true
+        target_resource_slo      = true
+        target_resource_sso      = true
+        valid_domain             = "second.example.com"
+        valid_path               = "/second/path"
+      },
+      {
+        allow_query_and_fragment = true
+        idp_discovery            = true
+        in_error_resource        = true
+        require_https            = true
+        target_resource_slo      = true
+        target_resource_sso      = true
+        valid_domain             = "example.com"
+        valid_path               = "/path"
+      },
     ]
 	%s
   }
