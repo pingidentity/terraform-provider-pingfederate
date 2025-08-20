@@ -15,7 +15,7 @@ var (
 
 	accessControlSettingsAttrType = map[string]attr.Type{
 		"restrict_clients": types.BoolType,
-		"allowed_clients":  types.ListType{ElemType: types.ObjectType{AttrTypes: resourcelink.AttrType()}},
+		"allowed_clients":  types.SetType{ElemType: types.ObjectType{AttrTypes: resourcelink.AttrType()}},
 	}
 
 	sessionValidationSettingsAttrType = map[string]attr.Type{
@@ -30,7 +30,7 @@ var (
 		"resource_uris": resourceUrisDefault,
 	})
 
-	allowedClientsDefault, _        = types.ListValue(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)
+	allowedClientsDefault, _        = types.SetValue(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)
 	accessControlSettingsDefault, _ = types.ObjectValue(accessControlSettingsAttrType, map[string]attr.Value{
 		"restrict_clients": types.BoolValue(false),
 		"allowed_clients":  allowedClientsDefault,
