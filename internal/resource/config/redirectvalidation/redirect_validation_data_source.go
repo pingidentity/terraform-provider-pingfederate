@@ -59,7 +59,7 @@ func (r *redirectValidationDataSource) Schema(ctx context.Context, req datasourc
 						Computed:    true,
 						Optional:    false,
 					},
-					"white_list": schema.ListNestedAttribute{
+					"white_list": schema.SetNestedAttribute{
 						Description: "List of URLs that are designated as valid target resources.",
 						Computed:    true,
 						Optional:    false,
@@ -108,7 +108,7 @@ func (r *redirectValidationDataSource) Schema(ctx context.Context, req datasourc
 							},
 						},
 					},
-					"uri_allow_list": schema.ListNestedAttribute{
+					"uri_allow_list": schema.SetNestedAttribute{
 						Description: "List of URIs that are designated as valid target resources.",
 						Computed:    true,
 						Optional:    false,
