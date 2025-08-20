@@ -34,8 +34,8 @@ Read-Only:
 - `enable_target_resource_validation_for_idp_discovery` (Boolean) Enable target resource validation for IdP discovery.
 - `enable_target_resource_validation_for_slo` (Boolean) Enable target resource validation for SLO.
 - `enable_target_resource_validation_for_sso` (Boolean) Enable target resource validation for SSO.
-- `uri_allow_list` (Attributes List) List of URIs that are designated as valid target resources. (see [below for nested schema](#nestedatt--redirect_validation_local_settings--uri_allow_list))
-- `white_list` (Attributes List) List of URLs that are designated as valid target resources. (see [below for nested schema](#nestedatt--redirect_validation_local_settings--white_list))
+- `uri_allow_list` (Attributes Set) List of URIs that are designated as valid target resources. (see [below for nested schema](#nestedatt--redirect_validation_local_settings--uri_allow_list))
+- `white_list` (Attributes Set) List of URLs that are designated as valid target resources. (see [below for nested schema](#nestedatt--redirect_validation_local_settings--white_list))
 
 <a id="nestedatt--redirect_validation_local_settings--uri_allow_list"></a>
 ### Nested Schema for `redirect_validation_local_settings.uri_allow_list`

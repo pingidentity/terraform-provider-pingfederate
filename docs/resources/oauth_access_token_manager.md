@@ -463,7 +463,7 @@ Required:
 
 Optional:
 
-- `allowed_clients` (Attributes List) If `restrict_clients` is `true`, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
+- `allowed_clients` (Attributes Set) If `restrict_clients` is `true`, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
 - `restrict_clients` (Boolean) Determines whether access to this token manager is restricted to specific OAuth clients. If `false`, the `allowed_clients` field is ignored. The default value is `false`.
 
 <a id="nestedatt--access_control_settings--allowed_clients"></a>
