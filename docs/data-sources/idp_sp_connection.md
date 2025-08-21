@@ -161,7 +161,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `column_names` (Set of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
@@ -1010,7 +1010,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `column_names` (Set of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
@@ -1240,7 +1240,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `column_names` (Set of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
@@ -1529,7 +1529,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `column_names` (Set of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
@@ -1876,7 +1876,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `column_names` (Set of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.

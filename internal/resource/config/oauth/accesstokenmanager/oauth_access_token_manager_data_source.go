@@ -37,8 +37,8 @@ var (
 	}
 
 	attributeContractAttrTypes = map[string]attr.Type{
-		"core_attributes":           types.ListType{ElemType: types.ObjectType{AttrTypes: coreAttributeTypes}},
-		"extended_attributes":       types.ListType{ElemType: types.ObjectType{AttrTypes: extendedAttributeTypes}},
+		"core_attributes":           types.SetType{ElemType: types.ObjectType{AttrTypes: coreAttributeTypes}},
+		"extended_attributes":       types.SetType{ElemType: types.ObjectType{AttrTypes: extendedAttributeTypes}},
 		"default_subject_attribute": types.StringType,
 	}
 )
@@ -100,7 +100,7 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Optional:    false,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT.",
 						Required:    false,
 						Optional:    false,
@@ -122,7 +122,7 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 							},
 						},
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
 						Required:    false,
 						Optional:    false,
@@ -179,7 +179,7 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 						Optional:    false,
 						Computed:    true,
 					},
-					"allowed_clients": schema.ListNestedAttribute{
+					"allowed_clients": schema.SetNestedAttribute{
 						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
 						Required:    false,
 						Optional:    false,

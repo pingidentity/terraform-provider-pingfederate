@@ -30,10 +30,10 @@ resource "pingfederate_license" "license" {
 - `bridge_mode` (Boolean) Indicates whether this license is a bridge license or not.
 - `enforcement_type` (String) The enforcement type is a 3-bit binary value, expressed as a decimal digit. The bits from left to right are: 1: Shutdown on expire. 2: Notify on expire. 4: Enforce minor version. if all three enforcements are active, the enforcement type will be 7 (1 + 2 + 4); if only the first two are active, you have an enforcement type of 3 (1 + 2).
 - `expiration_date` (String) The expiration date value from the license file (if applicable).
-- `features` (Attributes List) Other licence features, if applicable. (see [below for nested schema](#nestedatt--features))
+- `features` (Attributes Set) Other licence features, if applicable. (see [below for nested schema](#nestedatt--features))
 - `grace_period` (Number) Number of days provided as grace period, past the expiration date (if applicable).
 - `issue_date` (String) The issue date value from the license file.
-- `license_groups` (Attributes List) License connection groups, if applicable. (see [below for nested schema](#nestedatt--license_groups))
+- `license_groups` (Attributes Set) License connection groups, if applicable. (see [below for nested schema](#nestedatt--license_groups))
 - `max_connections` (Number) Maximum number of connections that can be created under this license (if applicable).
 - `name` (String) Name of the person the license was issued to.
 - `node_limit` (Number) Maximum number of clustered nodes allowed under this license (if applicable).

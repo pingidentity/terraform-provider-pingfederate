@@ -65,12 +65,12 @@ type licenseResourceModel struct {
 	Organization        types.String `tfsdk:"organization"`
 	GracePeriod         types.Int64  `tfsdk:"grace_period"`
 	NodeLimit           types.Int64  `tfsdk:"node_limit"`
-	LicenseGroups       types.List   `tfsdk:"license_groups"`
+	LicenseGroups       types.Set    `tfsdk:"license_groups"`
 	OauthEnabled        types.Bool   `tfsdk:"oauth_enabled"`
 	WsTrustEnabled      types.Bool   `tfsdk:"ws_trust_enabled"`
 	ProvisioningEnabled types.Bool   `tfsdk:"provisioning_enabled"`
 	BridgeMode          types.Bool   `tfsdk:"bridge_mode"`
-	Features            types.List   `tfsdk:"features"`
+	Features            types.Set    `tfsdk:"features"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -136,7 +136,7 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Description: "Maximum number of clustered nodes allowed under this license (if applicable).",
 				Computed:    true,
 			},
-			"license_groups": schema.ListNestedAttribute{
+			"license_groups": schema.SetNestedAttribute{
 				Description: "License connection groups, if applicable.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
@@ -176,7 +176,7 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Description: "Indicates whether this license is a bridge license or not.",
 				Computed:    true,
 			},
-			"features": schema.ListNestedAttribute{
+			"features": schema.SetNestedAttribute{
 				Description: "Other licence features, if applicable.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
@@ -242,10 +242,10 @@ func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *lice
 	state.ProvisioningEnabled = types.BoolValue(*r.ProvisioningEnabled)
 	state.BridgeMode = types.BoolValue(*r.BridgeMode)
 
-	state.LicenseGroups, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, r.LicenseGroups)
+	state.LicenseGroups, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, r.LicenseGroups)
 	diags.Append(respDiags...)
 
-	state.Features, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, r.Features)
+	state.Features, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, r.Features)
 	diags.Append(respDiags...)
 	return diags
 }

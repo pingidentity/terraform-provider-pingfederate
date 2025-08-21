@@ -1,3 +1,7 @@
+# v1.6.2 (Unreleased)
+### Bug fixes
+* Updated many attributes that were implemented as ordered lists to instead be implemented as unordered sets, to better reflect the behavior of the PingFederate API. ([#544]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/544)))
+
 # v1.6.1 August 20, 2025
 ### Bug fixes
 * Fixed an inconsistent result error that would occur when configuring OAuth Clients with no `persistent_grant_expiration_time` supplied in the `pingfederate_oauth_client` resource for PF version `11.3`. ([#531]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/531)))

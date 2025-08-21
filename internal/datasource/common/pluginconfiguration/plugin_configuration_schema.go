@@ -5,12 +5,12 @@ package pluginconfiguration
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func ToDataSourceSchema() schema.SingleNestedAttribute {
-	fieldsListDefault, _ := types.ListValue(types.ObjectType{AttrTypes: fieldAttrTypes}, []attr.Value{})
+	fieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, []attr.Value{})
 	return schema.SingleNestedAttribute{
 		Description: "Plugin instance configuration.",
 		Required:    false,
@@ -37,7 +37,7 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 							Computed:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
-									"fields": schema.ListNestedAttribute{
+									"fields": schema.SetNestedAttribute{
 										Description: "The configuration fields in the row.",
 										Required:    false,
 										Optional:    false,
@@ -77,12 +77,12 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 					},
 				},
 			},
-			"fields": schema.ListNestedAttribute{
+			"fields": schema.SetNestedAttribute{
 				Description: "List of configuration fields.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Default:     listdefault.StaticValue(fieldsListDefault),
+				Default:     setdefault.StaticValue(fieldsSetDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{

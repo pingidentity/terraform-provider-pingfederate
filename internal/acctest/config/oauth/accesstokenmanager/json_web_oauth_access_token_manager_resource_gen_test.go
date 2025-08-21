@@ -62,6 +62,11 @@ func TestAccOauthAccessTokenManager_MinimalMaximalJsonWeb(t *testing.T) {
 					"configuration.tables.0.rows.0.sensitive_fields",
 				},
 			},
+			{
+				// Back to complete model with fields reordered
+				Config: oauthAccessTokenManager_CompleteJsonWebHCLReordered(),
+				Check:  oauthAccessTokenManager_CheckComputedValuesCompleteJsonWeb(),
+			},
 		},
 	})
 }
@@ -356,6 +361,257 @@ resource "pingfederate_oauth_access_token_manager" "example" {
       },
       {
         name  = "Include Issued At Claim",
+        value = "false"
+      },
+	  %s
+    ]
+  }
+  name = "myATMUpdated"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+  }
+  selection_settings = {
+    resource_uris = ["https://example.com"]
+  }
+  session_validation_settings = {
+    check_session_revocation_status = true
+    check_valid_authn_session       = true
+    include_session_id              = true
+    update_authn_session_activity   = true
+  }
+  %s
+}
+data "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = pingfederate_oauth_access_token_manager.example.id
+}
+`, atmId, versionedFields, additionalVersionedHcl)
+}
+
+// Maximal HCL with all values set where possible, with collections reordered
+func oauthAccessTokenManager_CompleteJsonWebHCLReordered() string {
+	var versionedFields string
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		versionedFields += `
+  {
+	name  = "Publish Keys to the PingFederate JWKS Endpoint"
+	value = "false"
+  },
+`
+	}
+	additionalVersionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1220) {
+		additionalVersionedHcl += `
+token_endpoint_attribute_contract = {
+attributes = [
+  {
+	mapped_scopes = []
+	multi_valued  = true
+	name          = "another"
+  },
+  {
+	mapped_scopes = ["email"]
+	multi_valued  = false
+	name          = "normal"
+  },
+]
+}
+`
+	}
+
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = "%s"
+  access_control_settings = {
+    allowed_clients  = []
+    restrict_clients = false
+  }
+  attribute_contract = {
+    default_subject_attribute = "contract1"
+    extended_attributes = [
+      {
+        name         = "contract1"
+        multi_valued = false
+      },
+      {
+        name         = "contract2"
+        multi_valued = true
+      },
+      {
+        name         = "contract"
+        multi_valued = false
+      },
+      {
+        name         = "contract3"
+        multi_valued = false
+      },
+      {
+        name         = "contract5"
+        multi_valued = false
+      },
+      {
+        name         = "contract4"
+        multi_valued = true
+      },
+    ]
+  }
+  configuration = {
+    tables = [
+      {
+        name = "Symmetric Keys"
+        rows = [
+          {
+            default_row = false
+            fields = [
+              {
+                name  = "Key ID"
+                value = "keyidentifier2"
+              },
+              {
+                name  = "Encoding"
+                value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name = "Certificates"
+        rows = []
+      }
+    ]
+    fields = [
+      {
+        name  = "JWS Algorithm"
+        value = ""
+      },
+      {
+        name  = "Active Symmetric Key ID"
+        value = "keyidentifier2"
+      },
+      {
+        name  = "Active Signing Certificate Key ID"
+        value = ""
+      },
+      {
+        name  = "Token Lifetime"
+        value = "56"
+      },
+      {
+        name  = "Use Centralized Signing Key"
+        value = "false"
+      },
+      {
+        name  = "JWE Algorithm"
+        value = "dir"
+      },
+      {
+        name  = "JWE Content Encryption Algorithm"
+        value = "A192CBC-HS384"
+      },
+      {
+        name  = "Asymmetric Encryption JWKS URL"
+        value = ""
+      },
+      {
+        name  = "Enable Token Revocation"
+        value = "false"
+      },
+      {
+        name  = "Include Key ID Header Parameter"
+        value = "true"
+      },
+      {
+        name  = "Default JWKS URL Cache Duration"
+        value = "720"
+      },
+      {
+        name  = "Include JWE Key ID Header Parameter"
+        value = "true"
+      },
+      {
+        name  = "Active Symmetric Encryption Key ID"
+        value = "keyidentifier2"
+      },
+      {
+        name  = "Asymmetric Encryption Key"
+        value = ""
+      },
+      {
+        name  = "Client ID Claim Name"
+        value = "client_id"
+      },
+      {
+        name  = "Scope Claim Name"
+        value = "scope"
+      },
+      {
+        name  = "Space Delimit Scope Values"
+        value = "true"
+      },
+      {
+        name  = "Authorization Details Claim Name"
+        value = "authorization_details"
+      },
+      {
+        name  = "Issuer Claim Value"
+        value = ""
+      },
+      {
+        name  = "Audience Claim Value"
+        value = ""
+      },
+      {
+        name  = "JWT ID Claim Length"
+        value = "22"
+      },
+      {
+        name  = "Access Grant GUID Claim Name"
+        value = ""
+      },
+      {
+        name  = "JWKS Endpoint Path"
+        value = ""
+      },
+      {
+        name  = "JWKS Endpoint Cache Duration"
+        value = "720"
+      },
+      {
+        name  = "Expand Scope Groups"
+        value = "false"
+      },
+      {
+        name  = "Type Header Value"
+        value = ""
+      },
+      {
+        name  = "Publish Thumbprint X.509 URL"
+        value = "false"
+      },
+      {
+        name  = "Publish Key ID X.509 URL"
+        value = "false"
+      },
+      {
+        name  = "Include JWE X.509 Thumbprint Header Parameter",
+        value = "false"
+      },
+      {
+        name  = "Not Before Claim Offset"
+        value = ""
+      },
+      {
+        name  = "Include Issued At Claim",
+        value = "false"
+      },
+      {
+        name  = "Include X.509 Thumbprint Header Parameter",
         value = "false"
       },
 	  %s

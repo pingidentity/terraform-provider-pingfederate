@@ -35,7 +35,7 @@ func (r *authenticationPolicyContractDataSource) Schema(ctx context.Context, req
 	schema := schema.Schema{
 		Description: "Describes an authentication policy contract.",
 		Attributes: map[string]schema.Attribute{
-			"core_attributes": schema.ListNestedAttribute{
+			"core_attributes": schema.SetNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Computed:    true,
 				Optional:    false,

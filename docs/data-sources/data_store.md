@@ -50,7 +50,7 @@ Read-Only:
 
 Read-Only:
 
-- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields))
+- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields))
 - `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables))
 
 <a id="nestedatt--custom_data_store--configuration--fields"></a>
@@ -77,7 +77,7 @@ Read-Only:
 Read-Only:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--fields))
 
 <a id="nestedatt--custom_data_store--configuration--tables--rows--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.tables.rows.fields`

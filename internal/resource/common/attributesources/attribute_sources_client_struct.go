@@ -72,7 +72,7 @@ func ClientStruct(attributeSourcesAttr basetypes.SetValue) []client.AttributeSou
 			}
 			if !jdbcAttributeSourceAttrs["column_names"].IsNull() && !jdbcAttributeSourceAttrs["column_names"].IsUnknown() {
 				attributeSourceInner.JdbcAttributeSource.ColumnNames = []string{}
-				for _, columnNamesElement := range jdbcAttributeSourceAttrs["column_names"].(types.List).Elements() {
+				for _, columnNamesElement := range jdbcAttributeSourceAttrs["column_names"].(types.Set).Elements() {
 					attributeSourceInner.JdbcAttributeSource.ColumnNames = append(attributeSourceInner.JdbcAttributeSource.ColumnNames, columnNamesElement.(types.String).ValueString())
 				}
 			}

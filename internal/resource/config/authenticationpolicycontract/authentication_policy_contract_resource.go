@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -38,8 +37,8 @@ var (
 	}
 
 	coreAttributesDefaultObjValue, _ = types.ObjectValue(coreAttributesDefaultObjAttrType, coreAttributesDefaultObjAttrValue)
-	coreAttributesDefaultListAttrVal = []attr.Value{coreAttributesDefaultObjValue}
-	coreAttributesDefaultListVal, _  = types.ListValue(attributeElemAttrType, coreAttributesDefaultListAttrVal)
+	coreAttributesDefaultSetAttrVal  = []attr.Value{coreAttributesDefaultObjValue}
+	coreAttributesDefaultSetVal, _   = types.SetValue(attributeElemAttrType, coreAttributesDefaultSetAttrVal)
 
 	customId = "contract_id"
 )
@@ -74,11 +73,11 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 					configvalidators.PingFederateId(),
 				},
 			},
-			"core_attributes": schema.ListNestedAttribute{
+			"core_attributes": schema.SetNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Computed:    true,
 				Optional:    false,
-				Default:     listdefault.StaticValue(coreAttributesDefaultListVal),
+				Default:     setdefault.StaticValue(coreAttributesDefaultSetVal),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{

@@ -15,7 +15,7 @@ var (
 	}
 
 	rowAttrTypes = map[string]attr.Type{
-		"fields":      types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"fields":      types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"default_row": types.BoolType,
 	}
 
@@ -25,7 +25,7 @@ var (
 	}
 
 	configurationAttrTypes = map[string]attr.Type{
-		"fields": types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"fields": types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"tables": types.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
 	}
 )
