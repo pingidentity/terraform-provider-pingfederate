@@ -168,7 +168,7 @@ var (
 	idpBrowserSsoAdapterMappingsAttrTypes = map[string]attr.Type{
 		"adapter_override_settings":      types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypesNoId()}},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypesNoId()}},
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
 		"restrict_virtual_entity_ids":    types.BoolType,
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
