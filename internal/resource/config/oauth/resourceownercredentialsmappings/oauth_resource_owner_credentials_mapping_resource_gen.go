@@ -55,7 +55,7 @@ func (r *oauthResourceOwnerCredentialsMappingResource) Configure(_ context.Conte
 
 type oauthResourceOwnerCredentialsMappingResourceModel struct {
 	AttributeContractFulfillment types.Map    `tfsdk:"attribute_contract_fulfillment"`
-	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
+	AttributeSources             types.List   `tfsdk:"attribute_sources"`
 	Id                           types.String `tfsdk:"id"`
 	IssuanceCriteria             types.Object `tfsdk:"issuance_criteria"`
 	MappingId                    types.String `tfsdk:"mapping_id"`

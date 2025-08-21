@@ -27,7 +27,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		attributeMappingValue := client.AttributeMapping{}
 		attributeMappingAttrs := apcMappingPolicyActionAttrs["attribute_mapping"].(types.Object).Attributes()
 		attributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-		attributeMappingValue.AttributeSources = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.Set))
+		attributeMappingValue.AttributeSources = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.List))
 		attributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(attributeMappingAttrs["issuance_criteria"].(types.Object))
 		result.ApcMappingPolicyAction.AttributeMapping = attributeMappingValue
 		authenticationPolicyContractRefValue := client.ResourceLink{}
@@ -159,7 +159,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 			fragmentMappingValue := &client.AttributeMapping{}
 			fragmentMappingAttrs := fragmentPolicyActionAttributes["fragment_mapping"].(types.Object).Attributes()
 			fragmentMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(fragmentMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-			fragmentMappingValue.AttributeSources = attributesources.ClientStruct(fragmentMappingAttrs["attribute_sources"].(types.Set))
+			fragmentMappingValue.AttributeSources = attributesources.ClientStruct(fragmentMappingAttrs["attribute_sources"].(types.List))
 			fragmentMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(fragmentMappingAttrs["issuance_criteria"].(types.Object))
 			result.FragmentPolicyAction.FragmentMapping = fragmentMappingValue
 		}
@@ -175,7 +175,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 			inboundMappingValue := &client.AttributeMapping{}
 			inboundMappingAttrs := localIdentityMappingPolicyActionAttrs["inbound_mapping"].(types.Object).Attributes()
 			inboundMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(inboundMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-			inboundMappingValue.AttributeSources = attributesources.ClientStruct(inboundMappingAttrs["attribute_sources"].(types.Set))
+			inboundMappingValue.AttributeSources = attributesources.ClientStruct(inboundMappingAttrs["attribute_sources"].(types.List))
 			inboundMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(inboundMappingAttrs["issuance_criteria"].(types.Object))
 			result.LocalIdentityMappingPolicyAction.InboundMapping = inboundMappingValue
 		}
@@ -186,7 +186,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		outboundAttributeMappingValue := client.AttributeMapping{}
 		outboundAttributeMappingAttrs := localIdentityMappingPolicyActionAttrs["outbound_attribute_mapping"].(types.Object).Attributes()
 		outboundAttributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(outboundAttributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-		outboundAttributeMappingValue.AttributeSources = attributesources.ClientStruct(outboundAttributeMappingAttrs["attribute_sources"].(types.Set))
+		outboundAttributeMappingValue.AttributeSources = attributesources.ClientStruct(outboundAttributeMappingAttrs["attribute_sources"].(types.List))
 		outboundAttributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(outboundAttributeMappingAttrs["issuance_criteria"].(types.Object))
 		result.LocalIdentityMappingPolicyAction.OutboundAttributeMapping = outboundAttributeMappingValue
 		result.LocalIdentityMappingPolicyAction.Type = "LOCAL_IDENTITY_MAPPING"

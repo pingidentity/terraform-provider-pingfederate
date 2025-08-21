@@ -235,7 +235,7 @@ var (
 	}
 	idpBrowserSsoAuthenticationPolicyContractMappingsAttrTypes = map[string]attr.Type{
 		"attribute_contract_fulfillment":     types.MapType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":                  types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
+		"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrTypes},
 		"issuance_criteria":                  types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaAttrTypes},
 		"restrict_virtual_server_ids":        types.BoolType,
@@ -357,7 +357,7 @@ var (
 	}
 	idpBrowserSsoSsoOauthMappingAttrTypes = map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 		"issuance_criteria":              types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaAttrTypes},
 	}
 	idpBrowserSsoSsoServiceEndpointsAttrTypes = map[string]attr.Type{
@@ -427,7 +427,7 @@ var (
 		"sp_token_generator_ref":         types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
 		"default_mapping":                types.BoolType,
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
 	}
@@ -606,7 +606,7 @@ var (
 
 	tokenGeneratorAttrTypes = map[string]attr.Type{
 		"sp_token_generator_ref":         types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 		"default_mapping":                types.BoolType,
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
@@ -655,8 +655,8 @@ type spIdpConnectionResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	adapterMappingsAttrSources := attributesources.ToSchemaNoIdAttr()
-	adapterMappingsAttrSources.Validators = []validator.Set{
-		setvalidator.SizeAtMost(1),
+	adapterMappingsAttrSources.Validators = []validator.List{
+		listvalidator.SizeAtMost(1),
 	}
 
 	// inbound_provisioning.custom_scim2_schema.attributes default
@@ -4354,7 +4354,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
 			}
 			adapterMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
+			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.List))
 			adapterMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(adapterMappingsAttrs["issuance_criteria"].(types.Object))
 			adapterMappingsValue.RestrictVirtualEntityIds = adapterMappingsAttrs["restrict_virtual_entity_ids"].(types.Bool).ValueBoolPointer()
 			if !adapterMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
@@ -4414,7 +4414,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			authenticationPolicyContractMappingsValue := client.AuthenticationPolicyContractMapping{}
 			authenticationPolicyContractMappingsAttrs := authenticationPolicyContractMappingsElement.(types.Object).Attributes()
 			authenticationPolicyContractMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			authenticationPolicyContractMappingsValue.AttributeSources = attributesources.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_sources"].(types.Set))
+			authenticationPolicyContractMappingsValue.AttributeSources = attributesources.ClientStruct(authenticationPolicyContractMappingsAttrs["attribute_sources"].(types.List))
 			authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue := client.ResourceLink{}
 			authenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrs := authenticationPolicyContractMappingsAttrs["authentication_policy_contract_ref"].(types.Object).Attributes()
 			authenticationPolicyContractMappingsAuthenticationPolicyContractRefValue.Id = authenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
@@ -4616,7 +4616,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			idpBrowserSsoSsoOauthMappingValue := &client.SsoOAuthMapping{}
 			idpBrowserSsoSsoOauthMappingAttrs := idpBrowserSsoAttrs["sso_oauth_mapping"].(types.Object).Attributes()
 			idpBrowserSsoSsoOauthMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-			idpBrowserSsoSsoOauthMappingValue.AttributeSources = attributesources.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_sources"].(types.Set))
+			idpBrowserSsoSsoOauthMappingValue.AttributeSources = attributesources.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["attribute_sources"].(types.List))
 			idpBrowserSsoSsoOauthMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(idpBrowserSsoSsoOauthMappingAttrs["issuance_criteria"].(types.Object))
 			idpBrowserSsoValue.SsoOAuthMapping = idpBrowserSsoSsoOauthMappingValue
 		}
@@ -4682,7 +4682,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 				accessTokenManagerMappingsValue.AccessTokenManagerRef = accessTokenManagerMappingsAccessTokenManagerRefValue
 			}
 			accessTokenManagerMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(accessTokenManagerMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			accessTokenManagerMappingsValue.AttributeSources = attributesources.ClientStruct(accessTokenManagerMappingsAttrs["attribute_sources"].(types.Set))
+			accessTokenManagerMappingsValue.AttributeSources = attributesources.ClientStruct(accessTokenManagerMappingsAttrs["attribute_sources"].(types.List))
 			accessTokenManagerMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(accessTokenManagerMappingsAttrs["issuance_criteria"].(types.Object))
 			idpOauthGrantAttributeMappingValue.AccessTokenManagerMappings = append(idpOauthGrantAttributeMappingValue.AccessTokenManagerMappings, accessTokenManagerMappingsValue)
 		}
@@ -4739,7 +4739,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			tokenGeneratorMappingsValue := client.SpTokenGeneratorMapping{}
 			tokenGeneratorMappingsAttrs := tokenGeneratorMappingsElement.(types.Object).Attributes()
 			tokenGeneratorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(tokenGeneratorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			tokenGeneratorMappingsValue.AttributeSources = attributesources.ClientStruct(tokenGeneratorMappingsAttrs["attribute_sources"].(types.Set))
+			tokenGeneratorMappingsValue.AttributeSources = attributesources.ClientStruct(tokenGeneratorMappingsAttrs["attribute_sources"].(types.List))
 			tokenGeneratorMappingsValue.DefaultMapping = tokenGeneratorMappingsAttrs["default_mapping"].(types.Bool).ValueBoolPointer()
 			tokenGeneratorMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(tokenGeneratorMappingsAttrs["issuance_criteria"].(types.Object))
 			if !tokenGeneratorMappingsAttrs["restricted_virtual_entity_ids"].IsNull() {
@@ -5705,7 +5705,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &r.IdpBrowserSso.SsoOAuthMapping.AttributeContractFulfillment)
 			respDiags.Append(objDiags...)
 
-			idpBrowserSsoSsoOauthMappingAttributeSourcesValue := types.SetNull(types.ObjectType{AttrTypes: attributesources.AttrTypes()})
+			idpBrowserSsoSsoOauthMappingAttributeSourcesValue := types.ListNull(types.ObjectType{AttrTypes: attributesources.AttrTypes()})
 			if r.IdpBrowserSso.SsoOAuthMapping.AttributeSources != nil {
 				idpBrowserSsoSsoOauthMappingAttributeSourcesValue, objDiags = attributesources.ToState(ctx, r.IdpBrowserSso.SsoOAuthMapping.AttributeSources)
 				respDiags.Append(objDiags...)
@@ -5782,7 +5782,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes := map[string]attr.Type{
 		"access_token_manager_ref":       types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAccessTokenManagerRefAttrTypes},
 		"attribute_contract_fulfillment": types.MapType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttributeSourcesElementType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsIssuanceCriteriaAttrTypes},
 	}
 	idpOauthGrantAttributeMappingAccessTokenManagerMappingsElementType := types.ObjectType{AttrTypes: idpOauthGrantAttributeMappingAccessTokenManagerMappingsAttrTypes}
@@ -6182,7 +6182,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			spTokenGeneratorRef, objDiags := resourcelink.ToState(ctx, &tokenGeneratorMappingSpTokenGeneratorRef)
 			respDiags.Append(objDiags...)
 
-			var attributeSources basetypes.SetValue
+			var attributeSources basetypes.ListValue
 			attributeSources, objDiags = attributesources.ToState(ctx, tokenGeneratorMapping.AttributeSources)
 			respDiags.Append(objDiags...)
 

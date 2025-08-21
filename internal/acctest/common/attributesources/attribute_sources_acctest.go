@@ -30,8 +30,7 @@ func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 		return ""
 	}
 	var builder strings.Builder
-	if attrSource != nil {
-		tf := `
+	tf := `
 			{
 				jdbc_attribute_source = {
 					data_store_ref = {
@@ -46,15 +45,14 @@ func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 				}
 			},
 	`
-		builder.WriteString(fmt.Sprintf(tf,
-			attrSource.DataStoreRef.Id,
-			*attrSource.Id,
-			*attrSource.Description,
-			*attrSource.Schema,
-			attrSource.Table,
-			attrSource.Filter,
-			acctest.StringSliceToTerraformString(attrSource.ColumnNames)))
-	}
+	builder.WriteString(fmt.Sprintf(tf,
+		attrSource.DataStoreRef.Id,
+		*attrSource.Id,
+		*attrSource.Description,
+		*attrSource.Schema,
+		attrSource.Table,
+		attrSource.Filter,
+		acctest.StringSliceToTerraformString(attrSource.ColumnNames)))
 	return builder.String()
 }
 
@@ -74,19 +72,18 @@ func LdapHcl(attrSource *client.LdapAttributeSource) string {
 		return ""
 	}
 	var builder strings.Builder
-	if attrSource != nil {
-		binaryAttributeSettingsHcl := ""
-		for key, setting := range *attrSource.BinaryAttributeSettings {
-			binaryAttributeSettingsHcl += fmt.Sprintf(`
+	binaryAttributeSettingsHcl := ""
+	for key, setting := range *attrSource.BinaryAttributeSettings {
+		binaryAttributeSettingsHcl += fmt.Sprintf(`
 					binary_attribute_settings = {
 			    "%[1]s" = {
 					binary_encoding = "%[2]s"
 				},
 		}
 			`, key, *setting.BinaryEncoding)
-		}
+	}
 
-		tf := `
+	tf := `
 			{
 				ldap_attribute_source = {
 					member_of_nested_group = %s
@@ -104,17 +101,16 @@ func LdapHcl(attrSource *client.LdapAttributeSource) string {
 				}
 			},
 	`
-		builder.WriteString(fmt.Sprintf(tf,
-			strconv.FormatBool(*attrSource.MemberOfNestedGroup),
-			attrSource.SearchScope,
-			attrSource.SearchFilter,
-			attrSource.DataStoreRef.Id,
-			*attrSource.Id,
-			*attrSource.Description,
-			*attrSource.BaseDn,
-			acctest.StringSliceToTerraformString(attrSource.SearchAttributes),
-			binaryAttributeSettingsHcl))
-	}
+	builder.WriteString(fmt.Sprintf(tf,
+		strconv.FormatBool(*attrSource.MemberOfNestedGroup),
+		attrSource.SearchScope,
+		attrSource.SearchFilter,
+		attrSource.DataStoreRef.Id,
+		*attrSource.Id,
+		*attrSource.Description,
+		*attrSource.BaseDn,
+		acctest.StringSliceToTerraformString(attrSource.SearchAttributes),
+		binaryAttributeSettingsHcl))
 	return builder.String()
 }
 

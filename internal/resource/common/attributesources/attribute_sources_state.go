@@ -85,15 +85,15 @@ func attrTypesInternal(includeIdAttr bool) map[string]attr.Type {
 	}
 }
 
-func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
+func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
 	return toStateInternal(con, attributeSourcesFromClient, true)
 }
 
-func ToStateNoId(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
+func ToStateNoId(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
 	return toStateInternal(con, attributeSourcesFromClient, false)
 }
 
-func toStateInternal(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeIdAttr bool) (basetypes.SetValue, diag.Diagnostics) {
+func toStateInternal(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeIdAttr bool) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var customAttrSourceAttrTypes = customAttributeSourceAttrType(includeIdAttr)
 	var jdbcAttrSourceAttrTypes = jdbcAttributeSourceAttrType(includeIdAttr)
@@ -177,7 +177,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	attrToState, valueFromDiags := types.SetValue(types.ObjectType{AttrTypes: attrTypesInternal(includeIdAttr)}, attrSourceElements)
+	attrToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: attrTypesInternal(includeIdAttr)}, attrSourceElements)
 	diags.Append(valueFromDiags...)
 	return attrToState, diags
 }
