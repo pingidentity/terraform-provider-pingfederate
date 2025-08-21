@@ -90,7 +90,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -538,7 +538,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -833,7 +833,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -1100,7 +1100,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -1414,7 +1414,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -1862,7 +1862,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -2157,7 +2157,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -2424,7 +2424,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -2738,7 +2738,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -3186,7 +3186,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -3481,7 +3481,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -3748,7 +3748,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -4062,7 +4062,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -4510,7 +4510,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -4805,7 +4805,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -5072,7 +5072,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -5386,7 +5386,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -5834,7 +5834,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -6129,7 +6129,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -6396,7 +6396,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -6710,7 +6710,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -7158,7 +7158,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -7453,7 +7453,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -7720,7 +7720,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -8034,7 +8034,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -8482,7 +8482,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -8777,7 +8777,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -9044,7 +9044,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -9358,7 +9358,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -9806,7 +9806,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -10101,7 +10101,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -10368,7 +10368,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -10682,7 +10682,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -11130,7 +11130,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -11425,7 +11425,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -11692,7 +11692,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -12006,7 +12006,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -12454,7 +12454,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -12749,7 +12749,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -13016,7 +13016,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
@@ -13326,7 +13326,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -13774,7 +13774,7 @@ Optional:
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
@@ -14069,7 +14069,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
@@ -14336,7 +14336,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>

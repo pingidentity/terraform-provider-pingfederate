@@ -308,7 +308,7 @@ resource "pingfederate_idp_adapter" "idpAdapterExample" {
 Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--attribute_mapping--attribute_contract_fulfillment"></a>

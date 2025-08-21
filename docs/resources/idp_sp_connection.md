@@ -398,7 +398,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria))
 - `policy` (Attributes) The attribute query profile's security policy. (see [below for nested schema](#nestedatt--attribute_query--policy))
 
@@ -1205,7 +1205,7 @@ Optional:
 
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is `false`.
 - `adapter_override_settings` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
 - `idp_adapter_ref` (Attributes) Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
@@ -1429,7 +1429,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -2036,7 +2036,7 @@ Required:
 Optional:
 
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is `false`.
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
@@ -2419,7 +2419,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria))
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
 

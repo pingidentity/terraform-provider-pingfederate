@@ -560,7 +560,7 @@ Required:
 Optional:
 
 - `adapter_override_settings` (Attributes) An SP adapter instance. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--adapter_override_settings))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
@@ -1090,7 +1090,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--issuance_criteria))
 - `restrict_virtual_server_ids` (Boolean) Restricts this mapping to specific virtual entity IDs. The default value is `false`.
 - `restricted_virtual_server_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to. The default value is an empty set.
@@ -1661,7 +1661,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping--issuance_criteria))
 
 <a id="nestedatt--idp_browser_sso--sso_oauth_mapping--attribute_contract_fulfillment"></a>
@@ -1967,7 +1967,7 @@ Required:
 Optional:
 
 - `access_token_manager_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--access_token_manager_ref))
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--issuance_criteria))
 
 <a id="nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--attribute_contract_fulfillment"></a>
@@ -2732,7 +2732,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--attribute_sources))
 - `default_mapping` (Boolean) Indicates whether the token generator mapping is the default mapping. The default value is `false`.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--issuance_criteria))
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.

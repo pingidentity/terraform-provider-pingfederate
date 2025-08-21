@@ -151,7 +151,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
 
 ### Optional
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_sources))
 - `default_target_resource` (String) Default target URL for this Token Processor to Token Generator mapping configuration.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--issuance_criteria))
 - `license_connection_group_assignment` (String) The license connection group.
