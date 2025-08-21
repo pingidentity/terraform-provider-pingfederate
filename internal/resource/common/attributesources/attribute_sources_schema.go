@@ -40,7 +40,7 @@ func commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfi
 	if optionalAndComputedNestedAttributeContractFulfillment {
 		commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.ToSchema(false, false, false)
 	} else {
-		commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.ToSchema(false, true, false)
+		commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.ToSchema(false, false, false)
 	}
 	return commonAttributeSourceSchema
 }
