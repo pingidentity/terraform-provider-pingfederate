@@ -1,6 +1,7 @@
 # v1.6.2 (Unreleased)
 ### Bug fixes
 * Updated many attributes that were implemented as ordered lists to instead be implemented as unordered sets, to better reflect the behavior of the PingFederate API. ([#544]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/544)))
+* Updated the `attribute_sources` attribute used across many resources to be implemented as an ordered list, rather than an unordered set. This change aligns with the behavior in the PingFederate UI. ([#546]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/546)))
 
 # v1.6.1 August 20, 2025
 ### Bug fixes
