@@ -1,6 +1,7 @@
 SHELL := /bin/bash
+TEST_PATH?=$$(go list ./...)
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent
+.PHONY: install generate fmt vet test lint starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent
 
 default: install
 
@@ -18,6 +19,11 @@ fmt:
 
 vet:
 	go vet ./...
+
+test:
+	go test $(TEST_PATH) $(TESTARGS) -timeout=5m
+
+lint: golangcilint tfproviderlint tflint terrafmtlint importfmtlint
 
 define productversiondir
  	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.3.0}" | cut -b 1-4)
@@ -99,12 +105,12 @@ clearstates:
 	
 kaboom: clearstates spincontainer install
 
-devchecknotest: verifycontent install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
+devchecknotest: verifycontent install lint generate
 
 verifycontent:
 	python3 ./scripts/verifyContent.py
 
-devcheck: devchecknotest kaboom testacc
+devcheck: devchecknotest kaboom test testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=openIdConnectSettings \
