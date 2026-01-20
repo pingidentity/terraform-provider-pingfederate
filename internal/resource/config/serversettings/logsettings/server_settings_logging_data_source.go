@@ -4,6 +4,7 @@ package serversettingslogsettings
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -32,7 +33,11 @@ type serverSettingsLoggingDataSource struct {
 }
 
 type serverSettingsLoggingDataSourceModel struct {
-	LogCategories types.Set `tfsdk:"log_categories"`
+	LogCategories           types.Set    `tfsdk:"log_categories"`
+	ModificationDate        types.String `tfsdk:"modification_date"`
+	ReplicationStatus       types.String `tfsdk:"replication_status"`
+	VerboseLoggingExpiresIn types.String `tfsdk:"verbose_logging_expires_in"`
+	VerboseLoggingLifetime  types.Int64  `tfsdk:"verbose_logging_lifetime"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -69,6 +74,22 @@ func (r *serverSettingsLoggingDataSource) Schema(ctx context.Context, req dataso
 					},
 				},
 			},
+			"modification_date": schema.StringAttribute{
+				Description: "The time at which the categories were last changed. Supported in PingFederate `13.0` and later.",
+				Computed:    true,
+			},
+			"replication_status": schema.StringAttribute{
+				Description: "This status indicates whether log settings has been replicated to the cluster and automatic replication of log settings is enabled. Supported in PingFederate `13.0` and later.",
+				Computed:    true,
+			},
+			"verbose_logging_expires_in": schema.StringAttribute{
+				Description: "The time at which verbose logging will expire. Supported in PingFederate `13.0` and later.",
+				Computed:    true,
+			},
+			"verbose_logging_lifetime": schema.Int64Attribute{
+				Description: "The lifetime that verbose logging will be enabled for log settings categories. The time period is specified in minutes. Supported in PingFederate `13.0` and later.",
+				Computed:    true,
+			},
 		},
 	}
 	resp.Schema = schema
@@ -93,6 +114,18 @@ func (r *serverSettingsLoggingDataSource) Configure(_ context.Context, req datas
 func readServerSettingsLoggingDataSourceResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLoggingDataSourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.LogCategories, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, r.LogCategories)
+	if r.ModificationDate != nil {
+		state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339))
+	} else {
+		state.ModificationDate = types.StringNull()
+	}
+	state.ReplicationStatus = types.StringPointerValue(r.ReplicationStatus)
+	if r.VerboseLoggingExpiresIn != nil {
+		state.VerboseLoggingExpiresIn = types.StringValue(r.VerboseLoggingExpiresIn.Format(time.RFC3339))
+	} else {
+		state.VerboseLoggingExpiresIn = types.StringNull()
+	}
+	state.VerboseLoggingLifetime = types.Int64PointerValue(r.VerboseLoggingLifetime)
 	return diags
 }
 

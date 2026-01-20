@@ -70,7 +70,7 @@ type serverSettingsLoggingResource struct {
 type serverSettingsLoggingResourceModel struct {
 	LogCategories          types.Set   `tfsdk:"log_categories"`
 	LogCategoriesAll       types.Set   `tfsdk:"log_categories_all"`
-	VerboseLoggingLifetime types.Int32 `tfsdk:"verbose_logging_lifetime"`
+	VerboseLoggingLifetime types.Int64 `tfsdk:"verbose_logging_lifetime"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -149,7 +149,7 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 					},
 				},
 			},
-			"verbose_logging_lifetime": schema.Int32Attribute{
+			"verbose_logging_lifetime": schema.Int64Attribute{
 				Description: "The lifetime that verbose logging will be enabled for log settings categories. The time period is specified in minutes. Supported in PingFederate `13.0` and later.",
 				Optional:    true,
 			},
@@ -197,8 +197,7 @@ func addOptionalServerSettingsLoggingFields(addRequest *client.LogSettings, mode
 	}
 	// verbose_logging_lifetime
 	if !model.VerboseLoggingLifetime.IsNull() && !model.VerboseLoggingLifetime.IsUnknown() {
-		val := int64(model.VerboseLoggingLifetime.ValueInt32())
-		addRequest.VerboseLoggingLifetime = &val
+		addRequest.VerboseLoggingLifetime = model.VerboseLoggingLifetime.ValueInt64Pointer()
 	}
 }
 
@@ -256,11 +255,7 @@ func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.Lo
 	diags.Append(respDiags...)
 
 	// verbose_logging_lifetime
-	if r.VerboseLoggingLifetime != nil {
-		state.VerboseLoggingLifetime = types.Int32Value(int32(*r.VerboseLoggingLifetime))
-	} else {
-		state.VerboseLoggingLifetime = types.Int32Null()
-	}
+	state.VerboseLoggingLifetime = types.Int64PointerValue(r.VerboseLoggingLifetime)
 	return diags
 }
 
