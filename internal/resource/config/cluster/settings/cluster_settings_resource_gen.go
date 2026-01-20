@@ -70,7 +70,9 @@ func (r *clusterSettingsResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"replicate_log_settings_on_save": schema.BoolAttribute{
 				Optional:    true,
-				Description: "Whether changes to Log Settings will automatically be replicated to the cluster.",
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+				Description: "Whether changes to Log Settings will automatically be replicated to the cluster. Defaults to `false`. This attribute is only supported on PingFederate versions 13.0 and later.",
 			},
 		},
 	}
