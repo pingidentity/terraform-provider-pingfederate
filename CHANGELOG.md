@@ -1,3 +1,7 @@
+# v1.7.0 (Unreleased)
+### Enhancements
+* Added support for PingFederate `13.0.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, `12.2`, and `12.3`.
+
 # v1.6.2 September 19, 2025
 ### Bug fixes
 * Updated many attributes that were implemented as ordered lists to instead be implemented as unordered sets, to better reflect the behavior of the PingFederate API. ([#544]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/544)))
