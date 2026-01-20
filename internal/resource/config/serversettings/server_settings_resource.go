@@ -103,7 +103,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Required:    true,
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
@@ -122,7 +122,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Required:    true,
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
@@ -176,7 +176,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Required:    true,
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
@@ -210,7 +210,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "Email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Optional:    true,
 							},
 							"thread_dump_enabled": schema.BoolAttribute{
@@ -241,7 +241,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "Email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Optional:    true,
 								Computed:    true,
 								Default:     stringdefault.StaticString(""),

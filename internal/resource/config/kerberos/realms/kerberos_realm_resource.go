@@ -117,7 +117,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"kerberos_encrypted_password": schema.StringAttribute{
-				Description: "The encrypted Domain/Realm password. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_password' should be specified.",
+				Description: "The encrypted Domain/Realm password. Secret Reference may be provided in this field with format `OBF:MGR:{secretManagerId}:{secretId}`. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_password' should be specified.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{

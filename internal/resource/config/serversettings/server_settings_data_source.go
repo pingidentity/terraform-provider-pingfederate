@@ -78,7 +78,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Computed:    true,
 								Optional:    false,
 							},
@@ -96,7 +96,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Computed:    true,
 								Optional:    false,
 							},
@@ -140,7 +140,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Computed:    true,
 								Optional:    false,
 							},
@@ -169,7 +169,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "Email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Optional:    false,
 								Computed:    true,
 							},
@@ -197,7 +197,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "Email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Optional:    false,
 								Computed:    true,
 							},
