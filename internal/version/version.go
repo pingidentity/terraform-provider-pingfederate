@@ -29,6 +29,8 @@ const (
 	PingFederate11310 SupportedVersion = "11.3.10"
 	PingFederate11311 SupportedVersion = "11.3.11"
 	PingFederate11312 SupportedVersion = "11.3.12"
+	PingFederate11313 SupportedVersion = "11.3.13"
+	PingFederate11314 SupportedVersion = "11.3.14"
 	PingFederate1200  SupportedVersion = "12.0.0"
 	PingFederate1201  SupportedVersion = "12.0.1"
 	PingFederate1202  SupportedVersion = "12.0.2"
@@ -39,6 +41,7 @@ const (
 	PingFederate1207  SupportedVersion = "12.0.7"
 	PingFederate1208  SupportedVersion = "12.0.8"
 	PingFederate1209  SupportedVersion = "12.0.9"
+	PingFederate12010 SupportedVersion = "12.0.10"
 	PingFederate1210  SupportedVersion = "12.1.0"
 	PingFederate1211  SupportedVersion = "12.1.1"
 	PingFederate1212  SupportedVersion = "12.1.2"
@@ -48,12 +51,20 @@ const (
 	PingFederate1216  SupportedVersion = "12.1.6"
 	PingFederate1217  SupportedVersion = "12.1.7"
 	PingFederate1218  SupportedVersion = "12.1.8"
+	PingFederate1219  SupportedVersion = "12.1.9"
+	PingFederate12110 SupportedVersion = "12.1.10"
 	PingFederate1220  SupportedVersion = "12.2.0"
 	PingFederate1221  SupportedVersion = "12.2.1"
 	PingFederate1222  SupportedVersion = "12.2.2"
 	PingFederate1223  SupportedVersion = "12.2.3"
 	PingFederate1224  SupportedVersion = "12.2.4"
+	PingFederate1225  SupportedVersion = "12.2.5"
+	PingFederate1226  SupportedVersion = "12.2.6"
 	PingFederate1230  SupportedVersion = "12.3.0"
+	PingFederate1231  SupportedVersion = "12.3.1"
+	PingFederate1232  SupportedVersion = "12.3.2"
+	PingFederate1233  SupportedVersion = "12.3.3"
+	PingFederate1234  SupportedVersion = "12.3.4"
 	PingFederate1300  SupportedVersion = "13.0.0"
 )
 
@@ -85,6 +96,8 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate11310,
 		PingFederate11311,
 		PingFederate11312,
+		PingFederate11313,
+		PingFederate11314,
 		PingFederate1200,
 		PingFederate1201,
 		PingFederate1202,
@@ -95,6 +108,7 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1207,
 		PingFederate1208,
 		PingFederate1209,
+		PingFederate12010,
 		PingFederate1210,
 		PingFederate1211,
 		PingFederate1212,
@@ -104,12 +118,20 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1216,
 		PingFederate1217,
 		PingFederate1218,
+		PingFederate1219,
+		PingFederate12110,
 		PingFederate1220,
 		PingFederate1221,
 		PingFederate1222,
 		PingFederate1223,
 		PingFederate1224,
+		PingFederate1225,
+		PingFederate1226,
 		PingFederate1230,
+		PingFederate1231,
+		PingFederate1232,
+		PingFederate1233,
+		PingFederate1234,
 		PingFederate1300,
 	}
 }
