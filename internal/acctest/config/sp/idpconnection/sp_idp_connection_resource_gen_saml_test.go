@@ -565,7 +565,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
     oauth_authentication_policy_contract_ref = null
     oidc_provider_settings                   = null
-    passthrough_errors                      = true
+    passthrough_errors                       = true
     protocol                                 = "SAML20"
     sign_authn_requests                      = false
     slo_service_endpoints = [

@@ -540,6 +540,7 @@ Optional:
 - `message_customizations` (Attributes Set) The message customizations for browser-based SSO. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--idp_browser_sso--message_customizations))
 - `oauth_authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--idp_browser_sso--oauth_authentication_policy_contract_ref))
 - `oidc_provider_settings` (Attributes) The OpenID Provider settings. (see [below for nested schema](#nestedatt--idp_browser_sso--oidc_provider_settings))
+- `passthrough_errors` (Boolean) Specify whether errors received from the IdP should be passed through to the target application. Supported in PingFederate 13.0 and later. The default value is `false`.
 - `sign_authn_requests` (Boolean) Determines whether SAML authentication requests should be signed.
 - `slo_service_endpoints` (Attributes Set) A list of possible endpoints to send SLO requests and responses. (see [below for nested schema](#nestedatt--idp_browser_sso--slo_service_endpoints))
 - `sso_oauth_mapping` (Attributes) IdP Browser SSO OAuth Attribute Mapping (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping))
