@@ -54,6 +54,7 @@ const (
 	PingFederate1223  SupportedVersion = "12.2.3"
 	PingFederate1224  SupportedVersion = "12.2.4"
 	PingFederate1230  SupportedVersion = "12.3.0"
+	PingFederate1300  SupportedVersion = "13.0.0"
 )
 
 func IsValid(versionString string) bool {
@@ -109,6 +110,7 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1223,
 		PingFederate1224,
 		PingFederate1230,
+		PingFederate1300,
 	}
 }
 
@@ -156,6 +158,9 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 		// Use the first version prior to 12.3.0
 		versionIndex = getSortedVersionIndex(PingFederate1230) - 1
 	case "12.3.0":
+		// Use the first version prior to 13.0.0
+		versionIndex = getSortedVersionIndex(PingFederate1300) - 1
+	case "13.0.0":
 		// This is the latest major-minor version, so just use the latest patch version available
 		versionIndex = len(sortedVersions) - 1
 	}

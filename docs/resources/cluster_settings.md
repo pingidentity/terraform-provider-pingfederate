@@ -25,6 +25,7 @@ resource "pingfederate_cluster_settings" "clusterSettings" {
 
 - `replicate_clients_on_save` (Boolean) Whether changes to OAuth clients will automatically be replicated to the cluster. This setting only applies when using XML Client storage. Defaults to `false`.
 - `replicate_connections_on_save` (Boolean) Whether changes to connections will automatically be replicated to the cluster. Defaults to `false`.
+- `replicate_log_settings_on_save` (Boolean) Whether changes to Log Settings will automatically be replicated to the cluster.
 
 ## Import
 

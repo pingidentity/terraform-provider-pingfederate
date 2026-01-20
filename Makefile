@@ -20,7 +20,7 @@ vet:
 	go vet ./...
 
 define productversiondir
- 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.3.0}" | cut -b 1-4)
+ 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-13.0.0}" | cut -b 1-4)
 endef
 
 starttestcontainer:
@@ -31,7 +31,7 @@ starttestcontainer:
 		-e "OPERATIONAL_MODE=${OPERATIONAL_MODE}" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
 		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json$${DATA_JSON_SUFFIX}.subst:/opt/in/instance/bulk-config/data.json.subst \
-		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.3.0}-latest
+		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-13.0.0}-latest
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
@@ -50,7 +50,7 @@ removetestcontainer:
 spincontainer: removetestcontainer starttestcontainer
 
 define test_acc_common_env_vars
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.3}
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-13.0}
 endef
 
 define test_acc_basic_auth_env_vars
