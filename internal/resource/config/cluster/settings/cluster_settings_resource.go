@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -41,4 +42,15 @@ func (r *clusterSettingsResource) ModifyPlan(ctx context.Context, req resource.M
 				r.providerConfig.ProductVersion, version.PingFederate1300, &resp.Diagnostics)
 		}
 	}
+
+	// Set default if version is new enough
+	if plan.ReplicateClientsOnSave.IsUnknown() {
+		if pfVersionAtLeast1300 {
+			plan.ReplicateClientsOnSave = types.BoolValue(false)
+		} else {
+			plan.ReplicateClientsOnSave = types.BoolNull()
+		}
+	}
+
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
