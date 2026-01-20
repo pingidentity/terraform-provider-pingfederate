@@ -15,6 +15,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const idpConnSamlId = "samlidpconn"
@@ -564,6 +565,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
     oauth_authentication_policy_contract_ref = null
     oidc_provider_settings                   = null
+    passthrough_errors                      = true
     protocol                                 = "SAML20"
     sign_authn_requests                      = false
     slo_service_endpoints = [
@@ -714,7 +716,7 @@ resource "pingfederate_sp_idp_connection" "example" {
 
 // Validate any computed values when applying minimal HCL
 func spIdpConnection_CheckComputedValuesSamlMinimal() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
+	testChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "active", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.outbound_back_channel_auth.digital_signature", "false"),
@@ -737,7 +739,13 @@ func spIdpConnection_CheckComputedValuesSamlMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.default_target_url", ""),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sign_authn_requests", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "virtual_entity_ids.#", "0"),
-	)
+	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.passthrough_errors", "false"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(testChecks...)
 }
 
 // Validate any computed values when applying complete HCL
