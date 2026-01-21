@@ -258,7 +258,10 @@ func idpAdapter_expectedFieldCount() string {
 	if !acctest.VersionAtLeast(version.PingFederate1200) {
 		return "64"
 	}
-	return "65"
+	if !acctest.VersionAtLeast(version.PingFederate1300) {
+		return "65"
+	}
+	return "66"
 }
 
 // Validate any computed values when applying minimal HCL
