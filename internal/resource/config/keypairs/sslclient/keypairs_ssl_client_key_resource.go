@@ -48,32 +48,33 @@ type keypairsSslClientKeyResource struct {
 }
 
 type keypairsSslClientKeyResourceModel struct {
-	City                    types.String `tfsdk:"city"`
-	CommonName              types.String `tfsdk:"common_name"`
-	Country                 types.String `tfsdk:"country"`
-	CryptoProvider          types.String `tfsdk:"crypto_provider"`
-	Expires                 types.String `tfsdk:"expires"`
-	FileData                types.String `tfsdk:"file_data"`
-	Format                  types.String `tfsdk:"format"`
-	Id                      types.String `tfsdk:"id"`
-	IssuerDn                types.String `tfsdk:"issuer_dn"`
-	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
-	KeyId                   types.String `tfsdk:"key_id"`
-	KeySize                 types.Int64  `tfsdk:"key_size"`
-	Organization            types.String `tfsdk:"organization"`
-	OrganizationUnit        types.String `tfsdk:"organization_unit"`
-	Password                types.String `tfsdk:"password"`
-	SerialNumber            types.String `tfsdk:"serial_number"`
-	Sha1Fingerprint         types.String `tfsdk:"sha1_fingerprint"`
-	Sha256Fingerprint       types.String `tfsdk:"sha256_fingerprint"`
-	SignatureAlgorithm      types.String `tfsdk:"signature_algorithm"`
-	State                   types.String `tfsdk:"state"`
-	Status                  types.String `tfsdk:"status"`
-	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
-	SubjectDn               types.String `tfsdk:"subject_dn"`
-	ValidDays               types.Int64  `tfsdk:"valid_days"`
-	ValidFrom               types.String `tfsdk:"valid_from"`
-	Version                 types.Int64  `tfsdk:"version"`
+	City                             types.String `tfsdk:"city"`
+	CommonName                       types.String `tfsdk:"common_name"`
+	Country                          types.String `tfsdk:"country"`
+	CryptoProvider                   types.String `tfsdk:"crypto_provider"`
+	Expires                          types.String `tfsdk:"expires"`
+	FileData                         types.String `tfsdk:"file_data"`
+	Format                           types.String `tfsdk:"format"`
+	FormattedSubjectAlternativeNames types.Set    `tfsdk:"formatted_subject_alternative_names"`
+	Id                               types.String `tfsdk:"id"`
+	IssuerDn                         types.String `tfsdk:"issuer_dn"`
+	KeyAlgorithm                     types.String `tfsdk:"key_algorithm"`
+	KeyId                            types.String `tfsdk:"key_id"`
+	KeySize                          types.Int64  `tfsdk:"key_size"`
+	Organization                     types.String `tfsdk:"organization"`
+	OrganizationUnit                 types.String `tfsdk:"organization_unit"`
+	Password                         types.String `tfsdk:"password"`
+	SerialNumber                     types.String `tfsdk:"serial_number"`
+	Sha1Fingerprint                  types.String `tfsdk:"sha1_fingerprint"`
+	Sha256Fingerprint                types.String `tfsdk:"sha256_fingerprint"`
+	SignatureAlgorithm               types.String `tfsdk:"signature_algorithm"`
+	State                            types.String `tfsdk:"state"`
+	Status                           types.String `tfsdk:"status"`
+	SubjectAlternativeNames          types.Set    `tfsdk:"subject_alternative_names"`
+	SubjectDn                        types.String `tfsdk:"subject_dn"`
+	ValidDays                        types.Int64  `tfsdk:"valid_days"`
+	ValidFrom                        types.String `tfsdk:"valid_from"`
+	Version                          types.Int64  `tfsdk:"version"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -144,13 +145,18 @@ func (r *keypairsSslClientKeyResource) Schema(ctx context.Context, req resource.
 				Computed:    true,
 			},
 			"subject_alternative_names": schema.SetAttribute{
-				Description: "The subject alternative names (SAN). Cannot be configured if `file_data` is set. This field is immutable and will trigger a replace plan if changed.",
+				Description: "The subject alternative names (SAN). In PingFederate 13.0 and later, these names may be automatically formatted by the server. Formatted names will be stored in the computed `formatted_subject_alternative_names` attribute. Cannot be configured if `file_data` is set. This field is immutable and will trigger a replace plan if changed.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
+			},
+			"formatted_subject_alternative_names": schema.SetAttribute{
+				Description: "The subject alternative names (SAN), formatted if necessary by PingFederate versions 13.0 and later.",
+				Computed:    true,
+				ElementType: types.StringType,
 			},
 			"issuer_dn": schema.StringAttribute{
 				Description: "The issuer's distinguished name",
@@ -481,6 +487,9 @@ func (state *keypairsSslClientKeyResourceModel) readClientResponse(response *cli
 	} else {
 		state.Expires = types.StringNull()
 	}
+	// formatted_subject_alternative_names
+	state.FormattedSubjectAlternativeNames, diags = types.SetValueFrom(context.Background(), types.StringType, response.SubjectAlternativeNames)
+	respDiags.Append(diags...)
 	// issuer_dn
 	state.IssuerDn = types.StringPointerValue(response.IssuerDN)
 	// key_algorithm
@@ -500,8 +509,11 @@ func (state *keypairsSslClientKeyResourceModel) readClientResponse(response *cli
 	// status
 	state.Status = types.StringPointerValue(response.Status)
 	// subject_alternative_names
-	state.SubjectAlternativeNames, diags = types.SetValueFrom(context.Background(), types.StringType, response.SubjectAlternativeNames)
-	respDiags.Append(diags...)
+	// Just maintain values in state if SANs were specified in the plan, to account for any formatting done by the server
+	if state.SubjectAlternativeNames.IsNull() || state.SubjectAlternativeNames.IsUnknown() {
+		state.SubjectAlternativeNames, diags = types.SetValueFrom(context.Background(), types.StringType, response.SubjectAlternativeNames)
+		respDiags.Append(diags...)
+	}
 	// subject_dn
 	state.SubjectDn = types.StringPointerValue(response.SubjectDN)
 	// valid_from
