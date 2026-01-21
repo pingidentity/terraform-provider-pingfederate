@@ -58,12 +58,13 @@ resource "pingfederate_keypairs_ssl_client_key" "sslClientKey" {
 - `password` (String, Sensitive) Password for the file. In BCFIPS mode, the password must be at least 14 characters. Must be configured if `file_data` is set, otherwise cannot be configured. This field is immutable and will trigger a replace plan if changed.
 - `signature_algorithm` (String) The signature algorithm. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default signature algorithm for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed. Typically supported values are `SHA256withECDSA`, `SHA384withECDSA`, and `SHA512withECDSA` for EC keys, and `SHA256withRSA`, `SHA384withRSA`, and `SHA512withRSA` for RSA keys.
 - `state` (String) State for generating the key pair. Optional if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.
-- `subject_alternative_names` (Set of String) The subject alternative names (SAN). Cannot be configured if `file_data` is set. This field is immutable and will trigger a replace plan if changed.
+- `subject_alternative_names` (Set of String) The subject alternative names (SAN). In PingFederate 13.0 and later, these names may be automatically formatted by the server. Formatted names will be stored in the computed `formatted_subject_alternative_names` attribute. Cannot be configured if `file_data` is set. This field is immutable and will trigger a replace plan if changed.
 - `valid_days` (Number) Number of days the key pair will be valid for. Required if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.
 
 ### Read-Only
 
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
+- `formatted_subject_alternative_names` (Set of String) The subject alternative names (SAN), formatted if necessary by PingFederate versions 13.0 and later.
 - `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name
 - `serial_number` (String) The serial number assigned by the CA
