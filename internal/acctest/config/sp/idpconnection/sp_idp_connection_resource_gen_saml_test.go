@@ -174,6 +174,12 @@ resource "pingfederate_sp_idp_connection" "example" {
 
 // Maximal HCL with all values set where possible
 func spIdpConnection_SamlCompleteHCL() string {
+	var versionedIdpBrowserSsoAttrs string
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		versionedIdpBrowserSsoAttrs += `
+    passthrough_errors                       = true
+    `
+	}
 	return fmt.Sprintf(`
 %s
 
@@ -565,7 +571,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
     oauth_authentication_policy_contract_ref = null
     oidc_provider_settings                   = null
-    passthrough_errors                       = true
     protocol                                 = "SAML20"
     sign_authn_requests                      = false
     slo_service_endpoints = [
@@ -627,6 +632,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     }
     sso_service_endpoints = null
     url_whitelist_entries = null
+    %s
   }
   idp_oauth_grant_attribute_mapping = {
     access_token_manager_mappings = [
@@ -711,7 +717,8 @@ resource "pingfederate_sp_idp_connection" "example" {
 }
 `, spIdpConnection_SamlDependencyHCL(),
 		accesstokenmanager.AccessTokenManagerTestHCL("idpConnSamlAtm"),
-		idpConnSamlId)
+		idpConnSamlId,
+		versionedIdpBrowserSsoAttrs)
 }
 
 // Validate any computed values when applying minimal HCL
