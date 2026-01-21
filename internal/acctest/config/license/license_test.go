@@ -22,6 +22,9 @@ func TestAccLicense(t *testing.T) {
 	if acctest.VersionAtLeast(version.PingFederate1200) {
 		licenseVar = "PF_TF_ACC_TEST_LICENSE_12"
 	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		licenseVar = "PF_TF_ACC_TEST_LICENSE_13"
+	}
 	licenseFileData := os.Getenv(licenseVar)
 
 	resource.Test(t, resource.TestCase{
