@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const oauthOutOfBandAuthPluginPluginId = "oauthOutOfBandAuthPluginPluginId"
@@ -184,6 +185,15 @@ resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthOutOfBandAuthPlugin_CompleteHCL() string {
+	var versionedFields string
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		versionedFields += `
+	  {
+        name  = "Custom Proxy Connection Type"
+        value = "HTTP"
+	  }
+	  `
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
   plugin_id = "%s"
@@ -242,7 +252,8 @@ resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
       {
         name  = "Custom Proxy Port"
         value = ""
-      }
+      },
+	  %s
     ]
   }
   name = "Facile CIBA Updated"
@@ -257,14 +268,22 @@ resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
     ]
   }
 }
-`, oauthOutOfBandAuthPluginPluginId, pingOneConnection, pingOneEnvironment, pingOneApplication)
+`, oauthOutOfBandAuthPluginPluginId, pingOneConnection, pingOneEnvironment, pingOneApplication, versionedFields)
+}
+
+func oauthOutOfBandAuthPlugin_FieldsCount() string {
+	fieldsCount := "12"
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		fieldsCount = "13"
+	}
+	return fieldsCount
 }
 
 // Validate any computed values when applying minimal HCL
 func oauthOutOfBandAuthPlugin_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "id", oauthOutOfBandAuthPluginPluginId),
-		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.#", "12"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.#", oauthOutOfBandAuthPlugin_FieldsCount()),
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.*", map[string]string{
 			"name":  "Custom Proxy Host",
@@ -286,7 +305,7 @@ func oauthOutOfBandAuthPlugin_CheckComputedValuesMinimal() resource.TestCheckFun
 func oauthOutOfBandAuthPlugin_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "id", oauthOutOfBandAuthPluginPluginId),
-		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.#", "12"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.#", oauthOutOfBandAuthPlugin_FieldsCount()),
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.*", map[string]string{
 			"name":  "API Request Timeout",

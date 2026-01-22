@@ -3,5 +3,5 @@ provider "pingfederate" {
   password        = "2FederateM0re"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.3"
+  product_version = "13.0"
 }

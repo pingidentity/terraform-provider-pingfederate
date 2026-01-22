@@ -10,7 +10,7 @@ The PingFederate provider manages the configuration of a PingFederate server via
 
 ## PingFederate Server Support
 
-This PingFederate Terraform provider version supports versions `11.3` through `12.3` of PingFederate.
+This PingFederate Terraform provider version supports versions `11.3` through `13.0` of PingFederate.
 
 Further information on PingFederate server version support and released version compatibility can be found in the [PingFederate Server Support](guides/server-support) guide.
 
@@ -45,7 +45,7 @@ provider "pingfederate" {
   admin_api_path                      = "/pf-admin-api/v1"
   insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
-  product_version                     = "12.3"
+  product_version                     = "13.0"
 }
 
 resource "pingfederate_administrative_account" "administrativeAccount" {
@@ -63,7 +63,7 @@ provider "pingfederate" {
   password        = "2FederateM0re"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.3"
+  product_version = "13.0"
 }
 ```
 
@@ -76,7 +76,7 @@ provider "pingfederate" {
   token_url       = "https://localhost:9031/as/token.oauth2"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.3"
+  product_version = "13.0"
 }
 ```
 
@@ -86,7 +86,7 @@ provider "pingfederate" {
   access_token    = "accesstokenvaluefromclient"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.3"
+  product_version = "13.0"
 }
 ```
 

@@ -161,6 +161,14 @@ func captchaProvider_CompleteHCL() string {
       },
 `
 		}
+		if acctest.VersionAtLeast(version.PingFederate1300) {
+			additionalVersionedFields += `
+      {
+        name : "Browser-based Location"
+        value : "Don’t get location"
+      },
+`
+		}
 		return fmt.Sprintf(`
 resource "pingfederate_captcha_provider" "example" {
   provider_id = "%s"
@@ -282,6 +290,9 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 		fieldsAllCount := "12"
 		if acctest.VersionAtLeast(version.PingFederate1230) {
 			fieldsAllCount = "15"
+		}
+		if acctest.VersionAtLeast(version.PingFederate1300) {
+			fieldsAllCount = "16"
 		}
 		return resource.ComposeTestCheckFunc(
 			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),

@@ -131,7 +131,7 @@ Required:
 
 Optional:
 
-- `email_address` (String) Email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `notification_mode` (String) The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `LOGGING_ONLY`.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--bulkhead_alert_notification_settings--notification_publisher_ref))
 - `thread_dump_enabled` (Boolean) Generate a thread dump when a bulkhead reaches its warning threshold or is full. Default is `true`.
@@ -150,7 +150,7 @@ Required:
 
 Required:
 
-- `email_address` (String) The email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `final_warning_period` (Number) Time before certificate expiration when final warning is sent (in days). Must be between `1` and `99999` days.
 
 Optional:
@@ -173,7 +173,7 @@ Required:
 
 Required:
 
-- `email_address` (String) The email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 
 Optional:
 
@@ -193,7 +193,7 @@ Required:
 
 Required:
 
-- `email_address` (String) The email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 
 Optional:
 
@@ -213,7 +213,7 @@ Required:
 
 Optional:
 
-- `email_address` (String) Email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `notification_mode` (String) The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `LOGGING_ONLY`.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--thread_pool_exhaustion_notification_settings--notification_publisher_ref))
 - `thread_dump_enabled` (Boolean) Generate a thread dump when approaching thread pool exhaustion.

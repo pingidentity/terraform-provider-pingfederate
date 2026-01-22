@@ -111,6 +111,14 @@ func serverSettingsLogging_CompleteHCL() string {
 	},
 		`
 	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		versionedHcl += `
+	{
+		id = "provisioning"
+		enabled = false
+	},
+		`
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_server_settings_logging" "example" {
   log_categories = [
@@ -157,6 +165,9 @@ func serverSettingsLogging_logCategoriesCount() string {
 		baseCount++
 	}
 	if acctest.VersionAtLeast(version.PingFederate1210) {
+		baseCount++
+	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
 		baseCount++
 	}
 	return strconv.Itoa(baseCount)

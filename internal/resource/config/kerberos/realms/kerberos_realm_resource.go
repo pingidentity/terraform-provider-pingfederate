@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -117,7 +117,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"kerberos_encrypted_password": schema.StringAttribute{
-				Description: "The encrypted Domain/Realm password. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_password' should be specified.",
+				Description: "The encrypted Domain/Realm password. Secret Reference may be provided in this field with format `OBF:MGR:{secretManagerId}:{secretId}`. Required when `connection_type` is `DIRECT` or `LOCAL_VALIDATION`. Only one of this attribute and 'kerberos_password' should be specified.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{

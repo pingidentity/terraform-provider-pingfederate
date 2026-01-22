@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const keypairsSslClientKeyGenerateKeyId = "keypairssslgenkeyid"
@@ -218,11 +219,26 @@ func keypairsSslClientKey_CheckComputedValuesGenerateComplete() resource.TestChe
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_ssl_client_key.example", "sha256_fingerprint"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "signature_algorithm", "SHA256withRSA"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "status", "VALID"),
-			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "subject_alternative_names.0", "example.com"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "subject_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_ssl_client_key.example", "valid_from"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "version", "3"),
 		)
+		// SAN checks
+		// PF started formatting SANs in 13.0.0
+		formattedName := "example.com"
+		if acctest.VersionAtLeast(version.PingFederate1300) {
+			formattedName = "DNS: 'example.com'"
+		}
+		if prefix == "data." {
+			testChecks = append(testChecks,
+				resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "subject_alternative_names.0", formattedName),
+			)
+		} else {
+			testChecks = append(testChecks,
+				resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "formatted_subject_alternative_names.0", formattedName),
+				resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "subject_alternative_names.0", "example.com"),
+			)
+		}
 	}
 
 	return resource.ComposeTestCheckFunc(

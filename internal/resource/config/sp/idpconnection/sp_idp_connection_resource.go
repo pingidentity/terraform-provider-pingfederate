@@ -26,7 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/connectioncert"
@@ -390,6 +390,7 @@ var (
 		"message_customizations":                   types.SetType{ElemType: idpBrowserSsoMessageCustomizationsElementType},
 		"oauth_authentication_policy_contract_ref": types.ObjectType{AttrTypes: idpBrowserSsoOauthAuthenticationPolicyContractRefAttrTypes},
 		"oidc_provider_settings":                   types.ObjectType{AttrTypes: idpBrowserSsoOidcProviderSettingsAttrTypes},
+		"passthrough_errors":                       types.BoolType,
 		"protocol":                                 types.StringType,
 		"sign_authn_requests":                      types.BoolType,
 		"slo_service_endpoints":                    types.SetType{ElemType: idpBrowserSsoSloServiceEndpointsElementType},
@@ -2195,6 +2196,11 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description:         "The OpenID Provider settings.",
 						MarkdownDescription: "The OpenID Provider settings.",
 					},
+					"passthrough_errors": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Specify whether errors received from the IdP should be passed through to the target application. Supported in PingFederate 13.0 and later. The default value is `false`.",
+					},
 					"protocol": schema.StringAttribute{
 						Required:            true,
 						Description:         "The browser-based SSO protocol to use. Options are `OIDC`, `SAML10`, `SAML11`, `SAML20`, `WSFED`.",
@@ -3709,6 +3715,13 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		return
 	}
 	pfVersionAtLeast1230 := compare >= 0
+	// Compare to version 13.0.0 of PF
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1300)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1300 := compare >= 0
 	var plan *spIdpConnectionResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -3788,6 +3801,15 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.type",
 						r.providerConfig.ProductVersion, version.PingFederate1230, &resp.Diagnostics)
 				}
+			}
+		}
+	}
+	if !pfVersionAtLeast1300 {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) {
+			browserSsoAttrs := plan.IdpBrowserSso.Attributes()
+			if internaltypes.IsDefined(browserSsoAttrs["passthrough_errors"]) {
+				version.AddUnsupportedAttributeError("idp_browser_sso.passthrough_errors",
+					r.providerConfig.ProductVersion, version.PingFederate1300, &resp.Diagnostics)
 			}
 		}
 	}
@@ -3933,6 +3955,21 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			plan.ErrorPageMsgId = types.StringNull()
 		}
 		planModified = true
+	}
+
+	// Set default for passthrough_errors if version is 13.0+
+	if internaltypes.IsDefined(plan.IdpBrowserSso) {
+		browserSsoAttrs := plan.IdpBrowserSso.Attributes()
+		if browserSsoAttrs["passthrough_errors"].IsUnknown() {
+			if pfVersionAtLeast1300 {
+				browserSsoAttrs["passthrough_errors"] = types.BoolValue(false)
+			} else {
+				browserSsoAttrs["passthrough_errors"] = types.BoolNull()
+			}
+			plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttrs)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		}
 	}
 
 	if planModified {
@@ -4601,6 +4638,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 			idpBrowserSsoOidcProviderSettingsValue.UserInfoEndpoint = idpBrowserSsoOidcProviderSettingsAttrs["user_info_endpoint"].(types.String).ValueStringPointer()
 			idpBrowserSsoValue.OidcProviderSettings = idpBrowserSsoOidcProviderSettingsValue
 		}
+		idpBrowserSsoValue.PassthroughErrors = idpBrowserSsoAttrs["passthrough_errors"].(types.Bool).ValueBoolPointer()
 		idpBrowserSsoValue.Protocol = idpBrowserSsoAttrs["protocol"].(types.String).ValueString()
 		idpBrowserSsoValue.SignAuthnRequests = idpBrowserSsoAttrs["sign_authn_requests"].(types.Bool).ValueBoolPointer()
 		idpBrowserSsoValue.SloServiceEndpoints = []client.SloServiceEndpoint{}
@@ -5758,6 +5796,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			"message_customizations":                   idpBrowserSsoMessageCustomizationsValue,
 			"oauth_authentication_policy_contract_ref": idpBrowserSsoOauthAuthenticationPolicyContractRefValue,
 			"oidc_provider_settings":                   idpBrowserSsoOidcProviderSettingsValue,
+			"passthrough_errors":                       types.BoolPointerValue(r.IdpBrowserSso.PassthroughErrors),
 			"protocol":                                 types.StringValue(r.IdpBrowserSso.Protocol),
 			"sign_authn_requests":                      types.BoolPointerValue(signAuthnRequest),
 			"slo_service_endpoints":                    idpBrowserSsoSloServiceEndpointsValue,

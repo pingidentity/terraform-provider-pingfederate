@@ -15,10 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1230/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -67,8 +68,9 @@ type serverSettingsLoggingResource struct {
 }
 
 type serverSettingsLoggingResourceModel struct {
-	LogCategories    types.Set `tfsdk:"log_categories"`
-	LogCategoriesAll types.Set `tfsdk:"log_categories_all"`
+	LogCategories          types.Set   `tfsdk:"log_categories"`
+	LogCategoriesAll       types.Set   `tfsdk:"log_categories_all"`
+	VerboseLoggingLifetime types.Int64 `tfsdk:"verbose_logging_lifetime"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -147,9 +149,36 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 					},
 				},
 			},
+			"verbose_logging_lifetime": schema.Int64Attribute{
+				Description: "The lifetime that verbose logging will be enabled for log settings categories. The time period is specified in minutes. Supported in PingFederate `13.0` and later.",
+				Optional:    true,
+			},
 		},
 	}
 	resp.Schema = schema
+}
+
+func (r *serverSettingsLoggingResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 13.0.0 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1300)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1300 := compare >= 0
+	var plan *serverSettingsLoggingResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil {
+		return
+	}
+
+	// If verbose_logging_lifetime is set by the user and the PF version is not new enough, throw an error
+	if !pfVersionAtLeast1300 {
+		if internaltypes.IsDefined(plan.VerboseLoggingLifetime) {
+			version.AddUnsupportedAttributeError("verbose_logging_lifetime",
+				r.providerConfig.ProductVersion, version.PingFederate1300, &resp.Diagnostics)
+		}
+	}
 }
 
 func addOptionalServerSettingsLoggingFields(addRequest *client.LogSettings, model serverSettingsLoggingResourceModel) {
@@ -166,7 +195,10 @@ func addOptionalServerSettingsLoggingFields(addRequest *client.LogSettings, mode
 			addRequest.LogCategories = append(addRequest.LogCategories, logCategoriesValue)
 		}
 	}
-
+	// verbose_logging_lifetime
+	if !model.VerboseLoggingLifetime.IsNull() && !model.VerboseLoggingLifetime.IsUnknown() {
+		addRequest.VerboseLoggingLifetime = model.VerboseLoggingLifetime.ValueInt64Pointer()
+	}
 }
 
 // Metadata returns the resource type name.
@@ -221,6 +253,9 @@ func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.Lo
 	}
 	state.LogCategoriesAll, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, unplannedCategories)
 	diags.Append(respDiags...)
+
+	// verbose_logging_lifetime
+	state.VerboseLoggingLifetime = types.Int64PointerValue(r.VerboseLoggingLifetime)
 	return diags
 }
 

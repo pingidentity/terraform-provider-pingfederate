@@ -15,6 +15,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const idpConnSamlId = "samlidpconn"
@@ -173,6 +174,12 @@ resource "pingfederate_sp_idp_connection" "example" {
 
 // Maximal HCL with all values set where possible
 func spIdpConnection_SamlCompleteHCL() string {
+	var versionedIdpBrowserSsoAttrs string
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		versionedIdpBrowserSsoAttrs += `
+    passthrough_errors                       = true
+    `
+	}
 	return fmt.Sprintf(`
 %s
 
@@ -625,6 +632,7 @@ resource "pingfederate_sp_idp_connection" "example" {
     }
     sso_service_endpoints = null
     url_whitelist_entries = null
+    %s
   }
   idp_oauth_grant_attribute_mapping = {
     access_token_manager_mappings = [
@@ -709,12 +717,13 @@ resource "pingfederate_sp_idp_connection" "example" {
 }
 `, spIdpConnection_SamlDependencyHCL(),
 		accesstokenmanager.AccessTokenManagerTestHCL("idpConnSamlAtm"),
-		idpConnSamlId)
+		idpConnSamlId,
+		versionedIdpBrowserSsoAttrs)
 }
 
 // Validate any computed values when applying minimal HCL
 func spIdpConnection_CheckComputedValuesSamlMinimal() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
+	testChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "active", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.certs.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "credentials.outbound_back_channel_auth.digital_signature", "false"),
@@ -737,7 +746,13 @@ func spIdpConnection_CheckComputedValuesSamlMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.default_target_url", ""),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.sign_authn_requests", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "virtual_entity_ids.#", "0"),
-	)
+	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.passthrough_errors", "false"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(testChecks...)
 }
 
 // Validate any computed values when applying complete HCL
