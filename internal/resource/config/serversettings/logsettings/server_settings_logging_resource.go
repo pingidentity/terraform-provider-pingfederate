@@ -84,7 +84,7 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 				Computed:    true,
 				Default:     setdefault.StaticValue(logCategoriesDefault),
 				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+					setplanmodifier.UseNonNullStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -101,7 +101,7 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 							Computed:    true,
 							// Adding these plan modifiers also seems to cause issues with Terraform's set planning logic. Possibly related to the issue linked below
 							/*PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
+								stringplanmodifier.UseNonNullStateForUnknown(),
 							},*/
 						},
 						"description": schema.StringAttribute{
@@ -110,7 +110,7 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 							Computed:    true,
 							// Adding these plan modifiers also seems to cause issues with Terraform's set planning logic. Possibly related to the issue linked below
 							/*PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
+								stringplanmodifier.UseNonNullStateForUnknown(),
 							},*/
 						},
 						"enabled": schema.BoolAttribute{

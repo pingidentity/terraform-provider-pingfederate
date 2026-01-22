@@ -616,7 +616,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional: false,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Description: "The time at which the connection was created. This property is read only.",
 			},
@@ -934,7 +934,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:     false,
 									Computed:     true,
 									PlanModifiers: []planmodifier.Set{
-										setplanmodifier.UseStateForUnknown(),
+										setplanmodifier.UseNonNullStateForUnknown(),
 									},
 									Description: "The mapping of attributes from the local data store into Fields specified by the service provider. This attribute will include any values set by default by PingFederate.",
 								},
@@ -1204,7 +1204,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:     false,
 						Computed:     true,
 						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+							setplanmodifier.UseNonNullStateForUnknown(),
 						},
 						Description: "Configuration fields that includes credentials to target SaaS application. This attribute will include any values set by default by PingFederate.",
 					},

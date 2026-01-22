@@ -117,7 +117,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 				Description: "The id of the Access Token Mapping.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 		},

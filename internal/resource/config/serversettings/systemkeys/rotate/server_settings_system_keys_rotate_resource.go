@@ -70,7 +70,7 @@ func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req
 				Sensitive:   true,
 				Description: "The current secret.",
 				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
+					objectplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
 					"encrypted_key_data": schema.StringAttribute{
@@ -90,7 +90,7 @@ func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req
 				Sensitive:   true,
 				Description: "Previously used secret.",
 				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
+					objectplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
 					"encrypted_key_data": schema.StringAttribute{
@@ -110,7 +110,7 @@ func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req
 				Sensitive:   true,
 				Description: "The next secret.",
 				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
+					objectplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
 					"encrypted_key_data": schema.StringAttribute{

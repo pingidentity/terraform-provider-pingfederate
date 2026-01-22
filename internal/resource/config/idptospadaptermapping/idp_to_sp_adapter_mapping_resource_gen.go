@@ -112,7 +112,7 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 				Computed:    true,
 				Description: "The id of the IdP-to-SP Adapter mapping. This field is read-only.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"source_id": schema.StringAttribute{

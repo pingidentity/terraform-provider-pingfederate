@@ -185,7 +185,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 				Description: "The request policy ID. ID is unique.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

@@ -76,7 +76,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 					"id": schema.StringAttribute{
 						Computed: true,
 						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.UseNonNullStateForUnknown(),
 						},
 						Description: "The ID of the resource.",
 					},
@@ -90,7 +90,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 				Required:    true,
 				Description: "The ID of the adapter mapping. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},

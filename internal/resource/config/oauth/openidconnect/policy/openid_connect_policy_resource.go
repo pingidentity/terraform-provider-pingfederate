@@ -119,7 +119,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 						Computed:    true,
 						Optional:    false,
 						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+							setplanmodifier.UseNonNullStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{

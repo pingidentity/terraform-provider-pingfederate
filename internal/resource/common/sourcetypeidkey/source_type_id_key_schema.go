@@ -21,7 +21,7 @@ func ToSchemaWithDescription(computed bool, description string) schema.SingleNes
 		Optional:    computed,
 		Computed:    computed,
 		PlanModifiers: []planmodifier.Object{
-			objectplanmodifier.UseStateForUnknown(),
+			objectplanmodifier.UseNonNullStateForUnknown(),
 		},
 		Attributes: map[string]schema.Attribute{
 			"type": schema.StringAttribute{

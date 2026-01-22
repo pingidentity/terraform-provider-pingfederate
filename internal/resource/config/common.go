@@ -23,7 +23,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				stringAttr.Required = false
 				stringAttr.Optional = true
 				stringAttr.Computed = true
-				stringAttr.PlanModifiers = append(stringAttr.PlanModifiers, stringplanmodifier.UseStateForUnknown())
+				stringAttr.PlanModifiers = append(stringAttr.PlanModifiers, stringplanmodifier.UseNonNullStateForUnknown())
 				s.Attributes[key] = stringAttr
 				continue
 			}
@@ -33,7 +33,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				setAttr.Required = false
 				setAttr.Optional = true
 				setAttr.Computed = true
-				setAttr.PlanModifiers = append(setAttr.PlanModifiers, setplanmodifier.UseStateForUnknown())
+				setAttr.PlanModifiers = append(setAttr.PlanModifiers, setplanmodifier.UseNonNullStateForUnknown())
 				s.Attributes[key] = setAttr
 				continue
 			}
@@ -43,7 +43,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				listAttr.Required = false
 				listAttr.Optional = true
 				listAttr.Computed = true
-				listAttr.PlanModifiers = append(listAttr.PlanModifiers, listplanmodifier.UseStateForUnknown())
+				listAttr.PlanModifiers = append(listAttr.PlanModifiers, listplanmodifier.UseNonNullStateForUnknown())
 				s.Attributes[key] = listAttr
 				continue
 			}
@@ -53,7 +53,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				boolAttr.Required = false
 				boolAttr.Optional = true
 				boolAttr.Computed = true
-				boolAttr.PlanModifiers = append(boolAttr.PlanModifiers, boolplanmodifier.UseStateForUnknown())
+				boolAttr.PlanModifiers = append(boolAttr.PlanModifiers, boolplanmodifier.UseNonNullStateForUnknown())
 				s.Attributes[key] = boolAttr
 				continue
 			}
@@ -63,7 +63,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				intAttr.Required = false
 				intAttr.Optional = true
 				intAttr.Computed = true
-				intAttr.PlanModifiers = append(intAttr.PlanModifiers, int64planmodifier.UseStateForUnknown())
+				intAttr.PlanModifiers = append(intAttr.PlanModifiers, int64planmodifier.UseNonNullStateForUnknown())
 				s.Attributes[key] = intAttr
 				continue
 			}
@@ -73,7 +73,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				floatAttr.Required = false
 				floatAttr.Optional = true
 				floatAttr.Computed = true
-				floatAttr.PlanModifiers = append(floatAttr.PlanModifiers, float64planmodifier.UseStateForUnknown())
+				floatAttr.PlanModifiers = append(floatAttr.PlanModifiers, float64planmodifier.UseNonNullStateForUnknown())
 				s.Attributes[key] = floatAttr
 				continue
 			}

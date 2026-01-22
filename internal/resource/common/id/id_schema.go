@@ -18,7 +18,7 @@ func ToSchema(s *schema.Schema) {
 	schemaId.Optional = false
 	schemaId.Computed = true
 	schemaId.PlanModifiers = []planmodifier.String{
-		stringplanmodifier.UseStateForUnknown(),
+		stringplanmodifier.UseNonNullStateForUnknown(),
 	}
 	s.Attributes["id"] = schemaId
 }
@@ -27,7 +27,7 @@ func ToSchemaCustomId(s *schema.Schema, idName string, required, characterLimit 
 	customId := schema.StringAttribute{}
 	customId.Description = description
 	customId.PlanModifiers = []planmodifier.String{
-		stringplanmodifier.UseStateForUnknown(),
+		stringplanmodifier.UseNonNullStateForUnknown(),
 		stringplanmodifier.RequiresReplace(),
 	}
 	customId.Required = required

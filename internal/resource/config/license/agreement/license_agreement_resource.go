@@ -43,7 +43,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 				Optional:    false,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"accepted": schema.BoolAttribute{
