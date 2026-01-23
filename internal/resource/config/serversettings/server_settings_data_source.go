@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -78,7 +78,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Computed:    true,
 								Optional:    false,
 							},
@@ -96,7 +96,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Computed:    true,
 								Optional:    false,
 							},
@@ -117,7 +117,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 								Attributes:  resourcelink.ToDataSourceSchema(),
 							},
 							"notification_mode": schema.StringAttribute{
-								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.",
+								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER.",
 								Optional:    false,
 								Computed:    true,
 							},
@@ -140,7 +140,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "The email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Computed:    true,
 								Optional:    false,
 							},
@@ -169,7 +169,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "Email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Optional:    false,
 								Computed:    true,
 							},
@@ -197,7 +197,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
-								Description: "Email address where notifications are sent.",
+								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",
 								Optional:    false,
 								Computed:    true,
 							},

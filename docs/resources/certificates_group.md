@@ -43,7 +43,7 @@ resource "pingfederate_certificates_group" "certGroup" {
 - `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
 - `status` (String) Status of the item.
-- `subject_alternative_names` (List of String) The subject alternative names (SAN).
+- `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
 - `version` (Number) The X.509 version to which the item conforms.

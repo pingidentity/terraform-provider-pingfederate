@@ -16,18 +16,6 @@ type SupportedVersion string
 
 // Supported PingFederate versions
 const (
-	PingFederate1120  SupportedVersion = "11.2.0"
-	PingFederate1121  SupportedVersion = "11.2.1"
-	PingFederate1122  SupportedVersion = "11.2.2"
-	PingFederate1123  SupportedVersion = "11.2.3"
-	PingFederate1124  SupportedVersion = "11.2.4"
-	PingFederate1125  SupportedVersion = "11.2.5"
-	PingFederate1126  SupportedVersion = "11.2.6"
-	PingFederate1127  SupportedVersion = "11.2.7"
-	PingFederate1128  SupportedVersion = "11.2.8"
-	PingFederate1129  SupportedVersion = "11.2.9"
-	PingFederate11210 SupportedVersion = "11.2.10"
-	PingFederate11211 SupportedVersion = "11.2.11"
 	PingFederate1130  SupportedVersion = "11.3.0"
 	PingFederate1131  SupportedVersion = "11.3.1"
 	PingFederate1132  SupportedVersion = "11.3.2"
@@ -39,6 +27,10 @@ const (
 	PingFederate1138  SupportedVersion = "11.3.8"
 	PingFederate1139  SupportedVersion = "11.3.9"
 	PingFederate11310 SupportedVersion = "11.3.10"
+	PingFederate11311 SupportedVersion = "11.3.11"
+	PingFederate11312 SupportedVersion = "11.3.12"
+	PingFederate11313 SupportedVersion = "11.3.13"
+	PingFederate11314 SupportedVersion = "11.3.14"
 	PingFederate1200  SupportedVersion = "12.0.0"
 	PingFederate1201  SupportedVersion = "12.0.1"
 	PingFederate1202  SupportedVersion = "12.0.2"
@@ -46,12 +38,34 @@ const (
 	PingFederate1204  SupportedVersion = "12.0.4"
 	PingFederate1205  SupportedVersion = "12.0.5"
 	PingFederate1206  SupportedVersion = "12.0.6"
+	PingFederate1207  SupportedVersion = "12.0.7"
+	PingFederate1208  SupportedVersion = "12.0.8"
+	PingFederate1209  SupportedVersion = "12.0.9"
+	PingFederate12010 SupportedVersion = "12.0.10"
 	PingFederate1210  SupportedVersion = "12.1.0"
 	PingFederate1211  SupportedVersion = "12.1.1"
 	PingFederate1212  SupportedVersion = "12.1.2"
 	PingFederate1213  SupportedVersion = "12.1.3"
 	PingFederate1214  SupportedVersion = "12.1.4"
+	PingFederate1215  SupportedVersion = "12.1.5"
+	PingFederate1216  SupportedVersion = "12.1.6"
+	PingFederate1217  SupportedVersion = "12.1.7"
+	PingFederate1218  SupportedVersion = "12.1.8"
+	PingFederate1219  SupportedVersion = "12.1.9"
+	PingFederate12110 SupportedVersion = "12.1.10"
 	PingFederate1220  SupportedVersion = "12.2.0"
+	PingFederate1221  SupportedVersion = "12.2.1"
+	PingFederate1222  SupportedVersion = "12.2.2"
+	PingFederate1223  SupportedVersion = "12.2.3"
+	PingFederate1224  SupportedVersion = "12.2.4"
+	PingFederate1225  SupportedVersion = "12.2.5"
+	PingFederate1226  SupportedVersion = "12.2.6"
+	PingFederate1230  SupportedVersion = "12.3.0"
+	PingFederate1231  SupportedVersion = "12.3.1"
+	PingFederate1232  SupportedVersion = "12.3.2"
+	PingFederate1233  SupportedVersion = "12.3.3"
+	PingFederate1234  SupportedVersion = "12.3.4"
+	PingFederate1300  SupportedVersion = "13.0.0"
 )
 
 func IsValid(versionString string) bool {
@@ -69,18 +83,6 @@ func getSortedVersionIndex(versionString SupportedVersion) int {
 
 func getSortedVersions() []SupportedVersion {
 	return []SupportedVersion{
-		PingFederate1120,
-		PingFederate1121,
-		PingFederate1122,
-		PingFederate1123,
-		PingFederate1124,
-		PingFederate1125,
-		PingFederate1126,
-		PingFederate1127,
-		PingFederate1128,
-		PingFederate1129,
-		PingFederate11210,
-		PingFederate11211,
 		PingFederate1130,
 		PingFederate1131,
 		PingFederate1132,
@@ -92,6 +94,10 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1138,
 		PingFederate1139,
 		PingFederate11310,
+		PingFederate11311,
+		PingFederate11312,
+		PingFederate11313,
+		PingFederate11314,
 		PingFederate1200,
 		PingFederate1201,
 		PingFederate1202,
@@ -99,12 +105,34 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1204,
 		PingFederate1205,
 		PingFederate1206,
+		PingFederate1207,
+		PingFederate1208,
+		PingFederate1209,
+		PingFederate12010,
 		PingFederate1210,
 		PingFederate1211,
 		PingFederate1212,
 		PingFederate1213,
 		PingFederate1214,
+		PingFederate1215,
+		PingFederate1216,
+		PingFederate1217,
+		PingFederate1218,
+		PingFederate1219,
+		PingFederate12110,
 		PingFederate1220,
+		PingFederate1221,
+		PingFederate1222,
+		PingFederate1223,
+		PingFederate1224,
+		PingFederate1225,
+		PingFederate1226,
+		PingFederate1230,
+		PingFederate1231,
+		PingFederate1232,
+		PingFederate1233,
+		PingFederate1234,
+		PingFederate1300,
 	}
 }
 
@@ -139,9 +167,6 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 	sortedVersions := getSortedVersions()
 	versionIndex := -1
 	switch majorMinorVersionString {
-	case "11.2.0":
-		// Use the first version prior to 11.3.0
-		versionIndex = getSortedVersionIndex(PingFederate1130) - 1
 	case "11.3.0":
 		// Use the first version prior to 12.0.0
 		versionIndex = getSortedVersionIndex(PingFederate1200) - 1
@@ -152,6 +177,12 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 		// Use the first version prior to 12.2.0
 		versionIndex = getSortedVersionIndex(PingFederate1220) - 1
 	case "12.2.0":
+		// Use the first version prior to 12.3.0
+		versionIndex = getSortedVersionIndex(PingFederate1230) - 1
+	case "12.3.0":
+		// Use the first version prior to 13.0.0
+		versionIndex = getSortedVersionIndex(PingFederate1300) - 1
+	case "13.0.0":
 		// This is the latest major-minor version, so just use the latest patch version available
 		versionIndex = len(sortedVersions) - 1
 	}

@@ -52,6 +52,7 @@ resource "pingfederate_server_settings_logging" "logSettings" {
 ### Optional
 
 - `log_categories` (Attributes Set) The log categories defined for the system and whether they are enabled. (see [below for nested schema](#nestedatt--log_categories))
+- `verbose_logging_lifetime` (Number) The lifetime that verbose logging will be enabled for log settings categories. The time period is specified in minutes. Supported in PingFederate `13.0` and later.
 
 ### Read-Only
 

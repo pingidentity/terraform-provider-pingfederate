@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -53,7 +53,7 @@ type clusterStatusDataSourceModel struct {
 	LastConfigUpdateTime types.String `tfsdk:"last_config_update_time"`
 	LastReplicationTime  types.String `tfsdk:"last_replication_time"`
 	MixedMode            types.Bool   `tfsdk:"mixed_mode"`
-	Nodes                types.List   `tfsdk:"nodes"`
+	Nodes                types.Set    `tfsdk:"nodes"`
 	ReplicationRequired  types.Bool   `tfsdk:"replication_required"`
 }
 
@@ -77,7 +77,7 @@ func (r *clusterStatusDataSource) Schema(ctx context.Context, req datasource.Sch
 				Computed:    true,
 				Description: "Indicates whether there is more than one version of PingFederate in the cluster.",
 			},
-			"nodes": schema.ListNestedAttribute{
+			"nodes": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"address": schema.StringAttribute{
@@ -231,7 +231,7 @@ func (state *clusterStatusDataSourceModel) readClientResponse(response *client.C
 		respDiags.Append(diags...)
 		nodesValues = append(nodesValues, nodesValue)
 	}
-	nodesValue, diags := types.ListValue(nodesElementType, nodesValues)
+	nodesValue, diags := types.SetValue(nodesElementType, nodesValues)
 	respDiags.Append(diags...)
 
 	state.Nodes = nodesValue
@@ -268,7 +268,7 @@ func (state *clusterStatusDataSourceModel) emptyModel() {
 		"version":                 types.StringType,
 	}
 	nodesElementType := types.ObjectType{AttrTypes: nodesAttrTypes}
-	state.Nodes = types.ListNull(nodesElementType)
+	state.Nodes = types.SetNull(nodesElementType)
 	// replication_required
 	state.ReplicationRequired = types.BoolNull()
 }

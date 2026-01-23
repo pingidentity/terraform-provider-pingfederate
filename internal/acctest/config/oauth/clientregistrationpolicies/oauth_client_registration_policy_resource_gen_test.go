@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const oauthClientRegistrationPolicyPolicyId = "oauthClientRegistrationPolicyPol"
@@ -135,6 +136,15 @@ resource "pingfederate_oauth_client_registration_policy" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthClientRegistrationPolicy_CompleteHCL() string {
+	var versionedFields string
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		versionedFields += `
+	  {
+		name = "none"
+		value = "false"
+	  }
+	  `
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_client_registration_policy" "example" {
   policy_id = "%s"
@@ -168,7 +178,8 @@ resource "pingfederate_oauth_client_registration_policy" "example" {
       {
         name  = "token"
         value = "true"
-      }
+      },
+	  %s
     ]
   }
   name = "My registration policy updated"
@@ -176,14 +187,18 @@ resource "pingfederate_oauth_client_registration_policy" "example" {
     id = "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
   }
 }
-`, oauthClientRegistrationPolicyPolicyId)
+`, oauthClientRegistrationPolicyPolicyId, versionedFields)
 }
 
 // Validate any computed values when applying minimal HCL
 func oauthClientRegistrationPolicy_CheckComputedValues() resource.TestCheckFunc {
+	fieldsCount := "7"
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		fieldsCount = "8"
+	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_registration_policy.example", "id", oauthClientRegistrationPolicyPolicyId),
-		resource.TestCheckResourceAttr("pingfederate_oauth_client_registration_policy.example", "configuration.fields_all.#", "7"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client_registration_policy.example", "configuration.fields_all.#", fieldsCount),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_registration_policy.example", "configuration.tables_all.#", "0"),
 	)
 }

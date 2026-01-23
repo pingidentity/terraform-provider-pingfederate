@@ -44,7 +44,7 @@ ES512 - ECDSA using P521 Curve and SHA-512
 PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `ciba_require_signed_requests` (Boolean) Determines whether CIBA signed requests are required for this client.
 - `ciba_user_code_supported` (Boolean) Determines whether the CIBA user code parameter is supported by this client.
 - `client_auth` (Attributes) Client authentication settings. If this model is null, it indicates that no client authentication will be used. (see [below for nested schema](#nestedatt--client_auth))
@@ -98,7 +98,7 @@ PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `lockout_max_malicious_actions` (Number) The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.
 - `lockout_max_malicious_actions_type` (String) Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.
 - `logo_url` (String) The location of the logo used on user-facing OAuth grant authorization and revocation pages.
@@ -133,9 +133,9 @@ ES512 - ECDSA using P521 Curve and SHA-512
 PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `request_policy_ref` (Attributes) The CIBA request policy. (see [below for nested schema](#nestedatt--request_policy_ref))
-- `require_dpop` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.
+- `require_dpop` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client.
 - `require_jwt_secured_authorization_response_mode` (Boolean) Determines whether JWT secured authorization response mode is required when initiating an authorization request. The default is false.
 - `require_offline_access_scope_to_issue_refresh_tokens` (String) Determines whether offline_access scope is required to issue refresh tokens by this client or not. 'SERVER_DEFAULT' is the default value.
 - `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for this client.
@@ -181,7 +181,7 @@ PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `user_authorization_url_override` (String) The URL used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request. This property overrides the 'userAuthorizationUrl' value present in Authorization Server Settings.
 - `validate_using_all_eligible_atms` (Boolean) Validates token using all eligible access token managers for the client. This setting is ignored if 'restrictToDefaultAccessTokenManager' is set to true.
 
@@ -205,7 +205,7 @@ ES512 - ECDSA using P521 Curve and SHA-512
 PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
 - `type` (String) Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are clientCertIssuerDn and clientCertSubjectDn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwksUrl.
 
 <a id="nestedatt--client_auth--secondary_secrets"></a>
@@ -248,7 +248,7 @@ Read-Only:
 
 Read-Only:
 
-- `back_channel_logout_uri` (String) The back-channel logout URI for this client. Supported in PF version 11.3 or later.
+- `back_channel_logout_uri` (String) The back-channel logout URI for this client.
 - `grant_access_session_revocation_api` (Boolean) Determines whether this client is allowed to access the Session Revocation API.
 - `grant_access_session_session_management_api` (Boolean) Determines whether this client is allowed to access the Session Management API.
 - `id_token_content_encryption_algorithm` (String) The JSON Web Encryption [JWE] content encryption algorithm for the ID Token.
@@ -287,8 +287,8 @@ PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
-RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
-- `logout_mode` (String) The logout mode for this client. The default is 'NONE'. Supported in PF version 11.3 or later.
+RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
+- `logout_mode` (String) The logout mode for this client. The default is 'NONE'.
 - `logout_uris` (Set of String) A list of client logout URI's which will be invoked when a user logs out through one of PingFederate's SLO endpoints.
 - `pairwise_identifier_user_type` (Boolean) Determines whether the subject identifier type is pairwise.
 - `ping_access_logout_capable` (Boolean) Set this value to true if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention

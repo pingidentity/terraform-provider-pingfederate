@@ -4,7 +4,6 @@ package oauthauthserversettings
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -25,8 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -537,22 +535,22 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 				Default:     int64default.StaticInt64(600),
 			},
 			"dpop_proof_require_nonce": schema.BoolAttribute{
-				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `false`. Supported in PF version `11.3` or later.",
+				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
-				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `120`. Supported in PF version `11.3` or later.",
+				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `120`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(120),
 			},
 			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
-				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is `false`. Supported in PF version `11.3` or later.",
+				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"bypass_authorization_for_approved_consents": schema.BoolAttribute{
 				// Default is set in ModifyPlan below. Once only PF 12.0 and newer is supported, we can set the default in the schema here
@@ -650,14 +648,8 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 }
 
 func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to versions 11.3, 12.0, and 12.1 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast113 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	// Compare to versions 12.0, and 12.1 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
@@ -681,43 +673,6 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if !pfVersionAtLeast113 {
-		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
-			version.AddUnsupportedAttributeError("dpop_proof_enforce_replay_prevention",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
-			// Set a null default when the version isn't new enough to use this attribute
-			plan.DpopProofEnforceReplayPrevention = types.BoolNull()
-		}
-
-		if internaltypes.IsDefined(plan.DpopProofLifetimeSeconds) {
-			version.AddUnsupportedAttributeError("dpop_proof_lifetime_seconds",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.DpopProofLifetimeSeconds.IsUnknown() {
-			plan.DpopProofLifetimeSeconds = types.Int64Null()
-		}
-
-		if internaltypes.IsDefined(plan.DpopProofRequireNonce) {
-			version.AddUnsupportedAttributeError("dpop_proof_require_nonce",
-				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
-		} else if plan.DpopProofRequireNonce.IsUnknown() {
-			plan.DpopProofRequireNonce = types.BoolNull()
-		}
-	} else { //PF version is new enough for these attributes, set defaults
-		if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
-			plan.DpopProofEnforceReplayPrevention = types.BoolValue(false)
-		}
-
-		if plan.DpopProofLifetimeSeconds.IsUnknown() {
-			plan.DpopProofLifetimeSeconds = types.Int64Value(120)
-		}
-
-		if plan.DpopProofRequireNonce.IsUnknown() {
-			plan.DpopProofRequireNonce = types.BoolValue(false)
-		}
-	}
-
-	// Similar logic for PF 12.0
 	if !pfVersionAtLeast120 {
 		if internaltypes.IsDefined(plan.BypassAuthorizationForApprovedConsents) {
 			version.AddUnsupportedAttributeError("bypass_authorization_for_approved_consents",
@@ -804,35 +759,65 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 	}
 }
 
-func addOptionalOauthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthServerSettingsModel) error {
-
-	if internaltypes.IsDefined(plan.Scopes) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Scopes, false)), &addRequest.Scopes)
-		if err != nil {
-			return err
+func addOptionalOauthServerSettingsFields(addRequest *client.AuthorizationServerSettings, plan oauthServerSettingsModel) {
+	// scope_groups
+	if !plan.ScopeGroups.IsNull() && !plan.ScopeGroups.IsUnknown() {
+		addRequest.ScopeGroups = []client.ScopeGroupEntry{}
+		for _, scopeGroupsElement := range plan.ScopeGroups.Elements() {
+			scopeGroupsValue := client.ScopeGroupEntry{}
+			scopeGroupsAttrs := scopeGroupsElement.(types.Object).Attributes()
+			scopeGroupsValue.Description = scopeGroupsAttrs["description"].(types.String).ValueString()
+			scopeGroupsValue.Name = scopeGroupsAttrs["name"].(types.String).ValueString()
+			scopeGroupsValue.Scopes = []string{}
+			for _, scopesElement := range scopeGroupsAttrs["scopes"].(types.Set).Elements() {
+				scopeGroupsValue.Scopes = append(scopeGroupsValue.Scopes, scopesElement.(types.String).ValueString())
+			}
+			addRequest.ScopeGroups = append(addRequest.ScopeGroups, scopeGroupsValue)
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ScopeGroups) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeGroups, false)), &addRequest.ScopeGroups)
-		if err != nil {
-			return err
+	// scopes
+	if !plan.Scopes.IsNull() && !plan.Scopes.IsUnknown() {
+		addRequest.Scopes = []client.ScopeEntry{}
+		for _, scopesElement := range plan.Scopes.Elements() {
+			scopesValue := client.ScopeEntry{}
+			scopesAttrs := scopesElement.(types.Object).Attributes()
+			scopesValue.Description = scopesAttrs["description"].(types.String).ValueString()
+			scopesValue.Dynamic = scopesAttrs["dynamic"].(types.Bool).ValueBoolPointer()
+			scopesValue.Name = scopesAttrs["name"].(types.String).ValueString()
+			addRequest.Scopes = append(addRequest.Scopes, scopesValue)
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ExclusiveScopes) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopes, false)), &addRequest.ExclusiveScopes)
-		if err != nil {
-			return err
+	// exclusive_scope_groups
+	if !plan.ExclusiveScopeGroups.IsNull() && !plan.ExclusiveScopeGroups.IsUnknown() {
+		addRequest.ExclusiveScopeGroups = []client.ScopeGroupEntry{}
+		for _, exclusiveScopeGroupsElement := range plan.ExclusiveScopeGroups.Elements() {
+			exclusiveScopeGroupsValue := client.ScopeGroupEntry{}
+			exclusiveScopeGroupsAttrs := exclusiveScopeGroupsElement.(types.Object).Attributes()
+			exclusiveScopeGroupsValue.Description = exclusiveScopeGroupsAttrs["description"].(types.String).ValueString()
+			exclusiveScopeGroupsValue.Name = exclusiveScopeGroupsAttrs["name"].(types.String).ValueString()
+			exclusiveScopeGroupsValue.Scopes = []string{}
+			for _, scopesElement := range exclusiveScopeGroupsAttrs["scopes"].(types.Set).Elements() {
+				exclusiveScopeGroupsValue.Scopes = append(exclusiveScopeGroupsValue.Scopes, scopesElement.(types.String).ValueString())
+			}
+			addRequest.ExclusiveScopeGroups = append(addRequest.ExclusiveScopeGroups, exclusiveScopeGroupsValue)
 		}
 	}
 
-	if internaltypes.IsDefined(plan.ExclusiveScopeGroups) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopeGroups, false)), &addRequest.ExclusiveScopeGroups)
-		if err != nil {
-			return err
+	// exclusive_scopes
+	if !plan.ExclusiveScopes.IsNull() && !plan.ExclusiveScopes.IsUnknown() {
+		addRequest.ExclusiveScopes = []client.ScopeEntry{}
+		for _, exclusiveScopesElement := range plan.ExclusiveScopes.Elements() {
+			exclusiveScopesValue := client.ScopeEntry{}
+			exclusiveScopesAttrs := exclusiveScopesElement.(types.Object).Attributes()
+			exclusiveScopesValue.Description = exclusiveScopesAttrs["description"].(types.String).ValueString()
+			exclusiveScopesValue.Dynamic = exclusiveScopesAttrs["dynamic"].(types.Bool).ValueBoolPointer()
+			exclusiveScopesValue.Name = exclusiveScopesAttrs["name"].(types.String).ValueString()
+			addRequest.ExclusiveScopes = append(addRequest.ExclusiveScopes, exclusiveScopesValue)
 		}
 	}
+
 	addRequest.RegisteredAuthorizationPath = plan.RegisteredAuthorizationPath.ValueStringPointer()
 	addRequest.BypassActivationCodeConfirmation = plan.BypassActivationCodeConfirmation.ValueBoolPointer()
 	addRequest.DefaultScopeDescription = plan.DefaultScopeDescription.ValueStringPointer()
@@ -851,34 +836,58 @@ func addOptionalOauthServerSettingsFields(ctx context.Context, addRequest *clien
 	addRequest.RollRefreshTokenValues = plan.RollRefreshTokenValues.ValueBoolPointer()
 	addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
 	addRequest.RefreshRollingIntervalTimeUnit = plan.RefreshRollingIntervalTimeUnit.ValueStringPointer()
-	var persistentGrantReuseTypes []string
-	plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &persistentGrantReuseTypes, false)
-	addRequest.PersistentGrantReuseGrantTypes = persistentGrantReuseTypes
 
-	if internaltypes.IsDefined(plan.PersistentGrantContract) {
-		addRequest.PersistentGrantContract = client.NewPersistentGrantContractWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.PersistentGrantContract, false)), addRequest.PersistentGrantContract)
-		if err != nil {
-			return err
+	// persistent_grant_reuse_grant_types
+	if !plan.PersistentGrantReuseGrantTypes.IsNull() && !plan.PersistentGrantReuseGrantTypes.IsUnknown() {
+		addRequest.PersistentGrantReuseGrantTypes = []string{}
+		for _, persistentGrantReuseGrantTypesElement := range plan.PersistentGrantReuseGrantTypes.Elements() {
+			addRequest.PersistentGrantReuseGrantTypes = append(addRequest.PersistentGrantReuseGrantTypes, persistentGrantReuseGrantTypesElement.(types.String).ValueString())
 		}
+	}
+
+	// persistent_grant_contract
+	if !plan.PersistentGrantContract.IsNull() && !plan.PersistentGrantContract.IsUnknown() {
+		persistentGrantContractValue := &client.PersistentGrantContract{}
+		persistentGrantContractAttrs := plan.PersistentGrantContract.Attributes()
+		persistentGrantContractValue.CoreAttributes = []client.PersistentGrantAttribute{}
+		for _, coreAttributesElement := range persistentGrantContractAttrs["core_attributes"].(types.Set).Elements() {
+			coreAttributesValue := client.PersistentGrantAttribute{}
+			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
+			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
+			persistentGrantContractValue.CoreAttributes = append(persistentGrantContractValue.CoreAttributes, coreAttributesValue)
+		}
+		if !persistentGrantContractAttrs["extended_attributes"].IsNull() && !persistentGrantContractAttrs["extended_attributes"].IsUnknown() {
+			persistentGrantContractValue.ExtendedAttributes = []client.PersistentGrantAttribute{}
+			for _, extendedAttributesElement := range persistentGrantContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.PersistentGrantAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				persistentGrantContractValue.ExtendedAttributes = append(persistentGrantContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
+		}
+		addRequest.PersistentGrantContract = persistentGrantContractValue
 	}
 	addRequest.BypassAuthorizationForApprovedGrants = plan.BypassAuthorizationForApprovedGrants.ValueBoolPointer()
 	addRequest.EnableCookielessUserAuthorizationAuthenticationApi = plan.EnableCookielessUserAuthorizationAuthenticationApi.ValueBoolPointer()
 	addRequest.AllowUnidentifiedClientROCreds = plan.AllowUnidentifiedClientROCreds.ValueBoolPointer()
 	addRequest.AllowUnidentifiedClientExtensionGrants = plan.AllowUnidentifiedClientExtensionGrants.ValueBoolPointer()
 
-	if internaltypes.IsDefined(plan.AdminWebServicePcvRef) {
-		addRequest.AdminWebServicePcvRef = client.NewResourceLinkWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdminWebServicePcvRef, false)), addRequest.AdminWebServicePcvRef)
-		if err != nil {
-			return err
-		}
+	// admin_web_service_pcv_ref
+	if !plan.AdminWebServicePcvRef.IsNull() && !plan.AdminWebServicePcvRef.IsUnknown() {
+		adminWebServicePcvRefValue := &client.ResourceLink{}
+		adminWebServicePcvRefAttrs := plan.AdminWebServicePcvRef.Attributes()
+		adminWebServicePcvRefValue.Id = adminWebServicePcvRefAttrs["id"].(types.String).ValueString()
+		addRequest.AdminWebServicePcvRef = adminWebServicePcvRefValue
 	}
 	addRequest.AtmIdForOAuthGrantManagement = plan.AtmIdForOAuthGrantManagement.ValueStringPointer()
 	addRequest.ScopeForOAuthGrantManagement = plan.ScopeForOAuthGrantManagement.ValueStringPointer()
-	var allowedOrigins []string
-	plan.AllowedOrigins.ElementsAs(ctx, &allowedOrigins, false)
-	addRequest.AllowedOrigins = allowedOrigins
+	// allowed_origins
+	if !plan.AllowedOrigins.IsNull() && !plan.AllowedOrigins.IsUnknown() {
+		addRequest.AllowedOrigins = []string{}
+		for _, allowedOriginsElement := range plan.AllowedOrigins.Elements() {
+			addRequest.AllowedOrigins = append(addRequest.AllowedOrigins, allowedOriginsElement.(types.String).ValueString())
+		}
+	}
 	addRequest.UserAuthorizationUrl = plan.UserAuthorizationUrl.ValueStringPointer()
 	addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64Pointer()
 	addRequest.ActivationCodeCheckMode = plan.ActivationCodeCheckMode.ValueStringPointer()
@@ -897,9 +906,6 @@ func addOptionalOauthServerSettingsFields(ctx context.Context, addRequest *clien
 	addRequest.BypassAuthorizationForApprovedConsents = plan.BypassAuthorizationForApprovedConsents.ValueBoolPointer()
 	addRequest.ConsentLifetimeDays = plan.ConsentLifetimeDays.ValueInt64Pointer()
 	addRequest.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant = plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant.ValueBoolPointer()
-
-	return nil
-
 }
 
 // Metadata returns the resource type name.
@@ -928,11 +934,7 @@ func (r *oauthServerSettingsResource) Create(ctx context.Context, req resource.C
 	}
 
 	createOauthServerSettings := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
-	err := addOptionalOauthServerSettingsFields(ctx, createOauthServerSettings, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings: "+err.Error())
-		return
-	}
+	addOptionalOauthServerSettingsFields(createOauthServerSettings, plan)
 
 	apiCreateOauthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOauthServerSettings = apiCreateOauthServerSettings.Body(*createOauthServerSettings)
@@ -992,11 +994,7 @@ func (r *oauthServerSettingsResource) Update(ctx context.Context, req resource.U
 	// Get the current state to see how any attributes are changing
 	updateOauthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
-	err := addOptionalOauthServerSettingsFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Auth Server Settings: "+err.Error())
-		return
-	}
+	addOptionalOauthServerSettingsFields(createUpdateRequest, plan)
 
 	updateOauthServerSettings = updateOauthServerSettings.Body(*createUpdateRequest)
 	updateOauthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettingsExecute(updateOauthServerSettings)

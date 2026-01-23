@@ -43,7 +43,7 @@ data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
 
 Read-Only:
 
-- `allowed_clients` (Attributes List) If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
+- `allowed_clients` (Attributes Set) If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
 - `restrict_clients` (Boolean) Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.
 
 <a id="nestedatt--access_control_settings--allowed_clients"></a>
@@ -60,9 +60,9 @@ Read-Only:
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `core_attributes` (Attributes Set) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 - `default_subject_attribute` (String) Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.
-- `extended_attributes` (Attributes List) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
 ### Nested Schema for `attribute_contract.core_attributes`
@@ -88,7 +88,7 @@ Read-Only:
 
 Read-Only:
 
-- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
+- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
 - `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 <a id="nestedatt--configuration--fields"></a>
@@ -115,7 +115,7 @@ Read-Only:
 Read-Only:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`

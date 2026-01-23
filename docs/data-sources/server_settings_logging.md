@@ -18,6 +18,10 @@ Describes the settings related to server logging.
 ### Read-Only
 
 - `log_categories` (Attributes Set) The log categories defined for the system and whether they are enabled. (see [below for nested schema](#nestedatt--log_categories))
+- `modification_date` (String) The time at which the categories were last changed. Supported in PingFederate `13.0` and later.
+- `replication_status` (String) This status indicates whether log settings has been replicated to the cluster and automatic replication of log settings is enabled. Supported in PingFederate `13.0` and later.
+- `verbose_logging_expires_in` (String) The time at which verbose logging will expire. Supported in PingFederate `13.0` and later.
+- `verbose_logging_lifetime` (Number) The lifetime that verbose logging will be enabled for log settings categories. The time period is specified in minutes. Supported in PingFederate `13.0` and later.
 
 <a id="nestedatt--log_categories"></a>
 ### Nested Schema for `log_categories`

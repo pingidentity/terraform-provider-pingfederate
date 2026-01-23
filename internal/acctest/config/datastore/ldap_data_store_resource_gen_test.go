@@ -112,12 +112,7 @@ data "pingfederate_data_store" "example" {
 
 // Maximal HCL with all values set where possible
 func ldapDataStore_CompleteHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		versionedHcl += `
-			retry_failed_operations = true
-			`
-	}
+	var versionedHcl string
 	if acctest.VersionAtLeast(version.PingFederate1210) {
 		versionedHcl += `
 			use_start_tls = false
@@ -163,19 +158,20 @@ resource "pingfederate_data_store" "example" {
         tags = "us-east-2"
       }
     ]
-    ldap_dns_srv_prefix    = "_ldapcustom._tcp"
-    ldaps_dns_srv_prefix   = "_ldapscustom._tcp"
-    max_connections        = 200
-    max_wait               = 500
-    min_connections        = 15
-    name                   = "mypddatastore"
-    read_timeout           = 100
-    test_on_borrow         = true
-    test_on_return         = true
-    time_between_evictions = 100
-    use_dns_srv_records    = false
-    use_ssl                = true
-    verify_host            = false
+    ldap_dns_srv_prefix     = "_ldapcustom._tcp"
+    ldaps_dns_srv_prefix    = "_ldapscustom._tcp"
+    max_connections         = 200
+    max_wait                = 500
+    min_connections         = 15
+    name                    = "mypddatastore"
+    read_timeout            = 100
+    test_on_borrow          = true
+    test_on_return          = true
+    time_between_evictions  = 100
+    use_dns_srv_records     = false
+    use_ssl                 = true
+    verify_host             = false
+    retry_failed_operations = true
 	%s
   }
 }
@@ -183,13 +179,6 @@ data "pingfederate_data_store" "example" {
   data_store_id = pingfederate_data_store.example.id
 }
 `, ldapStoreId, versionedHcl)
-}
-
-func checkLdapPf113ComputedAttrs() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1130) {
-		return resource.TestCheckResourceAttr("pingfederate_data_store.example", "ldap_data_store.retry_failed_operations", "false")
-	}
-	return resource.TestCheckNoResourceAttr("pingfederate_data_store.example", "ldap_data_store.retry_failed_operations")
 }
 
 func checkLdapPf121ComputedAttrs() resource.TestCheckFunc {

@@ -157,7 +157,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `column_names` (Set of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
@@ -294,7 +294,7 @@ Read-Only:
 
 Read-Only:
 
-- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
+- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
 - `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 <a id="nestedatt--configuration--fields"></a>
@@ -321,7 +321,7 @@ Read-Only:
 Read-Only:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`

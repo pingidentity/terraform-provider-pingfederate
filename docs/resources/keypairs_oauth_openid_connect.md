@@ -39,6 +39,7 @@ resource "pingfederate_keypairs_oauth_openid_connect" "keypairsOAuthOpenIDConnec
 
 ### Optional
 
+- `dynamic_key_certificate_information` (Attributes) The attributes used to configure an OAuth/OpenID Connect Dynamic key signing certificate. Supported in PingFederate 12.3 and later. (see [below for nested schema](#nestedatt--dynamic_key_certificate_information))
 - `p256_active_cert_ref` (Attributes) Reference to the P-256 key currently active. (see [below for nested schema](#nestedatt--p256_active_cert_ref))
 - `p256_active_key_id` (String) Key Id for currently active P-256 key.
 - `p256_decryption_active_cert_ref` (Attributes) Reference to the P-256 decryption key currently active. (see [below for nested schema](#nestedatt--p256_decryption_active_cert_ref))
@@ -69,6 +70,7 @@ resource "pingfederate_keypairs_oauth_openid_connect" "keypairsOAuthOpenIDConnec
 - `p521_previous_cert_ref` (Attributes) Reference to the P-521 key previously active. (see [below for nested schema](#nestedatt--p521_previous_cert_ref))
 - `p521_previous_key_id` (String) Key Id for previously active P-521 key.
 - `p521_publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
+- `publish_dynamic_key_x5cs` (Boolean) Enable publishing of the dynamic key x5c parameters. Supported in PingFederate 12.3 and later.
 - `rsa_active_cert_ref` (Attributes) Reference to the RSA key currently active. (see [below for nested schema](#nestedatt--rsa_active_cert_ref))
 - `rsa_active_key_id` (String) Key Id for currently active RSA key.
 - `rsa_algorithm_active_key_ids` (Attributes Set) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--rsa_algorithm_active_key_ids))
@@ -81,6 +83,18 @@ resource "pingfederate_keypairs_oauth_openid_connect" "keypairsOAuthOpenIDConnec
 - `rsa_previous_cert_ref` (Attributes) Reference to the RSA key previously active. (see [below for nested schema](#nestedatt--rsa_previous_cert_ref))
 - `rsa_previous_key_id` (String) Key Id for previously active RSA key.
 - `rsa_publish_x5c_parameter` (Boolean) Enable publishing of the RSA certificate chain associated with the active key.
+
+<a id="nestedatt--dynamic_key_certificate_information"></a>
+### Nested Schema for `dynamic_key_certificate_information`
+
+Optional:
+
+- `city` (String) The city name.
+- `country` (String) The country name.
+- `organization` (String) The organization name.
+- `organization_unit` (String) The organization unit name.
+- `state` (String) The state name.
+
 
 <a id="nestedatt--p256_active_cert_ref"></a>
 ### Nested Schema for `p256_active_cert_ref`

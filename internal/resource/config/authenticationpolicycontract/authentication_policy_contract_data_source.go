@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -35,7 +35,7 @@ func (r *authenticationPolicyContractDataSource) Schema(ctx context.Context, req
 	schema := schema.Schema{
 		Description: "Describes an authentication policy contract.",
 		Attributes: map[string]schema.Attribute{
-			"core_attributes": schema.ListNestedAttribute{
+			"core_attributes": schema.SetNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Computed:    true,
 				Optional:    false,

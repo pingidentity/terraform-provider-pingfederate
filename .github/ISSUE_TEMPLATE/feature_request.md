@@ -17,6 +17,8 @@ assignees: ''
 
 <!--- Thank you for keeping this note for the community --->
 
+Thank you for opening an issue. Please note that we try to keep the issue tracker reserved for bug reports and feature requests. For general usage questions about terraform, please see: https://discuss.hashicorp.com/c/terraform-core/27. For general usage questions about this provider, please see: https://support.pingidentity.com/s/topic/0TODo0000001MSAOA2/terraform.
+
 **New or affected resource(s)**
 Please provide a list of the new and/or affected resources/data sources, for example:
 - pingfederate_administrative_accounts

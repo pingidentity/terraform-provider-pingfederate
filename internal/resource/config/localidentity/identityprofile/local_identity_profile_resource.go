@@ -4,7 +4,6 @@ package localidentity
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -25,8 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -526,7 +524,6 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 					"auxiliary_object_classes": schema.SetAttribute{
 						Description: "The Auxiliary Object Classes used by the new objects stored in the LDAP data store.",
 						Optional:    true,
-						Computed:    false,
 						ElementType: types.StringType,
 					},
 				},
@@ -544,85 +541,226 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 	resp.Schema = schema
 }
 
-func addOptionalLocalIdentityProfileFields(ctx context.Context, addRequest *client.LocalIdentityProfile, plan localIdentityProfileModel) error {
-	addRequest.Id = plan.ProfileId.ValueStringPointer()
+func addOptionalLocalIdentityProfileFields(addRequest *client.LocalIdentityProfile, plan localIdentityProfileModel) {
+	// apc_id
+	apcIdValue := client.ResourceLink{}
+	apcIdAttrs := plan.ApcId.Attributes()
+	apcIdValue.Id = apcIdAttrs["id"].(types.String).ValueString()
+	addRequest.ApcId = apcIdValue
 
-	if internaltypes.IsDefined(plan.Name) {
-		addRequest.Name = plan.Name.ValueString()
+	// auth_source_update_policy
+	if !plan.AuthSourceUpdatePolicy.IsNull() && !plan.AuthSourceUpdatePolicy.IsUnknown() {
+		authSourceUpdatePolicyValue := &client.LocalIdentityAuthSourceUpdatePolicy{}
+		authSourceUpdatePolicyAttrs := plan.AuthSourceUpdatePolicy.Attributes()
+		authSourceUpdatePolicyValue.RetainAttributes = authSourceUpdatePolicyAttrs["retain_attributes"].(types.Bool).ValueBoolPointer()
+		authSourceUpdatePolicyValue.StoreAttributes = authSourceUpdatePolicyAttrs["store_attributes"].(types.Bool).ValueBoolPointer()
+		authSourceUpdatePolicyValue.UpdateAttributes = authSourceUpdatePolicyAttrs["update_attributes"].(types.Bool).ValueBoolPointer()
+		if !authSourceUpdatePolicyAttrs["update_interval"].IsNull() && !authSourceUpdatePolicyAttrs["update_interval"].IsUnknown() {
+			floatUpdateInterval := float64(authSourceUpdatePolicyAttrs["update_interval"].(types.Int64).ValueInt64())
+			authSourceUpdatePolicyValue.UpdateInterval = &floatUpdateInterval
+		}
+		addRequest.AuthSourceUpdatePolicy = authSourceUpdatePolicyValue
 	}
 
-	if internaltypes.IsDefined(plan.ApcId) {
-		addRequest.ApcId = client.NewLocalIdentityProfileWithDefaults().ApcId
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ApcId, false)), &addRequest.ApcId)
-		if err != nil {
-			return err
+	// auth_sources
+	if !plan.AuthSources.IsNull() && !plan.AuthSources.IsUnknown() {
+		addRequest.AuthSources = []client.LocalIdentityAuthSource{}
+		for _, authSourcesElement := range plan.AuthSources.Elements() {
+			authSourcesValue := client.LocalIdentityAuthSource{}
+			authSourcesAttrs := authSourcesElement.(types.Object).Attributes()
+			if !authSourcesAttrs["id"].IsNull() && !authSourcesAttrs["id"].IsUnknown() {
+				authSourcesValue.Id = authSourcesAttrs["id"].(types.String).ValueStringPointer()
+			}
+			authSourcesValue.Source = authSourcesAttrs["source"].(types.String).ValueStringPointer()
+			addRequest.AuthSources = append(addRequest.AuthSources, authSourcesValue)
 		}
 	}
 
-	if internaltypes.IsDefined(plan.AuthSources) {
-		addRequest.AuthSources = client.NewLocalIdentityProfileWithDefaults().AuthSources
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AuthSources, false)), &addRequest.AuthSources)
-		if err != nil {
-			return err
+	// data_store_config
+	if !plan.DataStoreConfig.IsNull() && !plan.DataStoreConfig.IsUnknown() {
+		dataStoreConfigValue := &client.LdapDataStoreConfig{}
+		dataStoreConfigAttrs := plan.DataStoreConfig.Attributes()
+		if !dataStoreConfigAttrs["auxiliary_object_classes"].IsNull() && !dataStoreConfigAttrs["auxiliary_object_classes"].IsUnknown() {
+			dataStoreConfigValue.AuxiliaryObjectClasses = []string{}
+			for _, auxiliaryObjectClassesElement := range dataStoreConfigAttrs["auxiliary_object_classes"].(types.Set).Elements() {
+				dataStoreConfigValue.AuxiliaryObjectClasses = append(dataStoreConfigValue.AuxiliaryObjectClasses, auxiliaryObjectClassesElement.(types.String).ValueString())
+			}
 		}
-	}
-
-	if internaltypes.IsDefined(plan.AuthSourceUpdatePolicy) {
-		addRequest.AuthSourceUpdatePolicy = client.NewLocalIdentityAuthSourceUpdatePolicy()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AuthSourceUpdatePolicy, false)), addRequest.AuthSourceUpdatePolicy)
-		if err != nil {
-			return err
+		dataStoreConfigValue.BaseDn = dataStoreConfigAttrs["base_dn"].(types.String).ValueString()
+		dataStoreConfigValue.CreatePattern = dataStoreConfigAttrs["create_pattern"].(types.String).ValueString()
+		dataStoreConfigValue.DataStoreMapping = map[string]client.DataStoreAttribute{}
+		for key, dataStoreMappingElement := range dataStoreConfigAttrs["data_store_mapping"].(types.Map).Elements() {
+			dataStoreMappingValue := client.DataStoreAttribute{}
+			dataStoreMappingAttrs := dataStoreMappingElement.(types.Object).Attributes()
+			if !dataStoreMappingAttrs["metadata"].IsNull() && !dataStoreMappingAttrs["metadata"].IsUnknown() {
+				dataStoreMappingValue.Metadata = &map[string]string{}
+				for key, metadataElement := range dataStoreMappingAttrs["metadata"].(types.Map).Elements() {
+					(*dataStoreMappingValue.Metadata)[key] = metadataElement.(types.String).ValueString()
+				}
+			}
+			dataStoreMappingValue.Name = dataStoreMappingAttrs["name"].(types.String).ValueString()
+			dataStoreMappingValue.Type = dataStoreMappingAttrs["type"].(types.String).ValueString()
+			dataStoreConfigValue.DataStoreMapping[key] = dataStoreMappingValue
 		}
+		dataStoreConfigDataStoreRefValue := client.ResourceLink{}
+		dataStoreConfigDataStoreRefAttrs := dataStoreConfigAttrs["data_store_ref"].(types.Object).Attributes()
+		dataStoreConfigDataStoreRefValue.Id = dataStoreConfigDataStoreRefAttrs["id"].(types.String).ValueString()
+		dataStoreConfigValue.DataStoreRef = dataStoreConfigDataStoreRefValue
+		dataStoreConfigValue.ObjectClass = dataStoreConfigAttrs["object_class"].(types.String).ValueString()
+		dataStoreConfigValue.Type = dataStoreConfigAttrs["type"].(types.String).ValueString()
+		addRequest.DataStoreConfig = dataStoreConfigValue
 	}
 
-	if internaltypes.IsDefined(plan.RegistrationEnabled) {
-		addRequest.RegistrationEnabled = plan.RegistrationEnabled.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RegistrationConfig) {
-		addRequest.RegistrationConfig = client.NewRegistrationConfigWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RegistrationConfig, true)), addRequest.RegistrationConfig)
-		if err != nil {
-			return err
+	// email_verification_config
+	if !plan.EmailVerificationConfig.IsNull() && !plan.EmailVerificationConfig.IsUnknown() {
+		emailVerificationConfigValue := &client.EmailVerificationConfig{}
+		emailVerificationConfigAttrs := plan.EmailVerificationConfig.Attributes()
+		if !emailVerificationConfigAttrs["allowed_otp_character_set"].IsNull() && !emailVerificationConfigAttrs["allowed_otp_character_set"].IsUnknown() {
+			emailVerificationConfigValue.AllowedOtpCharacterSet = emailVerificationConfigAttrs["allowed_otp_character_set"].(types.String).ValueStringPointer()
 		}
-	}
-
-	if internaltypes.IsDefined(plan.ProfileConfig) {
-		addRequest.ProfileConfig = client.NewProfileConfigWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ProfileConfig, false)), addRequest.ProfileConfig)
-		if err != nil {
-			return err
+		if !emailVerificationConfigAttrs["email_verification_enabled"].IsNull() && !emailVerificationConfigAttrs["email_verification_enabled"].IsUnknown() {
+			emailVerificationConfigValue.EmailVerificationEnabled = emailVerificationConfigAttrs["email_verification_enabled"].(types.Bool).ValueBoolPointer()
 		}
-	}
-
-	if internaltypes.IsDefined(plan.FieldConfig) {
-		addRequest.FieldConfig = client.NewFieldConfig()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.FieldConfig, true)), addRequest.FieldConfig)
-		if err != nil {
-			return err
+		if !emailVerificationConfigAttrs["email_verification_error_template_name"].IsNull() && !emailVerificationConfigAttrs["email_verification_error_template_name"].IsUnknown() {
+			emailVerificationConfigValue.EmailVerificationErrorTemplateName = emailVerificationConfigAttrs["email_verification_error_template_name"].(types.String).ValueStringPointer()
 		}
-	}
-
-	if internaltypes.IsDefined(plan.EmailVerificationConfig) {
-		addRequest.EmailVerificationConfig = client.NewEmailVerificationConfigWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.EmailVerificationConfig, true)), addRequest.EmailVerificationConfig)
-		if err != nil {
-			return err
+		if !emailVerificationConfigAttrs["email_verification_otp_template_name"].IsNull() && !emailVerificationConfigAttrs["email_verification_otp_template_name"].IsUnknown() {
+			emailVerificationConfigValue.EmailVerificationOtpTemplateName = emailVerificationConfigAttrs["email_verification_otp_template_name"].(types.String).ValueStringPointer()
 		}
-	}
-
-	if internaltypes.IsNonEmptyObj(plan.DataStoreConfig) {
-		addRequest.DataStoreConfig = client.NewLdapDataStoreConfigWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.DataStoreConfig, false)), addRequest.DataStoreConfig)
-		if err != nil {
-			return err
+		if !emailVerificationConfigAttrs["email_verification_sent_template_name"].IsNull() && !emailVerificationConfigAttrs["email_verification_sent_template_name"].IsUnknown() {
+			emailVerificationConfigValue.EmailVerificationSentTemplateName = emailVerificationConfigAttrs["email_verification_sent_template_name"].(types.String).ValueStringPointer()
 		}
+		if !emailVerificationConfigAttrs["email_verification_success_template_name"].IsNull() && !emailVerificationConfigAttrs["email_verification_success_template_name"].IsUnknown() {
+			emailVerificationConfigValue.EmailVerificationSuccessTemplateName = emailVerificationConfigAttrs["email_verification_success_template_name"].(types.String).ValueStringPointer()
+		}
+		if !emailVerificationConfigAttrs["email_verification_type"].IsNull() && !emailVerificationConfigAttrs["email_verification_type"].IsUnknown() {
+			emailVerificationConfigValue.EmailVerificationType = emailVerificationConfigAttrs["email_verification_type"].(types.String).ValueStringPointer()
+		}
+		emailVerificationConfigValue.FieldForEmailToVerify = emailVerificationConfigAttrs["field_for_email_to_verify"].(types.String).ValueString()
+		emailVerificationConfigValue.FieldStoringVerificationStatus = emailVerificationConfigAttrs["field_storing_verification_status"].(types.String).ValueString()
+		if !emailVerificationConfigAttrs["notification_publisher_ref"].IsNull() && !emailVerificationConfigAttrs["notification_publisher_ref"].IsUnknown() {
+			emailVerificationConfigNotificationPublisherRefValue := &client.ResourceLink{}
+			emailVerificationConfigNotificationPublisherRefAttrs := emailVerificationConfigAttrs["notification_publisher_ref"].(types.Object).Attributes()
+			emailVerificationConfigNotificationPublisherRefValue.Id = emailVerificationConfigNotificationPublisherRefAttrs["id"].(types.String).ValueString()
+			emailVerificationConfigValue.NotificationPublisherRef = emailVerificationConfigNotificationPublisherRefValue
+		}
+		if !emailVerificationConfigAttrs["otl_time_to_live"].IsNull() && !emailVerificationConfigAttrs["otl_time_to_live"].IsUnknown() {
+			emailVerificationConfigValue.OtlTimeToLive = emailVerificationConfigAttrs["otl_time_to_live"].(types.Int64).ValueInt64Pointer()
+		}
+		if !emailVerificationConfigAttrs["otp_length"].IsNull() && !emailVerificationConfigAttrs["otp_length"].IsUnknown() {
+			emailVerificationConfigValue.OtpLength = emailVerificationConfigAttrs["otp_length"].(types.Int64).ValueInt64Pointer()
+		}
+		if !emailVerificationConfigAttrs["otp_retry_attempts"].IsNull() && !emailVerificationConfigAttrs["otp_retry_attempts"].IsUnknown() {
+			emailVerificationConfigValue.OtpRetryAttempts = emailVerificationConfigAttrs["otp_retry_attempts"].(types.Int64).ValueInt64Pointer()
+		}
+		if !emailVerificationConfigAttrs["otp_time_to_live"].IsNull() && !emailVerificationConfigAttrs["otp_time_to_live"].IsUnknown() {
+			emailVerificationConfigValue.OtpTimeToLive = emailVerificationConfigAttrs["otp_time_to_live"].(types.Int64).ValueInt64Pointer()
+		}
+		if !emailVerificationConfigAttrs["require_verified_email"].IsNull() && !emailVerificationConfigAttrs["require_verified_email"].IsUnknown() {
+			emailVerificationConfigValue.RequireVerifiedEmail = emailVerificationConfigAttrs["require_verified_email"].(types.Bool).ValueBoolPointer()
+		}
+		if !emailVerificationConfigAttrs["require_verified_email_template_name"].IsNull() && !emailVerificationConfigAttrs["require_verified_email_template_name"].IsUnknown() {
+			emailVerificationConfigValue.RequireVerifiedEmailTemplateName = emailVerificationConfigAttrs["require_verified_email_template_name"].(types.String).ValueStringPointer()
+		}
+		if !emailVerificationConfigAttrs["verify_email_template_name"].IsNull() && !emailVerificationConfigAttrs["verify_email_template_name"].IsUnknown() {
+			emailVerificationConfigValue.VerifyEmailTemplateName = emailVerificationConfigAttrs["verify_email_template_name"].(types.String).ValueStringPointer()
+		}
+		addRequest.EmailVerificationConfig = emailVerificationConfigValue
 	}
 
-	if internaltypes.IsDefined(plan.ProfileEnabled) {
+	// field_config
+	if !plan.FieldConfig.IsNull() && !plan.FieldConfig.IsUnknown() {
+		fieldConfigValue := &client.FieldConfig{}
+		fieldConfigAttrs := plan.FieldConfig.Attributes()
+		if !fieldConfigAttrs["fields"].IsNull() && !fieldConfigAttrs["fields"].IsUnknown() {
+			fieldConfigValue.Fields = []client.LocalIdentityField{}
+			for _, fieldsElement := range fieldConfigAttrs["fields"].(types.Set).Elements() {
+				fieldsValue := client.LocalIdentityField{}
+				fieldsAttrs := fieldsElement.(types.Object).Attributes()
+				if !fieldsAttrs["attributes"].IsNull() && !fieldsAttrs["attributes"].IsUnknown() {
+					fieldsValue.Attributes = &map[string]bool{}
+					for key, attributesElement := range fieldsAttrs["attributes"].(types.Map).Elements() {
+						(*fieldsValue.Attributes)[key] = attributesElement.(types.Bool).ValueBool()
+					}
+				}
+				if !fieldsAttrs["default_value"].IsNull() && !fieldsAttrs["default_value"].IsUnknown() {
+					fieldsValue.DefaultValue = fieldsAttrs["default_value"].(types.String).ValueStringPointer()
+				}
+				fieldsValue.Id = fieldsAttrs["id"].(types.String).ValueString()
+				fieldsValue.Label = fieldsAttrs["label"].(types.String).ValueString()
+				if !fieldsAttrs["options"].IsNull() && !fieldsAttrs["options"].IsUnknown() {
+					fieldsValue.Options = []string{}
+					for _, optionsElement := range fieldsAttrs["options"].(types.Set).Elements() {
+						fieldsValue.Options = append(fieldsValue.Options, optionsElement.(types.String).ValueString())
+					}
+				}
+				if !fieldsAttrs["profile_page_field"].IsNull() && !fieldsAttrs["profile_page_field"].IsUnknown() {
+					fieldsValue.ProfilePageField = fieldsAttrs["profile_page_field"].(types.Bool).ValueBoolPointer()
+				}
+				if !fieldsAttrs["registration_page_field"].IsNull() && !fieldsAttrs["registration_page_field"].IsUnknown() {
+					fieldsValue.RegistrationPageField = fieldsAttrs["registration_page_field"].(types.Bool).ValueBoolPointer()
+				}
+				fieldsValue.Type = fieldsAttrs["type"].(types.String).ValueString()
+				fieldConfigValue.Fields = append(fieldConfigValue.Fields, fieldsValue)
+			}
+		}
+		if !fieldConfigAttrs["strip_space_from_unique_field"].IsNull() && !fieldConfigAttrs["strip_space_from_unique_field"].IsUnknown() {
+			fieldConfigValue.StripSpaceFromUniqueField = fieldConfigAttrs["strip_space_from_unique_field"].(types.Bool).ValueBoolPointer()
+		}
+		addRequest.FieldConfig = fieldConfigValue
+	}
+
+	// name
+	addRequest.Name = plan.Name.ValueString()
+
+	// profile_config
+	if !plan.ProfileConfig.IsNull() && !plan.ProfileConfig.IsUnknown() {
+		profileConfigValue := &client.ProfileConfig{}
+		profileConfigAttrs := plan.ProfileConfig.Attributes()
+		profileConfigValue.DeleteIdentityEnabled = profileConfigAttrs["delete_identity_enabled"].(types.Bool).ValueBoolPointer()
+		profileConfigValue.TemplateName = profileConfigAttrs["template_name"].(types.String).ValueString()
+		addRequest.ProfileConfig = profileConfigValue
+	}
+
+	// profile_enabled
+	if !plan.ProfileEnabled.IsNull() && !plan.ProfileEnabled.IsUnknown() {
 		addRequest.ProfileEnabled = plan.ProfileEnabled.ValueBoolPointer()
 	}
-	return nil
+
+	// profile_id
+	if !plan.ProfileId.IsNull() && !plan.ProfileId.IsUnknown() {
+		addRequest.Id = plan.ProfileId.ValueStringPointer()
+	}
+
+	// registration_config
+	if !plan.RegistrationConfig.IsNull() && !plan.RegistrationConfig.IsUnknown() {
+		registrationConfigValue := &client.RegistrationConfig{}
+		registrationConfigAttrs := plan.RegistrationConfig.Attributes()
+		registrationConfigValue.CaptchaEnabled = registrationConfigAttrs["captcha_enabled"].(types.Bool).ValueBoolPointer()
+		if !registrationConfigAttrs["captcha_provider_ref"].IsNull() && !registrationConfigAttrs["captcha_provider_ref"].IsUnknown() {
+			registrationConfigCaptchaProviderRefValue := &client.ResourceLink{}
+			registrationConfigCaptchaProviderRefAttrs := registrationConfigAttrs["captcha_provider_ref"].(types.Object).Attributes()
+			registrationConfigCaptchaProviderRefValue.Id = registrationConfigCaptchaProviderRefAttrs["id"].(types.String).ValueString()
+			registrationConfigValue.CaptchaProviderRef = registrationConfigCaptchaProviderRefValue
+		}
+		registrationConfigValue.CreateAuthnSessionAfterRegistration = registrationConfigAttrs["create_authn_session_after_registration"].(types.Bool).ValueBoolPointer()
+		registrationConfigValue.ExecuteWorkflow = registrationConfigAttrs["execute_workflow"].(types.String).ValueStringPointer()
+		if !registrationConfigAttrs["registration_workflow"].IsNull() && !registrationConfigAttrs["registration_workflow"].IsUnknown() {
+			registrationConfigRegistrationWorkflowValue := &client.ResourceLink{}
+			registrationConfigRegistrationWorkflowAttrs := registrationConfigAttrs["registration_workflow"].(types.Object).Attributes()
+			registrationConfigRegistrationWorkflowValue.Id = registrationConfigRegistrationWorkflowAttrs["id"].(types.String).ValueString()
+			registrationConfigValue.RegistrationWorkflow = registrationConfigRegistrationWorkflowValue
+		}
+		registrationConfigValue.TemplateName = registrationConfigAttrs["template_name"].(types.String).ValueString()
+		registrationConfigValue.ThisIsMyDeviceEnabled = registrationConfigAttrs["this_is_my_device_enabled"].(types.Bool).ValueBoolPointer()
+		registrationConfigValue.UsernameField = registrationConfigAttrs["username_field"].(types.String).ValueStringPointer()
+		addRequest.RegistrationConfig = registrationConfigValue
+	}
+
+	// registration_enabled
+	if !plan.RegistrationEnabled.IsNull() && !plan.RegistrationEnabled.IsUnknown() {
+		addRequest.RegistrationEnabled = plan.RegistrationEnabled.ValueBoolPointer()
+	}
 }
 
 // Metadata returns the resource type name.
@@ -1195,16 +1333,12 @@ func (r *localIdentityProfileResource) Create(ctx context.Context, req resource.
 		return
 	}
 	createLocalIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
-	err = addOptionalLocalIdentityProfileFields(ctx, createLocalIdentityProfiles, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a local identity profile: "+err.Error())
-		return
-	}
+	addOptionalLocalIdentityProfileFields(createLocalIdentityProfiles, plan)
 	apiCreateLocalIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfile(config.AuthContext(ctx, r.providerConfig))
 	apiCreateLocalIdentityProfiles = apiCreateLocalIdentityProfiles.Body(*createLocalIdentityProfiles)
 	localIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfileExecute(apiCreateLocalIdentityProfiles)
 	if err != nil {
-		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp, &customId)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profile", err, httpResp, &customId)
 		return
 	}
 
@@ -1261,11 +1395,7 @@ func (r *localIdentityProfileResource) Update(ctx context.Context, req resource.
 		return
 	}
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
-	err = addOptionalLocalIdentityProfileFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a local identity profile: "+err.Error())
-		return
-	}
+	addOptionalLocalIdentityProfileFields(createUpdateRequest, plan)
 	updateLocalIdentityProfiles = updateLocalIdentityProfiles.Body(*createUpdateRequest)
 	updateLocalIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfileExecute(updateLocalIdentityProfiles)
 	if err != nil {

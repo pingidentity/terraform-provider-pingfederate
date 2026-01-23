@@ -5,7 +5,7 @@ package attributesources
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -72,7 +72,7 @@ func ClientStruct(attributeSourcesAttr basetypes.SetValue) []client.AttributeSou
 			}
 			if !jdbcAttributeSourceAttrs["column_names"].IsNull() && !jdbcAttributeSourceAttrs["column_names"].IsUnknown() {
 				attributeSourceInner.JdbcAttributeSource.ColumnNames = []string{}
-				for _, columnNamesElement := range jdbcAttributeSourceAttrs["column_names"].(types.List).Elements() {
+				for _, columnNamesElement := range jdbcAttributeSourceAttrs["column_names"].(types.Set).Elements() {
 					attributeSourceInner.JdbcAttributeSource.ColumnNames = append(attributeSourceInner.JdbcAttributeSource.ColumnNames, columnNamesElement.(types.String).ValueString())
 				}
 			}

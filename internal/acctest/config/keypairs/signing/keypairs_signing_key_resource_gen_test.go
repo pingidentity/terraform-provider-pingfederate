@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const keypairsSigningKeyGenerateKeyId = "keypairssigninggenkeyid"
@@ -220,11 +221,26 @@ func keypairsSigningKey_CheckComputedValuesGenerateComplete() resource.TestCheck
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
-			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.0", "example.com"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "valid_from"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "version", "3"),
 		)
+		// SAN checks
+		// PF started formatting SANs in 13.0.0
+		formattedName := "example.com"
+		if acctest.VersionAtLeast(version.PingFederate1300) {
+			formattedName = "DNS: 'example.com'"
+		}
+		if prefix == "data." {
+			testChecks = append(testChecks,
+				resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.0", formattedName),
+			)
+		} else {
+			testChecks = append(testChecks,
+				resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "formatted_subject_alternative_names.0", formattedName),
+				resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.0", "example.com"),
+			)
+		}
 	}
 
 	return resource.ComposeTestCheckFunc(
@@ -273,7 +289,7 @@ func keypairsSigningKey_CheckComputedValuesImportComplete() resource.TestCheckFu
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha1_fingerprint", "60CB3F8861673E1E814D87D84C8FADDDC37AE270"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint", "8AA7D3C77D5053A9C8781D4F3E123712667E6B9A3E103DB74D035D2751695938"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
-			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "EXPIRED"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Another Authority, O=Example Corporation, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "valid_from", "2024-08-01T15:16:44Z"),

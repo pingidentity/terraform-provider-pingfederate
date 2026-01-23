@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapiapplication "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/application"
@@ -89,6 +89,8 @@ import (
 	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
 	oauthopenidconnectsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/settings"
+	oauthoutofbandauthplugins "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/outofbandauthplugins"
+	oauthresourceownercredentialsmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/resourceownercredentialsmappings"
 	oauthtokenexchangegeneratorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/generator/settings"
 	oauthtokenexchangeprocessorpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/policies"
 	oauthtokenexchangeprocessorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/settings"
@@ -151,7 +153,7 @@ type pingfederateProviderModel struct {
 	AccessToken                     types.String `tfsdk:"access_token"`
 	ClientId                        types.String `tfsdk:"client_id"`
 	ClientSecret                    types.String `tfsdk:"client_secret"`
-	Scopes                          types.List   `tfsdk:"scopes"`
+	Scopes                          types.Set    `tfsdk:"scopes"`
 	TokenUrl                        types.String `tfsdk:"token_url"`
 	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
 	CACertificatePEMFiles           types.Set    `tfsdk:"ca_certificate_pem_files"`
@@ -227,17 +229,17 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				Description: "Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing. Default value can be set with the `PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS` environment variable.",
 				Optional:    true,
 			},
-			"scopes": schema.ListAttribute{
+			"scopes": schema.SetAttribute{
 				ElementType:         types.StringType,
 				MarkdownDescription: "OAuth scopes for access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_SCOPES` environment variable.",
 				Optional:            true,
-				Validators: []validator.List{
-					listvalidator.ConflictsWith(path.MatchRoot("access_token")),
-					listvalidator.ConflictsWith(path.MatchRoot("username")),
-					listvalidator.ConflictsWith(path.MatchRoot("password")),
-					listvalidator.AlsoRequires(path.MatchRoot("client_id")),
-					listvalidator.AlsoRequires(path.MatchRoot("client_secret")),
-					listvalidator.AlsoRequires(path.MatchRoot("token_url")),
+				Validators: []validator.Set{
+					setvalidator.ConflictsWith(path.MatchRoot("access_token")),
+					setvalidator.ConflictsWith(path.MatchRoot("username")),
+					setvalidator.ConflictsWith(path.MatchRoot("password")),
+					setvalidator.AlsoRequires(path.MatchRoot("client_id")),
+					setvalidator.AlsoRequires(path.MatchRoot("client_secret")),
+					setvalidator.AlsoRequires(path.MatchRoot("token_url")),
 				},
 			},
 			"token_url": schema.StringAttribute{
@@ -807,6 +809,8 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthissuer.OauthIssuerResource,
 		oauthopenidconnectpolicy.OpenidConnectPolicyResource,
 		oauthopenidconnectsettings.OpenidConnectSettingsResource,
+		oauthoutofbandauthplugins.OauthOutOfBandAuthPluginResource,
+		oauthresourceownercredentialsmappings.OauthResourceOwnerCredentialsMappingResource,
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
 		oauthtokenexchangeprocessorpolicies.OauthTokenExchangeProcessorPolicyResource,
 		oauthtokenexchangeprocessorsettings.OauthTokenExchangeProcessorSettingsResource,

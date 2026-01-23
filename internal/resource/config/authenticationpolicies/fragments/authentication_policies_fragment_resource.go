@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -106,7 +106,7 @@ func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.A
 	state.Outputs, respDiags = resourcelink.ToState(ctx, r.Outputs)
 	diags.Append(respDiags...)
 
-	state.RootNode, respDiags = authenticationpolicytreenode.ToState(ctx, r.RootNode)
+	state.RootNode, respDiags = authenticationpolicytreenode.ToState(ctx, &r.RootNode)
 	diags.Append(respDiags...)
 
 	return diags
@@ -118,12 +118,6 @@ func addOptionalAuthenticationPoliciesFragmentFields(addRequest *client.Authenti
 	addRequest.Description = plan.Description.ValueStringPointer()
 
 	var err error
-	if internaltypes.IsDefined(plan.RootNode) {
-		addRequest.RootNode, err = authenticationpolicytreenode.ClientStruct(plan.RootNode)
-		if err != nil {
-			return err
-		}
-	}
 
 	addRequest.Inputs, err = resourcelink.ClientStruct(plan.Inputs)
 	if err != nil {
@@ -144,8 +138,13 @@ func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req
 		return
 	}
 
-	newPolicyFragment := client.NewAuthenticationPolicyFragment()
-	err := addOptionalAuthenticationPoliciesFragmentFields(newPolicyFragment, plan)
+	rootNode, err := authenticationpolicytreenode.ClientStruct(plan.RootNode)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build root node for add request for the Authentication Policy Fragment: "+err.Error())
+		return
+	}
+	newPolicyFragment := client.NewAuthenticationPolicyFragment(*rootNode)
+	err = addOptionalAuthenticationPoliciesFragmentFields(newPolicyFragment, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the Authentication Policy Fragment: "+err.Error())
 		return
@@ -206,10 +205,15 @@ func (r *authenticationPoliciesFragmentResource) Update(ctx context.Context, req
 	}
 
 	updateFragmentRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateFragment(config.AuthContext(ctx, r.providerConfig), plan.FragmentId.ValueString())
-	updatedFragment := client.NewAuthenticationPolicyFragment()
-	err := addOptionalAuthenticationPoliciesFragmentFields(updatedFragment, plan)
+	rootNode, err := authenticationpolicytreenode.ClientStruct(plan.RootNode)
 	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the Authentication Policy Fragment: "+err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build root node for update request for the Authentication Policy Fragment: "+err.Error())
+		return
+	}
+	updatedFragment := client.NewAuthenticationPolicyFragment(*rootNode)
+	err = addOptionalAuthenticationPoliciesFragmentFields(updatedFragment, plan)
+	if err != nil {
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for the Authentication Policy Fragment: "+err.Error())
 		return
 	}
 

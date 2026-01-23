@@ -4,7 +4,6 @@ package idpspconnection
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"slices"
 	"time"
@@ -27,8 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/connectioncert"
@@ -1662,7 +1660,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"sso_application_endpoint": schema.StringAttribute{
 						Optional:    false,
 						Computed:    true,
-						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version `11.3` or later.",
+						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 					},
 				},
 				Optional:    true,
@@ -1993,8 +1991,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) diag.Diagnostics {
-	var respDiags diag.Diagnostics
+func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpSpConnectionModel) {
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = utils.Pointer("SP")
 	addRequest.Active = plan.Active.ValueBoolPointer()
@@ -2026,18 +2023,123 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 		addRequest.MetadataReloadSettings = metadataReloadSettingsValue
 	}
 
-	if internaltypes.IsDefined(plan.Credentials) {
-		addRequest.Credentials = &client.ConnectionCredentials{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), &addRequest.Credentials)
-		if err != nil {
-			respDiags.AddError("Error building client struct for credentials", err.Error())
+	if !plan.Credentials.IsNull() && !plan.Credentials.IsUnknown() {
+		credentialsValue := &client.ConnectionCredentials{}
+		credentialsAttrs := plan.Credentials.Attributes()
+		credentialsValue.BlockEncryptionAlgorithm = credentialsAttrs["block_encryption_algorithm"].(types.String).ValueStringPointer()
+		if !credentialsAttrs["certs"].IsNull() && !credentialsAttrs["certs"].IsUnknown() {
+			credentialsValue.Certs = []client.ConnectionCert{}
+			for _, certsElement := range credentialsAttrs["certs"].(types.List).Elements() {
+				certsValue := client.ConnectionCert{}
+				certsAttrs := certsElement.(types.Object).Attributes()
+				certsValue.ActiveVerificationCert = certsAttrs["active_verification_cert"].(types.Bool).ValueBoolPointer()
+				certsValue.EncryptionCert = certsAttrs["encryption_cert"].(types.Bool).ValueBoolPointer()
+				certsValue.PrimaryVerificationCert = certsAttrs["primary_verification_cert"].(types.Bool).ValueBoolPointer()
+				certsValue.SecondaryVerificationCert = certsAttrs["secondary_verification_cert"].(types.Bool).ValueBoolPointer()
+				certsX509FileValue := client.X509File{}
+				certsX509FileAttrs := certsAttrs["x509_file"].(types.Object).Attributes()
+				certsX509FileValue.CryptoProvider = certsX509FileAttrs["crypto_provider"].(types.String).ValueStringPointer()
+				certsX509FileValue.FileData = certsX509FileAttrs["file_data"].(types.String).ValueString()
+				certsX509FileValue.Id = certsX509FileAttrs["id"].(types.String).ValueStringPointer()
+				certsValue.X509File = certsX509FileValue
+				credentialsValue.Certs = append(credentialsValue.Certs, certsValue)
+			}
 		}
-		if addRequest.Credentials.InboundBackChannelAuth != nil {
-			addRequest.Credentials.InboundBackChannelAuth.Type = "INBOUND"
+		if !credentialsAttrs["decryption_key_pair_ref"].IsNull() && !credentialsAttrs["decryption_key_pair_ref"].IsUnknown() {
+			credentialsDecryptionKeyPairRefValue := &client.ResourceLink{}
+			credentialsDecryptionKeyPairRefAttrs := credentialsAttrs["decryption_key_pair_ref"].(types.Object).Attributes()
+			credentialsDecryptionKeyPairRefValue.Id = credentialsDecryptionKeyPairRefAttrs["id"].(types.String).ValueString()
+			credentialsValue.DecryptionKeyPairRef = credentialsDecryptionKeyPairRefValue
 		}
-		if addRequest.Credentials.OutboundBackChannelAuth != nil {
-			addRequest.Credentials.OutboundBackChannelAuth.Type = "OUTBOUND"
+		if !credentialsAttrs["inbound_back_channel_auth"].IsNull() && !credentialsAttrs["inbound_back_channel_auth"].IsUnknown() {
+			credentialsInboundBackChannelAuthValue := &client.InboundBackChannelAuth{}
+			credentialsInboundBackChannelAuthAttrs := credentialsAttrs["inbound_back_channel_auth"].(types.Object).Attributes()
+			if !credentialsInboundBackChannelAuthAttrs["certs"].IsNull() && !credentialsInboundBackChannelAuthAttrs["certs"].IsUnknown() {
+				credentialsInboundBackChannelAuthValue.Certs = []client.ConnectionCert{}
+				for _, certsElement := range credentialsInboundBackChannelAuthAttrs["certs"].(types.List).Elements() {
+					certsValue := client.ConnectionCert{}
+					certsAttrs := certsElement.(types.Object).Attributes()
+					certsValue.ActiveVerificationCert = certsAttrs["active_verification_cert"].(types.Bool).ValueBoolPointer()
+					certsValue.EncryptionCert = certsAttrs["encryption_cert"].(types.Bool).ValueBoolPointer()
+					certsValue.PrimaryVerificationCert = certsAttrs["primary_verification_cert"].(types.Bool).ValueBoolPointer()
+					certsValue.SecondaryVerificationCert = certsAttrs["secondary_verification_cert"].(types.Bool).ValueBoolPointer()
+					certsX509FileValue := client.X509File{}
+					certsX509FileAttrs := certsAttrs["x509_file"].(types.Object).Attributes()
+					certsX509FileValue.CryptoProvider = certsX509FileAttrs["crypto_provider"].(types.String).ValueStringPointer()
+					certsX509FileValue.FileData = certsX509FileAttrs["file_data"].(types.String).ValueString()
+					certsX509FileValue.Id = certsX509FileAttrs["id"].(types.String).ValueStringPointer()
+					certsValue.X509File = certsX509FileValue
+					credentialsInboundBackChannelAuthValue.Certs = append(credentialsInboundBackChannelAuthValue.Certs, certsValue)
+				}
+			}
+			credentialsInboundBackChannelAuthValue.DigitalSignature = credentialsInboundBackChannelAuthAttrs["digital_signature"].(types.Bool).ValueBoolPointer()
+			if !credentialsInboundBackChannelAuthAttrs["http_basic_credentials"].IsNull() && !credentialsInboundBackChannelAuthAttrs["http_basic_credentials"].IsUnknown() {
+				credentialsInboundBackChannelAuthHttpBasicCredentialsValue := &client.UsernamePasswordCredentials{}
+				credentialsInboundBackChannelAuthHttpBasicCredentialsAttrs := credentialsInboundBackChannelAuthAttrs["http_basic_credentials"].(types.Object).Attributes()
+				credentialsInboundBackChannelAuthHttpBasicCredentialsValue.EncryptedPassword = credentialsInboundBackChannelAuthHttpBasicCredentialsAttrs["encrypted_password"].(types.String).ValueStringPointer()
+				credentialsInboundBackChannelAuthHttpBasicCredentialsValue.Password = credentialsInboundBackChannelAuthHttpBasicCredentialsAttrs["password"].(types.String).ValueStringPointer()
+				credentialsInboundBackChannelAuthHttpBasicCredentialsValue.Username = credentialsInboundBackChannelAuthHttpBasicCredentialsAttrs["username"].(types.String).ValueStringPointer()
+				credentialsInboundBackChannelAuthValue.HttpBasicCredentials = credentialsInboundBackChannelAuthHttpBasicCredentialsValue
+			}
+			credentialsInboundBackChannelAuthValue.RequireSsl = credentialsInboundBackChannelAuthAttrs["require_ssl"].(types.Bool).ValueBoolPointer()
+			credentialsInboundBackChannelAuthValue.Type = "INBOUND"
+			credentialsInboundBackChannelAuthValue.VerificationIssuerDN = credentialsInboundBackChannelAuthAttrs["verification_issuer_dn"].(types.String).ValueStringPointer()
+			credentialsInboundBackChannelAuthValue.VerificationSubjectDN = credentialsInboundBackChannelAuthAttrs["verification_subject_dn"].(types.String).ValueStringPointer()
+			credentialsValue.InboundBackChannelAuth = credentialsInboundBackChannelAuthValue
 		}
+		credentialsValue.KeyTransportAlgorithm = credentialsAttrs["key_transport_algorithm"].(types.String).ValueStringPointer()
+		if !credentialsAttrs["outbound_back_channel_auth"].IsNull() && !credentialsAttrs["outbound_back_channel_auth"].IsUnknown() {
+			credentialsOutboundBackChannelAuthValue := &client.OutboundBackChannelAuth{}
+			credentialsOutboundBackChannelAuthAttrs := credentialsAttrs["outbound_back_channel_auth"].(types.Object).Attributes()
+			credentialsOutboundBackChannelAuthValue.DigitalSignature = credentialsOutboundBackChannelAuthAttrs["digital_signature"].(types.Bool).ValueBoolPointer()
+			if !credentialsOutboundBackChannelAuthAttrs["http_basic_credentials"].IsNull() && !credentialsOutboundBackChannelAuthAttrs["http_basic_credentials"].IsUnknown() {
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue := &client.UsernamePasswordCredentials{}
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrs := credentialsOutboundBackChannelAuthAttrs["http_basic_credentials"].(types.Object).Attributes()
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue.EncryptedPassword = credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrs["encrypted_password"].(types.String).ValueStringPointer()
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue.Password = credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrs["password"].(types.String).ValueStringPointer()
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue.Username = credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrs["username"].(types.String).ValueStringPointer()
+				credentialsOutboundBackChannelAuthValue.HttpBasicCredentials = credentialsOutboundBackChannelAuthHttpBasicCredentialsValue
+			}
+			if !credentialsOutboundBackChannelAuthAttrs["ssl_auth_key_pair_ref"].IsNull() && !credentialsOutboundBackChannelAuthAttrs["ssl_auth_key_pair_ref"].IsUnknown() {
+				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue := &client.ResourceLink{}
+				credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrs := credentialsOutboundBackChannelAuthAttrs["ssl_auth_key_pair_ref"].(types.Object).Attributes()
+				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue.Id = credentialsOutboundBackChannelAuthSslAuthKeyPairRefAttrs["id"].(types.String).ValueString()
+				credentialsOutboundBackChannelAuthValue.SslAuthKeyPairRef = credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue
+			}
+			credentialsOutboundBackChannelAuthValue.Type = "OUTBOUND"
+			credentialsOutboundBackChannelAuthValue.ValidatePartnerCert = credentialsOutboundBackChannelAuthAttrs["validate_partner_cert"].(types.Bool).ValueBoolPointer()
+			credentialsValue.OutboundBackChannelAuth = credentialsOutboundBackChannelAuthValue
+		}
+		if !credentialsAttrs["secondary_decryption_key_pair_ref"].IsNull() && !credentialsAttrs["secondary_decryption_key_pair_ref"].IsUnknown() {
+			credentialsSecondaryDecryptionKeyPairRefValue := &client.ResourceLink{}
+			credentialsSecondaryDecryptionKeyPairRefAttrs := credentialsAttrs["secondary_decryption_key_pair_ref"].(types.Object).Attributes()
+			credentialsSecondaryDecryptionKeyPairRefValue.Id = credentialsSecondaryDecryptionKeyPairRefAttrs["id"].(types.String).ValueString()
+			credentialsValue.SecondaryDecryptionKeyPairRef = credentialsSecondaryDecryptionKeyPairRefValue
+		}
+		if !credentialsAttrs["signing_settings"].IsNull() && !credentialsAttrs["signing_settings"].IsUnknown() {
+			credentialsSigningSettingsValue := &client.SigningSettings{}
+			credentialsSigningSettingsAttrs := credentialsAttrs["signing_settings"].(types.Object).Attributes()
+			credentialsSigningSettingsValue.Algorithm = credentialsSigningSettingsAttrs["algorithm"].(types.String).ValueStringPointer()
+			if !credentialsSigningSettingsAttrs["alternative_signing_key_pair_refs"].IsNull() && !credentialsSigningSettingsAttrs["alternative_signing_key_pair_refs"].IsUnknown() {
+				credentialsSigningSettingsValue.AlternativeSigningKeyPairRefs = []client.ResourceLink{}
+				for _, alternativeSigningKeyPairRefsElement := range credentialsSigningSettingsAttrs["alternative_signing_key_pair_refs"].(types.Set).Elements() {
+					alternativeSigningKeyPairRefsValue := client.ResourceLink{}
+					alternativeSigningKeyPairRefsAttrs := alternativeSigningKeyPairRefsElement.(types.Object).Attributes()
+					alternativeSigningKeyPairRefsValue.Id = alternativeSigningKeyPairRefsAttrs["id"].(types.String).ValueString()
+					credentialsSigningSettingsValue.AlternativeSigningKeyPairRefs = append(credentialsSigningSettingsValue.AlternativeSigningKeyPairRefs, alternativeSigningKeyPairRefsValue)
+				}
+			}
+			credentialsSigningSettingsValue.IncludeCertInSignature = credentialsSigningSettingsAttrs["include_cert_in_signature"].(types.Bool).ValueBoolPointer()
+			credentialsSigningSettingsValue.IncludeRawKeyInSignature = credentialsSigningSettingsAttrs["include_raw_key_in_signature"].(types.Bool).ValueBoolPointer()
+			credentialsSigningSettingsSigningKeyPairRefValue := client.ResourceLink{}
+			credentialsSigningSettingsSigningKeyPairRefAttrs := credentialsSigningSettingsAttrs["signing_key_pair_ref"].(types.Object).Attributes()
+			credentialsSigningSettingsSigningKeyPairRefValue.Id = credentialsSigningSettingsSigningKeyPairRefAttrs["id"].(types.String).ValueString()
+			credentialsSigningSettingsValue.SigningKeyPairRef = credentialsSigningSettingsSigningKeyPairRefValue
+			credentialsValue.SigningSettings = credentialsSigningSettingsValue
+		}
+		credentialsValue.VerificationIssuerDN = credentialsAttrs["verification_issuer_dn"].(types.String).ValueStringPointer()
+		credentialsValue.VerificationSubjectDN = credentialsAttrs["verification_subject_dn"].(types.String).ValueStringPointer()
+		addRequest.Credentials = credentialsValue
 	}
 
 	// contact_info
@@ -2530,8 +2632,6 @@ func addOptionalIdpSpconnectionFields(_ context.Context, addRequest *client.SpCo
 		outboundProvisionValue.Type = outboundProvisionAttrs["type"].(types.String).ValueString()
 		addRequest.OutboundProvision = outboundProvisionValue
 	}
-
-	return respDiags
 }
 
 func (state *idpSpConnectionModel) getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex int) types.Object {
@@ -3961,10 +4061,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	addOptionalIdpSpconnectionFields(createIdpSpconnection, plan)
 
 	apiCreateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.CreateSpConnection(config.AuthContext(ctx, r.providerConfig))
 	apiCreateIdpSpconnection = apiCreateIdpSpconnection.Body(*createIdpSpconnection)
@@ -4025,10 +4122,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
-	resp.Diagnostics.Append(addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	addOptionalIdpSpconnectionFields(createUpdateRequest, plan)
 
 	updateIdpSpconnection = updateIdpSpconnection.Body(*createUpdateRequest)
 	updateIdpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnectionExecute(updateIdpSpconnection)

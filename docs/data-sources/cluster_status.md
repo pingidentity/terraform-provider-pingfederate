@@ -26,7 +26,7 @@ data "pingfederate_cluster_status" "clusterStatus" {
 - `last_config_update_time` (String) Time when the configuration of this node was last updated.
 - `last_replication_time` (String) Time when configuration changes were last replicated.
 - `mixed_mode` (Boolean) Indicates whether there is more than one version of PingFederate in the cluster.
-- `nodes` (Attributes List) List of nodes in the cluster. (see [below for nested schema](#nestedatt--nodes))
+- `nodes` (Attributes Set) List of nodes in the cluster. (see [below for nested schema](#nestedatt--nodes))
 - `replication_required` (Boolean) Indicates whether a replication is required to propagate config updates.
 
 <a id="nestedatt--nodes"></a>

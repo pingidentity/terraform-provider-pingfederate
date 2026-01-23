@@ -5,38 +5,24 @@ package keypairssslclientcsr_test
 import (
 	"fmt"
 	"io"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/config/keypairs"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
-var fileDataInitial, fileDataUpdated, fileDataCa string
-
 const signingCaId = "sslclientcsrtestca"
 
 func TestAccKeypairsSslClientCsrResponseResource(t *testing.T) {
-	fileDataInitial = os.Getenv("PF_TF_ACC_TEST_CSR_RESPONSE_1")
-	fileDataUpdated = os.Getenv("PF_TF_ACC_TEST_CSR_RESPONSE_2")
-	fileDataCa = os.Getenv("PF_TF_ACC_TEST_CA_CERTIFICATE")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
-			if fileDataInitial == "" {
-				t.Fatal("PF_TF_ACC_TEST_CSR_RESPONSE_1 must be set for TestAccKeypairsSslClientCsrResponseResource")
-			}
-			if fileDataUpdated == "" {
-				t.Fatal("PF_TF_ACC_TEST_CSR_RESPONSE_2 must be set for TestAccKeypairsSslClientCsrResponseResource")
-			}
-			if fileDataCa == "" {
-				t.Fatal("PF_TF_ACC_TEST_CA_CERTIFICATE must be set for TestAccKeypairsSslClientCsrResponseResource")
-			}
 			keypairsSslClientCsrResponse_ImportCA(t)
 		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -45,12 +31,12 @@ func TestAccKeypairsSslClientCsrResponseResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Initial CSR response import on create
-				Config: keypairsSslClientCsrResponse_HCL(fileDataInitial),
+				Config: keypairsSslClientCsrResponse_HCL(keypairs.CsrResponse1),
 				Check:  keypairsSslClientCsrResponse_CheckComputedValuesInitial(),
 			},
 			{
 				// Importing a second CSR response
-				Config: keypairsSslClientCsrResponse_HCL(fileDataUpdated),
+				Config: keypairsSslClientCsrResponse_HCL(keypairs.CsrResponse2),
 				Check:  keypairsSslClientCsrResponse_CheckComputedValuesUpdated(),
 			},
 		},
@@ -62,7 +48,7 @@ func keypairsSslClientCsrResponse_ImportCA(t *testing.T) {
 	trustCaImportReq := testClient.CertificatesCaAPI.ImportTrustedCA(acctest.TestBasicAuthContext())
 	trustCaImportReq = trustCaImportReq.Body(client.X509File{
 		Id:       utils.Pointer(signingCaId),
-		FileData: fileDataCa,
+		FileData: keypairs.TestCertificateAuthority,
 	})
 	_, httpResp, err := testClient.CertificatesCaAPI.ImportTrustedCAExecute(trustCaImportReq)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 422) {
@@ -91,18 +77,18 @@ func keypairsSslClientCsrResponse_CheckComputedValuesInitial() resource.TestChec
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckNoResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "crypto_provider"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "id", "419x9yg43rlawqwq9v6az997k"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "serial_number", "35870055780717650058227469919152395501"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "serial_number", "8770436850221969673930962783985572962"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "subject_dn", "CN=common, O=org, C=US"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "subject_alternative_names.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "issuer_dn", "CN=Example Authority, O=Example Corporation, C=US"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "valid_from", "2024-07-29T15:57:40Z"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "expires", "2025-07-29T15:57:40Z"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "valid_from", "2025-07-30T19:13:37Z"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "expires", "2045-07-25T19:13:37Z"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "key_algorithm", "RSA"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "key_size", "2048"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "signature_algorithm", "SHA256withRSA"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "version", "3"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha1_fingerprint", "3A34FEC4210B152AFDF1192B088E012E8475AE61"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha256_fingerprint", "294460C52A238B0BE701FFC0BAD142548F19C7CC6C83F2BD3982291CC0624053"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha1_fingerprint", "3449766B67B306DE781CE2C9D4C23D527D13EB04"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha256_fingerprint", "6B81F1BC63C36E41A949B4A3715135939A4511EA9658FA5BA57944AE5DCA437E"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "status", "VALID"),
 	)
 }
@@ -111,18 +97,18 @@ func keypairsSslClientCsrResponse_CheckComputedValuesUpdated() resource.TestChec
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckNoResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "crypto_provider"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "id", "419x9yg43rlawqwq9v6az997k"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "serial_number", "78860249853500415650095464700202533503"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "serial_number", "99377934021464408054402725272426356391"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "subject_dn", "CN=common, O=org, C=US"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "subject_alternative_names.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "issuer_dn", "CN=Example Authority, O=Example Corporation, C=US"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "valid_from", "2024-07-29T16:46:30Z"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "expires", "2025-07-29T16:46:30Z"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "valid_from", "2025-07-30T19:21:47Z"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "expires", "2045-07-25T19:21:47Z"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "key_algorithm", "RSA"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "key_size", "2048"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "signature_algorithm", "SHA256withRSA"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "version", "3"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha1_fingerprint", "F26E602557E3B7DFA7444904E4A28EAF94FD4F63"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha256_fingerprint", "F5C8404FA236325ED89C8814BE59627D0696388F6A20C1C691AE0300E46147A0"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha1_fingerprint", "4975FB3948D3FBD270CA25E123931BF114840EAF"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "sha256_fingerprint", "E88E5596EF241003FD2E2F702A7D832CC7F8D3FBF68F38FDF47645D83387C9C1"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_response.example", "status", "VALID"),
 	)
 }

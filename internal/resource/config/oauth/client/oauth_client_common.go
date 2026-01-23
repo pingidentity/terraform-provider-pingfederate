@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -53,7 +53,7 @@ var (
 		"logout_uris":                                     types.SetNull(types.StringType),
 		"pairwise_identifier_user_type":                   types.BoolValue(false),
 		"sector_identifier_uri":                           types.StringNull(),
-		"logout_mode":                                     types.StringNull(),
+		"logout_mode":                                     types.StringValue("NONE"),
 		"back_channel_logout_uri":                         types.StringNull(),
 		"post_logout_redirect_uris":                       types.SetNull(types.StringType),
 		"user_info_response_content_encryption_algorithm": types.StringNull(),
@@ -228,7 +228,12 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		state.PersistentGrantExpirationTime = types.Int64Null()
 		state.PersistentGrantExpirationTimeUnit = types.StringNull()
 	} else {
-		state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
+		// Conditional Check for PingFederate version 11.3
+		if state.PersistentGrantExpirationType.ValueString() == "SERVER_DEFAULT" && r.PersistentGrantExpirationTime == nil {
+			state.PersistentGrantExpirationTime = types.Int64Value(0)
+		} else {
+			state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
+		}
 		if r.GetPersistentGrantExpirationTimeUnit() == "" {
 			state.PersistentGrantExpirationTimeUnit = types.StringValue("DAYS")
 		} else {

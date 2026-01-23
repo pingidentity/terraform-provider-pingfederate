@@ -62,26 +62,39 @@ func TestAccClusterSettings_MinimalMaximal(t *testing.T) {
 
 // Minimal HCL with only required values set
 func clusterSettings_MinimalHCL() string {
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_cluster_settings" "example" {
 }
-`)
+`
 }
 
 // Maximal HCL with all values set where possible
 func clusterSettings_CompleteHCL() string {
+	var versionedHcl string
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		versionedHcl = `
+		  replicate_log_settings_on_save = true
+		  `
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_cluster_settings" "example" {
   replicate_clients_on_save     = true
   replicate_connections_on_save = true
+  %s
 }
-`)
+`, versionedHcl)
 }
 
 // Validate any computed values when applying minimal HCL
 func clusterSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
+	testChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_cluster_settings.example", "replicate_clients_on_save", "false"),
 		resource.TestCheckResourceAttr("pingfederate_cluster_settings.example", "replicate_connections_on_save", "false"),
-	)
+	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr("pingfederate_cluster_settings.example", "replicate_connections_on_save", "false"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(testChecks...)
 }

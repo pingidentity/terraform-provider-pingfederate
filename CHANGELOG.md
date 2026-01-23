@@ -1,7 +1,33 @@
-# v1.6.0 (Unreleased)
+# v1.7.0 (Unreleased)
+### Enhancements
+* Added support for PingFederate `13.0.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, `12.2`, and `12.3`. ([#561]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/561)))
+
 ### Resources
 * **New Resource:** `pingfederate_oauth_token_exchange_processor_policy` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
 * **New Resource:** `pingfederate_oauth_token_exchange_processor_settings` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
+
+# v1.6.2 September 19, 2025
+### Bug fixes
+* Updated many attributes that were implemented as ordered lists to instead be implemented as unordered sets, to better reflect the behavior of the PingFederate API. ([#544]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/544)))
+
+# v1.6.1 August 20, 2025
+### Bug fixes
+* Fixed an inconsistent result error that would occur when configuring OAuth Clients with no `persistent_grant_expiration_time` supplied in the `pingfederate_oauth_client` resource for PF version `11.3`. ([#531]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/531)))
+
+# v1.6.0 July 23, 2025
+### Enhancements
+* Added support for PingFederate `12.3.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, and `12.2`. ([#528]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/528)))
+
+### Breaking changes
+* Removed support for PingFederate `11.2.x`, in accordance with Ping's [end of life policy](https://support.pingidentity.com/s/article/Ping-Identity-EOL-Tracker). ([#529]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/529)))
+
+### Resources
+* **New Resource:** `pingfederate_oauth_out_of_band_auth_plugin` ([#331](https://github.com/pingidentity/terraform-provider-pingfederate/pull/331))
+* **New Resource:** `pingfederate_oauth_resource_owner_credentials_mapping` ([#327](https://github.com/pingidentity/terraform-provider-pingfederate/pull/327))
+
+### Bug fixes
+* Fixed an issue where the `idp_browser_sso.sso_application_endpoint` attribute in `pingfederate_sp_idp_connection` could cause repeated plans after a successful `terraform apply`. ([#527](https://github.com/pingidentity/terraform-provider-pingfederate/pull/527))
+* Warn rather than fail when the provider is unable to delete a `pingfederate_keypairs_ssl_server_key` resource due to the key being in use ([#523](https://github.com/pingidentity/terraform-provider-pingfederate/pull/523))
 
 # v1.5.0 May 28, 2025
 ### Enhancements
@@ -254,7 +280,7 @@ As this is the first major release of the provider, there are breaking changes f
 
 ### Bug Fixes
 * Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.
-* Fixed config validation error when using variables for password and username in the `pingfederate_kerberos_realm` resource. 
+* Fixed config validation error when using variables for password and username in the `pingfederate_kerberos_realm` resource.
 
 # v0.13.0 August 1, 2024
 ### Resources
@@ -373,8 +399,8 @@ As this is the first major release of the provider, there are breaking changes f
 
 ### BUG FIXES
 * **Server Settings Log Settings Resource:** Fixed provider errors when not specifying all log categories in the server log settings ([#164](https://github.com/pingidentity/terraform-provider-pingfederate/pull/164))
-* **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
-* **Resource Link Update:** Resolved issue where updating a ResourceLink type in resources resulted in an invalid apply ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159)) 
+* **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156))
+* **Resource Link Update:** Resolved issue where updating a ResourceLink type in resources resulted in an invalid apply ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159))
 
 ### FEATURES
 * Added support for PingFederate version `11.3` and full support for all `11.2.x` versions ([#149](https://github.com/pingidentity/terraform-provider-pingfederate/pull/149))
@@ -433,7 +459,7 @@ As this is the first major release of the provider, there are breaking changes f
 
 # v0.2.1 November 10, 2023
 ### BUG FIXES
-* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
+* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86))
 ### ENHANCEMENTS
 * Include values computed from PingFederate in provider state ([#72](https://github.com/pingidentity/terraform-provider-pingfederate/pull/72))
 * Use lists instead of sets in most cases ([#81](https://github.com/pingidentity/terraform-provider-pingfederate/pull/81))

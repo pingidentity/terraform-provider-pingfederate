@@ -4,7 +4,6 @@ package serversettingslogsettings
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -16,12 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -70,8 +68,9 @@ type serverSettingsLoggingResource struct {
 }
 
 type serverSettingsLoggingResourceModel struct {
-	LogCategories    types.Set `tfsdk:"log_categories"`
-	LogCategoriesAll types.Set `tfsdk:"log_categories_all"`
+	LogCategories          types.Set   `tfsdk:"log_categories"`
+	LogCategoriesAll       types.Set   `tfsdk:"log_categories_all"`
+	VerboseLoggingLifetime types.Int64 `tfsdk:"verbose_logging_lifetime"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -150,25 +149,56 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 					},
 				},
 			},
+			"verbose_logging_lifetime": schema.Int64Attribute{
+				Description: "The lifetime that verbose logging will be enabled for log settings categories. The time period is specified in minutes. Supported in PingFederate `13.0` and later.",
+				Optional:    true,
+			},
 		},
 	}
 	resp.Schema = schema
 }
 
-func addOptionalServerSettingsLoggingFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLoggingResourceModel) error {
-	if internaltypes.IsDefined(plan.LogCategories) {
-		addRequest.LogCategories = []client.LogCategorySettings{}
-		for _, logCategoriesSetting := range plan.LogCategories.Elements() {
-			unmarshalled := client.LogCategorySettings{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(logCategoriesSetting, false)), &unmarshalled)
-			if err != nil {
-				return err
-			}
-			addRequest.LogCategories = append(addRequest.LogCategories, unmarshalled)
+func (r *serverSettingsLoggingResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 13.0.0 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1300)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1300 := compare >= 0
+	var plan *serverSettingsLoggingResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if plan == nil {
+		return
+	}
+
+	// If verbose_logging_lifetime is set by the user and the PF version is not new enough, throw an error
+	if !pfVersionAtLeast1300 {
+		if internaltypes.IsDefined(plan.VerboseLoggingLifetime) {
+			version.AddUnsupportedAttributeError("verbose_logging_lifetime",
+				r.providerConfig.ProductVersion, version.PingFederate1300, &resp.Diagnostics)
 		}
 	}
-	return nil
+}
 
+func addOptionalServerSettingsLoggingFields(addRequest *client.LogSettings, model serverSettingsLoggingResourceModel) {
+	// log_categories
+	if !model.LogCategories.IsNull() && !model.LogCategories.IsUnknown() {
+		addRequest.LogCategories = []client.LogCategorySettings{}
+		for _, logCategoriesElement := range model.LogCategories.Elements() {
+			logCategoriesValue := client.LogCategorySettings{}
+			logCategoriesAttrs := logCategoriesElement.(types.Object).Attributes()
+			logCategoriesValue.Description = logCategoriesAttrs["description"].(types.String).ValueStringPointer()
+			logCategoriesValue.Enabled = logCategoriesAttrs["enabled"].(types.Bool).ValueBoolPointer()
+			logCategoriesValue.Id = logCategoriesAttrs["id"].(types.String).ValueString()
+			logCategoriesValue.Name = logCategoriesAttrs["name"].(types.String).ValueStringPointer()
+			addRequest.LogCategories = append(addRequest.LogCategories, logCategoriesValue)
+		}
+	}
+	// verbose_logging_lifetime
+	if !model.VerboseLoggingLifetime.IsNull() && !model.VerboseLoggingLifetime.IsUnknown() {
+		addRequest.VerboseLoggingLifetime = model.VerboseLoggingLifetime.ValueInt64Pointer()
+	}
 }
 
 // Metadata returns the resource type name.
@@ -223,6 +253,9 @@ func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.Lo
 	}
 	state.LogCategoriesAll, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, unplannedCategories)
 	diags.Append(respDiags...)
+
+	// verbose_logging_lifetime
+	state.VerboseLoggingLifetime = types.Int64PointerValue(r.VerboseLoggingLifetime)
 	return diags
 }
 
@@ -236,11 +269,7 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 	}
 
 	createServerSettingsLogging := client.NewLogSettings()
-	err := addOptionalServerSettingsLoggingFields(ctx, createServerSettingsLogging, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
-		return
-	}
+	addOptionalServerSettingsLoggingFields(createServerSettingsLogging, plan)
 
 	apiCreateServerSettingsLogging := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsLogging = apiCreateServerSettingsLogging.Body(*createServerSettingsLogging)
@@ -302,11 +331,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 
 	updateServerSettingsLogging := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLogSettings()
-	err := addOptionalServerSettingsLoggingFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
-		return
-	}
+	addOptionalServerSettingsLoggingFields(createUpdateRequest, plan)
 
 	updateServerSettingsLogging = updateServerSettingsLogging.Body(*createUpdateRequest)
 	updateServerSettingsLoggingResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateLogSettingsExecute(updateServerSettingsLogging)

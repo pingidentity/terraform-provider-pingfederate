@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 )
 
 func ToDataSourceState(con context.Context, configuration *client.PluginConfiguration) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	fieldsAttrValue, respDiags := types.ListValueFrom(con, types.ObjectType{AttrTypes: fieldAttrTypes}, configuration.Fields)
+	fieldsAttrValue, respDiags := types.SetValueFrom(con, types.ObjectType{AttrTypes: fieldAttrTypes}, configuration.Fields)
 	diags.Append(respDiags...)
 	tablesAttrValue, respDiags := types.ListValueFrom(con, types.ObjectType{AttrTypes: tableAttrTypes}, configuration.Tables)
 	diags.Append(respDiags...)

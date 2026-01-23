@@ -4,7 +4,6 @@ package datastore
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -25,9 +24,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
@@ -296,14 +294,14 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 		},
 		"client_tls_certificate_ref": schema.SingleNestedAttribute{
 			Optional:    true,
-			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later. In order to use this authentication method, you must set either `use_start_tls` or `use_ssl` to `true`. Mutually exclusive with `bind_anonymously` and `user_dn`",
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. In order to use this authentication method, you must set either `use_start_tls` or `use_ssl` to `true`. Mutually exclusive with `bind_anonymously` and `user_dn`",
 			Attributes:  resourcelink.ToSchema(),
 		},
 		"retry_failed_operations": schema.BoolAttribute{
-			Description: "Indicates whether failed operations should be retried. The default is `false`. Supported in PF version `11.3` or later.",
+			Description: "Indicates whether failed operations should be retried. The default is `false`.",
 			Computed:    true,
 			Optional:    true,
-			// The default is set in ModifyPlan, since it is dependent on PF version 11.3+
+			Default:     booldefault.StaticBool(false),
 		},
 	}
 
@@ -479,11 +477,11 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 		"client_tls_certificate_ref": datasourceschema.SingleNestedAttribute{
 			Computed:    true,
 			Optional:    false,
-			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later.",
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates.",
 			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 		},
 		"retry_failed_operations": datasourceschema.BoolAttribute{
-			Description: "Indicates whether failed operations should be retried. Supported in PF version `11.3` or later.",
+			Description: "Indicates whether failed operations should be retried.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -675,7 +673,7 @@ func readLdapDataStoreResponse(ctx context.Context, r *client.DataStoreAggregati
 	return diags
 }
 
-func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.LdapDataStore, plan dataStoreModel) error {
+func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, plan dataStoreModel) {
 	ldapDataStorePlan := plan.LdapDataStore.Attributes()
 
 	if internaltypes.IsDefined(plan.MaskAttributeValues) {
@@ -791,12 +789,18 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.MaxWait = ldapDataStorePlan["max_wait"].(types.Int64).ValueInt64Pointer()
 	}
 
-	hostnamesTags, ok := ldapDataStorePlan["hostnames_tags"]
-	if ok {
+	if !ldapDataStorePlan["hostnames_tags"].IsNull() && !ldapDataStorePlan["hostnames_tags"].IsUnknown() {
 		addRequest.LdapDataStore.HostnamesTags = []client.LdapTagConfig{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(hostnamesTags, true)), &addRequest.LdapDataStore.HostnamesTags)
-		if err != nil {
-			return err
+		for _, hostnamesTagsElement := range ldapDataStorePlan["hostnames_tags"].(types.Set).Elements() {
+			hostnamesTagsValue := client.LdapTagConfig{}
+			hostnamesTagsAttrs := hostnamesTagsElement.(types.Object).Attributes()
+			hostnamesTagsValue.DefaultSource = hostnamesTagsAttrs["default_source"].(types.Bool).ValueBoolPointer()
+			hostnamesTagsValue.Hostnames = []string{}
+			for _, hostnamesElement := range hostnamesTagsAttrs["hostnames"].(types.List).Elements() {
+				hostnamesTagsValue.Hostnames = append(hostnamesTagsValue.Hostnames, hostnamesElement.(types.String).ValueString())
+			}
+			hostnamesTagsValue.Tags = hostnamesTagsAttrs["tags"].(types.String).ValueStringPointer()
+			addRequest.LdapDataStore.HostnamesTags = append(addRequest.LdapDataStore.HostnamesTags, hostnamesTagsValue)
 		}
 	}
 
@@ -815,21 +819,17 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.FollowLDAPReferrals = followLdapReferrals.(types.Bool).ValueBoolPointer()
 	}
 
-	clientTlsCertificateRef, ok := ldapDataStorePlan["client_tls_certificate_ref"]
-	if ok {
-		ref, err := resourcelink.ClientStruct(clientTlsCertificateRef.(types.Object))
-		if err != nil {
-			return err
-		}
-		addRequest.LdapDataStore.ClientTlsCertificateRef = ref
+	if !ldapDataStorePlan["client_tls_certificate_ref"].IsNull() && !ldapDataStorePlan["client_tls_certificate_ref"].IsUnknown() {
+		ldapDataStoreClientTlsCertificateRefValue := &client.ResourceLink{}
+		ldapDataStoreClientTlsCertificateRefAttrs := ldapDataStorePlan["client_tls_certificate_ref"].(types.Object).Attributes()
+		ldapDataStoreClientTlsCertificateRefValue.Id = ldapDataStoreClientTlsCertificateRefAttrs["id"].(types.String).ValueString()
+		addRequest.LdapDataStore.ClientTlsCertificateRef = ldapDataStoreClientTlsCertificateRefValue
 	}
 
 	retryFailedOperations, ok := ldapDataStorePlan["retry_failed_operations"]
 	if ok {
 		addRequest.LdapDataStore.RetryFailedOperations = retryFailedOperations.(types.Bool).ValueBoolPointer()
 	}
-
-	return nil
 }
 
 func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
@@ -839,11 +839,7 @@ func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	ldapPlan := plan.LdapDataStore.Attributes()
 	ldapType := ldapPlan["ldap_type"].(types.String).ValueString()
 	createLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
-	err = addOptionalLdapDataStoreFields(createLdapDataStore, con, client.LdapDataStore{}, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
-		return
-	}
+	addOptionalLdapDataStoreFields(createLdapDataStore, plan)
 
 	response, httpResponse, err := createDataStore(createLdapDataStore, dsr, con, resp)
 	if err != nil {
@@ -866,11 +862,7 @@ func updateLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	ldapPlan := plan.LdapDataStore.Attributes()
 	ldapType := ldapPlan["ldap_type"].(types.String).ValueString()
 	updateLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
-	err = addOptionalLdapDataStoreFields(updateLdapDataStore, con, client.LdapDataStore{}, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the DataStore: "+err.Error())
-		return
-	}
+	addOptionalLdapDataStoreFields(updateLdapDataStore, plan)
 
 	response, httpResponse, err := updateDataStore(updateLdapDataStore, dsr, con, resp, plan.DataStoreId.ValueString())
 	if err != nil {

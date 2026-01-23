@@ -4,7 +4,6 @@ package redirectvalidation
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -12,13 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -58,22 +56,22 @@ var (
 		"enable_target_resource_validation_for_slo":           types.BoolType,
 		"enable_target_resource_validation_for_idp_discovery": types.BoolType,
 		"enable_in_error_resource_validation":                 types.BoolType,
-		"white_list":                                          types.ListType{ElemType: types.ObjectType{AttrTypes: whiteListAttrTypes}},
-		"uri_allow_list":                                      types.ListType{ElemType: types.ObjectType{AttrTypes: uriAllowListAttrTypes}},
+		"white_list":                                          types.SetType{ElemType: types.ObjectType{AttrTypes: whiteListAttrTypes}},
+		"uri_allow_list":                                      types.SetType{ElemType: types.ObjectType{AttrTypes: uriAllowListAttrTypes}},
 	}
 
 	redirectValidationPartnerSettingsAttrTypes = map[string]attr.Type{
 		"enable_wreply_validation_slo": types.BoolType,
 	}
 
-	whiteListDefault, _                       = types.ListValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, nil)
+	whiteListDefault, _                       = types.SetValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, nil)
 	redirectValidationLocalSettingsDefault, _ = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, map[string]attr.Value{
 		"enable_target_resource_validation_for_sso":           types.BoolValue(false),
 		"enable_target_resource_validation_for_slo":           types.BoolValue(false),
 		"enable_target_resource_validation_for_idp_discovery": types.BoolValue(false),
 		"enable_in_error_resource_validation":                 types.BoolValue(false),
 		"white_list":                                          whiteListDefault,
-		"uri_allow_list":                                      types.ListNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes}),
+		"uri_allow_list":                                      types.SetNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes}),
 	})
 
 	redirectValidationPartnerSettingsDefault, _ = types.ObjectValue(redirectValidationPartnerSettingsAttrTypes, map[string]attr.Value{
@@ -127,11 +125,11 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
-					"white_list": schema.ListNestedAttribute{
+					"white_list": schema.SetNestedAttribute{
 						Description: "List of URLs that are designated as valid target resources.",
 						Computed:    true,
 						Optional:    true,
-						Default:     listdefault.StaticValue(whiteListDefault),
+						Default:     setdefault.StaticValue(whiteListDefault),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
@@ -186,7 +184,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 							},
 						},
 					},
-					"uri_allow_list": schema.ListNestedAttribute{
+					"uri_allow_list": schema.SetNestedAttribute{
 						Description: "List of URIs that are designated as valid target resources.",
 						Optional:    true,
 						Computed:    true,
@@ -278,7 +276,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 				version.AddUnsupportedAttributeError("redirect_validation_local_settings.uri_allow_list",
 					r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
 			} else if uriAllowList.IsUnknown() {
-				localSettingsAttrs["uri_allow_list"] = types.ListNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes})
+				localSettingsAttrs["uri_allow_list"] = types.SetNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes})
 				localSettingsModified = true
 			}
 		}
@@ -286,7 +284,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 		localSettingsAttrs = plan.RedirectValidationLocalSettings.Attributes()
 		if localSettingsAttrs["uri_allow_list"].IsUnknown() {
 			// Default to empty list
-			localSettingsAttrs["uri_allow_list"], diags = types.ListValue(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil)
+			localSettingsAttrs["uri_allow_list"], diags = types.SetValue(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil)
 			resp.Diagnostics.Append(diags...)
 			localSettingsModified = true
 		}
@@ -299,22 +297,55 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	}
 }
 
-func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationModel) error {
-	if internaltypes.IsDefined(plan.RedirectValidationLocalSettings) {
-		addRequest.RedirectValidationLocalSettings = client.NewRedirectValidationLocalSettings()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationLocalSettings, true)), addRequest.RedirectValidationLocalSettings)
-		if err != nil {
-			return err
+func addOptionalRedirectValidationFields(addRequest *client.RedirectValidationSettings, model redirectValidationModel) {
+	// redirect_validation_local_settings
+	if !model.RedirectValidationLocalSettings.IsNull() && !model.RedirectValidationLocalSettings.IsUnknown() {
+		redirectValidationLocalSettingsValue := &client.RedirectValidationLocalSettings{}
+		redirectValidationLocalSettingsAttrs := model.RedirectValidationLocalSettings.Attributes()
+		redirectValidationLocalSettingsValue.EnableInErrorResourceValidation = redirectValidationLocalSettingsAttrs["enable_in_error_resource_validation"].(types.Bool).ValueBoolPointer()
+		redirectValidationLocalSettingsValue.EnableTargetResourceValidationForIdpDiscovery = redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_idp_discovery"].(types.Bool).ValueBoolPointer()
+		redirectValidationLocalSettingsValue.EnableTargetResourceValidationForSLO = redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_slo"].(types.Bool).ValueBoolPointer()
+		redirectValidationLocalSettingsValue.EnableTargetResourceValidationForSSO = redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_sso"].(types.Bool).ValueBoolPointer()
+		if !redirectValidationLocalSettingsAttrs["uri_allow_list"].IsNull() && !redirectValidationLocalSettingsAttrs["uri_allow_list"].IsUnknown() {
+			redirectValidationLocalSettingsValue.UriAllowList = []client.RedirectValidationSettingsUriAllowlistEntry{}
+			for _, uriAllowListElement := range redirectValidationLocalSettingsAttrs["uri_allow_list"].(types.Set).Elements() {
+				uriAllowListValue := client.RedirectValidationSettingsUriAllowlistEntry{}
+				uriAllowListAttrs := uriAllowListElement.(types.Object).Attributes()
+				uriAllowListValue.AllowQueryAndFragment = uriAllowListAttrs["allow_query_and_fragment"].(types.Bool).ValueBoolPointer()
+				uriAllowListValue.IdpDiscovery = uriAllowListAttrs["idp_discovery"].(types.Bool).ValueBoolPointer()
+				uriAllowListValue.InErrorResource = uriAllowListAttrs["in_error_resource"].(types.Bool).ValueBoolPointer()
+				uriAllowListValue.TargetResourceSLO = uriAllowListAttrs["target_resource_slo"].(types.Bool).ValueBoolPointer()
+				uriAllowListValue.TargetResourceSSO = uriAllowListAttrs["target_resource_sso"].(types.Bool).ValueBoolPointer()
+				uriAllowListValue.ValidUri = uriAllowListAttrs["valid_uri"].(types.String).ValueString()
+				redirectValidationLocalSettingsValue.UriAllowList = append(redirectValidationLocalSettingsValue.UriAllowList, uriAllowListValue)
+			}
 		}
-	}
-	if internaltypes.IsDefined(plan.RedirectValidationPartnerSettings) {
-		addRequest.RedirectValidationPartnerSettings = client.NewRedirectValidationPartnerSettings()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationPartnerSettings, false)), addRequest.RedirectValidationPartnerSettings)
-		if err != nil {
-			return err
+		if !redirectValidationLocalSettingsAttrs["white_list"].IsNull() && !redirectValidationLocalSettingsAttrs["white_list"].IsUnknown() {
+			redirectValidationLocalSettingsValue.WhiteList = []client.RedirectValidationSettingsWhitelistEntry{}
+			for _, whiteListElement := range redirectValidationLocalSettingsAttrs["white_list"].(types.Set).Elements() {
+				whiteListValue := client.RedirectValidationSettingsWhitelistEntry{}
+				whiteListAttrs := whiteListElement.(types.Object).Attributes()
+				whiteListValue.AllowQueryAndFragment = whiteListAttrs["allow_query_and_fragment"].(types.Bool).ValueBoolPointer()
+				whiteListValue.IdpDiscovery = whiteListAttrs["idp_discovery"].(types.Bool).ValueBoolPointer()
+				whiteListValue.InErrorResource = whiteListAttrs["in_error_resource"].(types.Bool).ValueBoolPointer()
+				whiteListValue.RequireHttps = whiteListAttrs["require_https"].(types.Bool).ValueBoolPointer()
+				whiteListValue.TargetResourceSLO = whiteListAttrs["target_resource_slo"].(types.Bool).ValueBoolPointer()
+				whiteListValue.TargetResourceSSO = whiteListAttrs["target_resource_sso"].(types.Bool).ValueBoolPointer()
+				whiteListValue.ValidDomain = whiteListAttrs["valid_domain"].(types.String).ValueString()
+				whiteListValue.ValidPath = whiteListAttrs["valid_path"].(types.String).ValueStringPointer()
+				redirectValidationLocalSettingsValue.WhiteList = append(redirectValidationLocalSettingsValue.WhiteList, whiteListValue)
+			}
 		}
+		addRequest.RedirectValidationLocalSettings = redirectValidationLocalSettingsValue
 	}
-	return nil
+
+	// redirect_validation_partner_settings
+	if !model.RedirectValidationPartnerSettings.IsNull() && !model.RedirectValidationPartnerSettings.IsUnknown() {
+		redirectValidationPartnerSettingsValue := &client.RedirectValidationPartnerSettings{}
+		redirectValidationPartnerSettingsAttrs := model.RedirectValidationPartnerSettings.Attributes()
+		redirectValidationPartnerSettingsValue.EnableWreplyValidationSLO = redirectValidationPartnerSettingsAttrs["enable_wreply_validation_slo"].(types.Bool).ValueBoolPointer()
+		addRequest.RedirectValidationPartnerSettings = redirectValidationPartnerSettingsValue
+	}
 
 }
 
@@ -365,11 +396,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	createRedirectValidation := client.NewRedirectValidationSettings()
-	err := addOptionalRedirectValidationFields(ctx, createRedirectValidation, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
-		return
-	}
+	addOptionalRedirectValidationFields(createRedirectValidation, plan)
 
 	apiCreateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRedirectValidation = apiCreateRedirectValidation.Body(*createRedirectValidation)
@@ -427,11 +454,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 
 	updateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewRedirectValidationSettings()
-	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Redirect Validation: "+err.Error())
-		return
-	}
+	addOptionalRedirectValidationFields(createUpdateRequest, plan)
 
 	updateRedirectValidation = updateRedirectValidation.Body(*createUpdateRequest)
 	updateRedirectValidationResponse, httpResp, err := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettingsExecute(updateRedirectValidation)

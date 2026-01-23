@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -132,7 +132,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 							),
 						},
 					},
-					"subject_alternative_names": schema.ListAttribute{
+					"subject_alternative_names": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Description: "The subject alternative names (SAN).",
@@ -262,7 +262,7 @@ func (state *metadataUrlResourceModel) readClientResponse(response *client.Metad
 		"sha256_fingerprint":        types.StringType,
 		"signature_algorithm":       types.StringType,
 		"status":                    types.StringType,
-		"subject_alternative_names": types.ListType{ElemType: types.StringType},
+		"subject_alternative_names": types.SetType{ElemType: types.StringType},
 		"subject_dn":                types.StringType,
 		"valid_from":                types.StringType,
 		"version":                   types.Int64Type,
@@ -271,7 +271,7 @@ func (state *metadataUrlResourceModel) readClientResponse(response *client.Metad
 	if response.CertView == nil {
 		certViewValue = types.ObjectNull(certViewAttrTypes)
 	} else {
-		certViewSubjectAlternativeNamesValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.CertView.SubjectAlternativeNames)
+		certViewSubjectAlternativeNamesValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.CertView.SubjectAlternativeNames)
 		respDiags.Append(diags...)
 		var expires types.String
 		if response.CertView.Expires != nil {

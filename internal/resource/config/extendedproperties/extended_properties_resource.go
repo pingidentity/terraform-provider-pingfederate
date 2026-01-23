@@ -4,7 +4,6 @@ package extendedproperties
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,10 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -86,20 +83,19 @@ func (r *extendedPropertiesResource) Schema(ctx context.Context, req resource.Sc
 	resp.Schema = schema
 }
 
-func addExtendedPropertiesFields(ctx context.Context, addRequest *client.ExtendedProperties, plan extendedPropertiesResourceModel) error {
-
-	addRequest.Items = []client.ExtendedProperty{}
-	for _, coreAttribute := range plan.Items.Elements() {
-		unmarshalled := client.ExtendedProperty{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(coreAttribute, false)), &unmarshalled)
-		if err != nil {
-			return err
+func addExtendedPropertiesFields(addRequest *client.ExtendedProperties, plan extendedPropertiesResourceModel) {
+	// items
+	if !plan.Items.IsNull() && !plan.Items.IsUnknown() {
+		addRequest.Items = []client.ExtendedProperty{}
+		for _, itemsElement := range plan.Items.Elements() {
+			itemsValue := client.ExtendedProperty{}
+			itemsAttrs := itemsElement.(types.Object).Attributes()
+			itemsValue.Description = itemsAttrs["description"].(types.String).ValueStringPointer()
+			itemsValue.MultiValued = itemsAttrs["multi_valued"].(types.Bool).ValueBoolPointer()
+			itemsValue.Name = itemsAttrs["name"].(types.String).ValueString()
+			addRequest.Items = append(addRequest.Items, itemsValue)
 		}
-		addRequest.Items = append(addRequest.Items, unmarshalled)
 	}
-
-	return nil
-
 }
 
 // Metadata returns the resource type name.
@@ -137,11 +133,7 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	createExtendedProperties := client.NewExtendedProperties()
-	err := addExtendedPropertiesFields(ctx, createExtendedProperties, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
-		return
-	}
+	addExtendedPropertiesFields(createExtendedProperties, plan)
 
 	apiCreateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	apiCreateExtendedProperties = apiCreateExtendedProperties.Body(*createExtendedProperties)
@@ -201,11 +193,7 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 
 	updateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewExtendedProperties()
-	err := addExtendedPropertiesFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for extended properties: "+err.Error())
-		return
-	}
+	addExtendedPropertiesFields(createUpdateRequest, plan)
 
 	updateExtendedProperties = updateExtendedProperties.Body(*createUpdateRequest)
 	updateExtendedPropertiesResponse, httpResp, err := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedPropertiesExecute(updateExtendedProperties)

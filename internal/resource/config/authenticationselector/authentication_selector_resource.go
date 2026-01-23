@@ -4,7 +4,6 @@ package authenticationselector
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -17,8 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -130,13 +128,21 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema
 }
 
-func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationSelector, plan authenticationSelectorResourceModel) error {
-	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = &client.AuthenticationSelectorAttributeContract{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
-		if err != nil {
-			return err
+func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationSelector, plan authenticationSelectorResourceModel) {
+	// attribute_contract
+	if !plan.AttributeContract.IsNull() && !plan.AttributeContract.IsUnknown() {
+		attributeContractValue := &client.AuthenticationSelectorAttributeContract{}
+		attributeContractAttrs := plan.AttributeContract.Attributes()
+		if !attributeContractAttrs["extended_attributes"].IsNull() && !attributeContractAttrs["extended_attributes"].IsUnknown() {
+			attributeContractValue.ExtendedAttributes = []client.AuthenticationSelectorAttribute{}
+			for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
+				extendedAttributesValue := client.AuthenticationSelectorAttribute{}
+				extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
+				extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
+				attributeContractValue.ExtendedAttributes = append(attributeContractValue.ExtendedAttributes, extendedAttributesValue)
+			}
 		}
+		addRequest.AttributeContract = attributeContractValue
 	}
 
 	// parent_ref
@@ -146,9 +152,6 @@ func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationS
 		parentRefValue.Id = parentRefAttrs["id"].(types.String).ValueString()
 		addRequest.ParentRef = parentRefValue
 	}
-
-	return nil
-
 }
 
 // Metadata returns the resource type name.
@@ -230,11 +233,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	}
 
 	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
-	err = addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
-		return
-	}
+	addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
 
 	apiCreateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationSelectors = apiCreateAuthenticationSelectors.Body(*createAuthenticationSelectors)
@@ -315,11 +314,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 
 	updateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), plan.SelectorId.ValueString())
 	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, *configuration)
-	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
-		return
-	}
+	addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 
 	updateAuthenticationSelectors = updateAuthenticationSelectors.Body(*createUpdateRequest)
 	updateAuthenticationSelectorsResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelectorExecute(updateAuthenticationSelectors)

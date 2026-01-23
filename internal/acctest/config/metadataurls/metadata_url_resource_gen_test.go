@@ -140,7 +140,7 @@ func metadataUrl_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.sha1_fingerprint", "9806D5E32C00461FD8F3C1790065F46603647E53"),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.sha256_fingerprint", "4C2B71B9FC9007AA669C2BCDCE5CE1A0F2BB6DB243F56881E040CF5E00CB47F3"),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.signature_algorithm", "SHA256withRSA"),
-		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.status", "VALID"),
+		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.status", "EXPIRED"),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.subject_alternative_names.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.subject_dn", "CN=common, O=org, C=us"),
 		resource.TestCheckResourceAttr("pingfederate_metadata_url.example", "cert_view.valid_from", "2024-06-24T20:49:11Z"),

@@ -82,7 +82,7 @@ func JdbcAttributeSourceDataSourceSchemaAttributes() map[string]schema.Attribute
 		Optional:    false,
 		Computed:    true,
 	}
-	jdbcAttributeSourceDataSourceSchema["column_names"] = schema.ListAttribute{
+	jdbcAttributeSourceDataSourceSchema["column_names"] = schema.SetAttribute{
 		ElementType: types.StringType,
 		Optional:    false,
 		Computed:    true,

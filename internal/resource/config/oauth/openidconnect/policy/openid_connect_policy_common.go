@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -45,6 +45,7 @@ type oauthOpenIdConnectPolicyModel struct {
 	PolicyId                          types.String `tfsdk:"policy_id"`
 	Name                              types.String `tfsdk:"name"`
 	AccessTokenManagerRef             types.Object `tfsdk:"access_token_manager_ref"`
+	AllowIdTokenIntrospection         types.Bool   `tfsdk:"allow_id_token_introspection"`
 	IdTokenLifetime                   types.Int64  `tfsdk:"id_token_lifetime"`
 	IncludeSriInIdToken               types.Bool   `tfsdk:"include_sri_in_id_token"`
 	IncludeUserInfoInIdToken          types.Bool   `tfsdk:"include_user_info_in_id_token"`
@@ -68,6 +69,7 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	state.AccessTokenManagerRef, diags = resourcelink.ToState(ctx, &response.AccessTokenManagerRef)
 	respDiags.Append(diags...)
 
+	state.AllowIdTokenIntrospection = types.BoolPointerValue(response.AllowIdTokenIntrospection)
 	state.IdTokenLifetime = types.Int64PointerValue(response.IdTokenLifetime)
 	state.IncludeSriInIdToken = types.BoolPointerValue(response.IncludeSriInIdToken)
 	state.IncludeUserInfoInIdToken = types.BoolPointerValue(response.IncludeUserInfoInIdToken)

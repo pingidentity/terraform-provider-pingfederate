@@ -32,14 +32,15 @@ data "pingfederate_openid_connect_policy" "myOIDCPolicy" {
 ### Read-Only
 
 - `access_token_manager_ref` (Attributes) The access token manager associated with this Open ID Connect policy. (see [below for nested schema](#nestedatt--access_token_manager_ref))
+- `allow_id_token_introspection` (Boolean) Determines whether the introspection endpoint should validate an ID token.
 - `attribute_contract` (Attributes) The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint. (see [below for nested schema](#nestedatt--attribute_contract))
 - `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `id` (String) ID of this resource.
 - `id_token_lifetime` (Number) The ID Token Lifetime, in minutes. The default value is 5.
-- `id_token_typ_header_value` (String) ID Token Type (typ) Header Value. Supported in PF version 11.3 or later.
+- `id_token_typ_header_value` (String) ID Token Type (typ) Header Value.
 - `include_s_hash_in_id_token` (Boolean) Determines whether the State Hash should be included in the ID token.
 - `include_user_info_in_id_token` (Boolean) Determines whether the User Info is always included in the ID token
-- `include_x5t_in_id_token` (Boolean) Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version 11.3 or later.
+- `include_x5t_in_id_token` (Boolean) Determines whether the X.509 thumbprint header should be included in the ID Token.
 - `name` (String) The name used for display in UI screens.
 - `reissue_id_token_in_hybrid_flow` (Boolean) Determines whether a new ID Token should be returned during token request of the hybrid flow.
 - `return_id_token_on_refresh_grant` (Boolean) Determines whether an ID Token should be returned when refresh grant is requested or not.
@@ -178,7 +179,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `column_names` (Set of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.

@@ -598,7 +598,7 @@ Optional:
 
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
 - `bind_anonymously` (Boolean) Whether username and password are required. If `true`, then `user_dn` and `client_tls_certificate_ref` cannot be set. The default value is `false`.
-- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later. In order to use this authentication method, you must set either `use_start_tls` or `use_ssl` to `true`. Mutually exclusive with `bind_anonymously` and `user_dn` (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
+- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. In order to use this authentication method, you must set either `use_start_tls` or `use_ssl` to `true`. Mutually exclusive with `bind_anonymously` and `user_dn` (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
 - `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of `-1` causes the pool to wait indefinitely. Defaults to `0`.
 - `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached. Default value is `false`.
 - `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached. Defaults to `0`.
@@ -614,7 +614,7 @@ Optional:
 - `name` (String) The data store name with a unique value across all data sources. Defaults to a combination of the values of `hostnames` and `user_dn`.
 - `password` (String, Sensitive) The password credential required to access the data store. Requires `user_dn` to be set. Only one of this attribute and `encrypted_password` can be set.
 - `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of `-1` causes the connection to wait indefinitely. Defaults to `0`.
-- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is `false`. Supported in PF version `11.3` or later.
+- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is `false`.
 - `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool. Default value is `false`.
 - `test_on_return` (Boolean) Indicates whether objects are validated before being returned to the pool. Default value is `false`.
 - `time_between_evictions` (Number) The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of `-1` disables the evictor. Defaults to `0`.

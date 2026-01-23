@@ -82,7 +82,7 @@ Read-Only:
 
 Read-Only:
 
-- `email_address` (String) Email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--bulkhead_alert_notification_settings--notification_publisher_ref))
 - `thread_dump_enabled` (Boolean) Generate a thread dump when a bulkhead reaches its warning threshold or is full.
@@ -101,10 +101,10 @@ Read-Only:
 
 Read-Only:
 
-- `email_address` (String) The email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `final_warning_period` (Number) Time before certificate expiration when final warning is sent (in days).
 - `initial_warning_period` (Number) Time before certificate expiration when initial warning is sent (in days).
-- `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.
+- `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--certificate_expirations--notification_publisher_ref))
 
 <a id="nestedatt--notifications--certificate_expirations--notification_publisher_ref"></a>
@@ -121,7 +121,7 @@ Read-Only:
 
 Read-Only:
 
-- `email_address` (String) The email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--license_events--notification_publisher_ref))
 
 <a id="nestedatt--notifications--license_events--notification_publisher_ref"></a>
@@ -138,7 +138,7 @@ Read-Only:
 
 Read-Only:
 
-- `email_address` (String) The email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--metadata_notification_settings--notification_publisher_ref))
 
 <a id="nestedatt--notifications--metadata_notification_settings--notification_publisher_ref"></a>
@@ -155,7 +155,7 @@ Read-Only:
 
 Read-Only:
 
-- `email_address` (String) Email address where notifications are sent.
+- `email_address` (String) Email addresses where notifications are sent. Separate multiple email addresses with commas.
 - `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--thread_pool_exhaustion_notification_settings--notification_publisher_ref))
 - `thread_dump_enabled` (Boolean) Generate a thread dump when approaching thread pool exhaustion.

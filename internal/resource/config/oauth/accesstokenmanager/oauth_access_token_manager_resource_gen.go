@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -25,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1220/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -85,7 +84,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 		"id": types.StringType,
 	}
 	accessControlSettingsAllowedClientsElementType := types.ObjectType{AttrTypes: accessControlSettingsAllowedClientsAttrTypes}
-	accessControlSettingsAllowedClientsDefault, diags := types.ListValue(accessControlSettingsAllowedClientsElementType, nil)
+	accessControlSettingsAllowedClientsDefault, diags := types.SetValue(accessControlSettingsAllowedClientsElementType, nil)
 	resp.Diagnostics.Append(diags...)
 	// selection_settings.resource_uris default
 	selectionSettingsResourceUrisDefault, diags := types.SetValue(types.StringType, nil)
@@ -108,7 +107,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 		Attributes: map[string]schema.Attribute{
 			"access_control_settings": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"allowed_clients": schema.ListNestedAttribute{
+					"allowed_clients": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"id": schema.StringAttribute{
@@ -123,7 +122,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 						Optional:    true,
 						Computed:    true,
 						Description: "If `restrict_clients` is `true`, this field defines the list of OAuth clients that are allowed to access the token manager.",
-						Default:     listdefault.StaticValue(accessControlSettingsAllowedClientsDefault),
+						Default:     setdefault.StaticValue(accessControlSettingsAllowedClientsDefault),
 					},
 					"restrict_clients": schema.BoolAttribute{
 						Computed:    true,
@@ -406,7 +405,7 @@ func (model *oauthAccessTokenManagerResourceModel) buildClientStruct() (*client.
 		accessControlSettingsValue := &client.AtmAccessControlSettings{}
 		accessControlSettingsAttrs := model.AccessControlSettings.Attributes()
 		accessControlSettingsValue.AllowedClients = []client.ResourceLink{}
-		for _, allowedClientsElement := range accessControlSettingsAttrs["allowed_clients"].(types.List).Elements() {
+		for _, allowedClientsElement := range accessControlSettingsAttrs["allowed_clients"].(types.Set).Elements() {
 			allowedClientsValue := client.ResourceLink{}
 			allowedClientsAttrs := allowedClientsElement.(types.Object).Attributes()
 			allowedClientsValue.Id = allowedClientsAttrs["id"].(types.String).ValueString()
@@ -522,7 +521,7 @@ func (state *oauthAccessTokenManagerResourceModel) readClientResponse(response *
 	}
 	accessControlSettingsAllowedClientsElementType := types.ObjectType{AttrTypes: accessControlSettingsAllowedClientsAttrTypes}
 	accessControlSettingsAttrTypes := map[string]attr.Type{
-		"allowed_clients":  types.ListType{ElemType: accessControlSettingsAllowedClientsElementType},
+		"allowed_clients":  types.SetType{ElemType: accessControlSettingsAllowedClientsElementType},
 		"restrict_clients": types.BoolType,
 	}
 	var accessControlSettingsValue types.Object
@@ -537,7 +536,7 @@ func (state *oauthAccessTokenManagerResourceModel) readClientResponse(response *
 			respDiags.Append(diags...)
 			accessControlSettingsAllowedClientsValues = append(accessControlSettingsAllowedClientsValues, accessControlSettingsAllowedClientsValue)
 		}
-		accessControlSettingsAllowedClientsValue, diags := types.ListValue(accessControlSettingsAllowedClientsElementType, accessControlSettingsAllowedClientsValues)
+		accessControlSettingsAllowedClientsValue, diags := types.SetValue(accessControlSettingsAllowedClientsElementType, accessControlSettingsAllowedClientsValues)
 		respDiags.Append(diags...)
 		accessControlSettingsValue, diags = types.ObjectValue(accessControlSettingsAttrTypes, map[string]attr.Value{
 			"allowed_clients":  accessControlSettingsAllowedClientsValue,
