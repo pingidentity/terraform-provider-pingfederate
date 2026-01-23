@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_token_exchange_processor_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Resource to create and manage the oauth token exchange processor settings.
+  Resource to create and manage the OAuth token exchange processor settings.
 ---
 
 # pingfederate_oauth_token_exchange_processor_settings (Resource)
 
-Resource to create and manage the oauth token exchange processor settings.
+Resource to create and manage the OAuth token exchange processor settings.
 
 ## Example Usage
 

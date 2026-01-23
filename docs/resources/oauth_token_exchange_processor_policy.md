@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_token_exchange_processor_policy Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Resource to create and manage an oauth token exchange processor policy.
+  Resource to create and manage an OAuth token exchange processor policy.
 ---
 
 # pingfederate_oauth_token_exchange_processor_policy (Resource)
 
-Resource to create and manage an oauth token exchange processor policy.
+Resource to create and manage an OAuth token exchange processor policy.
 
 ## Example Usage
 
