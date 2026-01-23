@@ -206,13 +206,14 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
     ]
     expression_criteria = null
   }
-  source_id = "tokenprocessor"
+  source_id = pingfederate_idp_token_processor.example.id
   target_id = "tokengenerator"
 }
 data "pingfederate_token_processor_to_token_generator_mapping" "example" {
   mapping_id = pingfederate_token_processor_to_token_generator_mapping.example.id
 }
-`)
+%s
+`, dependencyHCL())
 }
 
 // Maximal HCL with all values set where possible, with set values reordered
