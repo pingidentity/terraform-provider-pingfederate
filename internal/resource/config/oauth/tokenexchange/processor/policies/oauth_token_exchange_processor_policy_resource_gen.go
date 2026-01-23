@@ -76,7 +76,7 @@ func (r *oauthTokenExchangeProcessorPolicyResource) Schema(ctx context.Context, 
 	resp.Diagnostics.Append(diags...)
 
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage an oauth token exchange processor policy.",
+		Description: "Resource to create and manage an OAuth token exchange processor policy.",
 		Attributes: map[string]schema.Attribute{
 			"actor_token_required": schema.BoolAttribute{
 				Optional:    true,

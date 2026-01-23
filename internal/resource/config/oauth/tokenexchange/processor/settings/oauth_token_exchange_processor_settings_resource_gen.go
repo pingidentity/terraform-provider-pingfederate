@@ -52,7 +52,7 @@ type oauthTokenExchangeProcessorSettingsResourceModel struct {
 
 func (r *oauthTokenExchangeProcessorSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage the oauth token exchange processor settings.",
+		Description: "Resource to create and manage the OAuth token exchange processor settings.",
 		Attributes: map[string]schema.Attribute{
 			"default_processor_policy_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
