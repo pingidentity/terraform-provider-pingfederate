@@ -15,7 +15,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const mappingId = "tokenprocessor|tokengenerator"
+const mappingId = "mappingTestTokenProcessor|tokengenerator"
+const tokenProcSourceId = "mappingTestTokenProcessor"
 
 func TestAccTokenProcessorToTokenGeneratorMapping_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -92,6 +93,33 @@ func TestAccTokenProcessorToTokenGeneratorMapping_MinimalMaximal(t *testing.T) {
 	})
 }
 
+func dependencyHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_idp_token_processor" "example" {
+  processor_id = "%s"
+  attribute_contract = {
+    core_attributes = [
+      {
+        name = "SAML_SUBJECT"
+      }
+    ]
+  }
+  configuration = {
+    fields = [
+      {
+        name  = "Audience",
+        value = "myaudience"
+      }
+    ]
+  }
+  name = "My token processor"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.wstrust.processor.saml.Saml20TokenProcessor"
+  }
+}
+	`, tokenProcSourceId)
+}
+
 // Minimal HCL with only required values set
 func tokenProcessorToTokenGeneratorMapping_MinimalHCL() string {
 	return fmt.Sprintf(`
@@ -104,13 +132,14 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
       value = "myvalue"
     }
   }
-  source_id = "tokenprocessor"
+  source_id = pingfederate_idp_token_processor.example.id
   target_id = "tokengenerator"
 }
 data "pingfederate_token_processor_to_token_generator_mapping" "example" {
   mapping_id = pingfederate_token_processor_to_token_generator_mapping.example.id
 }
-`)
+%s
+`, dependencyHCL())
 }
 
 // Maximal HCL with all values set where possible
@@ -177,13 +206,14 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
     ]
     expression_criteria = null
   }
-  source_id = "tokenprocessor"
+  source_id = pingfederate_idp_token_processor.example.id
   target_id = "tokengenerator"
 }
 data "pingfederate_token_processor_to_token_generator_mapping" "example" {
   mapping_id = pingfederate_token_processor_to_token_generator_mapping.example.id
 }
-`)
+%s
+`, dependencyHCL())
 }
 
 // Maximal HCL with all values set where possible, with set values reordered
@@ -250,13 +280,14 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "example" {
     ]
     expression_criteria = null
   }
-  source_id = "tokenprocessor"
+  source_id = pingfederate_idp_token_processor.example.id
   target_id = "tokengenerator"
 }
 data "pingfederate_token_processor_to_token_generator_mapping" "example" {
   mapping_id = pingfederate_token_processor_to_token_generator_mapping.example.id
 }
-`)
+%s
+`, dependencyHCL())
 }
 
 // Validate any computed values when applying minimal HCL
