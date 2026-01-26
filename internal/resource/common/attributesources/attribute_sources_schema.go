@@ -120,7 +120,7 @@ func ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 		Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
 		Optional:    true,
 		PlanModifiers: []planmodifier.String{
-			stringplanmodifier.UseStateForUnknown(),
+			stringplanmodifier.UseNonNullStateForUnknown(),
 		},
 	}
 	ldapAttributeSourceSchema["search_scope"] = schema.StringAttribute{

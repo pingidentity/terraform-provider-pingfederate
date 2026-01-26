@@ -87,7 +87,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 				Computed:    true,
 				Optional:    false,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 		},

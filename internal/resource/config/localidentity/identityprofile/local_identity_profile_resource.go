@@ -98,7 +98,7 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Validators: []validator.String{
 					configvalidators.PingFederateId(),
@@ -129,7 +129,7 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 							Computed:    true,
 							Optional:    true,
 							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
+								stringplanmodifier.UseNonNullStateForUnknown(),
 							},
 							Validators: []validator.String{
 								configvalidators.PingFederateId(),

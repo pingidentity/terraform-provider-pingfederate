@@ -66,7 +66,7 @@ func (r *configurationEncryptionKeysRotateResource) Schema(ctx context.Context, 
 			"keys": schema.ListNestedAttribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+					listplanmodifier.UseNonNullStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

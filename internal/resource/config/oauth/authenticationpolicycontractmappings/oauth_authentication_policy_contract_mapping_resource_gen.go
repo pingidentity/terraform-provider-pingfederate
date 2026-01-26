@@ -88,7 +88,7 @@ func (r *oauthAuthenticationPolicyContractMappingResource) Schema(ctx context.Co
 				Optional:    false,
 				Description: "The ID of the authentication policy contract to persistent grant mapping.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 		},

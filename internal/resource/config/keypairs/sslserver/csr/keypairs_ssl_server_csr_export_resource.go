@@ -76,7 +76,7 @@ func (r *keypairsSslServerCsrExportResource) Schema(ctx context.Context, req res
 				Description: "The exported PEM-encoded certificate signing request.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"export_trigger_values": schema.MapAttribute{

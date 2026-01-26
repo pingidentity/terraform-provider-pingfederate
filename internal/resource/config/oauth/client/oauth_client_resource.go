@@ -134,7 +134,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 				Optional:    false,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"creation_date": schema.StringAttribute{
@@ -142,7 +142,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 				Optional:    false,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"logo_url": schema.StringAttribute{
@@ -551,7 +551,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					},
 				},
 				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
+					objectplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"client_auth": schema.SingleNestedAttribute{
@@ -584,7 +584,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Optional:    true,
 						Computed:    true,
 						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.UseNonNullStateForUnknown(),
 						},
 						Validators: []validator.String{
 							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("secret")),
@@ -610,7 +610,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 									Optional:    true,
 									Computed:    true,
 									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
+										stringplanmodifier.UseNonNullStateForUnknown(),
 									},
 									Validators: []validator.String{
 										stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("secret")),
@@ -667,7 +667,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					},
 				},
 				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
+					objectplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"jwks_settings": schema.SingleNestedAttribute{
@@ -726,7 +726,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The `device_code` and `user_code` timeout, in seconds. This overrides the `pending_authorization_timeout` value present in Authorization Server Settings.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"device_polling_interval_override": schema.Int64Attribute{
@@ -813,7 +813,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The grace period that a rolled refresh token remains valid in seconds.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"client_secret_retention_period_type": schema.StringAttribute{
@@ -829,7 +829,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is `0`, which will disable secondary client secret retention. This value will override the Client Secret Retention Period value on the Authorization Server Settings.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"client_secret_changed_time": schema.StringAttribute{
@@ -837,7 +837,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 				Optional:    false,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"token_introspection_signing_algorithm": schema.StringAttribute{
