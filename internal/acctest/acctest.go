@@ -6,13 +6,12 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
-
-	"math/rand/v2"
 
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -307,6 +306,7 @@ func ResourceIdGen() string {
 	strlen := 10
 	result := make([]byte, strlen)
 	for i := 0; i < strlen; i++ {
+		//#nosec G404 -- Weak random number generator, only used for test resource ID generation
 		result[i] = CharSetAlphaNum[rand.IntN(len(CharSetAlphaNum))]
 	}
 	return string(result)
