@@ -12,11 +12,12 @@ import (
 	"strings"
 	"testing"
 
+	"math/rand/v2"
+
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
-	"golang.org/x/exp/rand"
 )
 
 const (
@@ -306,7 +307,7 @@ func ResourceIdGen() string {
 	strlen := 10
 	result := make([]byte, strlen)
 	for i := 0; i < strlen; i++ {
-		result[i] = CharSetAlphaNum[rand.Intn(len(CharSetAlphaNum))]
+		result[i] = CharSetAlphaNum[rand.IntN(len(CharSetAlphaNum))]
 	}
 	return string(result)
 }
