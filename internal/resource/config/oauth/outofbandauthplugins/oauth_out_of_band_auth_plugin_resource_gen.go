@@ -102,7 +102,7 @@ func (r *oauthOutOfBandAuthPluginResource) Schema(ctx context.Context, req resou
 						},
 						Computed: true,
 						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+							setplanmodifier.UseNonNullStateForUnknown(),
 						},
 						Description: "A list of out of band authenticator attributes.",
 					},
@@ -171,7 +171,7 @@ func (r *oauthOutOfBandAuthPluginResource) Schema(ctx context.Context, req resou
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

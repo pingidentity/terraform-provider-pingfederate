@@ -100,7 +100,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Schema(ctx context.Conte
 				Description: "The id of the APC-to-SP Adapter mapping.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 		},

@@ -825,7 +825,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					stringvalidator.LengthAtLeast(1),
 				},
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -1194,7 +1194,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Description:         "A list of read-only assertion attributes that are automatically populated by the SP adapter descriptor.",
 													MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by the SP adapter descriptor.",
 													PlanModifiers: []planmodifier.Set{
-														setplanmodifier.UseStateForUnknown(),
+														setplanmodifier.UseNonNullStateForUnknown(),
 													},
 												},
 												"extended_attributes": schema.SetNestedAttribute{
@@ -1358,7 +1358,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 								MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 								PlanModifiers: []planmodifier.Set{
-									setplanmodifier.UseStateForUnknown(),
+									setplanmodifier.UseNonNullStateForUnknown(),
 								},
 							},
 							"extended_attributes": schema.SetNestedAttribute{
@@ -1577,7 +1577,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 										Computed: true,
 										PlanModifiers: []planmodifier.Set{
-											setplanmodifier.UseStateForUnknown(),
+											setplanmodifier.UseNonNullStateForUnknown(),
 										},
 										Description:         "A list of user attributes that the IdP sends in the SAML assertion.",
 										MarkdownDescription: "A list of user attributes that the IdP sends in the SAML assertion.",
@@ -2264,7 +2264,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional: false,
 						Computed: true,
 						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.UseNonNullStateForUnknown(),
 						},
 						Description:         "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 						MarkdownDescription: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
@@ -2546,7 +2546,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 								MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 								PlanModifiers: []planmodifier.Set{
-									setplanmodifier.UseStateForUnknown(),
+									setplanmodifier.UseNonNullStateForUnknown(),
 								},
 							},
 							"extended_attributes": schema.SetNestedAttribute{
@@ -3499,7 +3499,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Computed:    true,
 						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.UseNonNullStateForUnknown(),
 						},
 						Validators: []validator.String{
 							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("client_secret")),

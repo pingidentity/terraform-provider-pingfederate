@@ -105,7 +105,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{

@@ -114,7 +114,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							},
 						},
 						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+							setplanmodifier.UseNonNullStateForUnknown(),
 						},
 					},
 					"core_attributes_all": schema.SetNestedAttribute{

@@ -106,7 +106,7 @@ func (r *captchaProviderResource) Schema(ctx context.Context, req resource.Schem
 				Description: "The ID of the plugin instance. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

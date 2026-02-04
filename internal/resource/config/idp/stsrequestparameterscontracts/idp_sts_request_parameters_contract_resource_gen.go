@@ -70,7 +70,7 @@ func (r *idpStsRequestParametersContractResource) Schema(ctx context.Context, re
 				Description: "The ID of the Security Token Service request parameter contract. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

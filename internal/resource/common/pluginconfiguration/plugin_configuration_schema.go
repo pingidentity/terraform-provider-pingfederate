@@ -85,7 +85,7 @@ func ToSchema() schema.SingleNestedAttribute {
 							Optional:    true,
 							Default:     booldefault.StaticBool(false),
 							PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.UseStateForUnknown(),
+								boolplanmodifier.UseNonNullStateForUnknown(),
 							},
 						},
 					},
@@ -115,7 +115,7 @@ func ToSchema() schema.SingleNestedAttribute {
 							Optional:    true,
 							Default:     booldefault.StaticBool(false),
 							PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.UseStateForUnknown(),
+								boolplanmodifier.UseNonNullStateForUnknown(),
 							},
 						},
 					},
@@ -143,7 +143,7 @@ func ToSchema() schema.SingleNestedAttribute {
 				Optional:     false,
 				NestedObject: tablesAllNestedObject,
 				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+					listplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"fields": schema.SetNestedAttribute{
@@ -166,7 +166,7 @@ func ToSchema() schema.SingleNestedAttribute {
 				Optional:     false,
 				NestedObject: fieldsNestedObject,
 				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+					setplanmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 		},

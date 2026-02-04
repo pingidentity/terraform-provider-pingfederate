@@ -274,7 +274,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Optional:    true,
 			Computed:    true,
 			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+				stringplanmodifier.UseNonNullStateForUnknown(),
 			},
 			Validators: []validator.String{
 				stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("password")),

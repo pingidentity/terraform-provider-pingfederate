@@ -74,7 +74,7 @@ func (r *oauthResourceOwnerCredentialsMappingResource) Schema(ctx context.Contex
 				Description: "The ID of the Resource Owner Credentials Mapping. Should be the ID of a password credential validator.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),

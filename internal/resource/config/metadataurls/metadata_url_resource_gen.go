@@ -167,7 +167,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The persistent, unique ID for the Metadata Url. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.UseNonNullStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -206,7 +206,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 						Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replacement plan if changed.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
-							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.UseNonNullStateForUnknown(),
 						},
 						Validators: []validator.String{
 							configvalidators.LowercaseId(),

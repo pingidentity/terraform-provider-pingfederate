@@ -92,6 +92,8 @@ import (
 	oauthoutofbandauthplugins "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/outofbandauthplugins"
 	oauthresourceownercredentialsmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/resourceownercredentialsmappings"
 	oauthtokenexchangegeneratorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/generator/settings"
+	oauthtokenexchangeprocessorpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/policies"
+	oauthtokenexchangeprocessorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/settings"
 	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/pingoneconnection"
@@ -354,7 +356,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 
 	// Check if the user has provided a username to the provider
 	var username string
-	var hasUsername bool = false
+	hasUsername := false
 	if config.Username.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		addAttributeUnknownError("username", "PINGFEDERATE_PROVIDER_USERNAME", &resp.Diagnostics)
@@ -373,7 +375,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 
 	// Check if the user has provided a password to the provider
 	var password string
-	var hasPassword bool = false
+	hasPassword := false
 	if config.Password.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		addAttributeUnknownError("password", "PINGFEDERATE_PROVIDER_PASSWORD", &resp.Diagnostics)
@@ -392,7 +394,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 
 	// Check if the user has provided an access token to the provider
 	var accessToken string
-	var hasAccessToken bool = false
+	hasAccessToken := false
 	if config.AccessToken.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		addAttributeUnknownError("access_token", "PINGFEDERATE_PROVIDER_ACCESS_TOKEN", &resp.Diagnostics)
@@ -411,7 +413,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 
 	// Check if the user has provided an OAuth configuration to the provider
 	var clientId string
-	var hasClientId bool = false
+	hasClientId := false
 	if config.ClientId.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		addAttributeUnknownError("client_id", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", &resp.Diagnostics)
@@ -429,7 +431,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	var clientSecret string
-	var hasClientSecret bool = false
+	hasClientSecret := false
 	if config.ClientSecret.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		addAttributeUnknownError("client_secret", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET", &resp.Diagnostics)
@@ -447,7 +449,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	var scopes []string
-	var hasScopes bool = false
+	hasScopes := false
 	if config.Scopes.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		addAttributeUnknownError("scopes", "PINGFEDERATE_PROVIDER_OAUTH_SCOPES", &resp.Diagnostics)
@@ -472,7 +474,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	var tokenUrl string
-	var hasTokenUrl bool = false
+	hasTokenUrl := false
 	if config.TokenUrl.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		addAttributeUnknownError("token_url", "PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL", &resp.Diagnostics)
@@ -525,11 +527,11 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		)
 	}
 
-	var hasBasicAuth bool = hasUsername || hasPassword
-	var hasAccessTokenAuth bool = hasAccessToken
-	var hasOauthConfig bool = hasClientId || hasClientSecret || hasTokenUrl
+	hasBasicAuth := hasUsername || hasPassword
+	hasAccessTokenAuth := hasAccessToken
+	hasOauthConfig := hasClientId || hasClientSecret || hasTokenUrl
 	// If user has not provided an OAuth configuration or access token, they must provide username and password
-	if !(hasOauthConfig && hasAccessTokenAuth) && hasBasicAuth {
+	if (!hasOauthConfig || !hasAccessTokenAuth) && hasBasicAuth {
 		if username == "" {
 			addAuthAttributeDiagsError("username", "basic", "PINGFEDERATE_PROVIDER_USERNAME", resp)
 		}
@@ -540,7 +542,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	// If user has not provided username and password or an access token, they must provide an OAuth configuration
-	if !(hasBasicAuth || hasAccessTokenAuth) && hasOauthConfig {
+	if !hasBasicAuth && !hasAccessTokenAuth && hasOauthConfig {
 		if clientId == "" {
 			addAuthAttributeDiagsError("client_id", "OAuth", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", resp)
 		}
@@ -704,8 +706,8 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
-		certificate.CertificatesCAExportDataSource,
 		certificate.CertificateDataSource,
+		certificate.CertificatesCAExportDataSource,
 		clusterstatus.ClusterStatusDataSource,
 		configstore.ConfigStoreDataSource,
 		datastore.DataStoreDataSource,
@@ -714,9 +716,9 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		idpspconnection.IdpSpConnectionDataSource,
 		keypairsigning.KeypairsSigningKeyDataSource,
 		keypairssigningcertificate.KeypairsSigningCertificateDataSource,
-		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairssslclient.KeypairsSslClientKeyDataSource,
 		keypairssslclientcertificate.KeypairsSslClientCertificateDataSource,
+		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairssslservercertificate.KeypairsSslServerCertificateDataSource,
 		license.LicenseDataSource,
 		licenseagreement.LicenseAgreementDataSource,
@@ -725,8 +727,8 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthauthserversettings.OauthServerSettingsDataSource,
 		oauthclient.OauthClientDataSource,
 		oauthissuer.OauthIssuerDataSource,
-		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingDataSource,
 		oauthopenidconnectpolicy.OpenidConnectPolicyDataSource,
+		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingDataSource,
 		passwordcredentialvalidator.PasswordCredentialValidatorDataSource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsDataSource,
 		redirectvalidation.RedirectValidationDataSource,
@@ -764,35 +766,35 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		configstore.ConfigStoreResource,
 		configurationencryptionkeysrotate.ConfigurationEncryptionKeysRotateResource,
 		connectionmetadataexport.ConnectionMetadataExportResource,
+		datastore.DataStoreResource,
 		defaulturls.DefaultUrlsResource,
 		extendedproperties.ExtendedPropertiesResource,
 		identitystoreprovisioners.IdentityStoreProvisionerResource,
 		idpadapter.IdpAdapterResource,
 		idpspconnection.IdpSpConnectionResource,
 		idpstsrequestparameterscontracts.IdpStsRequestParametersContractResource,
-		idptospadaptermapping.IdpToSpAdapterMappingResource,
 		idptokenprocessors.IdpTokenProcessorResource,
+		idptospadaptermapping.IdpToSpAdapterMappingResource,
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
+		keypairsigning.KeypairsSigningKeyResource,
 		keypairsoauthopenidconnect.KeypairsOauthOpenidConnectResource,
 		keypairsoauthopenidconnectadditionalkeysets.KeypairsOauthOpenidConnectAdditionalKeySetResource,
-		keypairsigning.KeypairsSigningKeyResource,
 		keypairssigningrotationsettings.KeypairsSigningKeyRotationSettingsResource,
 		keypairssslclient.KeypairsSslClientKeyResource,
-		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairssslclientcsr.KeypairsSslClientCsrExportResource,
 		keypairssslclientcsr.KeypairsSslClientCsrResource,
+		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairssslservercsr.KeypairsSslServerCsrExportResource,
 		keypairssslservercsr.KeypairsSslServerCsrResource,
 		keypairssslserversettings.KeypairsSslServerSettingsResource,
-		datastore.DataStoreResource,
 		license.LicenseResource,
 		licenseagreement.LicenseAgreementResource,
 		localidentity.LocalIdentityProfileResource,
 		metadataurls.MetadataUrlResource,
-		notificationpublisherssettings.NotificationPublisherSettingsResource,
 		notificationpublishers.NotificationPublisherResource,
+		notificationpublisherssettings.NotificationPublisherSettingsResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
 		oauthaccesstokenmanagerssettings.OauthAccessTokenManagerSettingsResource,
 		oauthaccesstokenmapping.OauthAccessTokenMappingResource,
@@ -810,6 +812,8 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthoutofbandauthplugins.OauthOutOfBandAuthPluginResource,
 		oauthresourceownercredentialsmappings.OauthResourceOwnerCredentialsMappingResource,
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
+		oauthtokenexchangeprocessorpolicies.OauthTokenExchangeProcessorPolicyResource,
+		oauthtokenexchangeprocessorsettings.OauthTokenExchangeProcessorSettingsResource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
 		pingoneconnection.PingoneConnectionResource,
@@ -821,16 +825,16 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettingsgeneralsettings.ServerSettingsGeneralResource,
 		serversettingslogsettings.ServerSettingsLoggingResource,
 		serversettingssystemkeysrotate.ServerSettingsSystemKeysRotateResource,
-		serversettingswstruststssettingsissuercertificates.ServerSettingsWsTrustStsSettingsIssuerCertificateResource,
 		serversettingswstruststssettings.ServerSettingsWsTrustStsSettingsResource,
+		serversettingswstruststssettingsissuercertificates.ServerSettingsWsTrustStsSettingsIssuerCertificateResource,
 		serviceauthentication.ServiceAuthenticationResource,
 		sessionapplicationsessionpolicy.SessionApplicationPolicyResource,
 		sessionauthenticationsessionpolicies.SessionAuthenticationPolicyResource,
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationPoliciesGlobalResource,
 		sessionsettings.SessionSettingsResource,
 		spadapters.SpAdapterResource,
-		spidpconnection.SpIdpConnectionResource,
 		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
+		spidpconnection.SpIdpConnectionResource,
 		sptargeturlmappings.SpTargetUrlMappingsResource,
 		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,
 		virtualhostnames.VirtualHostNamesResource,

@@ -132,7 +132,7 @@ func toSchemaAttributes() map[string]schema.Attribute {
 					Computed:    true,
 					Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
 					PlanModifiers: []planmodifier.String{
-						stringplanmodifier.UseStateForUnknown(),
+						stringplanmodifier.UseNonNullStateForUnknown(),
 					},
 					Validators: []validator.String{
 						configvalidators.LowercaseId(),

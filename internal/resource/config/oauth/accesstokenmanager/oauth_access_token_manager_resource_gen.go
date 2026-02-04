@@ -145,14 +145,14 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 									Description: "The name of this attribute.",
 									Computed:    true,
 									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
+										stringplanmodifier.UseNonNullStateForUnknown(),
 									},
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
 									Computed:    true,
 									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
+										boolplanmodifier.UseNonNullStateForUnknown(),
 									},
 								},
 							},
@@ -160,7 +160,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 						Computed:    true,
 						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only.",
 						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+							setplanmodifier.UseNonNullStateForUnknown(),
 						},
 					},
 					"default_subject_attribute": schema.StringAttribute{
@@ -266,7 +266,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Description: "Number added to an access token to identify which Access Token Manager issued the token.",
 				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.UseNonNullStateForUnknown(),
 				},
 			},
 			"session_validation_settings": schema.SingleNestedAttribute{

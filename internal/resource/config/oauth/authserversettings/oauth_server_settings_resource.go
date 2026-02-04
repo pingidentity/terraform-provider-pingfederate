@@ -353,13 +353,13 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 									Computed:    true,
 									Optional:    false,
 									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
+										stringplanmodifier.UseNonNullStateForUnknown(),
 									},
 								},
 							},
 						},
 						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+							setplanmodifier.UseNonNullStateForUnknown(),
 						},
 					},
 					"extended_attributes": schema.SetNestedAttribute{

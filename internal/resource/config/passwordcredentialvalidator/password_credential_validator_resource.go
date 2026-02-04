@@ -77,7 +77,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",
 						Computed:    true,
 						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+							setplanmodifier.UseNonNullStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
