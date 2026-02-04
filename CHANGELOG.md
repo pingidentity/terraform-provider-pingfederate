@@ -1,4 +1,4 @@
-# v1.7.0 (Unreleased)
+# v1.7.0 February 4, 2026
 ### Enhancements
 * Added support for PingFederate `13.0.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, `12.2`, and `12.3`. ([#561]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/561)))
 
