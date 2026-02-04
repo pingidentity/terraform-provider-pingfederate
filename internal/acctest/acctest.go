@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,13 +17,16 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
-	"golang.org/x/exp/rand"
 )
 
 const (
 	// CharSetAlphaNum is the alphanumeric character set for use with
 	// RandStringFromCharSet
 	CharSetAlphaNum = "abcdefghijklmnopqrstuvwxyz012346789"
+
+	// CharSetAlpha is the alphabetic character set for use with
+	// RandStringFromCharSet
+	CharSetAlpha = "abcdefghijklmnopqrstuvwxyz"
 )
 
 // Verify that any required environment variables are set before the test begins
@@ -306,7 +310,13 @@ func ResourceIdGen() string {
 	strlen := 10
 	result := make([]byte, strlen)
 	for i := 0; i < strlen; i++ {
-		result[i] = CharSetAlphaNum[rand.Intn(len(CharSetAlphaNum))]
+		charSet := CharSetAlphaNum
+		if i == 0 {
+			// Resource names can't start with a number
+			charSet = CharSetAlpha
+		}
+		//#nosec G404 -- Weak random number generator, only used for test resource ID generation
+		result[i] = CharSetAlphaNum[rand.IntN(len(charSet))]
 	}
 	return string(result)
 }
