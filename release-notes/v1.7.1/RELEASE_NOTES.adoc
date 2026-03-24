@@ -1,0 +1,12 @@
+= Release Notes for v1.7.1
+:toc:
+:toclevels: 3
+:sectnums:
+
+Release Date: 2026-03-24
+
+== NOTES
+* bump `github.com/hashicorp/terraform-plugin-framework` 1.17.0 => 1.19.0 link:https://github.com/pingidentity/terraform-provider-pingfederate/pull/581[#581]
+* bump `github.com/hashicorp/terraform-plugin-go` 0.29.0 => 0.31.0 link:https://github.com/pingidentity/terraform-provider-pingfederate/pull/581[#581]
+* bump `google.golang.org/grpc` 1.79.1 => 1.79.3 link:https://github.com/pingidentity/terraform-provider-pingfederate/pull/584[#584]
+
