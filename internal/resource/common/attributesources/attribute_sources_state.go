@@ -71,6 +71,42 @@ func AttrTypesNoId() map[string]attr.Type {
 	return attrTypesInternal(false)
 }
 
+func customAttributeSourceFilterFieldsToState(filterFields []client.FieldEntry) (basetypes.SetValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	elementAttrTypes := map[string]attr.Type{
+		"value": types.StringType,
+		"name":  types.StringType,
+	}
+	elementType := types.ObjectType{AttrTypes: elementAttrTypes}
+	elements := make([]attr.Value, 0, len(filterFields))
+
+	for _, filterField := range filterFields {
+		value := types.StringValue("")
+		if filterField.Value != nil {
+			value = types.StringPointerValue(filterField.Value)
+		}
+
+		fieldValue, valueDiags := types.ObjectValue(elementAttrTypes, map[string]attr.Value{
+			"name":  types.StringValue(filterField.Name),
+			"value": value,
+		})
+		diags.Append(valueDiags...)
+		elements = append(elements, fieldValue)
+	}
+
+	filterFieldsValue, valueDiags := types.SetValue(elementType, elements)
+	diags.Append(valueDiags...)
+	return filterFieldsValue, diags
+}
+
+func attributeContractFulfillmentToState(con context.Context, attributeContractFulfillment *map[string]client.AttributeFulfillmentValue) (basetypes.MapValue, diag.Diagnostics) {
+	if attributeContractFulfillment == nil || len(*attributeContractFulfillment) == 0 {
+		return types.MapNull(types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}), nil
+	}
+
+	return types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attributeContractFulfillment)
+}
+
 func attrTypesInternal(includeIdAttr bool) map[string]attr.Type {
 	return map[string]attr.Type{
 		"custom_attribute_source": types.ObjectType{
@@ -107,7 +143,8 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 		attrSourceValues := map[string]attr.Value{}
 		if attrSource.CustomAttributeSource != nil {
 			customAttrSourceValues := map[string]attr.Value{}
-			customAttrSourceValues["filter_fields"], valueFromDiags = types.SetValueFrom(con, customAttrSourceAttrTypes["filter_fields"].(types.SetType).ElemType, attrSource.CustomAttributeSource.FilterFields)
+			// Preserve the schema's empty-string default for unset field values so set elements hash consistently after apply.
+			customAttrSourceValues["filter_fields"], valueFromDiags = customAttributeSourceFilterFieldsToState(attrSource.CustomAttributeSource.FilterFields)
 			diags.Append(valueFromDiags...)
 
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")
@@ -117,7 +154,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 				customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 			}
 			customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
-			customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.CustomAttributeSource.AttributeContractFulfillment)
+			customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = attributeContractFulfillmentToState(con, attrSource.CustomAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["custom_attribute_source"], valueFromDiags = types.ObjectValue(customAttrSourceAttrTypes, customAttrSourceValues)
 			diags.Append(valueFromDiags...)
@@ -138,7 +175,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 				jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 			}
 			jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
-			jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
+			jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = attributeContractFulfillmentToState(con, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["jdbc_attribute_source"], valueFromDiags = types.ObjectValue(jdbcAttrSourceAttrTypes, jdbcAttrSourceValues)
 			diags.Append(valueFromDiags...)
@@ -166,7 +203,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 				ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 			}
 			ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)
-			ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.LdapAttributeSource.AttributeContractFulfillment)
+			ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = attributeContractFulfillmentToState(con, attrSource.LdapAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["ldap_attribute_source"], valueFromDiags = types.ObjectValue(ldapAttrSourceAttrTypes, ldapAttrSourceValues)
 			diags.Append(valueFromDiags...)

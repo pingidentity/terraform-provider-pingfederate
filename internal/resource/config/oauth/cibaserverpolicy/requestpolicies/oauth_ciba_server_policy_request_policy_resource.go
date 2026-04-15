@@ -144,10 +144,13 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) exponentialBackOffRetryCrea
 		}
 
 		// If PF returned success, ensure the resource was actually created
-		_, readHttpResp, readErr := r.apiClient.OauthCibaServerPolicyAPI.GetCibaServerPolicyById(config.AuthContext(ctx, r.providerConfig), policyId).Execute()
-		if readErr == nil || readHttpResp == nil || readHttpResp.StatusCode != 404 {
-			// Either the create succeeded or the read returned a non-404 status code
-			return responseData, httpResp, err
+		readResponseData, readHttpResp, readErr := r.apiClient.OauthCibaServerPolicyAPI.GetCibaServerPolicyById(config.AuthContext(ctx, r.providerConfig), policyId).Execute()
+		if readErr == nil {
+			// Use the canonical GET response for state to avoid create/read drift on nested sets.
+			return readResponseData, readHttpResp, nil
+		}
+		if readHttpResp == nil || readHttpResp.StatusCode != 404 {
+			return readResponseData, readHttpResp, readErr
 		}
 
 		backOffTime = backOffTime * 2
