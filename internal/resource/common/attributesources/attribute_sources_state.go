@@ -71,7 +71,7 @@ func AttrTypesNoId() map[string]attr.Type {
 	return attrTypesInternal(false)
 }
 
-func customAttributeSourceFilterFieldsToState(filterFields []client.FieldEntry) (basetypes.SetValue, diag.Diagnostics) {
+func customAttributeSourceFilterFieldsToState(filterFields []client.FieldEntry, attributeSourceValueDefaultsToEmptyString bool) (basetypes.SetValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	elementAttrTypes := map[string]attr.Type{
 		"value": types.StringType,
@@ -81,7 +81,10 @@ func customAttributeSourceFilterFieldsToState(filterFields []client.FieldEntry) 
 	elements := make([]attr.Value, 0, len(filterFields))
 
 	for _, filterField := range filterFields {
-		value := types.StringValue("")
+		value := types.StringNull()
+		if attributeSourceValueDefaultsToEmptyString {
+			value = types.StringValue("")
+		}
 		if filterField.Value != nil {
 			value = types.StringPointerValue(filterField.Value)
 		}
@@ -122,14 +125,18 @@ func attrTypesInternal(includeIdAttr bool) map[string]attr.Type {
 }
 
 func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
-	return toStateInternal(con, attributeSourcesFromClient, true)
+	return toStateInternal(con, attributeSourcesFromClient, true, true)
 }
 
 func ToStateNoId(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
-	return toStateInternal(con, attributeSourcesFromClient, false)
+	return toStateInternal(con, attributeSourcesFromClient, false, true)
 }
 
-func toStateInternal(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeIdAttr bool) (basetypes.SetValue, diag.Diagnostics) {
+func ToStateNoValueDefault(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
+	return toStateInternal(con, attributeSourcesFromClient, true, false)
+}
+
+func toStateInternal(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeIdAttr, attributeSourceValueDefaultsToEmptyString bool) (basetypes.SetValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var customAttrSourceAttrTypes = customAttributeSourceAttrType(includeIdAttr)
 	var jdbcAttrSourceAttrTypes = jdbcAttributeSourceAttrType(includeIdAttr)
@@ -143,8 +150,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 		attrSourceValues := map[string]attr.Value{}
 		if attrSource.CustomAttributeSource != nil {
 			customAttrSourceValues := map[string]attr.Value{}
-			// Preserve the schema's empty-string default for unset field values so set elements hash consistently after apply.
-			customAttrSourceValues["filter_fields"], valueFromDiags = customAttributeSourceFilterFieldsToState(attrSource.CustomAttributeSource.FilterFields)
+			customAttrSourceValues["filter_fields"], valueFromDiags = customAttributeSourceFilterFieldsToState(attrSource.CustomAttributeSource.FilterFields, attributeSourceValueDefaultsToEmptyString)
 			diags.Append(valueFromDiags...)
 
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")
