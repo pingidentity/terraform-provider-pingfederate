@@ -85,14 +85,6 @@ func AttrTypes() map[string]attr.Type {
 }
 
 func ToState(ctx context.Context, response *client.PolicyActionAggregation) (types.Object, diag.Diagnostics) {
-	return toStateInternal(ctx, response, true)
-}
-
-func ToStateNoValueDefault(ctx context.Context, response *client.PolicyActionAggregation) (types.Object, diag.Diagnostics) {
-	return toStateInternal(ctx, response, false)
-}
-
-func toStateInternal(ctx context.Context, response *client.PolicyActionAggregation, attributeSourceValueDefaultsToEmptyString bool) (types.Object, diag.Diagnostics) {
 	var diags, respDiags diag.Diagnostics
 	if response == nil {
 		diags.AddError(providererror.InternalProviderError, "provided client struct is nil")
@@ -117,11 +109,7 @@ func toStateInternal(ctx context.Context, response *client.PolicyActionAggregati
 		}
 		actionAttrs["authentication_policy_contract_ref"], respDiags = resourcelink.ToState(ctx, &response.ApcMappingPolicyAction.AuthenticationPolicyContractRef)
 		diags.Append(respDiags...)
-		if attributeSourceValueDefaultsToEmptyString {
-			actionAttrs["attribute_mapping"], respDiags = attributemapping.ToState(ctx, &response.ApcMappingPolicyAction.AttributeMapping)
-		} else {
-			actionAttrs["attribute_mapping"], respDiags = attributemapping.ToStateNoValueDefault(ctx, &response.ApcMappingPolicyAction.AttributeMapping)
-		}
+		actionAttrs["attribute_mapping"], respDiags = attributemapping.ToState(ctx, &response.ApcMappingPolicyAction.AttributeMapping)
 		diags.Append(respDiags...)
 		attrs["apc_mapping_policy_action"], respDiags = types.ObjectValue(apcMappingPolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)
@@ -171,11 +159,7 @@ func toStateInternal(ctx context.Context, response *client.PolicyActionAggregati
 		diags.Append(respDiags...)
 		actionAttrs["fragment"], respDiags = resourcelink.ToState(ctx, &response.FragmentPolicyAction.Fragment)
 		diags.Append(respDiags...)
-		if attributeSourceValueDefaultsToEmptyString {
-			actionAttrs["fragment_mapping"], respDiags = attributemapping.ToState(ctx, response.FragmentPolicyAction.FragmentMapping)
-		} else {
-			actionAttrs["fragment_mapping"], respDiags = attributemapping.ToStateNoValueDefault(ctx, response.FragmentPolicyAction.FragmentMapping)
-		}
+		actionAttrs["fragment_mapping"], respDiags = attributemapping.ToState(ctx, response.FragmentPolicyAction.FragmentMapping)
 		diags.Append(respDiags...)
 		attrs["fragment_policy_action"], respDiags = types.ObjectValue(fragmentPolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)
@@ -186,17 +170,9 @@ func toStateInternal(ctx context.Context, response *client.PolicyActionAggregati
 		}
 		actionAttrs["local_identity_ref"], respDiags = resourcelink.ToState(ctx, &response.LocalIdentityMappingPolicyAction.LocalIdentityRef)
 		diags.Append(respDiags...)
-		if attributeSourceValueDefaultsToEmptyString {
-			actionAttrs["inbound_mapping"], respDiags = attributemapping.ToState(ctx, response.LocalIdentityMappingPolicyAction.InboundMapping)
-		} else {
-			actionAttrs["inbound_mapping"], respDiags = attributemapping.ToStateNoValueDefault(ctx, response.LocalIdentityMappingPolicyAction.InboundMapping)
-		}
+		actionAttrs["inbound_mapping"], respDiags = attributemapping.ToState(ctx, response.LocalIdentityMappingPolicyAction.InboundMapping)
 		diags.Append(respDiags...)
-		if attributeSourceValueDefaultsToEmptyString {
-			actionAttrs["outbound_attribute_mapping"], respDiags = attributemapping.ToState(ctx, &response.LocalIdentityMappingPolicyAction.OutboundAttributeMapping)
-		} else {
-			actionAttrs["outbound_attribute_mapping"], respDiags = attributemapping.ToStateNoValueDefault(ctx, &response.LocalIdentityMappingPolicyAction.OutboundAttributeMapping)
-		}
+		actionAttrs["outbound_attribute_mapping"], respDiags = attributemapping.ToState(ctx, &response.LocalIdentityMappingPolicyAction.OutboundAttributeMapping)
 		diags.Append(respDiags...)
 		attrs["local_identity_mapping_policy_action"], respDiags = types.ObjectValue(localIdentityMappingPolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)

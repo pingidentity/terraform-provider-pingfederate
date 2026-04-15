@@ -33,14 +33,10 @@ func childrenAttrTypes(depth int) types.ListType {
 }
 
 func ToState(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {
-	return recursiveState(ctx, node, 1, GetRootNodeAttrTypes(), true)
+	return recursiveState(ctx, node, 1, GetRootNodeAttrTypes())
 }
 
-func ToStateNoValueDefault(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {
-	return recursiveState(ctx, node, 1, GetRootNodeAttrTypes(), false)
-}
-
-func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNode, depth int, attrTypes map[string]attr.Type, attributeSourceValueDefaultsToEmptyString bool) (types.Object, diag.Diagnostics) {
+func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNode, depth int, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if node == nil {
 		diags.AddError(providererror.InternalProviderError, "provided authentication policy tree node is nil")
@@ -48,11 +44,7 @@ func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNo
 	}
 	var attrValues = map[string]attr.Value{}
 
-	if attributeSourceValueDefaultsToEmptyString {
-		attrValues["action"], diags = policyaction.ToState(ctx, &node.Action)
-	} else {
-		attrValues["action"], diags = policyaction.ToStateNoValueDefault(ctx, &node.Action)
-	}
+	attrValues["action"], diags = policyaction.ToState(ctx, &node.Action)
 	if diags.HasError() {
 		return types.ObjectNull(attrTypes), diags
 	}
@@ -61,7 +53,7 @@ func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNo
 		childrenType := attrTypes["children"].(types.ListType).ElemType.(types.ObjectType)
 		children := []attr.Value{}
 		for i := range node.Children {
-			childObj, diags := recursiveState(ctx, &node.Children[i], depth+1, childrenType.AttrTypes, attributeSourceValueDefaultsToEmptyString)
+			childObj, diags := recursiveState(ctx, &node.Children[i], depth+1, childrenType.AttrTypes)
 			if diags.HasError() {
 				return types.ObjectNull(attrTypes), diags
 			}

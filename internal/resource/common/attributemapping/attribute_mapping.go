@@ -61,14 +61,6 @@ func toSchemaInternal(required, includeValueDefault bool) schema.SingleNestedAtt
 }
 
 func ToState(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping) (types.Object, diag.Diagnostics) {
-	return toStateInternal(con, attributeMappingFromClient, true)
-}
-
-func ToStateNoValueDefault(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping) (types.Object, diag.Diagnostics) {
-	return toStateInternal(con, attributeMappingFromClient, false)
-}
-
-func toStateInternal(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping, attributeSourceValueDefaultsToEmptyString bool) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if attributeMappingFromClient == nil {
@@ -80,12 +72,7 @@ func toStateInternal(con context.Context, attributeMappingFromClient *configurat
 	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, &attributeMappingFromClient.AttributeContractFulfillment)
 	diags = append(diags, objDiags...)
 
-	var attributeSources types.Set
-	if attributeSourceValueDefaultsToEmptyString {
-		attributeSources, objDiags = attributesources.ToState(con, attributeMappingFromClient.AttributeSources)
-	} else {
-		attributeSources, objDiags = attributesources.ToStateNoValueDefault(con, attributeMappingFromClient.AttributeSources)
-	}
+	attributeSources, objDiags := attributesources.ToState(con, attributeMappingFromClient.AttributeSources)
 	diags = append(diags, objDiags...)
 
 	issuanceCriteria, objDiags := issuancecriteria.ToState(con, attributeMappingFromClient.IssuanceCriteria)

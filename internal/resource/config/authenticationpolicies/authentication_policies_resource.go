@@ -198,7 +198,7 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 			authenticationApiApplicationRef, respDiags := resourcelink.ToState(ctx, authnSelectionTree.AuthenticationApiApplicationRef)
 			diags.Append(respDiags...)
 
-			rootNode, respDiags := authenticationpolicytreenode.ToStateNoValueDefault(ctx, &authnSelectionTree.RootNode)
+			rootNode, respDiags := authenticationpolicytreenode.ToState(ctx, &authnSelectionTree.RootNode)
 			diags.Append(respDiags...)
 
 			authnSelectionTreeAttrValues := map[string]attr.Value{
