@@ -34,14 +34,18 @@ func AttrTypes() map[string]attr.Type {
 }
 
 func ToSchema(required bool) schema.SingleNestedAttribute {
-	return toSchemaInternal(required, true)
+	return toSchemaInternal(required, true, true)
 }
 
 func ToSchemaNoValueDefault(required bool) schema.SingleNestedAttribute {
-	return toSchemaInternal(required, false)
+	return toSchemaInternal(required, false, true)
 }
 
-func toSchemaInternal(required, includeValueDefault bool) schema.SingleNestedAttribute {
+func ToSchemaNoComputedFulfillmentSource(required bool) schema.SingleNestedAttribute {
+	return toSchemaInternal(required, true, false)
+}
+
+func toSchemaInternal(required, includeValueDefault, fullyComputedFulfillmentSource bool) schema.SingleNestedAttribute {
 	var attributeSources schema.Attribute
 	if includeValueDefault {
 		attributeSources = attributesources.ToSchema(0, false)
@@ -50,7 +54,7 @@ func toSchemaInternal(required, includeValueDefault bool) schema.SingleNestedAtt
 	}
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, fullyComputedFulfillmentSource),
 			"attribute_sources":              attributeSources,
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},

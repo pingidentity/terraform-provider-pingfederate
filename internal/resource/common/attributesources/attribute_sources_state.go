@@ -117,7 +117,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 				customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 			}
 			customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
-			customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.CustomAttributeSource.AttributeContractFulfillment)
+			customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = attributecontractfulfillment.ToState(con, attrSource.CustomAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["custom_attribute_source"], valueFromDiags = types.ObjectValue(customAttrSourceAttrTypes, customAttrSourceValues)
 			diags.Append(valueFromDiags...)
@@ -138,7 +138,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 				jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 			}
 			jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
-			jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
+			jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = attributecontractfulfillment.ToState(con, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["jdbc_attribute_source"], valueFromDiags = types.ObjectValue(jdbcAttrSourceAttrTypes, jdbcAttrSourceValues)
 			diags.Append(valueFromDiags...)
@@ -166,7 +166,7 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 				ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 			}
 			ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)
-			ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.LdapAttributeSource.AttributeContractFulfillment)
+			ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = attributecontractfulfillment.ToState(con, attrSource.LdapAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["ldap_attribute_source"], valueFromDiags = types.ObjectValue(ldapAttrSourceAttrTypes, ldapAttrSourceValues)
 			diags.Append(valueFromDiags...)

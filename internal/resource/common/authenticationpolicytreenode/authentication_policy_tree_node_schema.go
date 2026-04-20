@@ -16,15 +16,16 @@ var (
 	childrenDescription = "The nodes inside the authentication policy tree node of type AuthenticationPolicyTreeNode."
 )
 
-func childrenDefault(depth int) types.List {
-	baseAttrTypes := map[string]attr.Type{
-		"action": types.ObjectType{AttrTypes: policyaction.AttrTypes()},
-	}
-	if depth < MaxPolicyNodeRecursiveDepth {
-		baseAttrTypes["children"] = childrenAttrTypes(depth + 1)
-	}
+func rootNodeObjectType() types.ObjectType {
+	return types.ObjectType{AttrTypes: GetRootNodeAttrTypes()}
+}
 
-	resp, _ := types.ListValue(types.ObjectType{AttrTypes: baseAttrTypes}, []attr.Value{})
+func nodeObjectType(depth int) types.ObjectType {
+	return childrenAttrTypes(depth).ElemType.(types.ObjectType)
+}
+
+func childrenDefault(depth int) types.List {
+	resp, _ := types.ListValue(nodeObjectType(depth), []attr.Value{})
 	return resp
 }
 
@@ -44,11 +45,13 @@ func toSchemaInternal(description string, includeValueDefault bool) schema.Singl
 		actionSchema = policyaction.ToSchemaNoValueDefault()
 	}
 	return schema.SingleNestedAttribute{
+		CustomType: rootNodeObjectType(),
 		Attributes: map[string]schema.Attribute{
 			"action": actionSchema,
 			"children": schema.ListNestedAttribute{
 				Optional:     true,
 				Computed:     true,
+				CustomType:   childrenAttrTypes(1),
 				Default:      listdefault.StaticValue(childrenDefault(1)),
 				Description:  childrenDescription,
 				NestedObject: buildSchema(1, includeValueDefault),
@@ -70,6 +73,7 @@ func buildSchema(depth int, includeValueDefault bool) schema.NestedAttributeObje
 		attrs["children"] = schema.ListNestedAttribute{
 			Optional:     true,
 			Computed:     true,
+			CustomType:   childrenAttrTypes(depth + 1),
 			Default:      listdefault.StaticValue(childrenDefault(depth + 1)),
 			Description:  childrenDescription,
 			NestedObject: buildSchema(depth+1, includeValueDefault),
@@ -77,5 +81,6 @@ func buildSchema(depth int, includeValueDefault bool) schema.NestedAttributeObje
 	}
 	return schema.NestedAttributeObject{
 		Attributes: attrs,
+		CustomType: nodeObjectType(depth),
 	}
 }

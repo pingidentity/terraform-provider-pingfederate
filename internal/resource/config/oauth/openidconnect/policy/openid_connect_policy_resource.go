@@ -178,7 +178,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 					},
 				},
 			},
-			"attribute_mapping": attributemapping.ToSchema(true),
+			"attribute_mapping": attributemapping.ToSchemaNoComputedFulfillmentSource(true),
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Optional:    true,
@@ -372,6 +372,16 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	return result, respDiags
 }
 
+func (r *openidConnectPolicyResource) getOIDCPolicyByID(ctx context.Context, policyID string, diagnostics *diag.Diagnostics, action string) (*client.OpenIdConnectPolicy, bool) {
+	response, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.AuthContext(ctx, r.providerConfig), policyID).Execute()
+	if err != nil {
+		config.ReportHttpErrorCustomId(ctx, diagnostics, action, err, httpResp, &customId)
+		return nil, false
+	}
+
+	return response, true
+}
+
 func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan oauthOpenIdConnectPolicyModel
 
@@ -389,9 +399,15 @@ func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.C
 
 	apiCreateOIDCPolicy := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOIDCPolicy = apiCreateOIDCPolicy.Body(*newOIDCPolicy)
-	oidcPolicyResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
+	_, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
 	if err != nil {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OIDC Policy", err, httpResp, &customId)
+		return
+	}
+
+	// Use the canonical GET response for state to avoid write/read drift on nested attribute_sources sets.
+	oidcPolicyResponse, ok := r.getOIDCPolicyByID(ctx, plan.PolicyId.ValueString(), &resp.Diagnostics, "An error occurred while getting the OIDC Policy after create")
+	if !ok {
 		return
 	}
 
@@ -449,9 +465,14 @@ func (r *openidConnectPolicyResource) Update(ctx context.Context, req resource.U
 	}
 
 	updateOIDCPolicyRequest = updateOIDCPolicyRequest.Body(*updatedPolicy)
-	updateResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicyExecute(updateOIDCPolicyRequest)
+	_, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicyExecute(updateOIDCPolicyRequest)
 	if err != nil {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the OIDC Policy", err, httpResp, &customId)
+		return
+	}
+
+	updateResponse, ok := r.getOIDCPolicyByID(ctx, plan.PolicyId.ValueString(), &resp.Diagnostics, "An error occurred while getting the OIDC Policy after update")
+	if !ok {
 		return
 	}
 
