@@ -3,13 +3,13 @@
 package attributesources
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -148,6 +148,10 @@ func ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 	ldapAttributeSourceSchema["binary_attribute_settings"] = schema.MapNestedAttribute{
 		Description: "The advanced settings for binary LDAP attributes.",
 		Optional:    true,
+		Computed:    true,
+		PlanModifiers: []planmodifier.Map{
+			mapplanmodifier.UseStateForUnknown(),
+		},
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"binary_encoding": schema.StringAttribute{
@@ -158,9 +162,6 @@ func ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 					},
 				},
 			},
-		},
-		Validators: []validator.Map{
-			mapvalidator.SizeAtLeast(1),
 		},
 	}
 	return ldapAttributeSourceSchema

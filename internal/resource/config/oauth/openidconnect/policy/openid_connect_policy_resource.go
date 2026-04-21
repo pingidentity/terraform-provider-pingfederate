@@ -389,9 +389,16 @@ func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.C
 
 	apiCreateOIDCPolicy := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOIDCPolicy = apiCreateOIDCPolicy.Body(*newOIDCPolicy)
-	oidcPolicyResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
+	_, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
 	if err != nil {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OIDC Policy", err, httpResp, &customId)
+		return
+	}
+
+	// Use the canonical GET response for state to avoid write/read drift on nested attribute_sources sets.
+	oidcPolicyResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.AuthContext(ctx, r.providerConfig), plan.PolicyId.ValueString()).Execute()
+	if err != nil {
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the OIDC Policy after create", err, httpResp, &customId)
 		return
 	}
 
@@ -449,9 +456,16 @@ func (r *openidConnectPolicyResource) Update(ctx context.Context, req resource.U
 	}
 
 	updateOIDCPolicyRequest = updateOIDCPolicyRequest.Body(*updatedPolicy)
-	updateResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicyExecute(updateOIDCPolicyRequest)
+	_, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicyExecute(updateOIDCPolicyRequest)
 	if err != nil {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the OIDC Policy", err, httpResp, &customId)
+		return
+	}
+
+	// Use the canonical GET response for state to avoid write/read drift on nested attribute_sources sets.
+	updateResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.AuthContext(ctx, r.providerConfig), plan.PolicyId.ValueString()).Execute()
+	if err != nil {
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the OIDC Policy after update", err, httpResp, &customId)
 		return
 	}
 

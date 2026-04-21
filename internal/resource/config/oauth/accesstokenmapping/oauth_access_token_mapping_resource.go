@@ -247,9 +247,16 @@ func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resour
 	resp.Diagnostics.Append(diags...)
 	apiCreateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.CreateMapping(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenMappings = apiCreateOauthAccessTokenMappings.Body(*clientData)
-	oauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.CreateMappingExecute(apiCreateOauthAccessTokenMappings)
+	_, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.CreateMappingExecute(apiCreateOauthAccessTokenMappings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Mapping", err, httpResp)
+		return
+	}
+
+	// Use the canonical GET response for state to avoid write/read drift on nested attribute_sources sets.
+	oauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString()).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Mapping after create", err, httpResp)
 		return
 	}
 
@@ -306,9 +313,16 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 	resp.Diagnostics.Append(diags...)
 	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString())
 	apiUpdateOauthAccessTokenMappings = apiUpdateOauthAccessTokenMappings.Body(*clientData)
-	updateOauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMappingExecute(apiUpdateOauthAccessTokenMappings)
+	_, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMappingExecute(apiUpdateOauthAccessTokenMappings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Access Token Mapping", err, httpResp)
+		return
+	}
+
+	// Use the canonical GET response for state to avoid write/read drift on nested attribute_sources sets.
+	updateOauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), plan.MappingId.ValueString()).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Mapping after update", err, httpResp)
 		return
 	}
 

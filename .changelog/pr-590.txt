@@ -1,0 +1,3 @@
+```release-note:bug
+`resource/pingfederate_openid_connect_policy`, `resource/pingfederate_oauth_access_token_mapping`: Fixed `attribute_sources` with `ldap_attribute_source` producing "does not correlate with any element in actual" error due to server-injected `binary_attribute_settings`.
+```
