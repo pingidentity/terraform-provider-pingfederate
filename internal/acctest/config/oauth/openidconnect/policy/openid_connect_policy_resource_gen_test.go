@@ -88,6 +88,21 @@ func TestAccOpenidConnectPolicy_MinimalMaximal(t *testing.T) {
 	})
 }
 
+func TestAccOpenidConnectPolicy_LdapAttributeSourceBinaryAttributeSettings(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: openidConnectPolicy_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: openidConnectPolicy_LdapAttributeSourceBinaryAttributeSettingsHCL(),
+			},
+		},
+	})
+}
+
 // Minimal HCL with only required values set
 func openidConnectPolicy_MinimalHCL() string {
 	return fmt.Sprintf(`
@@ -173,6 +188,235 @@ resource "pingfederate_openid_connect_policy" "example" {
     }
   }
   name = "myoidcpolicy"
+}
+data "pingfederate_openid_connect_policy" "example" {
+  policy_id = pingfederate_openid_connect_policy.example.policy_id
+}
+`, openidConnectPolicyPolicyId)
+}
+
+func openidConnectPolicy_LdapAttributeSourceBinaryAttributeSettingsHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_data_store" "example" {
+  data_store_id         = "binaryAttrTest"
+  mask_attribute_values = true
+  ldap_data_store = {
+    ldap_type             = "PING_DIRECTORY"
+    user_dn               = "cn=admintwo"
+    password              = "editedpassword"
+    binary_attributes     = ["updatedBinaryAttribute1", "updatedBinaryAttribute2"]
+    bind_anonymously      = false
+    connection_timeout    = 100
+    create_if_necessary   = true
+    dns_ttl               = 3000
+    follow_ldap_referrals = false
+    hostnames = [
+      "pingdirectory.example.com",
+      "pingdirectory2.example.com"
+    ]
+    hostnames_tags = [
+      {
+        hostnames = [
+          "pingdirectory.example.com",
+          "pingdirectory2.example.com"
+        ]
+        default_source = true
+      },
+      {
+        hostnames = [
+          "pdeast1:1234"
+        ]
+        default_source = false
+        tags           = "us-east-1"
+      },
+      {
+        hostnames = [
+          "pdeast2:5678"
+        ]
+        tags = "us-east-2"
+      }
+    ]
+    ldap_dns_srv_prefix     = "_ldapcustom._tcp"
+    ldaps_dns_srv_prefix    = "_ldapscustom._tcp"
+    max_connections         = 200
+    max_wait                = 500
+    min_connections         = 15
+    name                    = "mypddatastore"
+    read_timeout            = 100
+    test_on_borrow          = true
+    test_on_return          = true
+    time_between_evictions  = 100
+    use_dns_srv_records     = false
+    use_ssl                 = true
+    verify_host             = false
+    retry_failed_operations = true
+	use_start_tls           = false
+  }
+}
+
+resource "pingfederate_oauth_server_settings" "example" {
+  authorization_code_entropy = 30
+  authorization_code_timeout = 60
+  refresh_rolling_interval   = 2
+  refresh_token_length       = 50
+  scopes = [
+    {
+      name        = "email"
+      description = "email scope"
+      dynamic     = false
+    }
+  ]
+}
+
+resource "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = "oidcJsonWebTokenExample"
+  name       = "oidcJsonWebTokenExample"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = [
+      {
+        name = "Symmetric Keys"
+        rows = [
+          {
+            fields = [
+              {
+                name  = "Key ID"
+                value = "keyidentifier"
+              },
+              {
+                name  = "Encoding"
+                value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+              },
+            ]
+          }
+        ]
+      },
+      {
+        name = "Certificates"
+        rows = []
+      }
+    ]
+    fields = [
+      {
+        name  = "JWE Algorithm"
+        value = "dir"
+      },
+      {
+        name  = "JWE Content Encryption Algorithm"
+        value = "A192CBC-HS384"
+      },
+      {
+        name  = "Active Symmetric Encryption Key ID"
+        value = "keyidentifier"
+      },
+    ]
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name = "contract"
+      },
+      {
+        name         = "another"
+        multi_valued = false
+      }
+    ]
+  }
+}
+
+resource "pingfederate_openid_connect_policy" "example" {
+  depends_on = [pingfederate_oauth_server_settings.example]
+  policy_id  = "%s"
+  access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.example.id
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        multi_valued = true
+        name         = "extended"
+      },
+      {
+        multi_valued = false
+        name         = "another"
+      }
+    ]
+  }
+  attribute_mapping = {
+    attribute_contract_fulfillment = {
+      "sub" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "contract"
+      }
+      "extended" = {
+        source = {
+          type = "NO_MAPPING"
+        }
+      }
+      "another" = {
+        source = {
+          type = "TEXT"
+        }
+        value = "example2"
+      }
+    }
+    attribute_sources = [
+      {
+        ldap_attribute_source = {
+          attribute_contract_fulfillment = null
+          base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
+          # Not setting the binary_attribute_settings field
+          id = "ldapguy"
+          data_store_ref = {
+            id = pingfederate_data_store.example.id
+          }
+          description            = "PingDirectory"
+          member_of_nested_group = false
+          search_attributes      = ["Subject DN"]
+          search_filter          = "(&(memberUid=uid)(cn=Postman))"
+          search_scope           = "SUBTREE"
+          type                   = "LDAP"
+        }
+      },
+    ]
+    issuance_criteria = {
+      conditional_criteria = [
+        {
+          attribute_name = "sub"
+          condition      = "MULTIVALUE_CONTAINS_DN"
+          source = {
+            type = "MAPPED_ATTRIBUTES"
+          }
+          value = "cn=Example,dc=example,dc=com"
+        },
+      ]
+      expression_criteria = null
+    }
+  }
+  id_token_lifetime                = 7
+  include_s_hash_in_id_token       = true
+  include_sri_in_id_token          = true
+  include_user_info_in_id_token    = true
+  name                             = "myoidcpolicy"
+  reissue_id_token_in_hybrid_flow  = true
+  return_id_token_on_refresh_grant = true
+  scope_attribute_mappings = {
+    "email" = {
+      values = ["extended"]
+    }
+  }
+  include_x5t_in_id_token   = true
+  id_token_typ_header_value = "Example"
 }
 data "pingfederate_openid_connect_policy" "example" {
   policy_id = pingfederate_openid_connect_policy.example.policy_id
