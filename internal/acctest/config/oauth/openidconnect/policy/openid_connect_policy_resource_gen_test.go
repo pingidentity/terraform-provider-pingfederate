@@ -5,6 +5,7 @@ package oauthopenidconnectpolicy_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -17,6 +18,7 @@ import (
 )
 
 const openidConnectPolicyPolicyId = "openidConnectPolicyPolicyId"
+const openidConnectPolicyCustomSourcePolicyId = "openidConnectPolicyCustomSrc"
 
 func TestAccOpenidConnectPolicy_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -80,6 +82,33 @@ func TestAccOpenidConnectPolicy_MinimalMaximal(t *testing.T) {
 				Config:                               openidConnectPolicy_CompleteHCL(),
 				ResourceName:                         "pingfederate_openid_connect_policy.example",
 				ImportStateId:                        openidConnectPolicyPolicyId,
+				ImportStateVerifyIdentifierAttribute: "policy_id",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+			},
+		},
+	})
+}
+
+func TestAccOpenidConnectPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: openidConnectPolicyCustomSource_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: openidConnectPolicy_CustomAttributeSourceHCL(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.custom_source", "attribute_mapping.attribute_sources.#", "1"),
+					openidConnectPolicy_CheckCustomFilterFieldValue("pingfederate_openid_connect_policy.custom_source", "Resource Path", "/users/external"),
+				),
+			},
+			{
+				Config:                               openidConnectPolicy_CustomAttributeSourceHCL(),
+				ResourceName:                         "pingfederate_openid_connect_policy.custom_source",
+				ImportStateId:                        openidConnectPolicyCustomSourcePolicyId,
 				ImportStateVerifyIdentifierAttribute: "policy_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
@@ -364,6 +393,113 @@ data "pingfederate_openid_connect_policy" "example" {
 `, openidConnectPolicyPolicyId, versionedHcl)
 }
 
+func openidConnectPolicy_CustomAttributeSourceHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "custom_source" {
+  manager_id = "oidcJsonWebTokenCustomSrc"
+  name       = "oidcJsonWebTokenCustomSrc"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = [
+      {
+        name = "Symmetric Keys"
+        rows = [
+          {
+            fields = [
+              {
+                name  = "Key ID"
+                value = "keyidentifier"
+              },
+              {
+                name  = "Encoding"
+                value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+              },
+            ]
+          }
+        ]
+      },
+      {
+        name = "Certificates"
+        rows = []
+      }
+    ]
+    fields = [
+      {
+        name  = "JWE Algorithm"
+        value = "dir"
+      },
+      {
+        name  = "JWE Content Encryption Algorithm"
+        value = "A192CBC-HS384"
+      },
+      {
+        name  = "Active Symmetric Encryption Key ID"
+        value = "keyidentifier"
+      },
+    ]
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name = "contract"
+      }
+    ]
+  }
+}
+
+resource "pingfederate_openid_connect_policy" "custom_source" {
+  policy_id = "%s"
+  access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.custom_source.id
+  }
+  attribute_contract = {
+  }
+  attribute_mapping = {
+    attribute_contract_fulfillment = {
+      "sub" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "contract"
+      }
+    }
+    attribute_sources = [
+      {
+        custom_attribute_source = {
+          data_store_ref = {
+            id = "customDataStore"
+          }
+          description = "APIStubs"
+          id          = "APIStubs"
+          filter_fields = [
+            {
+              name = "Authorization Header"
+            },
+            {
+              name = "Body"
+            },
+            {
+              name  = "Resource Path"
+              value = "/users/external"
+            },
+          ]
+        }
+      }
+    ]
+  }
+  name = "oidc-custom-source-policy"
+}
+`, openidConnectPolicyCustomSourcePolicyId)
+}
+
 // Validate any computed values when applying minimal HCL
 func openidConnectPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	var versionedChecks []resource.TestCheckFunc
@@ -428,6 +564,37 @@ func openidConnectPolicy_CheckComputedValuesComplete() resource.TestCheckFunc {
 	)
 }
 
+func openidConnectPolicy_CheckCustomFilterFieldValue(resourceName, filterName, expectedValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		stateResource, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+
+		for key, value := range stateResource.Primary.Attributes {
+			if !strings.Contains(key, ".custom_attribute_source.filter_fields.") || !strings.HasSuffix(key, ".name") {
+				continue
+			}
+			if value != filterName {
+				continue
+			}
+
+			valueKey := strings.TrimSuffix(key, ".name") + ".value"
+			actualValue, exists := stateResource.Primary.Attributes[valueKey]
+			if !exists {
+				return fmt.Errorf("expected %q filter field to have value key %q", filterName, valueKey)
+			}
+			if actualValue != expectedValue {
+				return fmt.Errorf("unexpected value for %q filter field: got %q, want %q", filterName, actualValue, expectedValue)
+			}
+
+			return nil
+		}
+
+		return fmt.Errorf("did not find filter field %q in resource state", filterName)
+	}
+}
+
 // Delete the resource
 func openidConnectPolicy_Delete(t *testing.T) {
 	testClient := acctest.TestClient()
@@ -443,6 +610,15 @@ func openidConnectPolicy_CheckDestroy(s *terraform.State) error {
 	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), openidConnectPolicyPolicyId).Execute()
 	if err == nil {
 		return fmt.Errorf("openid_connect_policy still exists after tests. Expected it to be destroyed")
+	}
+	return nil
+}
+
+func openidConnectPolicyCustomSource_CheckDestroy(s *terraform.State) error {
+	testClient := acctest.TestClient()
+	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), openidConnectPolicyCustomSourcePolicyId).Execute()
+	if err == nil {
+		return fmt.Errorf("openid_connect_policy custom source still exists after tests. Expected it to be destroyed")
 	}
 	return nil
 }
