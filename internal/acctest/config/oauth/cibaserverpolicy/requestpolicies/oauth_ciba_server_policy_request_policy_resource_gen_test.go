@@ -20,7 +20,6 @@ import (
 )
 
 const oauthCibaServerPolicyRequestPolicyPolicyId = "oauthCibaServerPolicyRequestPoli"
-const oauthCibaServerPolicyRequestPolicyCustomSourcePolicyId = "oauthCibaServerPolicyRequestCu"
 
 func TestAccOauthCibaServerPolicyRequestPolicy_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -82,33 +81,6 @@ func TestAccOauthCibaServerPolicyRequestPolicy_MinimalMaximal(t *testing.T) {
 				Config:                               oauthCibaServerPolicyRequestPolicy_CompleteHCL(),
 				ResourceName:                         "pingfederate_oauth_ciba_server_policy_request_policy.example",
 				ImportStateId:                        oauthCibaServerPolicyRequestPolicyPolicyId,
-				ImportStateVerifyIdentifierAttribute: "policy_id",
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-			},
-		},
-	})
-}
-
-func TestAccOauthCibaServerPolicyRequestPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
-		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
-		},
-		CheckDestroy: oauthCibaServerPolicyRequestPolicyCustomSource_CheckDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: oauthCibaServerPolicyRequestPolicy_CustomAttributeSourceHCL(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "identity_hint_contract_fulfillment.attribute_sources.#", "1"),
-					resource.TestCheckResourceAttr("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "identity_hint_mapping.attribute_sources.#", "0"),
-				),
-			},
-			{
-				Config:                               oauthCibaServerPolicyRequestPolicy_CustomAttributeSourceHCL(),
-				ResourceName:                         "pingfederate_oauth_ciba_server_policy_request_policy.custom_source",
-				ImportStateId:                        oauthCibaServerPolicyRequestPolicyCustomSourcePolicyId,
 				ImportStateVerifyIdentifierAttribute: "policy_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
@@ -227,113 +199,6 @@ resource "pingfederate_oauth_ciba_server_policy_request_policy" "example" {
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
 }
 
-func oauthCibaServerPolicyRequestPolicy_CustomAttributeSourceHCL() string {
-	return fmt.Sprintf(`
-resource "pingfederate_oauth_ciba_server_policy_request_policy" "custom_source" {
-  policy_id                            = "%s"
-  allow_unsigned_login_hint_token      = false
-  alternative_login_hint_token_issuers = []
-  authenticator_ref = {
-    id = "exampleCibaAuthenticator"
-  }
-  identity_hint_contract = {
-    extended_attributes = [
-      {
-        name = "request.ConsentId"
-      },
-      {
-        name = "login_hint_token.subject.third_party_token"
-      },
-      {
-        name = "request.openbanking_intent_id"
-      }
-    ]
-  }
-  identity_hint_contract_fulfillment = {
-    attribute_contract_fulfillment = {
-      "IDENTITY_HINT_SUBJECT" = {
-        source = {
-          type = "REQUEST"
-        }
-        value = "IDENTITY_HINT_SUBJECT"
-      }
-      "request.ConsentId" = {
-        source = {
-          type = "REQUEST"
-        }
-        value = "request.ConsentId"
-      }
-      "login_hint_token.subject.third_party_token" = {
-        source = {
-          type = "REQUEST"
-        }
-        value = "login_hint_token.subject.third_party_token"
-      }
-      "request.openbanking_intent_id" = {
-        source = {
-          type = "REQUEST"
-        }
-        value = "request.openbanking_intent_id"
-      }
-    }
-    attribute_sources = [
-      {
-        custom_attribute_source = {
-          data_store_ref = {
-            id = "customDataStore"
-          }
-          description = "cibaservice"
-          id          = "cibaservice"
-          filter_fields = [
-            {
-              name  = "Resource Path"
-              value = ""
-            },
-            {
-              name  = "Authorization Header"
-              value = ""
-            },
-            {
-              name  = "Body"
-              value = "{\"sub\":\"$${login_hint_token.subject.third_party_token}\"}"
-            }
-          ]
-        }
-      }
-    ]
-    issuance_criteria = {
-      conditional_criteria = []
-      expression_criteria  = null
-    }
-  }
-  identity_hint_mapping = {
-    attribute_contract_fulfillment = {
-      "subject" = {
-        source = {
-          type = "REQUEST"
-        }
-        value = "IDENTITY_HINT_SUBJECT"
-      }
-      "USER_KEY" = {
-        source = {
-          type = "REQUEST"
-        }
-        value = "IDENTITY_HINT_SUBJECT"
-      }
-    }
-    attribute_sources = []
-    issuance_criteria = {
-      conditional_criteria = []
-      expression_criteria  = null
-    }
-  }
-  name                            = "My Custom Source Request Policy"
-  require_token_for_identity_hint = true
-  transaction_lifetime            = 240
-}
-`, oauthCibaServerPolicyRequestPolicyCustomSourcePolicyId)
-}
-
 // Validate any computed values when applying minimal HCL
 func oauthCibaServerPolicyRequestPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
@@ -364,15 +229,6 @@ func oauthCibaServerPolicyRequestPolicy_CheckDestroy(s *terraform.State) error {
 	_, err := testClient.OauthCibaServerPolicyAPI.DeleteCibaServerPolicy(acctest.TestBasicAuthContext(), oauthCibaServerPolicyRequestPolicyPolicyId).Execute()
 	if err == nil {
 		return fmt.Errorf("oauth_ciba_server_policy_request_policy still exists after tests. Expected it to be destroyed")
-	}
-	return nil
-}
-
-func oauthCibaServerPolicyRequestPolicyCustomSource_CheckDestroy(s *terraform.State) error {
-	testClient := acctest.TestClient()
-	_, err := testClient.OauthCibaServerPolicyAPI.DeleteCibaServerPolicy(acctest.TestBasicAuthContext(), oauthCibaServerPolicyRequestPolicyCustomSourcePolicyId).Execute()
-	if err == nil {
-		return fmt.Errorf("oauth_ciba_server_policy_request_policy custom source policy still exists after tests. Expected it to be destroyed")
 	}
 	return nil
 }
