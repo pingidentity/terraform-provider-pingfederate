@@ -21,7 +21,6 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -50,6 +49,19 @@ func OpenidConnectPolicyResource() resource.Resource {
 type openidConnectPolicyResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
+}
+
+func oidcAttributeMappingSchema(required bool) schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Attributes: map[string]schema.Attribute{
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+			"attribute_sources":              attributesources.ToSchema(0, false),
+			"issuance_criteria":              issuancecriteria.ToSchema(),
+		},
+		Required:    required,
+		Optional:    !required,
+		Description: "A list of mappings from attribute sources to attribute targets.",
+	}
 }
 
 // GetSchema defines the schema for the resource.
@@ -178,7 +190,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 					},
 				},
 			},
-			"attribute_mapping": attributemapping.ToSchemaNoComputedFulfillmentSource(true),
+			"attribute_mapping": oidcAttributeMappingSchema(true),
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Optional:    true,

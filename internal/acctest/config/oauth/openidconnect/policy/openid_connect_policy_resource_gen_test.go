@@ -17,8 +17,6 @@ import (
 )
 
 const openidConnectPolicyPolicyId = "openidConnectPolicyPolicyId"
-const openidConnectPolicyCustomSourcePolicyId = "openidConnectPolicyCustomSrc"
-const openidConnectPolicyCustomSourceStoreId = "oidcCustomSourceStore"
 
 func TestAccOpenidConnectPolicy_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -82,32 +80,6 @@ func TestAccOpenidConnectPolicy_MinimalMaximal(t *testing.T) {
 				Config:                               openidConnectPolicy_CompleteHCL(),
 				ResourceName:                         "pingfederate_openid_connect_policy.example",
 				ImportStateId:                        openidConnectPolicyPolicyId,
-				ImportStateVerifyIdentifierAttribute: "policy_id",
-				ImportState:                          true,
-				ImportStateVerify:                    true,
-			},
-		},
-	})
-}
-
-func TestAccOpenidConnectPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
-		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
-		},
-		CheckDestroy: openidConnectPolicyCustomSource_CheckDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: openidConnectPolicy_CustomAttributeSourceHCL(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.custom_source", "attribute_mapping.attribute_sources.#", "2"),
-				),
-			},
-			{
-				Config:                               openidConnectPolicy_CustomAttributeSourceHCL(),
-				ResourceName:                         "pingfederate_openid_connect_policy.custom_source",
-				ImportStateId:                        openidConnectPolicyCustomSourcePolicyId,
 				ImportStateVerifyIdentifierAttribute: "policy_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
@@ -392,248 +364,6 @@ data "pingfederate_openid_connect_policy" "example" {
 `, openidConnectPolicyPolicyId, versionedHcl)
 }
 
-func openidConnectPolicy_CustomAttributeSourceHCL() string {
-	return fmt.Sprintf(`
-resource "pingfederate_oauth_server_settings" "example" {
-  authorization_code_entropy = 30
-  authorization_code_timeout = 60
-  refresh_rolling_interval   = 2
-  refresh_token_length       = 50
-  scopes = [
-    {
-      name        = "email"
-      description = "email scope"
-      dynamic     = false
-    }
-  ]
-}
-
-resource "pingfederate_data_store" "custom_source_store" {
-  data_store_id = "%[1]s"
-  custom_data_store = {
-    name = "%[1]s"
-    plugin_descriptor_ref = {
-      id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
-    }
-    configuration = {
-      tables = [
-        {
-          name = "Base URLs and Tags"
-          rows = [
-            {
-              fields = [
-                {
-                  name  = "Base URL"
-                  value = "https://my_rest_datasource.bxretail.org/api/v1/users"
-                },
-                {
-                  name  = "Tags"
-                  value = "production"
-                }
-              ]
-              default_row = true
-            }
-          ]
-        },
-        {
-          name = "Attributes"
-          rows = [
-            {
-              fields = [
-                {
-                  name  = "Local Attribute"
-                  value = "givenName"
-                },
-                {
-                  name  = "JSON Response Attribute Path"
-                  value = "/givenName"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  }
-}
-
-resource "pingfederate_oauth_access_token_manager" "custom_source_atm" {
-  manager_id = "oidcJsonWebTokenCustomSource"
-  name       = "oidcJsonWebTokenCustomSource"
-  plugin_descriptor_ref = {
-    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
-  }
-  configuration = {
-    tables = [
-      {
-        name = "Symmetric Keys"
-        rows = [
-          {
-            fields = [
-              {
-                name  = "Key ID"
-                value = "keyidentifier"
-              },
-              {
-                name  = "Encoding"
-                value = "b64u"
-              }
-            ]
-            sensitive_fields = [
-              {
-                name  = "Key"
-                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        name = "Certificates"
-        rows = []
-      }
-    ]
-    fields = [
-      {
-        name  = "JWE Algorithm"
-        value = "dir"
-      },
-      {
-        name  = "JWE Content Encryption Algorithm"
-        value = "A192CBC-HS384"
-      },
-      {
-        name  = "Active Symmetric Encryption Key ID"
-        value = "keyidentifier"
-      }
-    ]
-  }
-  attribute_contract = {
-    extended_attributes = [
-      {
-        name = "contract"
-      },
-      {
-        name         = "another"
-        multi_valued = false
-      }
-    ]
-  }
-}
-
-resource "pingfederate_openid_connect_policy" "custom_source" {
-  depends_on = [pingfederate_oauth_server_settings.example]
-  policy_id  = "%[2]s"
-  access_token_manager_ref = {
-    id = pingfederate_oauth_access_token_manager.custom_source_atm.id
-  }
-  attribute_contract = {
-    extended_attributes = [
-      {
-        multi_valued = true
-        name         = "extended"
-      },
-      {
-        multi_valued = false
-        name         = "another"
-      }
-    ]
-  }
-  attribute_mapping = {
-    attribute_contract_fulfillment = {
-      "sub" = {
-        source = {
-          type = "TOKEN"
-        }
-        value = "contract"
-      }
-      "extended" = {
-        source = {
-          type = "NO_MAPPING"
-        }
-      }
-      "another" = {
-        source = {
-          type = "TEXT"
-        }
-        value = "example2"
-      }
-    }
-    attribute_sources = [
-      {
-        jdbc_attribute_source = {
-          attribute_contract_fulfillment = null
-          column_names                   = ["GRANTEE"]
-          data_store_ref = {
-            id = "ProvisionerDS"
-          }
-          description = "JDBC"
-          filter      = "subject"
-          id          = "jdbcguy"
-          schema      = "INFORMATION_SCHEMA"
-          table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-        }
-      },
-      {
-        custom_attribute_source = {
-          data_store_ref = {
-            id = pingfederate_data_store.custom_source_store.id
-          }
-          description = "APIStubs"
-          filter_fields = [
-            {
-              name  = "Authorization Header"
-              value = ""
-            },
-            {
-              name  = "Body"
-              value = ""
-            },
-            {
-              name  = "Resource Path"
-              value = "/users/external"
-            }
-          ]
-          id = "APIStubs"
-        }
-      }
-    ]
-    issuance_criteria = {
-      conditional_criteria = [
-        {
-          attribute_name = "sub"
-          condition      = "MULTIVALUE_CONTAINS_DN"
-          source = {
-            type = "MAPPED_ATTRIBUTES"
-          }
-          value = "cn=Example,dc=example,dc=com"
-        }
-      ]
-      expression_criteria = null
-    }
-  }
-  id_token_lifetime                = 7
-  include_s_hash_in_id_token       = true
-  include_sri_in_id_token          = true
-  include_user_info_in_id_token    = true
-  name                             = "myoidcpolicy"
-  reissue_id_token_in_hybrid_flow  = true
-  return_id_token_on_refresh_grant = true
-  scope_attribute_mappings = {
-    "email" = {
-      values = ["extended"]
-    }
-  }
-  include_x5t_in_id_token   = true
-  id_token_typ_header_value = "Example"
-}
-
-data "pingfederate_openid_connect_policy" "custom_source" {
-  policy_id = pingfederate_openid_connect_policy.custom_source.policy_id
-}
-`, openidConnectPolicyCustomSourceStoreId, openidConnectPolicyCustomSourcePolicyId)
-}
-
 // Validate any computed values when applying minimal HCL
 func openidConnectPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	var versionedChecks []resource.TestCheckFunc
@@ -700,12 +430,8 @@ func openidConnectPolicy_CheckComputedValuesComplete() resource.TestCheckFunc {
 
 // Delete the resource
 func openidConnectPolicy_Delete(t *testing.T) {
-	openidConnectPolicy_DeleteByID(t, openidConnectPolicyPolicyId)
-}
-
-func openidConnectPolicy_DeleteByID(t *testing.T, policyID string) {
 	testClient := acctest.TestClient()
-	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), policyID).Execute()
+	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), openidConnectPolicyPolicyId).Execute()
 	if err != nil {
 		t.Fatalf("Failed to delete config: %v", err)
 	}
@@ -713,16 +439,8 @@ func openidConnectPolicy_DeleteByID(t *testing.T, policyID string) {
 
 // Test that any objects created by the test are destroyed
 func openidConnectPolicy_CheckDestroy(s *terraform.State) error {
-	return openidConnectPolicy_CheckDestroyByID(openidConnectPolicyPolicyId)
-}
-
-func openidConnectPolicyCustomSource_CheckDestroy(s *terraform.State) error {
-	return openidConnectPolicy_CheckDestroyByID(openidConnectPolicyCustomSourcePolicyId)
-}
-
-func openidConnectPolicy_CheckDestroyByID(policyID string) error {
 	testClient := acctest.TestClient()
-	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), policyID).Execute()
+	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), openidConnectPolicyPolicyId).Execute()
 	if err == nil {
 		return fmt.Errorf("openid_connect_policy still exists after tests. Expected it to be destroyed")
 	}

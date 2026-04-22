@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
-	customplanmodifiers "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/planmodifiers"
 )
 
 func commonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeIdAttr bool) map[string]schema.Attribute {
@@ -61,9 +60,6 @@ func customAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeCon
 	if valueDefaultEmptyString {
 		valueAttr.Computed = true
 		valueAttr.Default = stringdefault.StaticString("")
-		valueAttr.PlanModifiers = []planmodifier.String{
-			customplanmodifiers.CustomDataStoreFieldValue(),
-		}
 	} else {
 		valueAttr.Validators = append(valueAttr.Validators, stringvalidator.LengthAtLeast(1))
 	}
