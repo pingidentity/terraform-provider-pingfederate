@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -148,10 +149,15 @@ func ldapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 	ldapAttributeSourceSchema["binary_attribute_settings"] = schema.MapNestedAttribute{
 		Description: "The advanced settings for binary LDAP attributes.",
 		Optional:    true,
+		Computed:    true,
+		PlanModifiers: []planmodifier.Map{
+			mapplanmodifier.UseNonNullStateForUnknown(),
+		},
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"binary_encoding": schema.StringAttribute{
 					Optional:    true,
+					Computed:    true,
 					Description: "Get the encoding type for this attribute. If not specified, the default is BASE64.",
 					Validators: []validator.String{
 						stringvalidator.OneOf("BASE64", "HEX", "SID"),
