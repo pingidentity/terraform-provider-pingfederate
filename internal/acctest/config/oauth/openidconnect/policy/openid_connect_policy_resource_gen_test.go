@@ -250,7 +250,7 @@ resource "pingfederate_data_store" "example" {
     use_ssl                 = true
     verify_host             = false
     retry_failed_operations = true
-	use_start_tls           = false
+    use_start_tls           = false
   }
 }
 

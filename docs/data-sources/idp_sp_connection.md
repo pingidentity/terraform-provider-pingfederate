@@ -75,7 +75,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_query--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--attribute_query--attribute_sources))
+- `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--attribute_query--attribute_sources))
 - `attributes` (Set of String) The list of attributes that may be returned to the SP in the response to an attribute request.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria))
 - `policy` (Attributes) The attribute query profile's security policy. (see [below for nested schema](#nestedatt--attribute_query--policy))
@@ -714,12 +714,12 @@ Read-Only:
 
 Read-Only:
 
-- `adapter_mappings` (Attributes Set) A list of adapters that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings))
+- `adapter_mappings` (Attributes List) A list of adapters that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings))
 - `always_sign_artifact_response` (Boolean) Specify to always sign the SAML ArtifactResponse.
 - `artifact` (Attributes) The settings for an Artifact binding. (see [below for nested schema](#nestedatt--sp_browser_sso--artifact))
 - `assertion_lifetime` (Attributes) The timeframe of validity before and after the issuance of the assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--assertion_lifetime))
 - `attribute_contract` (Attributes) A set of user attributes that the IdP sends in the SAML assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract))
-- `authentication_policy_contract_assertion_mappings` (Attributes Set) A list of authentication policy contracts that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings))
+- `authentication_policy_contract_assertion_mappings` (Attributes List) A list of authentication policy contracts that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings))
 - `default_target_url` (String) Default Target URL for SAML1.x connections.
 - `enabled_profiles` (Set of String) The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO.
 - `encryption_policy` (Attributes) Defines what to encrypt in the browser-based SSO profile. (see [below for nested schema](#nestedatt--sp_browser_sso--encryption_policy))
@@ -746,7 +746,7 @@ Read-Only:
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used.
 - `adapter_override_settings` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings))
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
 - `idp_adapter_ref` (Attributes) Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
@@ -926,7 +926,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -1442,7 +1442,7 @@ Read-Only:
 
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
 - `authentication_policy_contract_ref` (Attributes) Reference to the associated Authentication Policy Contract. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--authentication_policy_contract_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
@@ -1738,7 +1738,7 @@ Read-Only:
 - `oauth_assertion_profiles` (Boolean) When selected, four additional token-type requests become available.
 - `partner_service_ids` (Set of String) The partner service identifiers.
 - `request_contract_ref` (Attributes) Request Contract to be used to map attribute values into the security token. (see [below for nested schema](#nestedatt--ws_trust--request_contract_ref))
-- `token_processor_mappings` (Attributes Set) A list of token processors to validate incoming tokens. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings))
+- `token_processor_mappings` (Attributes List) A list of token processors to validate incoming tokens. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings))
 
 <a id="nestedatt--ws_trust--attribute_contract"></a>
 ### Nested Schema for `ws_trust.attribute_contract`
@@ -1790,7 +1790,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
 - `idp_token_processor_ref` (Attributes) Reference to the associated token processor. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--idp_token_processor_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria))
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
