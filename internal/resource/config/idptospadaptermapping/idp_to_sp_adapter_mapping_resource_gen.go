@@ -60,7 +60,7 @@ type idpToSpAdapterMappingResourceModel struct {
 	ApplicationIconUrl               types.String `tfsdk:"application_icon_url"`
 	ApplicationName                  types.String `tfsdk:"application_name"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
-	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
+	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
 	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
 	Id                               types.String `tfsdk:"id"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`

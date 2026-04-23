@@ -58,7 +58,7 @@ func (r *oauthIdpAdapterMappingResource) Configure(_ context.Context, req resour
 
 type oauthIdpAdapterMappingResourceModel struct {
 	AttributeContractFulfillment types.Map    `tfsdk:"attribute_contract_fulfillment"`
-	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
+	AttributeSources             types.List   `tfsdk:"attribute_sources"`
 	Id                           types.String `tfsdk:"id"`
 	IdpAdapterRef                types.Object `tfsdk:"idp_adapter_ref"`
 	IssuanceCriteria             types.Object `tfsdk:"issuance_criteria"`

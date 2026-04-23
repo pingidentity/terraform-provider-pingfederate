@@ -327,7 +327,7 @@ func (model *oauthOpenIdConnectPolicyModel) buildClientStruct() (*client.OpenIdC
 	attributeMappingValue := client.AttributeMapping{}
 	attributeMappingAttrs := model.AttributeMapping.Attributes()
 	attributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(attributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-	attributeMappingValue.AttributeSources = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.Set))
+	attributeMappingValue.AttributeSources = attributesources.ClientStruct(attributeMappingAttrs["attribute_sources"].(types.List))
 	attributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(attributeMappingAttrs["issuance_criteria"].(types.Object))
 	result.AttributeMapping = attributeMappingValue
 

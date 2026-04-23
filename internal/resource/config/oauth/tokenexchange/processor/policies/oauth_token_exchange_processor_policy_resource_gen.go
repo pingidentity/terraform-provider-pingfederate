@@ -239,7 +239,7 @@ func (model *oauthTokenExchangeProcessorPolicyResourceModel) buildClientStruct()
 		}
 		processorMappingsValue.ActorTokenType = processorMappingsAttrs["actor_token_type"].(types.String).ValueStringPointer()
 		processorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(processorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-		processorMappingsValue.AttributeSources = attributesources.ClientStruct(processorMappingsAttrs["attribute_sources"].(types.Set))
+		processorMappingsValue.AttributeSources = attributesources.ClientStruct(processorMappingsAttrs["attribute_sources"].(types.List))
 		processorMappingsValue.IssuanceCriteria = issuancecriteria.ClientStruct(processorMappingsAttrs["issuance_criteria"].(types.Object))
 		processorMappingsSubjectTokenProcessorValue := client.ResourceLink{}
 		processorMappingsSubjectTokenProcessorAttrs := processorMappingsAttrs["subject_token_processor"].(types.Object).Attributes()
@@ -318,7 +318,7 @@ func (state *oauthTokenExchangeProcessorPolicyResourceModel) readClientResponse(
 		"actor_token_processor":          types.ObjectType{AttrTypes: processorMappingsActorTokenProcessorAttrTypes},
 		"actor_token_type":               types.StringType,
 		"attribute_contract_fulfillment": types.MapType{ElemType: processorMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: processorMappingsAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: processorMappingsAttributeSourcesElementType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: processorMappingsIssuanceCriteriaAttrTypes},
 		"subject_token_processor":        types.ObjectType{AttrTypes: processorMappingsSubjectTokenProcessorAttrTypes},
 		"subject_token_type":             types.StringType,

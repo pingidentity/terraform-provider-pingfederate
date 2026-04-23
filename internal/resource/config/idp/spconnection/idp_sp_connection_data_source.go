@@ -1381,7 +1381,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	}
 	attributeQueryAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: attributeQueryAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: attributeQueryAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: attributeQueryAttributeSourcesElementType},
 		"attributes":                     types.SetType{ElemType: types.StringType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: attributeQueryIssuanceCriteriaAttrTypes},
 		"policy":                         types.ObjectType{AttrTypes: attributeQueryPolicyAttrTypes},
@@ -1852,7 +1852,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
 	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesElementType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaAttrTypes},
 	}
 	spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationAttrTypes := pluginconfiguration.AttrTypes()
@@ -1884,7 +1884,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 		"abort_sso_transaction_as_fail_safe": types.BoolType,
 		"adapter_override_settings":          types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes},
 		"attribute_contract_fulfillment":     types.MapType{ElemType: spBrowserSsoAdapterMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":                  types.SetType{ElemType: spBrowserSsoAdapterMappingsAttributeSourcesElementType},
+		"attribute_sources":                  types.ListType{ElemType: spBrowserSsoAdapterMappingsAttributeSourcesElementType},
 		"idp_adapter_ref":                    types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIdpAdapterRefAttrTypes},
 		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIssuanceCriteriaAttrTypes},
 		"restrict_virtual_entity_ids":        types.BoolType,
@@ -1930,7 +1930,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttrTypes := map[string]attr.Type{
 		"abort_sso_transaction_as_fail_safe": types.BoolType,
 		"attribute_contract_fulfillment":     types.MapType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":                  types.SetType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesElementType},
+		"attribute_sources":                  types.ListType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesElementType},
 		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrTypes},
 		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaAttrTypes},
 		"restrict_virtual_entity_ids":        types.BoolType,
@@ -2356,7 +2356,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	wsTrustTokenProcessorMappingsIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
 	wsTrustTokenProcessorMappingsAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: wsTrustTokenProcessorMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: wsTrustTokenProcessorMappingsAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: wsTrustTokenProcessorMappingsAttributeSourcesElementType},
 		"idp_token_processor_ref":        types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIdpTokenProcessorRefAttrTypes},
 		"issuance_criteria":              types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIssuanceCriteriaAttrTypes},
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},

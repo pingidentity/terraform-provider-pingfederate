@@ -265,7 +265,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 		identityHintContractFulfillmentValue := &client.AttributeMapping{}
 		identityHintContractFulfillmentAttrs := model.IdentityHintContractFulfillment.Attributes()
 		identityHintContractFulfillmentValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(identityHintContractFulfillmentAttrs["attribute_contract_fulfillment"].(types.Map))
-		identityHintContractFulfillmentValue.AttributeSources = attributesources.ClientStruct(identityHintContractFulfillmentAttrs["attribute_sources"].(types.Set))
+		identityHintContractFulfillmentValue.AttributeSources = attributesources.ClientStruct(identityHintContractFulfillmentAttrs["attribute_sources"].(types.List))
 		identityHintContractFulfillmentValue.IssuanceCriteria = issuancecriteria.ClientStruct(identityHintContractFulfillmentAttrs["issuance_criteria"].(types.Object))
 		result.IdentityHintContractFulfillment = identityHintContractFulfillmentValue
 	}
@@ -275,7 +275,7 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 		identityHintMappingValue := &client.AttributeMapping{}
 		identityHintMappingAttrs := model.IdentityHintMapping.Attributes()
 		identityHintMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(identityHintMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-		identityHintMappingValue.AttributeSources = attributesources.ClientStruct(identityHintMappingAttrs["attribute_sources"].(types.Set))
+		identityHintMappingValue.AttributeSources = attributesources.ClientStruct(identityHintMappingAttrs["attribute_sources"].(types.List))
 		identityHintMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(identityHintMappingAttrs["issuance_criteria"].(types.Object))
 		result.IdentityHintMapping = *identityHintMappingValue
 	}
@@ -384,7 +384,7 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 	identityHintContractFulfillmentIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
 	identityHintContractFulfillmentAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: identityHintContractFulfillmentAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: identityHintContractFulfillmentAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: identityHintContractFulfillmentAttributeSourcesElementType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: identityHintContractFulfillmentIssuanceCriteriaAttrTypes},
 	}
 	var identityHintContractFulfillmentValue types.Object
@@ -414,7 +414,7 @@ func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse
 	identityHintMappingIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
 	identityHintMappingAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: identityHintMappingAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: identityHintMappingAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: identityHintMappingAttributeSourcesElementType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: identityHintMappingIssuanceCriteriaAttrTypes},
 	}
 	identityHintMappingAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.IdentityHintMapping.AttributeContractFulfillment)
