@@ -1138,10 +1138,77 @@ func (r *idpSpConnectionResource) UpgradeState(ctx context.Context) map[int64]re
 				priorStateData.Credentials, diags = priorStateData.schemaUpgradeCredentialsV0toV1(ctx)
 				resp.Diagnostics.Append(diags...)
 
+				priorStateData.SpBrowserSso, diags = priorStateData.schemaUpgradeSpBrowserSsoCollectionTypesV0toV1(ctx)
+				resp.Diagnostics.Append(diags...)
+
+				priorStateData.WsTrust, diags = priorStateData.schemaUpgradeWsTrustCollectionTypesV0toV1(ctx)
+				resp.Diagnostics.Append(diags...)
+
 				resp.Diagnostics.Append(resp.State.Set(ctx, priorStateData)...)
 			},
 		},
 	}
+}
+
+func (p *idpSpConnectionModel) schemaUpgradeSpBrowserSsoCollectionTypesV0toV1(ctx context.Context) (types.Object, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	stateVal := p.SpBrowserSso
+
+	if stateVal.IsNull() || stateVal.IsUnknown() {
+		return stateVal, diags
+	}
+
+	attrs := stateVal.Attributes()
+
+	var respDiags diag.Diagnostics
+	attrs["adapter_mappings"], respDiags = schemaUpgradeSetToListAttr(attrs["adapter_mappings"])
+	diags.Append(respDiags...)
+
+	attrs["authentication_policy_contract_assertion_mappings"], respDiags = schemaUpgradeSetToListAttr(attrs["authentication_policy_contract_assertion_mappings"])
+	diags.Append(respDiags...)
+
+	result, respDiags := types.ObjectValue(stateVal.AttributeTypes(ctx), attrs)
+	diags.Append(respDiags...)
+	return result, diags
+}
+
+func (p *idpSpConnectionModel) schemaUpgradeWsTrustCollectionTypesV0toV1(ctx context.Context) (types.Object, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	stateVal := p.WsTrust
+
+	if stateVal.IsNull() || stateVal.IsUnknown() {
+		return stateVal, diags
+	}
+
+	attrs := stateVal.Attributes()
+
+	convertedValue, respDiags := schemaUpgradeSetToListAttr(attrs["token_processor_mappings"])
+	diags.Append(respDiags...)
+	attrs["token_processor_mappings"] = convertedValue
+
+	result, respDiags := types.ObjectValue(stateVal.AttributeTypes(ctx), attrs)
+	diags.Append(respDiags...)
+	return result, diags
+}
+
+func schemaUpgradeSetToListAttr(attributeValue attr.Value) (attr.Value, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	setValue, ok := attributeValue.(types.Set)
+	if !ok {
+		diags.AddError("Unable to convert value", "Unable to convert the attribute value from a set to a list when upgrading state")
+		return attributeValue, diags
+	}
+
+	elementType := setValue.ElementType(context.Background())
+	if setValue.IsNull() || setValue.IsUnknown() {
+		// State upgraders never should return unknown values
+		return types.ListNull(elementType), diags
+	}
+
+	listValue, respDiags := types.ListValue(elementType, setValue.Elements())
+	diags.Append(respDiags...)
+	return listValue, diags
 }
 
 func (p *idpSpConnectionModel) schemaUpgradeCredentialsV0toV1(ctx context.Context) (types.Object, diag.Diagnostics) {
