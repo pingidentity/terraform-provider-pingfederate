@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -156,4 +157,14 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) exponentialBackOffRetryCrea
 	tflog.Info(context.Background(), fmt.Sprintf("Request failed after %d attempts", maxRetries))
 
 	return responseData, httpResp, err
+}
+
+func (r *oauthCibaServerPolicyRequestPolicyResource) getCibaServerPolicyByID(ctx context.Context, policyID string, diagnostics *diag.Diagnostics, action string) (*client.RequestPolicy, bool) {
+	response, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.GetCibaServerPolicyById(config.AuthContext(ctx, r.providerConfig), policyID).Execute()
+	if err != nil {
+		config.ReportHttpErrorCustomId(ctx, diagnostics, action, err, httpResp, &customId)
+		return nil, false
+	}
+
+	return response, true
 }

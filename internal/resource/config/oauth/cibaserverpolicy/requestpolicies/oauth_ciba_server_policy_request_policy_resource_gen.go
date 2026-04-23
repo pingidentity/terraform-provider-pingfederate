@@ -528,14 +528,19 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Update(ctx context.Context,
 	resp.Diagnostics.Append(diags...)
 	apiUpdateRequest := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicy(config.AuthContext(ctx, r.providerConfig), data.PolicyId.ValueString())
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
-	responseData, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicyExecute(apiUpdateRequest)
+	_, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicyExecute(apiUpdateRequest)
 	if err != nil {
 		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the oauthCibaServerPolicyRequestPolicy", err, httpResp, &customId)
 		return
 	}
 
+	updateResponse, ok := r.getCibaServerPolicyByID(ctx, data.PolicyId.ValueString(), &resp.Diagnostics, "An error occurred while getting the oauthCibaServerPolicyRequestPolicy after update")
+	if !ok {
+		return
+	}
+
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(updateResponse)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

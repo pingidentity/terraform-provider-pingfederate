@@ -390,6 +390,11 @@ func (r *oauthTokenExchangeProcessorPolicyResource) Create(ctx context.Context, 
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the oauthTokenExchangeProcessorPolicy", err, httpResp)
 		return
 	}
+	readResponseData, ok := r.getOauthTokenExchangeProcessorPolicyByID(ctx, data.PolicyId.ValueString(), &resp.Diagnostics, "An error occurred while reading the oauthTokenExchangeProcessorPolicy after create")
+	if !ok {
+		return
+	}
+	responseData = readResponseData
 
 	// Read response into the model
 	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
@@ -442,9 +447,14 @@ func (r *oauthTokenExchangeProcessorPolicyResource) Update(ctx context.Context, 
 	resp.Diagnostics.Append(diags...)
 	apiUpdateRequest := r.apiClient.OauthTokenExchangeProcessorAPI.UpdateOauthTokenExchangeProcessorPolicy(config.AuthContext(ctx, r.providerConfig), data.PolicyId.ValueString())
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
-	responseData, httpResp, err := r.apiClient.OauthTokenExchangeProcessorAPI.UpdateOauthTokenExchangeProcessorPolicyExecute(apiUpdateRequest)
+	_, httpResp, err := r.apiClient.OauthTokenExchangeProcessorAPI.UpdateOauthTokenExchangeProcessorPolicyExecute(apiUpdateRequest)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the oauthTokenExchangeProcessorPolicy", err, httpResp)
+		return
+	}
+
+	responseData, ok := r.getOauthTokenExchangeProcessorPolicyByID(ctx, data.PolicyId.ValueString(), &resp.Diagnostics, "An error occurred while reading the oauthTokenExchangeProcessorPolicy after update")
+	if !ok {
 		return
 	}
 

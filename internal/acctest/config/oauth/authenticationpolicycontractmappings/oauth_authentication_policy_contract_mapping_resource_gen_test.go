@@ -6,6 +6,7 @@ package oauthauthenticationpolicycontractmappings_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -91,6 +92,34 @@ func TestAccOauthAuthenticationPolicyContractMapping_MinimalMaximal(t *testing.T
 	})
 }
 
+func TestAccOauthAuthenticationPolicyContractMapping_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthAuthenticationPolicyContractMapping_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthAuthenticationPolicyContractMapping_CustomAttributeSourceHCL("/users/external"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.#", "1"),
+					oauthAuthenticationPolicyContractMapping_CheckCustomFilterFieldValue("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "Authorization Header", ""),
+					oauthAuthenticationPolicyContractMapping_CheckCustomFilterFieldValue("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "Resource Path", "/users/external"),
+				),
+			},
+			{
+				Config: oauthAuthenticationPolicyContractMapping_CustomAttributeSourceHCL("/users/internal"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.#", "1"),
+					oauthAuthenticationPolicyContractMapping_CheckCustomFilterFieldValue("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "Authorization Header", ""),
+					oauthAuthenticationPolicyContractMapping_CheckCustomFilterFieldValue("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "Resource Path", "/users/internal"),
+				),
+			},
+		},
+	})
+}
+
 func oauthAuthenticationPolicyContractMapping_DependencyHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "oauth_auth_policy_mapping_contract" {
@@ -160,6 +189,88 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "example" {
 `, attributesources.Hcl(nil, attributesources.LdapClientStruct("(cn=Example)", "SUBTREE", *client.NewResourceLink("pingdirectory"))),
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()),
 		oauthAuthenticationPolicyContractMapping_DependencyHCL())
+}
+
+func oauthAuthenticationPolicyContractMapping_CustomAttributeSourceHCL(resourcePath string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_authentication_policy_contract_mapping" "custom_source" {
+  attribute_contract_fulfillment = {
+    "USER_NAME" = {
+      source = {
+        type = "AUTHENTICATION_POLICY_CONTRACT"
+      }
+      value = "subject"
+    }
+    "USER_KEY" = {
+      source = {
+        type = "AUTHENTICATION_POLICY_CONTRACT"
+      }
+      value = "ImmutableID"
+    }
+  }
+  attribute_sources = [
+    {
+      custom_attribute_source = {
+        data_store_ref = {
+          id = "customDataStore"
+        }
+        description = "APIStubs"
+        filter_fields = [
+          {
+            name = "Authorization Header"
+          },
+          {
+            name = "Body"
+          },
+          {
+            name  = "Resource Path"
+            value = "%s"
+          },
+        ]
+        id = "APIStubs"
+      }
+    }
+  ]
+  authentication_policy_contract_ref = {
+    id = pingfederate_authentication_policy_contract.oauth_auth_policy_mapping_contract.contract_id
+  }
+  %s
+}
+%s
+`, resourcePath,
+		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()),
+		oauthAuthenticationPolicyContractMapping_DependencyHCL())
+}
+
+func oauthAuthenticationPolicyContractMapping_CheckCustomFilterFieldValue(resourceName, filterName, expectedValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		stateResource, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+
+		for key, value := range stateResource.Primary.Attributes {
+			if !strings.Contains(key, ".custom_attribute_source.filter_fields.") || !strings.HasSuffix(key, ".name") {
+				continue
+			}
+			if value != filterName {
+				continue
+			}
+
+			valueKey := strings.TrimSuffix(key, ".name") + ".value"
+			actualValue, exists := stateResource.Primary.Attributes[valueKey]
+			if !exists {
+				return fmt.Errorf("expected %q filter field to have value key %q", filterName, valueKey)
+			}
+			if actualValue != expectedValue {
+				return fmt.Errorf("unexpected value for %q filter field: got %q, want %q", filterName, actualValue, expectedValue)
+			}
+
+			return nil
+		}
+
+		return fmt.Errorf("did not find filter field %q in resource state", filterName)
+	}
 }
 
 // Validate any computed values when applying minimal HCL

@@ -5,6 +5,7 @@ package oauthtokenexchangetokengeneratormapping_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -87,6 +88,34 @@ func TestAccOauthTokenExchangeTokenGeneratorMapping_MinimalMaximal(t *testing.T)
 	})
 }
 
+func TestAccOauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthTokenExchangeTokenGeneratorMapping_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceHCL("/users/external"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.#", "1"),
+					oauthTokenExchangeTokenGeneratorMapping_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "Authorization Header", ""),
+					oauthTokenExchangeTokenGeneratorMapping_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "Resource Path", "/users/external"),
+				),
+			},
+			{
+				Config: oauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceHCL("/users/internal"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.#", "1"),
+					oauthTokenExchangeTokenGeneratorMapping_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "Authorization Header", ""),
+					oauthTokenExchangeTokenGeneratorMapping_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "Resource Path", "/users/internal"),
+				),
+			},
+		},
+	})
+}
+
 // Minimal HCL with only required values set
 func oauthTokenExchangeTokenGeneratorMapping_MinimalHCL() string {
 	return `
@@ -157,6 +186,88 @@ data "pingfederate_oauth_token_exchange_token_generator_mapping" "example" {
   mapping_id = pingfederate_oauth_token_exchange_token_generator_mapping.example.id
 }
 `
+}
+
+func oauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceHCL(resourcePath string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_token_exchange_token_generator_mapping" "custom_source" {
+  attribute_contract_fulfillment = {
+    "SAML_SUBJECT" = {
+      source = {
+        type = "CONTEXT"
+      }
+      value = "ClientIp"
+    }
+  }
+  attribute_sources = [{
+    custom_attribute_source = {
+      data_store_ref = {
+        id = "customDataStore"
+      }
+      description = "APIStubs"
+      filter_fields = [
+        {
+          name = "Authorization Header"
+        },
+        {
+          name = "Body"
+        },
+        {
+          name  = "Resource Path"
+          value = "%s"
+        },
+      ]
+      id = "APIStubs"
+    }
+  }]
+  issuance_criteria = {
+    conditional_criteria = [
+      {
+        attribute_name = "SAML_SUBJECT"
+        condition      = "MULTIVALUE_CONTAINS_DN"
+        source = {
+          type = "MAPPED_ATTRIBUTES"
+        }
+        value = "cn=Example,dc=example,dc=com"
+      },
+    ]
+    expression_criteria = null
+  }
+  source_id = "tokenexchangeprocessorpolicy"
+  target_id = "tokengenerator"
+}
+`, resourcePath)
+}
+
+func oauthTokenExchangeTokenGeneratorMapping_CheckCustomFilterFieldValue(resourceName, filterName, expectedValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		stateResource, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+
+		for key, value := range stateResource.Primary.Attributes {
+			if !strings.Contains(key, ".custom_attribute_source.filter_fields.") || !strings.HasSuffix(key, ".name") {
+				continue
+			}
+			if value != filterName {
+				continue
+			}
+
+			valueKey := strings.TrimSuffix(key, ".name") + ".value"
+			actualValue, exists := stateResource.Primary.Attributes[valueKey]
+			if !exists {
+				return fmt.Errorf("expected %q filter field to have value key %q", filterName, valueKey)
+			}
+			if actualValue != expectedValue {
+				return fmt.Errorf("unexpected value for %q filter field: got %q, want %q", filterName, actualValue, expectedValue)
+			}
+
+			return nil
+		}
+
+		return fmt.Errorf("did not find filter field %q in resource state", filterName)
+	}
 }
 
 // Validate any computed values when applying minimal HCL

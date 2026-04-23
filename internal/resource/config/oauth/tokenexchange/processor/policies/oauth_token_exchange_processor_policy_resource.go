@@ -6,8 +6,11 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 )
 
 func (r *oauthTokenExchangeProcessorPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -54,4 +57,14 @@ func (r *oauthTokenExchangeProcessorPolicyResource) ModifyPlan(ctx context.Conte
 		resp.Plan.Set(ctx, plan)
 	}
 
+}
+
+func (r *oauthTokenExchangeProcessorPolicyResource) getOauthTokenExchangeProcessorPolicyByID(ctx context.Context, policyID string, diagnostics *diag.Diagnostics, action string) (*client.TokenExchangeProcessorPolicy, bool) {
+	response, httpResp, err := r.apiClient.OauthTokenExchangeProcessorAPI.GetOauthTokenExchangeProcessorPolicyById(config.AuthContext(ctx, r.providerConfig), policyID).Execute()
+	if err != nil {
+		config.ReportHttpError(ctx, diagnostics, action, err, httpResp)
+		return nil, false
+	}
+
+	return response, true
 }

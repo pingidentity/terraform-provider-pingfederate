@@ -4,6 +4,7 @@ package oauthtokenexchangeprocessorpolicies_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -84,6 +85,34 @@ func TestAccOauthTokenExchangeProcessorPolicy_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "policy_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
+			},
+		},
+	})
+}
+
+func TestAccOauthTokenExchangeProcessorPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthTokenExchangeProcessorPolicy_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL("/users/external"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.#", "1"),
+					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Authorization Header", ""),
+					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Resource Path", "/users/external"),
+				),
+			},
+			{
+				Config: oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL("/users/internal"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.#", "1"),
+					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Authorization Header", ""),
+					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Resource Path", "/users/internal"),
+				),
 			},
 		},
 	})
@@ -192,6 +221,105 @@ resource "pingfederate_oauth_token_exchange_processor_policy" "example" {
 `, dependencyTokenProcessorHCL(), oauthTokenExchangeProcessorPolicyPolicyId,
 		attributesources.Hcl(nil, attributesources.LdapClientStruct("(cn=Example)", "SUBTREE", *client.NewResourceLink("pingdirectory"))),
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
+}
+
+func oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL(resourcePath string) string {
+	return fmt.Sprintf(`
+%s
+resource "pingfederate_oauth_token_exchange_processor_policy" "custom_source" {
+  policy_id            = "%s"
+  actor_token_required = true
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name = "extendedattr"
+      }
+    ]
+  }
+  name = "My updated processor policy"
+  processor_mappings = [
+    {
+      actor_token_processor = {
+        id = pingfederate_idp_token_processor.saml2.processor_id
+      }
+      actor_token_type = "urn:ietf:params:oauth:token-type:saml2"
+      attribute_contract_fulfillment = {
+        "subject" = {
+          source = {
+            type = "CONTEXT"
+          }
+          value = "ClientId"
+        },
+        "extendedattr" = {
+          source = {
+            type = "TEXT"
+          }
+          value = "value"
+        }
+      }
+      attribute_sources = [
+        {
+          custom_attribute_source = {
+            data_store_ref = {
+              id = "customDataStore"
+            }
+            description = "APIStubs"
+            filter_fields = [
+              {
+                name = "Authorization Header"
+              },
+              {
+                name = "Body"
+              },
+              {
+                name  = "Resource Path"
+                value = "%s"
+              },
+            ]
+            id = "APIStubs"
+          }
+        }
+      ]
+			%s
+      subject_token_processor = {
+        id = pingfederate_idp_token_processor.saml2.processor_id
+      }
+      subject_token_type = "urn:ietf:params:oauth:token-type:saml2"
+    }
+  ]
+}
+`, dependencyTokenProcessorHCL(), oauthTokenExchangeProcessorPolicyPolicyId, resourcePath, issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
+}
+
+func oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue(resourceName, filterName, expectedValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		stateResource, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+
+		for key, value := range stateResource.Primary.Attributes {
+			if !strings.Contains(key, ".custom_attribute_source.filter_fields.") || !strings.HasSuffix(key, ".name") {
+				continue
+			}
+			if value != filterName {
+				continue
+			}
+
+			valueKey := strings.TrimSuffix(key, ".name") + ".value"
+			actualValue, exists := stateResource.Primary.Attributes[valueKey]
+			if !exists {
+				return fmt.Errorf("expected %q filter field to have value key %q", filterName, valueKey)
+			}
+			if actualValue != expectedValue {
+				return fmt.Errorf("unexpected value for %q filter field: got %q, want %q", filterName, actualValue, expectedValue)
+			}
+
+			return nil
+		}
+
+		return fmt.Errorf("did not find filter field %q in resource state", filterName)
+	}
 }
 
 // Validate any computed values when applying minimal HCL
