@@ -4,7 +4,6 @@ package oauthtokenexchangeprocessorpolicies_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -102,16 +101,36 @@ func TestAccOauthTokenExchangeProcessorPolicy_CustomAttributeSourceRoundTrip(t *
 				Config: oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL("/users/external"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.#", "1"),
-					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Authorization Header", ""),
-					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Resource Path", "/users/external"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
 				),
 			},
 			{
 				Config: oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL("/users/internal"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.#", "1"),
-					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Authorization Header", ""),
-					oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue("pingfederate_oauth_token_exchange_processor_policy.custom_source", "Resource Path", "/users/internal"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/internal",
+						},
+					),
 				),
 			},
 		},
@@ -289,37 +308,6 @@ resource "pingfederate_oauth_token_exchange_processor_policy" "custom_source" {
   ]
 }
 `, dependencyTokenProcessorHCL(), oauthTokenExchangeProcessorPolicyPolicyId, resourcePath, issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
-}
-
-func oauthTokenExchangeProcessorPolicy_CheckCustomFilterFieldValue(resourceName, filterName, expectedValue string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		stateResource, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource %s not found in state", resourceName)
-		}
-
-		for key, value := range stateResource.Primary.Attributes {
-			if !strings.Contains(key, ".custom_attribute_source.filter_fields.") || !strings.HasSuffix(key, ".name") {
-				continue
-			}
-			if value != filterName {
-				continue
-			}
-
-			valueKey := strings.TrimSuffix(key, ".name") + ".value"
-			actualValue, exists := stateResource.Primary.Attributes[valueKey]
-			if !exists {
-				return fmt.Errorf("expected %q filter field to have value key %q", filterName, valueKey)
-			}
-			if actualValue != expectedValue {
-				return fmt.Errorf("unexpected value for %q filter field: got %q, want %q", filterName, actualValue, expectedValue)
-			}
-
-			return nil
-		}
-
-		return fmt.Errorf("did not find filter field %q in resource state", filterName)
-	}
 }
 
 // Validate any computed values when applying minimal HCL

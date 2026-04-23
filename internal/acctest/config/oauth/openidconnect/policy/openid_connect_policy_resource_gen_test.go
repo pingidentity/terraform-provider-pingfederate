@@ -5,7 +5,6 @@ package oauthopenidconnectpolicy_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -18,7 +17,6 @@ import (
 )
 
 const openidConnectPolicyPolicyId = "openidConnectPolicyPolicyId"
-const openidConnectPolicyCustomSourcePolicyId = "openidConnectPolicyCustomSrc"
 
 func TestAccOpenidConnectPolicy_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -96,19 +94,24 @@ func TestAccOpenidConnectPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: openidConnectPolicyCustomSource_CheckDestroy,
+		CheckDestroy: openidConnectPolicy_CheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: openidConnectPolicy_CustomAttributeSourceHCL(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.custom_source", "attribute_mapping.attribute_sources.#", "1"),
-					openidConnectPolicy_CheckCustomFilterFieldValue("pingfederate_openid_connect_policy.custom_source", "Resource Path", "/users/external"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_openid_connect_policy.custom_source", "attribute_mapping.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
 				),
 			},
 			{
 				Config:                               openidConnectPolicy_CustomAttributeSourceHCL(),
 				ResourceName:                         "pingfederate_openid_connect_policy.custom_source",
-				ImportStateId:                        openidConnectPolicyCustomSourcePolicyId,
+				ImportStateId:                        openidConnectPolicyPolicyId,
 				ImportStateVerifyIdentifierAttribute: "policy_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
@@ -497,7 +500,7 @@ resource "pingfederate_openid_connect_policy" "custom_source" {
   }
   name = "oidc-custom-source-policy"
 }
-`, openidConnectPolicyCustomSourcePolicyId)
+`, openidConnectPolicyPolicyId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -564,37 +567,6 @@ func openidConnectPolicy_CheckComputedValuesComplete() resource.TestCheckFunc {
 	)
 }
 
-func openidConnectPolicy_CheckCustomFilterFieldValue(resourceName, filterName, expectedValue string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		stateResource, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource %s not found in state", resourceName)
-		}
-
-		for key, value := range stateResource.Primary.Attributes {
-			if !strings.Contains(key, ".custom_attribute_source.filter_fields.") || !strings.HasSuffix(key, ".name") {
-				continue
-			}
-			if value != filterName {
-				continue
-			}
-
-			valueKey := strings.TrimSuffix(key, ".name") + ".value"
-			actualValue, exists := stateResource.Primary.Attributes[valueKey]
-			if !exists {
-				return fmt.Errorf("expected %q filter field to have value key %q", filterName, valueKey)
-			}
-			if actualValue != expectedValue {
-				return fmt.Errorf("unexpected value for %q filter field: got %q, want %q", filterName, actualValue, expectedValue)
-			}
-
-			return nil
-		}
-
-		return fmt.Errorf("did not find filter field %q in resource state", filterName)
-	}
-}
-
 // Delete the resource
 func openidConnectPolicy_Delete(t *testing.T) {
 	testClient := acctest.TestClient()
@@ -610,15 +582,6 @@ func openidConnectPolicy_CheckDestroy(s *terraform.State) error {
 	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), openidConnectPolicyPolicyId).Execute()
 	if err == nil {
 		return fmt.Errorf("openid_connect_policy still exists after tests. Expected it to be destroyed")
-	}
-	return nil
-}
-
-func openidConnectPolicyCustomSource_CheckDestroy(s *terraform.State) error {
-	testClient := acctest.TestClient()
-	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(acctest.TestBasicAuthContext(), openidConnectPolicyCustomSourcePolicyId).Execute()
-	if err == nil {
-		return fmt.Errorf("openid_connect_policy custom source still exists after tests. Expected it to be destroyed")
 	}
 	return nil
 }

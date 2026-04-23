@@ -6,7 +6,6 @@ package oauthidpadaptermappings_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -104,16 +103,36 @@ func TestAccOauthIdpAdapterMapping_CustomAttributeSourceRoundTrip(t *testing.T) 
 				Config: oauthIdpAdapterMapping_CustomAttributeSourceHCL("/users/external"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.#", "1"),
-					oauthIdpAdapterMapping_CheckCustomFilterFieldValue("pingfederate_oauth_idp_adapter_mapping.custom_source", "Authorization Header", ""),
-					oauthIdpAdapterMapping_CheckCustomFilterFieldValue("pingfederate_oauth_idp_adapter_mapping.custom_source", "Resource Path", "/users/external"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
 				),
 			},
 			{
 				Config: oauthIdpAdapterMapping_CustomAttributeSourceHCL("/users/internal"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.#", "1"),
-					oauthIdpAdapterMapping_CheckCustomFilterFieldValue("pingfederate_oauth_idp_adapter_mapping.custom_source", "Authorization Header", ""),
-					oauthIdpAdapterMapping_CheckCustomFilterFieldValue("pingfederate_oauth_idp_adapter_mapping.custom_source", "Resource Path", "/users/internal"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/internal",
+						},
+					),
 				),
 			},
 		},
@@ -218,37 +237,6 @@ resource "pingfederate_oauth_idp_adapter_mapping" "custom_source" {
 `, oauthIdpAdapterMappingMappingId,
 		resourcePath,
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
-}
-
-func oauthIdpAdapterMapping_CheckCustomFilterFieldValue(resourceName, filterName, expectedValue string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		stateResource, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource %s not found in state", resourceName)
-		}
-
-		for key, value := range stateResource.Primary.Attributes {
-			if !strings.Contains(key, ".custom_attribute_source.filter_fields.") || !strings.HasSuffix(key, ".name") {
-				continue
-			}
-			if value != filterName {
-				continue
-			}
-
-			valueKey := strings.TrimSuffix(key, ".name") + ".value"
-			actualValue, exists := stateResource.Primary.Attributes[valueKey]
-			if !exists {
-				return fmt.Errorf("expected %q filter field to have value key %q", filterName, valueKey)
-			}
-			if actualValue != expectedValue {
-				return fmt.Errorf("unexpected value for %q filter field: got %q, want %q", filterName, actualValue, expectedValue)
-			}
-
-			return nil
-		}
-
-		return fmt.Errorf("did not find filter field %q in resource state", filterName)
-	}
 }
 
 // Validate any computed values when applying minimal HCL
