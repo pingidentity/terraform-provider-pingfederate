@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -61,6 +62,14 @@ func toSchemaInternal(required, includeValueDefault bool) schema.SingleNestedAtt
 }
 
 func ToState(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping) (types.Object, diag.Diagnostics) {
+	return toStateInternal(con, attributeMappingFromClient, true)
+}
+
+func ToStateNoValueDefault(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping) (types.Object, diag.Diagnostics) {
+	return toStateInternal(con, attributeMappingFromClient, false)
+}
+
+func toStateInternal(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping, includeValueDefault bool) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if attributeMappingFromClient == nil {
@@ -72,7 +81,12 @@ func ToState(con context.Context, attributeMappingFromClient *configurationapi.A
 	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, &attributeMappingFromClient.AttributeContractFulfillment)
 	diags = append(diags, objDiags...)
 
-	attributeSources, objDiags := attributesources.ToState(con, attributeMappingFromClient.AttributeSources)
+	var attributeSources basetypes.SetValue
+	if includeValueDefault {
+		attributeSources, objDiags = attributesources.ToState(con, attributeMappingFromClient.AttributeSources)
+	} else {
+		attributeSources, objDiags = attributesources.ToStateNoValueDefault(con, attributeMappingFromClient.AttributeSources)
+	}
 	diags = append(diags, objDiags...)
 
 	issuanceCriteria, objDiags := issuancecriteria.ToState(con, attributeMappingFromClient.IssuanceCriteria)
