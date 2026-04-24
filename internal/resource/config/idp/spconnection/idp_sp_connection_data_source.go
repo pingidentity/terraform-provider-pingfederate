@@ -817,7 +817,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 			},
 			"sp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.SetNestedAttribute{
+					"adapter_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -986,7 +986,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "A set of user attributes that the IdP sends in the SAML assertion.",
 					},
-					"authentication_policy_contract_assertion_mappings": schema.SetNestedAttribute{
+					"authentication_policy_contract_assertion_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -1969,12 +1969,12 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	}
 	spBrowserSsoUrlWhitelistEntriesElementType := types.ObjectType{AttrTypes: spBrowserSsoUrlWhitelistEntriesAttrTypes}
 	spBrowserSsoAttrTypes := map[string]attr.Type{
-		"adapter_mappings":              types.SetType{ElemType: spBrowserSsoAdapterMappingsElementType},
+		"adapter_mappings":              types.ListType{ElemType: spBrowserSsoAdapterMappingsElementType},
 		"always_sign_artifact_response": types.BoolType,
 		"artifact":                      types.ObjectType{AttrTypes: spBrowserSsoArtifactAttrTypes},
 		"assertion_lifetime":            types.ObjectType{AttrTypes: spBrowserSsoAssertionLifetimeAttrTypes},
 		"attribute_contract":            types.ObjectType{AttrTypes: spBrowserSsoAttributeContractAttrTypes},
-		"authentication_policy_contract_assertion_mappings": types.SetType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType},
+		"authentication_policy_contract_assertion_mappings": types.ListType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType},
 		"default_target_url":            types.StringType,
 		"enabled_profiles":              types.SetType{ElemType: types.StringType},
 		"encryption_policy":             types.ObjectType{AttrTypes: spBrowserSsoEncryptionPolicyAttrTypes},
@@ -2116,7 +2116,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 			respDiags.Append(diags...)
 			spBrowserSsoAdapterMappingsValues = append(spBrowserSsoAdapterMappingsValues, spBrowserSsoAdapterMappingsValue)
 		}
-		spBrowserSsoAdapterMappingsValue, diags := types.SetValue(spBrowserSsoAdapterMappingsElementType, spBrowserSsoAdapterMappingsValues)
+		spBrowserSsoAdapterMappingsValue, diags := types.ListValue(spBrowserSsoAdapterMappingsElementType, spBrowserSsoAdapterMappingsValues)
 		respDiags.Append(diags...)
 		var spBrowserSsoArtifactValue types.Object
 		if r.SpBrowserSso.Artifact == nil {
@@ -2199,7 +2199,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 			respDiags.Append(diags...)
 			spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues = append(spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue)
 		}
-		spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue, diags := types.SetValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues)
+		spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue, diags := types.ListValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues)
 		respDiags.Append(diags...)
 		spBrowserSsoEnabledProfilesValue, diags := types.SetValueFrom(context.Background(), types.StringType, r.SpBrowserSso.EnabledProfiles)
 		respDiags.Append(diags...)
