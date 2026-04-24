@@ -375,7 +375,7 @@ resource "pingfederate_openid_connect_policy" "example" {
         ldap_attribute_source = {
           attribute_contract_fulfillment = null
           base_dn                        = "ou=Applications,ou=Ping,ou=Groups,dc=dm,dc=example,dc=com"
-          # Not setting the binary_attribute_settings field
+          # Not setting the binary_attribute_settings field, which will be computed based on the data store
           id = "ldapguy"
           data_store_ref = {
             id = pingfederate_data_store.example.id

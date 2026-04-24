@@ -1754,7 +1754,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description: "The partner service identifiers.",
 					},
 					"request_contract_ref": resourcelink.CompleteSingleNestedAttribute(true, false, false, "Request Contract to be used to map attribute values into the security token."),
-					"token_processor_mappings": schema.SetNestedAttribute{
+					"token_processor_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
@@ -2479,7 +2479,7 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 			wsTrustValue.RequestContractRef = wsTrustRequestContractRefValue
 		}
 		wsTrustValue.TokenProcessorMappings = []client.IdpTokenProcessorMapping{}
-		for _, tokenProcessorMappingsElement := range wsTrustAttrs["token_processor_mappings"].(types.Set).Elements() {
+		for _, tokenProcessorMappingsElement := range wsTrustAttrs["token_processor_mappings"].(types.List).Elements() {
 			tokenProcessorMappingsValue := client.IdpTokenProcessorMapping{}
 			tokenProcessorMappingsAttrs := tokenProcessorMappingsElement.(types.Object).Attributes()
 			tokenProcessorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(tokenProcessorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
@@ -3941,7 +3941,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"oauth_assertion_profiles":            types.BoolType,
 		"partner_service_ids":                 types.SetType{ElemType: types.StringType},
 		"request_contract_ref":                types.ObjectType{AttrTypes: wsTrustRequestContractRefAttrTypes},
-		"token_processor_mappings":            types.SetType{ElemType: wsTrustTokenProcessorMappingsElementType},
+		"token_processor_mappings":            types.ListType{ElemType: wsTrustTokenProcessorMappingsElementType},
 	}
 	var wsTrustValue types.Object
 	if response.WsTrust == nil {
@@ -4021,7 +4021,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			wsTrustTokenProcessorMappingsValues = append(wsTrustTokenProcessorMappingsValues, wsTrustTokenProcessorMappingsValue)
 		}
-		wsTrustTokenProcessorMappingsValue, diags := types.SetValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
+		wsTrustTokenProcessorMappingsValue, diags := types.ListValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
 		respDiags.Append(diags...)
 		// Ensure that nil values are handled as false for encrypt_saml2_assertion and generate_key
 		var encryptSaml2Assertion, generateKey bool
