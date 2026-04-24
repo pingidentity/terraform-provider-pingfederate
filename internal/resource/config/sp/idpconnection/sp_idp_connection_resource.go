@@ -2525,10 +2525,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Attributes: map[string]schema.Attribute{
 										"masked": schema.BoolAttribute{
 											Optional:            false,
-											Computed:            true,
+											Computed:            true, //TODO this default also is problematic.
 											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
-											Default:             booldefault.StaticBool(false),
+											// Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
 											Optional:            false,
@@ -2560,7 +2560,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
-											Required:            true,
+											Computed:            true, //TODO this is the problematic attr, needs to be computed
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
 											Validators: []validator.String{
