@@ -1227,7 +1227,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"sp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.SetNestedAttribute{
+					"adapter_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -1945,8 +1945,8 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		stateSpBrowserSsoAttributes := state.SpBrowserSso.Attributes()
 		spBrowserSsoPlanModified := false
 		if internaltypes.IsDefined(planSpBrowserSsoAttributes["adapter_mappings"]) && internaltypes.IsDefined(stateSpBrowserSsoAttributes["adapter_mappings"]) {
-			planAdapterMappings := planSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
-			stateAdapterMappings := stateSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
+			planAdapterMappings := planSpBrowserSsoAttributes["adapter_mappings"].(types.List)
+			stateAdapterMappings := stateSpBrowserSsoAttributes["adapter_mappings"].(types.List)
 			if !planAdapterMappings.Equal(stateAdapterMappings) {
 				planAdapterMappingsElems := planAdapterMappings.Elements()
 				stateAdapterMappingsElems := stateAdapterMappings.Elements()
@@ -1977,7 +1977,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 					}
 				}
 				if spBrowserSsoPlanModified {
-					planSpBrowserSsoAttributes["adapter_mappings"], respDiags = types.SetValue(planAdapterMappings.ElementType(ctx), finalPlanAdapterMappingsElems)
+					planSpBrowserSsoAttributes["adapter_mappings"], respDiags = types.ListValue(planAdapterMappings.ElementType(ctx), finalPlanAdapterMappingsElems)
 					resp.Diagnostics.Append(respDiags...)
 				}
 			}
@@ -2193,7 +2193,7 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 		spBrowserSsoValue := &client.SpBrowserSso{}
 		spBrowserSsoAttrs := plan.SpBrowserSso.Attributes()
 		spBrowserSsoValue.AdapterMappings = []client.IdpAdapterAssertionMapping{}
-		for _, adapterMappingsElement := range spBrowserSsoAttrs["adapter_mappings"].(types.Set).Elements() {
+		for _, adapterMappingsElement := range spBrowserSsoAttrs["adapter_mappings"].(types.List).Elements() {
 			adapterMappingsValue := client.IdpAdapterAssertionMapping{}
 			adapterMappingsAttrs := adapterMappingsElement.(types.Object).Attributes()
 			adapterMappingsValue.AbortSsoTransactionAsFailSafe = adapterMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
@@ -2639,7 +2639,7 @@ func (state *idpSpConnectionModel) getSpBrowserSsoAdapterMappingsAdapterOverride
 	if !internaltypes.IsDefined(state.SpBrowserSso) {
 		return types.ObjectNull(pluginconfiguration.AttrTypes())
 	}
-	adapterMappings := state.SpBrowserSso.Attributes()["adapter_mappings"].(types.Set).Elements()
+	adapterMappings := state.SpBrowserSso.Attributes()["adapter_mappings"].(types.List).Elements()
 	if adapterMappingIndex >= len(adapterMappings) {
 		return types.ObjectNull(pluginconfiguration.AttrTypes())
 	}
@@ -3536,7 +3536,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	spBrowserSsoUrlWhitelistEntriesElementType := types.ObjectType{AttrTypes: spBrowserSsoUrlWhitelistEntriesAttrTypes}
 	spBrowserSsoAttrTypes := map[string]attr.Type{
-		"adapter_mappings":              types.SetType{ElemType: spBrowserSsoAdapterMappingsElementType},
+		"adapter_mappings":              types.ListType{ElemType: spBrowserSsoAdapterMappingsElementType},
 		"always_sign_artifact_response": types.BoolType,
 		"artifact":                      types.ObjectType{AttrTypes: spBrowserSsoArtifactAttrTypes},
 		"assertion_lifetime":            types.ObjectType{AttrTypes: spBrowserSsoAssertionLifetimeAttrTypes},
@@ -3683,7 +3683,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			spBrowserSsoAdapterMappingsValues = append(spBrowserSsoAdapterMappingsValues, spBrowserSsoAdapterMappingsValue)
 		}
-		spBrowserSsoAdapterMappingsValue, diags := types.SetValue(spBrowserSsoAdapterMappingsElementType, spBrowserSsoAdapterMappingsValues)
+		spBrowserSsoAdapterMappingsValue, diags := types.ListValue(spBrowserSsoAdapterMappingsElementType, spBrowserSsoAdapterMappingsValues)
 		respDiags.Append(diags...)
 		var spBrowserSsoArtifactValue types.Object
 		if response.SpBrowserSso.Artifact == nil {
