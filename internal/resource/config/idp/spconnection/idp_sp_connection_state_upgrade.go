@@ -1161,10 +1161,10 @@ func (p *idpSpConnectionModel) schemaUpgradeSpBrowserSsoCollectionTypesV0toV1(ct
 	attrs := stateVal.Attributes()
 
 	var respDiags diag.Diagnostics
-	attrs["adapter_mappings"], respDiags = schemaUpgradeSetToListAttr(attrs["adapter_mappings"])
+	attrs["adapter_mappings"], respDiags = schemaUpgradeSetToListAttr(ctx, attrs["adapter_mappings"])
 	diags.Append(respDiags...)
 
-	attrs["authentication_policy_contract_assertion_mappings"], respDiags = schemaUpgradeSetToListAttr(attrs["authentication_policy_contract_assertion_mappings"])
+	attrs["authentication_policy_contract_assertion_mappings"], respDiags = schemaUpgradeSetToListAttr(ctx, attrs["authentication_policy_contract_assertion_mappings"])
 	diags.Append(respDiags...)
 
 	result, respDiags := types.ObjectValue(stateVal.AttributeTypes(ctx), attrs)
@@ -1182,7 +1182,7 @@ func (p *idpSpConnectionModel) schemaUpgradeWsTrustCollectionTypesV0toV1(ctx con
 
 	attrs := stateVal.Attributes()
 
-	convertedValue, respDiags := schemaUpgradeSetToListAttr(attrs["token_processor_mappings"])
+	convertedValue, respDiags := schemaUpgradeSetToListAttr(ctx, attrs["token_processor_mappings"])
 	diags.Append(respDiags...)
 	attrs["token_processor_mappings"] = convertedValue
 
@@ -1191,7 +1191,7 @@ func (p *idpSpConnectionModel) schemaUpgradeWsTrustCollectionTypesV0toV1(ctx con
 	return result, diags
 }
 
-func schemaUpgradeSetToListAttr(attributeValue attr.Value) (attr.Value, diag.Diagnostics) {
+func schemaUpgradeSetToListAttr(ctx context.Context, attributeValue attr.Value) (attr.Value, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	setValue, ok := attributeValue.(types.Set)
@@ -1200,7 +1200,7 @@ func schemaUpgradeSetToListAttr(attributeValue attr.Value) (attr.Value, diag.Dia
 		return attributeValue, diags
 	}
 
-	elementType := setValue.ElementType(context.Background())
+	elementType := setValue.ElementType(ctx)
 	if setValue.IsNull() || setValue.IsUnknown() {
 		// State upgraders never should return unknown values
 		return types.ListNull(elementType), diags
