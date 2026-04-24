@@ -1336,11 +1336,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"masked": schema.BoolAttribute{
-											Optional:            false,
-											Computed:            true,
+											Optional: false,
+											Computed: true,
+											// No default set here because it causes unnecessary plans due to issues in terraform set default handling
+											// For example https://github.com/hashicorp/terraform-plugin-framework/issues/783
 											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
-											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
 											Optional:            true,
@@ -1372,10 +1373,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
-											Required:            true,
+											Optional:            true,
+											Computed:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
 											Validators: []validator.String{
+												// This attribute is required, but due to issues in how terraform calculates plan changes,
+												// we have to mark this as computed and use this validator to ensure the value is not null.
+												configvalidators.StringNotNull(),
 												stringvalidator.LengthAtLeast(1),
 											},
 										},
@@ -2524,11 +2529,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"masked": schema.BoolAttribute{
-											Optional:            false,
-											Computed:            true,
+											Optional: false,
+											Computed: true,
+											// No default set here because it causes unnecessary plans due to issues in terraform set default handling
+											// For example https://github.com/hashicorp/terraform-plugin-framework/issues/783
 											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
-											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
 											Optional:            false,
@@ -2560,10 +2566,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
-											Required:            true,
+											Optional:            true,
+											Computed:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
 											Validators: []validator.String{
+												// This attribute is required, but due to issues in how terraform calculates plan changes,
+												// we have to mark this as computed and use this validator to ensure the value is not null.
+												configvalidators.StringNotNull(),
 												stringvalidator.LengthAtLeast(1),
 											},
 										},
@@ -2865,11 +2875,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												NestedObject: schema.NestedAttributeObject{
 													Attributes: map[string]schema.Attribute{
 														"masked": schema.BoolAttribute{
-															Optional:            false,
-															Computed:            true,
+															Optional: false,
+															Computed: true,
+															// No default set here because it causes unnecessary plans due to issues in terraform set default handling
+															// For example https://github.com/hashicorp/terraform-plugin-framework/issues/783
 															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
-															Default:             booldefault.StaticBool(false),
 														},
 														"name": schema.StringAttribute{
 															Optional:            true,
@@ -3221,10 +3232,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Default:             booldefault.StaticBool(false),
 														},
 														"name": schema.StringAttribute{
-															Required:            true,
+															Optional:            true,
+															Computed:            true,
 															Description:         "The name of this attribute.",
 															MarkdownDescription: "The name of this attribute.",
 															Validators: []validator.String{
+																// This attribute is required, but due to issues in how terraform calculates plan changes,
+																// we have to mark this as computed and use this validator to ensure the value is not null.
+																configvalidators.StringNotNull(),
 																stringvalidator.LengthAtLeast(1),
 															},
 														},
