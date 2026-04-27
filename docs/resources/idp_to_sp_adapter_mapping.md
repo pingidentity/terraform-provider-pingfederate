@@ -115,7 +115,7 @@ resource "pingfederate_idp_to_sp_adapter_mapping" "idpToSpAdapterMapping" {
 
 - `application_icon_url` (String) The application icon URL.
 - `application_name` (String) The application name.
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_sources))
 - `default_target_resource` (String) Default target URL for this adapter-to-adapter mapping configuration.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--issuance_criteria))
 - `license_connection_group_assignment` (String) The license connection group.
