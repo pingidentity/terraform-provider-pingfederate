@@ -18,7 +18,7 @@ import (
 
 var (
 	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_sources": types.SetType{
+		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: attributesources.AttrTypes(),
 			},
@@ -81,7 +81,7 @@ func toStateInternal(con context.Context, attributeMappingFromClient *configurat
 	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, &attributeMappingFromClient.AttributeContractFulfillment)
 	diags = append(diags, objDiags...)
 
-	var attributeSources basetypes.SetValue
+	var attributeSources basetypes.ListValue
 	if includeValueDefault {
 		attributeSources, objDiags = attributesources.ToState(con, attributeMappingFromClient.AttributeSources)
 	} else {

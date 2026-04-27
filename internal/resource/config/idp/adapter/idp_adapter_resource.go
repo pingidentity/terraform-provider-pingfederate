@@ -240,7 +240,7 @@ func addOptionalIdpAdapterFields(addRequest *client.IdpAdapter, plan idpAdapterM
 		issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
 		addRequest.AttributeMapping.IssuanceCriteria = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
 
-		attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
+		attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
 		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 		addRequest.AttributeMapping.AttributeSources = attributesources.ClientStruct(attributeSourcesAttr)
 	}

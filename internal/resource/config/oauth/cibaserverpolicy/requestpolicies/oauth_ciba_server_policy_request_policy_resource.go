@@ -57,7 +57,7 @@ var (
 				AttrTypes: attributecontractfulfillment.AttrTypes(),
 			},
 		},
-		"attribute_sources": types.SetType{
+		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: attributesources.AttrTypes(),
 			},
@@ -71,7 +71,7 @@ var (
 		"conditional_criteria": types.SetValueMust(issuancecriteria.ConditionalCriteriaElemType(), nil),
 		"expression_criteria":  types.SetNull(issuancecriteria.ExpressionCriteriaElemType()),
 	})
-	attributeSourcesDefault = types.SetValueMust(types.ObjectType{AttrTypes: attributesources.AttrTypes()}, nil)
+	attributeSourcesDefault = types.ListValueMust(types.ObjectType{AttrTypes: attributesources.AttrTypes()}, nil)
 )
 
 func (r *oauthCibaServerPolicyRequestPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {

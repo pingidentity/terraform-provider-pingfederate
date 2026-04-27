@@ -137,7 +137,7 @@ resource "pingfederate_sp_authentication_policy_contract_mapping" "spAuthenticat
 
 ### Optional
 
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_sources))
 - `default_target_resource` (String) Default target URL for this APC-to-adapter mapping configuration.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--issuance_criteria))
 - `license_connection_group_assignment` (String) The license connection group

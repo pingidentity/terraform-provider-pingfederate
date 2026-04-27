@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -137,7 +138,7 @@ var (
 		"restrict_virtual_entity_ids":        types.BoolType,
 		"restricted_virtual_entity_ids":      types.SetType{ElemType: types.StringType},
 		"abort_sso_transaction_as_fail_safe": types.BoolType,
-		"attribute_sources":                  types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
+		"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 		"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 		"issuance_criteria":                  issuanceCriteriaAttrType,
 	}}
@@ -1226,7 +1227,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"sp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.SetNestedAttribute{
+					"adapter_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -1394,7 +1395,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Required:    true,
 						Description: "A set of user attributes that the IdP sends in the SAML assertion.",
 					},
-					"authentication_policy_contract_assertion_mappings": schema.SetNestedAttribute{
+					"authentication_policy_contract_assertion_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -1424,7 +1425,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 						Optional:    true,
 						Computed:    true,
-						Default:     setdefault.StaticValue(types.SetValueMust(authenticationPolicyContractAssertionMappingsElemType, nil)),
+						Default:     listdefault.StaticValue(types.ListValueMust(authenticationPolicyContractAssertionMappingsElemType, nil)),
 						Description: "A list of authentication policy contracts that map to outgoing assertions.",
 					},
 					"default_target_url": schema.StringAttribute{
@@ -1753,7 +1754,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description: "The partner service identifiers.",
 					},
 					"request_contract_ref": resourcelink.CompleteSingleNestedAttribute(true, false, false, "Request Contract to be used to map attribute values into the security token."),
-					"token_processor_mappings": schema.SetNestedAttribute{
+					"token_processor_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
@@ -1944,8 +1945,8 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		stateSpBrowserSsoAttributes := state.SpBrowserSso.Attributes()
 		spBrowserSsoPlanModified := false
 		if internaltypes.IsDefined(planSpBrowserSsoAttributes["adapter_mappings"]) && internaltypes.IsDefined(stateSpBrowserSsoAttributes["adapter_mappings"]) {
-			planAdapterMappings := planSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
-			stateAdapterMappings := stateSpBrowserSsoAttributes["adapter_mappings"].(types.Set)
+			planAdapterMappings := planSpBrowserSsoAttributes["adapter_mappings"].(types.List)
+			stateAdapterMappings := stateSpBrowserSsoAttributes["adapter_mappings"].(types.List)
 			if !planAdapterMappings.Equal(stateAdapterMappings) {
 				planAdapterMappingsElems := planAdapterMappings.Elements()
 				stateAdapterMappingsElems := stateAdapterMappings.Elements()
@@ -1976,7 +1977,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 					}
 				}
 				if spBrowserSsoPlanModified {
-					planSpBrowserSsoAttributes["adapter_mappings"], respDiags = types.SetValue(planAdapterMappings.ElementType(ctx), finalPlanAdapterMappingsElems)
+					planSpBrowserSsoAttributes["adapter_mappings"], respDiags = types.ListValue(planAdapterMappings.ElementType(ctx), finalPlanAdapterMappingsElems)
 					resp.Diagnostics.Append(respDiags...)
 				}
 			}
@@ -2192,7 +2193,7 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 		spBrowserSsoValue := &client.SpBrowserSso{}
 		spBrowserSsoAttrs := plan.SpBrowserSso.Attributes()
 		spBrowserSsoValue.AdapterMappings = []client.IdpAdapterAssertionMapping{}
-		for _, adapterMappingsElement := range spBrowserSsoAttrs["adapter_mappings"].(types.Set).Elements() {
+		for _, adapterMappingsElement := range spBrowserSsoAttrs["adapter_mappings"].(types.List).Elements() {
 			adapterMappingsValue := client.IdpAdapterAssertionMapping{}
 			adapterMappingsAttrs := adapterMappingsElement.(types.Object).Attributes()
 			adapterMappingsValue.AbortSsoTransactionAsFailSafe = adapterMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
@@ -2228,7 +2229,7 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 					adapterMappingsAdapterOverrideSettingsAttributeMappingValue := &client.IdpAdapterContractMapping{}
 					adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs := adapterMappingsAdapterOverrideSettingsAttrs["attribute_mapping"].(types.Object).Attributes()
 					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_contract_fulfillment"].(types.Map))
-					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_sources"].(types.Set))
+					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["attribute_sources"].(types.List))
 					adapterMappingsAdapterOverrideSettingsAttributeMappingValue.IssuanceCriteria = issuancecriteria.ClientStruct(adapterMappingsAdapterOverrideSettingsAttributeMappingAttrs["issuance_criteria"].(types.Object))
 					adapterMappingsAdapterOverrideSettingsValue.AttributeMapping = adapterMappingsAdapterOverrideSettingsAttributeMappingValue
 				}
@@ -2250,7 +2251,7 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 				adapterMappingsValue.AdapterOverrideSettings = adapterMappingsAdapterOverrideSettingsValue
 			}
 			adapterMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(adapterMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.Set))
+			adapterMappingsValue.AttributeSources = attributesources.ClientStruct(adapterMappingsAttrs["attribute_sources"].(types.List))
 			if !adapterMappingsAttrs["idp_adapter_ref"].IsNull() {
 				adapterMappingsIdpAdapterRefValue := &client.ResourceLink{}
 				adapterMappingsIdpAdapterRefAttrs := adapterMappingsAttrs["idp_adapter_ref"].(types.Object).Attributes()
@@ -2308,12 +2309,12 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 		}
 		spBrowserSsoValue.AttributeContract = spBrowserSsoAttributeContractValue
 		spBrowserSsoValue.AuthenticationPolicyContractAssertionMappings = []client.AuthenticationPolicyContractAssertionMapping{}
-		for _, authenticationPolicyContractAssertionMappingsElement := range spBrowserSsoAttrs["authentication_policy_contract_assertion_mappings"].(types.Set).Elements() {
+		for _, authenticationPolicyContractAssertionMappingsElement := range spBrowserSsoAttrs["authentication_policy_contract_assertion_mappings"].(types.List).Elements() {
 			authenticationPolicyContractAssertionMappingsValue := client.AuthenticationPolicyContractAssertionMapping{}
 			authenticationPolicyContractAssertionMappingsAttrs := authenticationPolicyContractAssertionMappingsElement.(types.Object).Attributes()
 			authenticationPolicyContractAssertionMappingsValue.AbortSsoTransactionAsFailSafe = authenticationPolicyContractAssertionMappingsAttrs["abort_sso_transaction_as_fail_safe"].(types.Bool).ValueBoolPointer()
 			authenticationPolicyContractAssertionMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			authenticationPolicyContractAssertionMappingsValue.AttributeSources = attributesources.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_sources"].(types.Set))
+			authenticationPolicyContractAssertionMappingsValue.AttributeSources = attributesources.ClientStruct(authenticationPolicyContractAssertionMappingsAttrs["attribute_sources"].(types.List))
 			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue := client.ResourceLink{}
 			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs := authenticationPolicyContractAssertionMappingsAttrs["authentication_policy_contract_ref"].(types.Object).Attributes()
 			authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefValue.Id = authenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrs["id"].(types.String).ValueString()
@@ -2427,7 +2428,7 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 			addRequest.AttributeQuery.Policy = attributeQueryPolicyValue
 		}
 
-		addRequest.AttributeQuery.AttributeSources = attributesources.ClientStruct(attributeQueryAttrs["attribute_sources"].(types.Set))
+		addRequest.AttributeQuery.AttributeSources = attributesources.ClientStruct(attributeQueryAttrs["attribute_sources"].(types.List))
 	}
 
 	if !plan.WsTrust.IsNull() {
@@ -2478,11 +2479,11 @@ func addOptionalIdpSpconnectionFields(addRequest *client.SpConnection, plan idpS
 			wsTrustValue.RequestContractRef = wsTrustRequestContractRefValue
 		}
 		wsTrustValue.TokenProcessorMappings = []client.IdpTokenProcessorMapping{}
-		for _, tokenProcessorMappingsElement := range wsTrustAttrs["token_processor_mappings"].(types.Set).Elements() {
+		for _, tokenProcessorMappingsElement := range wsTrustAttrs["token_processor_mappings"].(types.List).Elements() {
 			tokenProcessorMappingsValue := client.IdpTokenProcessorMapping{}
 			tokenProcessorMappingsAttrs := tokenProcessorMappingsElement.(types.Object).Attributes()
 			tokenProcessorMappingsValue.AttributeContractFulfillment = attributecontractfulfillment.ClientStruct(tokenProcessorMappingsAttrs["attribute_contract_fulfillment"].(types.Map))
-			tokenProcessorMappingsValue.AttributeSources = attributesources.ClientStruct(tokenProcessorMappingsAttrs["attribute_sources"].(types.Set))
+			tokenProcessorMappingsValue.AttributeSources = attributesources.ClientStruct(tokenProcessorMappingsAttrs["attribute_sources"].(types.List))
 			tokenProcessorMappingsIdpTokenProcessorRefValue := client.ResourceLink{}
 			tokenProcessorMappingsIdpTokenProcessorRefAttrs := tokenProcessorMappingsAttrs["idp_token_processor_ref"].(types.Object).Attributes()
 			tokenProcessorMappingsIdpTokenProcessorRefValue.Id = tokenProcessorMappingsIdpTokenProcessorRefAttrs["id"].(types.String).ValueString()
@@ -2638,7 +2639,7 @@ func (state *idpSpConnectionModel) getSpBrowserSsoAdapterMappingsAdapterOverride
 	if !internaltypes.IsDefined(state.SpBrowserSso) {
 		return types.ObjectNull(pluginconfiguration.AttrTypes())
 	}
-	adapterMappings := state.SpBrowserSso.Attributes()["adapter_mappings"].(types.Set).Elements()
+	adapterMappings := state.SpBrowserSso.Attributes()["adapter_mappings"].(types.List).Elements()
 	if adapterMappingIndex >= len(adapterMappings) {
 		return types.ObjectNull(pluginconfiguration.AttrTypes())
 	}
@@ -2820,7 +2821,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	attributeQueryAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: attributeQueryAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: attributeQueryAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: attributeQueryAttributeSourcesElementType},
 		"attributes":                     types.SetType{ElemType: types.StringType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: attributeQueryIssuanceCriteriaAttrTypes},
 		"policy":                         types.ObjectType{AttrTypes: attributeQueryPolicyAttrTypes},
@@ -3418,7 +3419,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
 	spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesElementType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingIssuanceCriteriaAttrTypes},
 	}
 	spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationAttrTypes := pluginconfiguration.AttrTypes()
@@ -3450,7 +3451,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"abort_sso_transaction_as_fail_safe": types.BoolType,
 		"adapter_override_settings":          types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes},
 		"attribute_contract_fulfillment":     types.MapType{ElemType: spBrowserSsoAdapterMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":                  types.SetType{ElemType: spBrowserSsoAdapterMappingsAttributeSourcesElementType},
+		"attribute_sources":                  types.ListType{ElemType: spBrowserSsoAdapterMappingsAttributeSourcesElementType},
 		"idp_adapter_ref":                    types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIdpAdapterRefAttrTypes},
 		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIssuanceCriteriaAttrTypes},
 		"restrict_virtual_entity_ids":        types.BoolType,
@@ -3496,7 +3497,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttrTypes := map[string]attr.Type{
 		"abort_sso_transaction_as_fail_safe": types.BoolType,
 		"attribute_contract_fulfillment":     types.MapType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":                  types.SetType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesElementType},
+		"attribute_sources":                  types.ListType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesElementType},
 		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrTypes},
 		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaAttrTypes},
 		"restrict_virtual_entity_ids":        types.BoolType,
@@ -3535,12 +3536,12 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	spBrowserSsoUrlWhitelistEntriesElementType := types.ObjectType{AttrTypes: spBrowserSsoUrlWhitelistEntriesAttrTypes}
 	spBrowserSsoAttrTypes := map[string]attr.Type{
-		"adapter_mappings":              types.SetType{ElemType: spBrowserSsoAdapterMappingsElementType},
+		"adapter_mappings":              types.ListType{ElemType: spBrowserSsoAdapterMappingsElementType},
 		"always_sign_artifact_response": types.BoolType,
 		"artifact":                      types.ObjectType{AttrTypes: spBrowserSsoArtifactAttrTypes},
 		"assertion_lifetime":            types.ObjectType{AttrTypes: spBrowserSsoAssertionLifetimeAttrTypes},
 		"attribute_contract":            types.ObjectType{AttrTypes: spBrowserSsoAttributeContractAttrTypes},
-		"authentication_policy_contract_assertion_mappings": types.SetType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType},
+		"authentication_policy_contract_assertion_mappings": types.ListType{ElemType: spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType},
 		"default_target_url":            types.StringType,
 		"enabled_profiles":              types.SetType{ElemType: types.StringType},
 		"encryption_policy":             types.ObjectType{AttrTypes: spBrowserSsoEncryptionPolicyAttrTypes},
@@ -3682,7 +3683,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			spBrowserSsoAdapterMappingsValues = append(spBrowserSsoAdapterMappingsValues, spBrowserSsoAdapterMappingsValue)
 		}
-		spBrowserSsoAdapterMappingsValue, diags := types.SetValue(spBrowserSsoAdapterMappingsElementType, spBrowserSsoAdapterMappingsValues)
+		spBrowserSsoAdapterMappingsValue, diags := types.ListValue(spBrowserSsoAdapterMappingsElementType, spBrowserSsoAdapterMappingsValues)
 		respDiags.Append(diags...)
 		var spBrowserSsoArtifactValue types.Object
 		if response.SpBrowserSso.Artifact == nil {
@@ -3765,7 +3766,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues = append(spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue)
 		}
-		spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue, diags := types.SetValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues)
+		spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue, diags := types.ListValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues)
 		respDiags.Append(diags...)
 		spBrowserSsoEnabledProfilesValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.SpBrowserSso.EnabledProfiles)
 		respDiags.Append(diags...)
@@ -3922,7 +3923,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	wsTrustTokenProcessorMappingsIssuanceCriteriaAttrTypes := issuancecriteria.AttrTypes()
 	wsTrustTokenProcessorMappingsAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: wsTrustTokenProcessorMappingsAttributeContractFulfillmentElementType},
-		"attribute_sources":              types.SetType{ElemType: wsTrustTokenProcessorMappingsAttributeSourcesElementType},
+		"attribute_sources":              types.ListType{ElemType: wsTrustTokenProcessorMappingsAttributeSourcesElementType},
 		"idp_token_processor_ref":        types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIdpTokenProcessorRefAttrTypes},
 		"issuance_criteria":              types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIssuanceCriteriaAttrTypes},
 		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
@@ -3940,7 +3941,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"oauth_assertion_profiles":            types.BoolType,
 		"partner_service_ids":                 types.SetType{ElemType: types.StringType},
 		"request_contract_ref":                types.ObjectType{AttrTypes: wsTrustRequestContractRefAttrTypes},
-		"token_processor_mappings":            types.SetType{ElemType: wsTrustTokenProcessorMappingsElementType},
+		"token_processor_mappings":            types.ListType{ElemType: wsTrustTokenProcessorMappingsElementType},
 	}
 	var wsTrustValue types.Object
 	if response.WsTrust == nil {
@@ -4020,7 +4021,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			wsTrustTokenProcessorMappingsValues = append(wsTrustTokenProcessorMappingsValues, wsTrustTokenProcessorMappingsValue)
 		}
-		wsTrustTokenProcessorMappingsValue, diags := types.SetValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
+		wsTrustTokenProcessorMappingsValue, diags := types.ListValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
 		respDiags.Append(diags...)
 		// Ensure that nil values are handled as false for encrypt_saml2_assertion and generate_key
 		var encryptSaml2Assertion, generateKey bool

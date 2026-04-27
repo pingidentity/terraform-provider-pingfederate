@@ -88,7 +88,7 @@ Optional:
 
 - `actor_token_processor` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--processor_mappings--actor_token_processor))
 - `actor_token_type` (String) The Actor token type
-- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--processor_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--processor_mappings--issuance_criteria))
 
 <a id="nestedatt--processor_mappings--attribute_contract_fulfillment"></a>
