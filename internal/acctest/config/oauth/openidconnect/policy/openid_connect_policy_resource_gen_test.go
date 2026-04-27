@@ -487,7 +487,8 @@ resource "pingfederate_openid_connect_policy" "custom_source" {
               name = "Authorization Header"
             },
             {
-              name = "Body"
+              name  = "Body"
+              value = ""
             },
             {
               name  = "Resource Path"

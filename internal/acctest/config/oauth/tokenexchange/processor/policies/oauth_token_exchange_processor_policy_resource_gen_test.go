@@ -285,7 +285,8 @@ resource "pingfederate_oauth_token_exchange_processor_policy" "custom_source" {
             description = "APIStubs"
             filter_fields = [
               {
-                name = "Authorization Header"
+                name  = "Authorization Header"
+                value = ""
               },
               {
                 name = "Body"

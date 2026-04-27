@@ -229,7 +229,8 @@ resource "pingfederate_oauth_token_exchange_token_generator_mapping" "custom_sou
           name = "Authorization Header"
         },
         {
-          name = "Body"
+          name  = "Body"
+          value = ""
         },
         {
           name  = "Resource Path"

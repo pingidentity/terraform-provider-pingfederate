@@ -306,7 +306,8 @@ resource "pingfederate_oauth_ciba_server_policy_request_policy" "custom_source" 
               name = "Authorization Header"
             },
             {
-              name = "Body"
+              name  = "Body"
+              value = ""
             },
             {
               name  = "Resource Path"

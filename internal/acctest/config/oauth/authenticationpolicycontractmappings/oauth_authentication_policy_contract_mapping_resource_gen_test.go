@@ -236,7 +236,8 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "custom_sou
         description = "APIStubs"
         filter_fields = [
           {
-            name = "Authorization Header"
+            name  = "Authorization Header"
+            value = ""
           },
           {
             name = "Body"

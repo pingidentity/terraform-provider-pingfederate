@@ -189,7 +189,8 @@ resource "pingfederate_idp_to_sp_adapter_mapping" "custom_source" {
         description = "APIStubs"
         filter_fields = [
           {
-            name = "Authorization Header"
+            name  = "Authorization Header"
+            value = ""
           },
           {
             name = "Body"
