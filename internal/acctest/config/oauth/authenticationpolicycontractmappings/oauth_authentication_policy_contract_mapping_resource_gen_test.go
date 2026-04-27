@@ -91,6 +91,54 @@ func TestAccOauthAuthenticationPolicyContractMapping_MinimalMaximal(t *testing.T
 	})
 }
 
+func TestAccOauthAuthenticationPolicyContractMapping_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthAuthenticationPolicyContractMapping_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthAuthenticationPolicyContractMapping_CustomAttributeSourceHCL("/users/external"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
+				),
+			},
+			{
+				Config: oauthAuthenticationPolicyContractMapping_CustomAttributeSourceHCL("/users/internal"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_authentication_policy_contract_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/internal",
+						},
+					),
+				),
+			},
+		},
+	})
+}
+
 func oauthAuthenticationPolicyContractMapping_DependencyHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "oauth_auth_policy_mapping_contract" {
@@ -158,6 +206,57 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "example" {
 }
 %s
 `, attributesources.Hcl(nil, attributesources.LdapClientStruct("(cn=Example)", "SUBTREE", *client.NewResourceLink("pingdirectory"))),
+		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()),
+		oauthAuthenticationPolicyContractMapping_DependencyHCL())
+}
+
+func oauthAuthenticationPolicyContractMapping_CustomAttributeSourceHCL(resourcePath string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_authentication_policy_contract_mapping" "custom_source" {
+  attribute_contract_fulfillment = {
+    "USER_NAME" = {
+      source = {
+        type = "AUTHENTICATION_POLICY_CONTRACT"
+      }
+      value = "subject"
+    }
+    "USER_KEY" = {
+      source = {
+        type = "AUTHENTICATION_POLICY_CONTRACT"
+      }
+      value = "ImmutableID"
+    }
+  }
+  attribute_sources = [
+    {
+      custom_attribute_source = {
+        data_store_ref = {
+          id = "customDataStore"
+        }
+        description = "APIStubs"
+        filter_fields = [
+          {
+            name = "Authorization Header"
+          },
+          {
+            name = "Body"
+          },
+          {
+            name  = "Resource Path"
+            value = "%s"
+          },
+        ]
+        id = "APIStubs"
+      }
+    }
+  ]
+  authentication_policy_contract_ref = {
+    id = pingfederate_authentication_policy_contract.oauth_auth_policy_mapping_contract.contract_id
+  }
+  %s
+}
+%s
+`, resourcePath,
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()),
 		oauthAuthenticationPolicyContractMapping_DependencyHCL())
 }

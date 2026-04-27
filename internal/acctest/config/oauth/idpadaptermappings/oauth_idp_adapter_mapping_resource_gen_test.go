@@ -91,6 +91,54 @@ func TestAccOauthIdpAdapterMapping_MinimalMaximal(t *testing.T) {
 	})
 }
 
+func TestAccOauthIdpAdapterMapping_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthIdpAdapterMapping_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthIdpAdapterMapping_CustomAttributeSourceHCL("/users/external"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
+				),
+			},
+			{
+				Config: oauthIdpAdapterMapping_CustomAttributeSourceHCL("/users/internal"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_idp_adapter_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/internal",
+						},
+					),
+				),
+			},
+		},
+	})
+}
+
 // Minimal HCL with only required values set
 func oauthIdpAdapterMapping_MinimalHCL() string {
 	return fmt.Sprintf(`
@@ -140,6 +188,54 @@ resource "pingfederate_oauth_idp_adapter_mapping" "example" {
 }
 `, oauthIdpAdapterMappingMappingId,
 		attributesources.Hcl(nil, attributesources.LdapClientStruct("(cn=Example)", "SUBTREE", *client.NewResourceLink("pingdirectory"))),
+		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
+}
+
+func oauthIdpAdapterMapping_CustomAttributeSourceHCL(resourcePath string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_idp_adapter_mapping" "custom_source" {
+  mapping_id = "%s"
+  attribute_contract_fulfillment = {
+    "USER_NAME" = {
+      source = {
+        type = "ADAPTER"
+      }
+      value = "subject"
+    }
+    "USER_KEY" = {
+      source = {
+        type = "ADAPTER"
+      }
+      value = "uid"
+    }
+  }
+  attribute_sources = [
+    {
+      custom_attribute_source = {
+        data_store_ref = {
+          id = "customDataStore"
+        }
+        description = "APIStubs"
+        filter_fields = [
+          {
+            name = "Authorization Header"
+          },
+          {
+            name = "Body"
+          },
+          {
+            name  = "Resource Path"
+            value = "%s"
+          },
+        ]
+        id = "APIStubs"
+      }
+    }
+  ]
+  %s
+}
+`, oauthIdpAdapterMappingMappingId,
+		resourcePath,
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
 }
 
