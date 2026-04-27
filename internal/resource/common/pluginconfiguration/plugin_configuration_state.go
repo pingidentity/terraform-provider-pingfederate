@@ -245,32 +245,37 @@ func readRowsResponse(rows []client.ConfigRow, planRows *types.List, diags *diag
 			rowsSensitiveFieldsSplit = append(rowsSensitiveFieldsSplit, rowSensitiveFieldsSplit)
 		}
 	} else {
-		// This is assuming there are never any rows added by the PF API. If there
-		// are ever rows added, this will cause a nil pointer exception trying to read
-		// index i of planRowsElements.
 		planRowsElements := planRows.Elements()
 		for i := 0; i < len(rows); i++ {
 			attrValues := map[string]attr.Value{}
 			attrValuesSensitiveSplit := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
 			attrValuesSensitiveSplit["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
-			planRow := planRowsElements[i].(types.Object)
+			rowInPlan := i < len(planRowsElements)
 			var planRowFields, planRowSensitiveFields *types.Set
-			planRowFieldsVal, ok := planRow.Attributes()["fields"]
-			if ok {
-				setVal := planRowFieldsVal.(types.Set)
-				planRowFields = &setVal
-			}
-			planRowSensitiveFieldsVal, ok := planRow.Attributes()["sensitive_fields"]
-			if ok {
-				setVal := planRowSensitiveFieldsVal.(types.Set)
-				planRowSensitiveFields = &setVal
+			if rowInPlan {
+				planRow := planRowsElements[i].(types.Object)
+				planRowFieldsVal, ok := planRow.Attributes()["fields"]
+				if ok {
+					setVal := planRowFieldsVal.(types.Set)
+					planRowFields = &setVal
+				}
+				planRowSensitiveFieldsVal, ok := planRow.Attributes()["sensitive_fields"]
+				if ok {
+					setVal := planRowSensitiveFieldsVal.(types.Set)
+					planRowSensitiveFields = &setVal
+				}
 			}
 
 			rowFields := readFieldsResponse(rows[i].Fields, planRowFields, planRowSensitiveFields, diags)
 			attrValues["fields"] = rowFields.allFields
-			attrValuesSensitiveSplit["fields"] = rowFields.plannedCleartextFields
-			attrValuesSensitiveSplit["sensitive_fields"] = rowFields.plannedSensitiveFields
+			if rowInPlan {
+				attrValuesSensitiveSplit["fields"] = rowFields.plannedCleartextFields
+				attrValuesSensitiveSplit["sensitive_fields"] = rowFields.plannedSensitiveFields
+			} else {
+				attrValuesSensitiveSplit["fields"] = rowFields.allCleartextFields
+				attrValuesSensitiveSplit["sensitive_fields"] = rowFields.allSensitiveFields
+			}
 
 			rowMergedFields, respDiags := types.ObjectValue(rowsMergedFieldsAttrTypes, attrValues)
 			diags.Append(respDiags...)

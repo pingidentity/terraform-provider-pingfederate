@@ -1,0 +1,3 @@
+```release-note:bug
+Fixed an issue where adding table rows to plugin configuration outside of terraform (such as via the PingFederate UI) could cause a panic when running a subsequent plan.
+```
