@@ -1,0 +1,3 @@
+```release-note:bug
+Fixed potential inconsistent result errors which could be caused when setting `custom_attribute_source.filter_fields[i].value` to an empty string
+```
