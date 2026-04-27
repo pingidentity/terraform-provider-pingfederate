@@ -169,7 +169,8 @@ resource "pingfederate_authentication_policies_fragment" "%[1]s" {
                     description = "APIStubs"
                     filter_fields = [
                       {
-                        name = "Authorization Header"
+                        name  = "Authorization Header"
+                        value = ""
                       },
                       {
                         name = "Body"
