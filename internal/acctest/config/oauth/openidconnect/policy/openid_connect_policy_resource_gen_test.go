@@ -97,7 +97,38 @@ func TestAccOpenidConnectPolicy_LdapAttributeSourceBinaryAttributeSettings(t *te
 		CheckDestroy: openidConnectPolicy_CheckDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: openidConnectPolicy_LdapAttributeSourceBinaryAttributeSettingsHCL(),
+				Config: openidConnectPolicy_LdapAttributeSourceBinaryAttributeSettingsHCL()},
+		},
+	})
+}
+
+func TestAccOpenidConnectPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: openidConnectPolicy_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: openidConnectPolicy_CustomAttributeSourceHCL(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.custom_source", "attribute_mapping.attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_openid_connect_policy.custom_source", "attribute_mapping.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
+				),
+			},
+			{
+				Config:                               openidConnectPolicy_CustomAttributeSourceHCL(),
+				ResourceName:                         "pingfederate_openid_connect_policy.custom_source",
+				ImportStateId:                        openidConnectPolicyPolicyId,
+				ImportStateVerifyIdentifierAttribute: "policy_id",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
 			},
 		},
 	})
@@ -606,6 +637,114 @@ data "pingfederate_openid_connect_policy" "example" {
   policy_id = pingfederate_openid_connect_policy.example.policy_id
 }
 `, openidConnectPolicyPolicyId, versionedHcl)
+}
+
+func openidConnectPolicy_CustomAttributeSourceHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "custom_source" {
+  manager_id = "oidcJsonWebTokenCustomSrc"
+  name       = "oidcJsonWebTokenCustomSrc"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = [
+      {
+        name = "Symmetric Keys"
+        rows = [
+          {
+            fields = [
+              {
+                name  = "Key ID"
+                value = "keyidentifier"
+              },
+              {
+                name  = "Encoding"
+                value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+              },
+            ]
+          }
+        ]
+      },
+      {
+        name = "Certificates"
+        rows = []
+      }
+    ]
+    fields = [
+      {
+        name  = "JWE Algorithm"
+        value = "dir"
+      },
+      {
+        name  = "JWE Content Encryption Algorithm"
+        value = "A192CBC-HS384"
+      },
+      {
+        name  = "Active Symmetric Encryption Key ID"
+        value = "keyidentifier"
+      },
+    ]
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name = "contract"
+      }
+    ]
+  }
+}
+
+resource "pingfederate_openid_connect_policy" "custom_source" {
+  policy_id = "%s"
+  access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.custom_source.id
+  }
+  attribute_contract = {
+  }
+  attribute_mapping = {
+    attribute_contract_fulfillment = {
+      "sub" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "contract"
+      }
+    }
+    attribute_sources = [
+      {
+        custom_attribute_source = {
+          data_store_ref = {
+            id = "customDataStore"
+          }
+          description = "APIStubs"
+          id          = "APIStubs"
+          filter_fields = [
+            {
+              name = "Authorization Header"
+            },
+            {
+              name  = "Body"
+              value = ""
+            },
+            {
+              name  = "Resource Path"
+              value = "/users/external"
+            },
+          ]
+        }
+      }
+    ]
+  }
+  name = "oidc-custom-source-policy"
+}
+`, openidConnectPolicyPolicyId)
 }
 
 // Validate any computed values when applying minimal HCL

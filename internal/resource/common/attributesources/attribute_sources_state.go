@@ -86,14 +86,33 @@ func attrTypesInternal(includeIdAttr bool) map[string]attr.Type {
 }
 
 func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
-	return toStateInternal(con, attributeSourcesFromClient, true)
+	return toStateInternal(con, attributeSourcesFromClient, true, true)
 }
 
 func ToStateNoId(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
-	return toStateInternal(con, attributeSourcesFromClient, false)
+	return toStateInternal(con, attributeSourcesFromClient, false, true)
 }
 
-func toStateInternal(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeIdAttr bool) (basetypes.ListValue, diag.Diagnostics) {
+func ToStateNoValueDefault(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
+	return toStateInternal(con, attributeSourcesFromClient, true, false)
+}
+
+func normalizeFieldEntryNilValuesToEmpty(fields []client.FieldEntry) []client.FieldEntry {
+	if len(fields) == 0 {
+		return fields
+	}
+	normalized := make([]client.FieldEntry, len(fields))
+	for i := range fields {
+		normalized[i] = fields[i]
+		if normalized[i].Value == nil {
+			empty := ""
+			normalized[i].Value = &empty
+		}
+	}
+	return normalized
+}
+
+func toStateInternal(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeIdAttr, normalizeNullFilterFieldValueToEmpty bool) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var customAttrSourceAttrTypes = customAttributeSourceAttrType(includeIdAttr)
 	var jdbcAttrSourceAttrTypes = jdbcAttributeSourceAttrType(includeIdAttr)
@@ -107,7 +126,11 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 		attrSourceValues := map[string]attr.Value{}
 		if attrSource.CustomAttributeSource != nil {
 			customAttrSourceValues := map[string]attr.Value{}
-			customAttrSourceValues["filter_fields"], valueFromDiags = types.SetValueFrom(con, customAttrSourceAttrTypes["filter_fields"].(types.SetType).ElemType, attrSource.CustomAttributeSource.FilterFields)
+			filterFields := attrSource.CustomAttributeSource.FilterFields
+			if normalizeNullFilterFieldValueToEmpty {
+				filterFields = normalizeFieldEntryNilValuesToEmpty(filterFields)
+			}
+			customAttrSourceValues["filter_fields"], valueFromDiags = types.SetValueFrom(con, customAttrSourceAttrTypes["filter_fields"].(types.SetType).ElemType, filterFields)
 			diags.Append(valueFromDiags...)
 
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")

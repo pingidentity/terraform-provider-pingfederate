@@ -89,6 +89,54 @@ func TestAccOauthTokenExchangeProcessorPolicy_MinimalMaximal(t *testing.T) {
 	})
 }
 
+func TestAccOauthTokenExchangeProcessorPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthTokenExchangeProcessorPolicy_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL("/users/external"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
+				),
+			},
+			{
+				Config: oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL("/users/internal"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_processor_policy.custom_source", "processor_mappings.0.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/internal",
+						},
+					),
+				),
+			},
+		},
+	})
+}
+
 func dependencyTokenProcessorHCL() string {
 	return `
 resource "pingfederate_idp_token_processor" "saml2" {
@@ -192,6 +240,75 @@ resource "pingfederate_oauth_token_exchange_processor_policy" "example" {
 `, dependencyTokenProcessorHCL(), oauthTokenExchangeProcessorPolicyPolicyId,
 		attributesources.Hcl(nil, attributesources.LdapClientStruct("(cn=Example)", "SUBTREE", *client.NewResourceLink("pingdirectory"))),
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
+}
+
+func oauthTokenExchangeProcessorPolicy_CustomAttributeSourceHCL(resourcePath string) string {
+	return fmt.Sprintf(`
+%s
+resource "pingfederate_oauth_token_exchange_processor_policy" "custom_source" {
+  policy_id            = "%s"
+  actor_token_required = true
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name = "extendedattr"
+      }
+    ]
+  }
+  name = "My updated processor policy"
+  processor_mappings = [
+    {
+      actor_token_processor = {
+        id = pingfederate_idp_token_processor.saml2.processor_id
+      }
+      actor_token_type = "urn:ietf:params:oauth:token-type:saml2"
+      attribute_contract_fulfillment = {
+        "subject" = {
+          source = {
+            type = "CONTEXT"
+          }
+          value = "ClientId"
+        },
+        "extendedattr" = {
+          source = {
+            type = "TEXT"
+          }
+          value = "value"
+        }
+      }
+      attribute_sources = [
+        {
+          custom_attribute_source = {
+            data_store_ref = {
+              id = "customDataStore"
+            }
+            description = "APIStubs"
+            filter_fields = [
+              {
+                name  = "Authorization Header"
+                value = ""
+              },
+              {
+                name = "Body"
+              },
+              {
+                name  = "Resource Path"
+                value = "%s"
+              },
+            ]
+            id = "APIStubs"
+          }
+        }
+      ]
+			%s
+      subject_token_processor = {
+        id = pingfederate_idp_token_processor.saml2.processor_id
+      }
+      subject_token_type = "urn:ietf:params:oauth:token-type:saml2"
+    }
+  ]
+}
+`, dependencyTokenProcessorHCL(), oauthTokenExchangeProcessorPolicyPolicyId, resourcePath, issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
 }
 
 // Validate any computed values when applying minimal HCL
