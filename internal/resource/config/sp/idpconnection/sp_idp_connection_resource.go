@@ -1380,6 +1380,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Validators: []validator.String{
 												// This attribute is required, but due to issues in how terraform calculates plan changes,
 												// we have to mark this as computed and use this validator to ensure the value is not null.
+												// https://github.com/hashicorp/terraform-plugin-framework/issues/898#issuecomment-1871470240
 												configvalidators.StringNotNull(),
 												stringvalidator.LengthAtLeast(1),
 											},
@@ -2573,6 +2574,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Validators: []validator.String{
 												// This attribute is required, but due to issues in how terraform calculates plan changes,
 												// we have to mark this as computed and use this validator to ensure the value is not null.
+												// https://github.com/hashicorp/terraform-plugin-framework/issues/898#issuecomment-1871470240
 												configvalidators.StringNotNull(),
 												stringvalidator.LengthAtLeast(1),
 											},
@@ -3239,6 +3241,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Validators: []validator.String{
 																// This attribute is required, but due to issues in how terraform calculates plan changes,
 																// we have to mark this as computed and use this validator to ensure the value is not null.
+																// https://github.com/hashicorp/terraform-plugin-framework/issues/898#issuecomment-1871470240
 																configvalidators.StringNotNull(),
 																stringvalidator.LengthAtLeast(1),
 															},

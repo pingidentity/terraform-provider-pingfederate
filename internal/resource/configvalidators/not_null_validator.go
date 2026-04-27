@@ -36,7 +36,7 @@ func (v StringNotNullValidator) ValidateString(ctx context.Context, req validato
 	)
 }
 
-// StringNotNull returns an validator which ensures that the string attribute is
+// StringNotNull returns a validator which ensures that the string attribute is
 // not null. Most attributes should set Required: true instead, however in
 // certain scenarios, such as a computed nested attribute, all underlying
 // attributes must also be computed for planning to not show unexpected
