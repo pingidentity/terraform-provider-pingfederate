@@ -87,6 +87,54 @@ func TestAccOauthTokenExchangeTokenGeneratorMapping_MinimalMaximal(t *testing.T)
 	})
 }
 
+func TestAccOauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthTokenExchangeTokenGeneratorMapping_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceHCL("/users/external"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
+				),
+			},
+			{
+				Config: oauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceHCL("/users/internal"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_token_generator_mapping.custom_source", "attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/internal",
+						},
+					),
+				),
+			},
+		},
+	})
+}
+
 // Minimal HCL with only required values set
 func oauthTokenExchangeTokenGeneratorMapping_MinimalHCL() string {
 	return `
@@ -157,6 +205,58 @@ data "pingfederate_oauth_token_exchange_token_generator_mapping" "example" {
   mapping_id = pingfederate_oauth_token_exchange_token_generator_mapping.example.id
 }
 `
+}
+
+func oauthTokenExchangeTokenGeneratorMapping_CustomAttributeSourceHCL(resourcePath string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_token_exchange_token_generator_mapping" "custom_source" {
+  attribute_contract_fulfillment = {
+    "SAML_SUBJECT" = {
+      source = {
+        type = "CONTEXT"
+      }
+      value = "ClientIp"
+    }
+  }
+  attribute_sources = [{
+    custom_attribute_source = {
+      data_store_ref = {
+        id = "customDataStore"
+      }
+      description = "APIStubs"
+      filter_fields = [
+        {
+          name = "Authorization Header"
+        },
+        {
+          name  = "Body"
+          value = ""
+        },
+        {
+          name  = "Resource Path"
+          value = "%s"
+        },
+      ]
+      id = "APIStubs"
+    }
+  }]
+  issuance_criteria = {
+    conditional_criteria = [
+      {
+        attribute_name = "SAML_SUBJECT"
+        condition      = "MULTIVALUE_CONTAINS_DN"
+        source = {
+          type = "MAPPED_ATTRIBUTES"
+        }
+        value = "cn=Example,dc=example,dc=com"
+      },
+    ]
+    expression_criteria = null
+  }
+  source_id = "tokenexchangeprocessorpolicy"
+  target_id = "tokengenerator"
+}
+`, resourcePath)
 }
 
 // Validate any computed values when applying minimal HCL

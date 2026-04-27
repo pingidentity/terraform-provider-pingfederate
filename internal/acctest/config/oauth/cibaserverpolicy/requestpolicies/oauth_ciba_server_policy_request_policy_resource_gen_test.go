@@ -89,6 +89,55 @@ func TestAccOauthCibaServerPolicyRequestPolicy_MinimalMaximal(t *testing.T) {
 	})
 }
 
+func TestAccOauthCibaServerPolicyRequestPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthCibaServerPolicyRequestPolicy_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: oauthCibaServerPolicyRequestPolicy_CustomAttributeSourceHCL("My Request Policy", 120),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "identity_hint_contract_fulfillment.attribute_sources.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "identity_hint_contract_fulfillment.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "identity_hint_contract_fulfillment.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
+				),
+			},
+			{
+				Config: oauthCibaServerPolicyRequestPolicy_CustomAttributeSourceHCL("My Request Policy Updated", 121),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "name", "My Request Policy Updated"),
+					resource.TestCheckResourceAttr("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "transaction_lifetime", "121"),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "identity_hint_contract_fulfillment.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Authorization Header",
+							"value": "",
+						},
+					),
+					resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_ciba_server_policy_request_policy.custom_source", "identity_hint_contract_fulfillment.attribute_sources.*.custom_attribute_source.filter_fields.*",
+						map[string]string{
+							"name":  "Resource Path",
+							"value": "/users/external",
+						},
+					),
+				),
+			},
+		},
+	})
+}
+
 // Minimal HCL with only required values set
 func oauthCibaServerPolicyRequestPolicy_MinimalHCL() string {
 	return fmt.Sprintf(`
@@ -197,6 +246,82 @@ resource "pingfederate_oauth_ciba_server_policy_request_policy" "example" {
 `, oauthCibaServerPolicyRequestPolicyPolicyId,
 		attributesources.Hcl(nil, attributesources.LdapClientStruct("(cn=Example)", "SUBTREE", *client.NewResourceLink("pingdirectory"))),
 		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
+}
+
+func oauthCibaServerPolicyRequestPolicy_CustomAttributeSourceHCL(name string, transactionLifetime int) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_ciba_server_policy_request_policy" "custom_source" {
+  policy_id = "%s"
+  authenticator_ref = {
+    id = "exampleCibaAuthenticator"
+  }
+  identity_hint_mapping = {
+    attribute_contract_fulfillment = {
+      "subject" = {
+        source = {
+          type = "REQUEST"
+        }
+        value = "IDENTITY_HINT_SUBJECT"
+      }
+      "USER_KEY" = {
+        source = {
+          type = "REQUEST"
+        }
+        value = "IDENTITY_HINT_SUBJECT"
+      }
+    }
+  }
+  identity_hint_contract = {
+    extended_attributes = [
+      {
+        name = "anotherone"
+      }
+    ]
+  }
+  identity_hint_contract_fulfillment = {
+    attribute_contract_fulfillment = {
+      "IDENTITY_HINT_SUBJECT" = {
+        source = {
+          type = "REQUEST"
+        }
+        value = "IDENTITY_HINT_SUBJECT"
+      }
+      "anotherone" = {
+        source = {
+          type = "REQUEST"
+        }
+        value = "anotherone"
+      }
+    }
+    attribute_sources = [
+      {
+        custom_attribute_source = {
+          data_store_ref = {
+            id = "customDataStore"
+          }
+          description = "APIStubs"
+          id          = "APIStubs"
+          filter_fields = [
+            {
+              name = "Authorization Header"
+            },
+            {
+              name  = "Body"
+              value = ""
+            },
+            {
+              name  = "Resource Path"
+              value = "/users/external"
+            },
+          ]
+        }
+      }
+    ]
+  }
+  transaction_lifetime = %d
+  name                 = "%s"
+}
+`, oauthCibaServerPolicyRequestPolicyPolicyId, transactionLifetime, name)
 }
 
 // Validate any computed values when applying minimal HCL
