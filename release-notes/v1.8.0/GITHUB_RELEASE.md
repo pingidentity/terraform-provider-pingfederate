@@ -1,0 +1,11 @@
+### BREAKING CHANGES
+
+[7c345215](https://github.com/pingidentity/terraform-provider-pingfederate/commit/7c345215) Updated the `attribute_sources` field to be a List instead of a Set. This change matches the API behavior and helps prevent errors due to known terraform issues with nested sets. This change will not require any change to existing configuration or state. This field is now ordered instead of unordered, so future changes in ordering in configuration will result in planned changes with terraform. [#602](https://github.com/pingidentity/terraform-provider-pingfederate/pull/602)
+[7c345215](https://github.com/pingidentity/terraform-provider-pingfederate/commit/7c345215) `resource/pingfederate_idp_sp_connection`: Updated the `adapter_mappings`, `authentication_policy_contract_assertion_mappings`, and `token_processor_mappings` fields to be Lists instead of a Sets. This change helps prevent errors due to known terraform issues with nested sets. This change will not require any change to existing configuration or state. These fields are now ordered instead of unordered, so future changes in ordering in configuration will result in planned changes with terraform. [#602](https://github.com/pingidentity/terraform-provider-pingfederate/pull/602)
+
+### BUG FIXES
+
+[282ae946](https://github.com/pingidentity/terraform-provider-pingfederate/commit/282ae946) Fixed potential inconsistent result errors which could be caused when setting `custom_attribute_source.filter_fields[i].value` to an empty string [#600](https://github.com/pingidentity/terraform-provider-pingfederate/pull/600)
+[7c345215](https://github.com/pingidentity/terraform-provider-pingfederate/commit/7c345215) Fix potential inconsistent result errors for the `ldap_attribute_source.binary_attribute_settings` field by allowing it to be computed by the API [#602](https://github.com/pingidentity/terraform-provider-pingfederate/pull/602)
+[33483bd0](https://github.com/pingidentity/terraform-provider-pingfederate/commit/33483bd0) Fixed an issue where adding table rows to plugin configuration outside of terraform (such as via the PingFederate UI) could cause a panic when running a subsequent plan. [#603](https://github.com/pingidentity/terraform-provider-pingfederate/pull/603)
+
