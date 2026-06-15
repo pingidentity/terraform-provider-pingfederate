@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -56,22 +56,22 @@ var (
 		"enable_target_resource_validation_for_slo":           types.BoolType,
 		"enable_target_resource_validation_for_idp_discovery": types.BoolType,
 		"enable_in_error_resource_validation":                 types.BoolType,
-		"white_list":                                          types.SetType{ElemType: types.ObjectType{AttrTypes: whiteListAttrTypes}},
-		"uri_allow_list":                                      types.SetType{ElemType: types.ObjectType{AttrTypes: uriAllowListAttrTypes}},
+		"white_list":                                          types.ListType{ElemType: types.ObjectType{AttrTypes: whiteListAttrTypes}},
+		"uri_allow_list":                                      types.ListType{ElemType: types.ObjectType{AttrTypes: uriAllowListAttrTypes}},
 	}
 
 	redirectValidationPartnerSettingsAttrTypes = map[string]attr.Type{
 		"enable_wreply_validation_slo": types.BoolType,
 	}
 
-	whiteListDefault, _                       = types.SetValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, nil)
+	whiteListDefault, _                       = types.ListValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, nil)
 	redirectValidationLocalSettingsDefault, _ = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, map[string]attr.Value{
 		"enable_target_resource_validation_for_sso":           types.BoolValue(false),
 		"enable_target_resource_validation_for_slo":           types.BoolValue(false),
 		"enable_target_resource_validation_for_idp_discovery": types.BoolValue(false),
 		"enable_in_error_resource_validation":                 types.BoolValue(false),
 		"white_list":                                          whiteListDefault,
-		"uri_allow_list":                                      types.SetNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes}),
+		"uri_allow_list":                                      types.ListNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes}),
 	})
 
 	redirectValidationPartnerSettingsDefault, _ = types.ObjectValue(redirectValidationPartnerSettingsAttrTypes, map[string]attr.Value{
@@ -125,35 +125,35 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
-					"white_list": schema.SetNestedAttribute{
+					"white_list": schema.ListNestedAttribute{
 						Description: "List of URLs that are designated as valid target resources.",
 						Computed:    true,
 						Optional:    true,
-						Default:     setdefault.StaticValue(whiteListDefault),
+						Default:     listdefault.StaticValue(whiteListDefault),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
 									Description: "Enable this target resource for SSO redirect validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"target_resource_slo": schema.BoolAttribute{
 									Description: "Enable this target resource for SLO redirect validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"in_error_resource": schema.BoolAttribute{
 									Description: "Enable this target resource for in error resource validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"idp_discovery": schema.BoolAttribute{
 									Description: "Enable this target resource for IdP discovery validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"valid_domain": schema.StringAttribute{
@@ -164,27 +164,27 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 									},
 								},
 								"valid_path": schema.StringAttribute{
-									Description: "Path of a valid resource.",
-									Computed:    true,
+									Description: "Path of a valid resource. Defaults to an empty string.",
 									Optional:    true,
+									Computed:    true,
 									Default:     stringdefault.StaticString(""),
 								},
 								"allow_query_and_fragment": schema.BoolAttribute{
 									Description: "Allow any query parameters and fragment in the resource. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"require_https": schema.BoolAttribute{
 									Description: "Require HTTPS for accessing this resource. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
 					},
-					"uri_allow_list": schema.SetNestedAttribute{
+					"uri_allow_list": schema.ListNestedAttribute{
 						Description: "List of URIs that are designated as valid target resources.",
 						Optional:    true,
 						Computed:    true,
@@ -192,32 +192,32 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
 									Description: "Enable this target resource for SSO redirect validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"target_resource_slo": schema.BoolAttribute{
 									Description: "Enable this target resource for SLO redirect validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"in_error_resource": schema.BoolAttribute{
 									Description: "Enable this target resource for in error resource validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"idp_discovery": schema.BoolAttribute{
 									Description: "Enable this target resource for IdP discovery validation. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"allow_query_and_fragment": schema.BoolAttribute{
 									Description: "Allow any query parameters and fragment in the resource. Defaults to `false`.",
-									Computed:    true,
 									Optional:    true,
+									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"valid_uri": schema.StringAttribute{
@@ -276,7 +276,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 				version.AddUnsupportedAttributeError("redirect_validation_local_settings.uri_allow_list",
 					r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
 			} else if uriAllowList.IsUnknown() {
-				localSettingsAttrs["uri_allow_list"] = types.SetNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes})
+				localSettingsAttrs["uri_allow_list"] = types.ListNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes})
 				localSettingsModified = true
 			}
 		}
@@ -284,7 +284,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 		localSettingsAttrs = plan.RedirectValidationLocalSettings.Attributes()
 		if localSettingsAttrs["uri_allow_list"].IsUnknown() {
 			// Default to empty list
-			localSettingsAttrs["uri_allow_list"], diags = types.SetValue(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil)
+			localSettingsAttrs["uri_allow_list"], diags = types.ListValue(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil)
 			resp.Diagnostics.Append(diags...)
 			localSettingsModified = true
 		}
@@ -308,7 +308,7 @@ func addOptionalRedirectValidationFields(addRequest *client.RedirectValidationSe
 		redirectValidationLocalSettingsValue.EnableTargetResourceValidationForSSO = redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_sso"].(types.Bool).ValueBoolPointer()
 		if !redirectValidationLocalSettingsAttrs["uri_allow_list"].IsNull() && !redirectValidationLocalSettingsAttrs["uri_allow_list"].IsUnknown() {
 			redirectValidationLocalSettingsValue.UriAllowList = []client.RedirectValidationSettingsUriAllowlistEntry{}
-			for _, uriAllowListElement := range redirectValidationLocalSettingsAttrs["uri_allow_list"].(types.Set).Elements() {
+			for _, uriAllowListElement := range redirectValidationLocalSettingsAttrs["uri_allow_list"].(types.List).Elements() {
 				uriAllowListValue := client.RedirectValidationSettingsUriAllowlistEntry{}
 				uriAllowListAttrs := uriAllowListElement.(types.Object).Attributes()
 				uriAllowListValue.AllowQueryAndFragment = uriAllowListAttrs["allow_query_and_fragment"].(types.Bool).ValueBoolPointer()
@@ -322,7 +322,7 @@ func addOptionalRedirectValidationFields(addRequest *client.RedirectValidationSe
 		}
 		if !redirectValidationLocalSettingsAttrs["white_list"].IsNull() && !redirectValidationLocalSettingsAttrs["white_list"].IsUnknown() {
 			redirectValidationLocalSettingsValue.WhiteList = []client.RedirectValidationSettingsWhitelistEntry{}
-			for _, whiteListElement := range redirectValidationLocalSettingsAttrs["white_list"].(types.Set).Elements() {
+			for _, whiteListElement := range redirectValidationLocalSettingsAttrs["white_list"].(types.List).Elements() {
 				whiteListValue := client.RedirectValidationSettingsWhitelistEntry{}
 				whiteListAttrs := whiteListElement.(types.Object).Attributes()
 				whiteListValue.AllowQueryAndFragment = whiteListAttrs["allow_query_and_fragment"].(types.Bool).ValueBoolPointer()

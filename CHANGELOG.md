@@ -1,3 +1,8 @@
+# Unreleased
+
+### Bug fixes
+* Fixed an issue where boolean attributes inside `pingfederate_redirect_validation.redirect_validation_local_settings.white_list` and `uri_allow_list` entries (`target_resource_sso`, `target_resource_slo`, `in_error_resource`, `idp_discovery`, `allow_query_and_fragment`, `require_https`) appeared to flip between plans after each apply. Root cause: a known terraform-plugin-framework bug with `Default` values in nested set attributes ([#867](https://github.com/hashicorp/terraform-plugin-framework/issues/867)) introduced when these attributes were converted to sets in v1.6.2. Converting to ordered lists resolves the issue and restores predictable plan output. ([CDI-1076])
+
 # v1.7.0 February 4, 2026
 ### Enhancements
 * Added support for PingFederate `13.0.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.3`, `12.0`, `12.1`, `12.2`, and `12.3`. ([#561]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/561)))
