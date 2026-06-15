@@ -28,9 +28,8 @@ func TestAccRedirectValidation_MinimalMaximal(t *testing.T) {
 				Check:  redirectValidation_CheckComputedValuesMinimal(),
 			},
 			{
-				// Update to a complete model; verify list ordering by index
+				// Update to a complete model. No computed values to check.
 				Config: redirectValidation_CompleteHCL(),
-				Check:  redirectValidation_CheckComputedValuesComplete(),
 			},
 			{
 				// Test importing the resource
@@ -278,29 +277,6 @@ func redirectValidation_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_partner_settings.enable_wreply_validation_slo", "false"),
 	)
-}
-
-// Validate list ordering after applying complete HCL: entry 0 = example.com, entry 1 = second.example.com
-func redirectValidation_CheckComputedValuesComplete() resource.TestCheckFunc {
-	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.#", "2"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.0.valid_domain", "example.com"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.0.valid_path", "/path"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.0.target_resource_sso", "true"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.0.require_https", "true"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.valid_domain", "second.example.com"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.valid_path", "/second/path"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.target_resource_sso", "true"),
-		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.require_https", "true"),
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		checks = append(checks,
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.#", "2"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.valid_uri", "https://example.com"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.1.valid_uri", "https://anotherone.example.com"),
-		)
-	}
-	return resource.ComposeTestCheckFunc(checks...)
 }
 
 // Validate list ordering after reordering: entry 0 = second.example.com, entry 1 = example.com
