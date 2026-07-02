@@ -17,10 +17,9 @@ jobs:
           - "1.11.*"
         # Cover newest patch release of the major-minor releases we support
         pingfederate:
-          - "12.1.8"
-          - "12.2.4"
-          - "12.3.0"
-          - "13.0.0"
+          - "12.2.6"
+          - "12.3.6"
+          - "13.0.3"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
