@@ -11,70 +11,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccOpenIdConnectSettings(t *testing.T) {
 	resourceName := "myOpenIdConnectSettings"
-
-	var steps []resource.TestStep
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		steps = testAccOpenIdConnectSettingsPf121(resourceName)
-	} else {
-		steps = testAccOpenIdConnectSettingsPrePf121(resourceName)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		Steps: steps,
+		Steps: []resource.TestStep{
+			{
+				// No policies configured and no default
+				Config: testAccOpenIdConnectSettingsEmpty(resourceName),
+			},
+			{
+				// Set a default policy
+				Config: testAccOpenIdConnectSettingsBuildDefaultPolicy(resourceName),
+			},
+			{
+				// Test importing the resource
+				Config:                               testAccOpenIdConnectSettingsBuildDefaultPolicy(resourceName),
+				ResourceName:                         "pingfederate_openid_connect_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "default_policy_ref.id",
+			},
+			{
+				// Reset back to no policies
+				Config: testAccOpenIdConnectSettingsEmpty(resourceName),
+			},
+		},
 	})
-}
-
-// Prior to PF 12.1 it isn't possible to delete the final OIDC policy from the server config,
-// because it is always in use.
-func testAccOpenIdConnectSettingsPrePf121(resourceName string) []resource.TestStep {
-	return []resource.TestStep{
-		{
-			// Set to the existing default
-			Config: testAccOpenIdConnectSettingsExistingDefaultPolicy(resourceName, "acctestOidcPolicy"),
-		},
-		{
-			// Test importing the resource
-			Config:                               testAccOpenIdConnectSettingsExistingDefaultPolicy(resourceName, "acctestOidcPolicy"),
-			ResourceName:                         "pingfederate_openid_connect_settings." + resourceName,
-			ImportState:                          true,
-			ImportStateVerify:                    true,
-			ImportStateVerifyIdentifierAttribute: "default_policy_ref.id",
-		},
-	}
-}
-
-func testAccOpenIdConnectSettingsPf121(resourceName string) []resource.TestStep {
-	return []resource.TestStep{
-		{
-			// No policies configured and no default
-			Config: testAccOpenIdConnectSettingsEmpty(resourceName),
-		},
-		{
-			// Set a default policy
-			Config: testAccOpenIdConnectSettingsBuildDefaultPolicy(resourceName),
-		},
-		{
-			// Test importing the resource
-			Config:                               testAccOpenIdConnectSettingsBuildDefaultPolicy(resourceName),
-			ResourceName:                         "pingfederate_openid_connect_settings." + resourceName,
-			ImportState:                          true,
-			ImportStateVerify:                    true,
-			ImportStateVerifyIdentifierAttribute: "default_policy_ref.id",
-		},
-		{
-			// Reset back to no policies
-			Config: testAccOpenIdConnectSettingsEmpty(resourceName),
-		},
-	}
 }
 
 func testAccOpenIdConnectSettingsEmpty(resourceName string) string {

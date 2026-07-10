@@ -7,11 +7,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -22,7 +22,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -191,16 +190,16 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						},
 					},
 					"expired_certificate_administrative_console_warning_days": schema.Int64Attribute{
-						Description: "Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is `14` days. Supported in PF `12.0` or later.",
+						Description: "Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is `14` days.",
 						Optional:    true,
 						Computed:    true,
-						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
+						Default:     int64default.StaticInt64(14),
 					},
 					"expiring_certificate_administrative_console_warning_days": schema.Int64Attribute{
-						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is `14` days. Supported in PF `12.0` or later.",
+						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is `14` days.",
 						Optional:    true,
 						Computed:    true,
-						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
+						Default:     int64default.StaticInt64(14),
 					},
 					"thread_pool_exhaustion_notification_settings": schema.SingleNestedAttribute{
 						Description: "Notification settings for thread pool exhaustion events. Supported in PF `12.0` or later.",
@@ -481,84 +480,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 		},
 	}
 	resp.Schema = schema
-}
-
-func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast120 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast121 := compare >= 0
-	var plan *serverSettingsModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if plan == nil || !internaltypes.IsDefined(plan.Notifications) {
-		return
-	}
-
-	var diags diag.Diagnostics
-	updatePlan := false
-	planNotificationsAttrs := plan.Notifications.Attributes()
-
-	// Check for attributes only allowed after version 12.0
-	planExpiredCertWarningDays := planNotificationsAttrs["expired_certificate_administrative_console_warning_days"].(types.Int64)
-	planExpiringCertWarningDays := planNotificationsAttrs["expiring_certificate_administrative_console_warning_days"].(types.Int64)
-	if !pfVersionAtLeast120 {
-		if internaltypes.IsDefined(planExpiredCertWarningDays) {
-			version.AddUnsupportedAttributeError("expired_certificate_administrative_console_warning_days",
-				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-		} else if planExpiredCertWarningDays.IsUnknown() {
-			planExpiredCertWarningDays = types.Int64Null()
-			updatePlan = true
-		}
-
-		if internaltypes.IsDefined(planExpiringCertWarningDays) {
-			version.AddUnsupportedAttributeError("expiring_certificate_administrative_console_warning_days",
-				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-		} else if planExpiringCertWarningDays.IsUnknown() {
-			planExpiringCertWarningDays = types.Int64Null()
-			updatePlan = true
-		}
-
-		if internaltypes.IsDefined(planNotificationsAttrs["thread_pool_exhaustion_notification_settings"]) {
-			version.AddUnsupportedAttributeError("thread_pool_exhaustion_notification_settings",
-				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-		}
-	} else {
-		if planExpiredCertWarningDays.IsUnknown() {
-			planExpiredCertWarningDays = types.Int64Value(14)
-			updatePlan = true
-		}
-		if planExpiringCertWarningDays.IsUnknown() {
-			planExpiringCertWarningDays = types.Int64Value(14)
-			updatePlan = true
-		}
-	}
-
-	if !pfVersionAtLeast121 {
-		if internaltypes.IsDefined(planNotificationsAttrs["bulkhead_alert_notification_settings"]) {
-			version.AddUnsupportedAttributeError("bulkhead_alert_notification_settings",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		}
-	}
-
-	// Update plan if necessary
-	if updatePlan && !resp.Diagnostics.HasError() {
-		planNotificationsAttrs["expired_certificate_administrative_console_warning_days"] = planExpiredCertWarningDays
-		planNotificationsAttrs["expiring_certificate_administrative_console_warning_days"] = planExpiringCertWarningDays
-
-		plan.Notifications, diags = types.ObjectValue(plan.Notifications.AttributeTypes(ctx), planNotificationsAttrs)
-		resp.Diagnostics.Append(diags...)
-
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
-	}
 }
 
 func addOptionalServerSettingsFields(addRequest *client.ServerSettings, model serverSettingsModel) {

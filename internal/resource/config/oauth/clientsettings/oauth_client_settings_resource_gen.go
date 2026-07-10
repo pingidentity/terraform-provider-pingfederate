@@ -21,9 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -186,12 +184,13 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					},
 					"lockout_max_malicious_actions": schema.Int64Attribute{
 						Optional:    true,
-						Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PingFederate `12.2` and newer.",
+						Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store.",
 					},
 					"lockout_max_malicious_actions_type": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
-						Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in AccountLockingService. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PingFederate `12.2` and newer.",
+						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
+						Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in AccountLockingService. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"DO_NOT_LOCKOUT",
@@ -203,6 +202,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					"offline_access_require_consent_prompt": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
 						Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Options are `SERVER_DEFAULT`, `NO`, `YES`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
@@ -433,6 +433,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
 						Description: "Determines whether offline_access scope is required to issue refresh tokens or not. 'SERVER_DEFAULT' is the default value. Options are `SERVER_DEFAULT`, `NO`, `YES`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
@@ -511,84 +512,6 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 			},
 		},
 	}
-}
-
-func (r *oauthClientSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.1.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1210 := compare >= 0
-	// Compare to version 12.2.0 of PF
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
-		return
-	}
-	pfVersionAtLeast1220 := compare >= 0
-	var plan *oauthClientSettingsResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if plan == nil {
-		return
-	}
-	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if !pfVersionAtLeast1210 {
-		if internaltypes.IsDefined(plan.DynamicClientRegistration) {
-			offlineAccessRequireConsentPrompt := plan.DynamicClientRegistration.Attributes()["offline_access_require_consent_prompt"]
-			if internaltypes.IsDefined(offlineAccessRequireConsentPrompt) {
-				version.AddUnsupportedAttributeError("dynamic_client_registration.offline_access_require_consent_prompt",
-					r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-			}
-			refreshTokenRollingIntervalTimeUnit := plan.DynamicClientRegistration.Attributes()["refresh_token_rolling_interval_time_unit"]
-			if internaltypes.IsDefined(refreshTokenRollingIntervalTimeUnit) {
-				version.AddUnsupportedAttributeError("dynamic_client_registration.refresh_token_rolling_interval_time_unit",
-					r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-			}
-			requireOfflineAccessScopeToIssueRefreshTokens := plan.DynamicClientRegistration.Attributes()["require_offline_access_scope_to_issue_refresh_tokens"]
-			if internaltypes.IsDefined(requireOfflineAccessScopeToIssueRefreshTokens) {
-				version.AddUnsupportedAttributeError("dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens",
-					r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-			}
-		}
-	} else {
-		r.validatePf121Config(ctx, req, resp)
-	}
-	if !pfVersionAtLeast1220 {
-		if internaltypes.IsDefined(plan.DynamicClientRegistration) {
-			lockoutMaxMaliciousActions := plan.DynamicClientRegistration.Attributes()["lockout_max_malicious_actions"]
-			if internaltypes.IsDefined(lockoutMaxMaliciousActions) {
-				version.AddUnsupportedAttributeError("dynamic_client_registration.lockout_max_malicious_actions",
-					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-			}
-			lockoutMaxMaliciousActionsType := plan.DynamicClientRegistration.Attributes()["lockout_max_malicious_actions_type"]
-			if internaltypes.IsDefined(lockoutMaxMaliciousActionsType) {
-				version.AddUnsupportedAttributeError("dynamic_client_registration.lockout_max_malicious_actions_type",
-					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-			} else if lockoutMaxMaliciousActionsType.IsUnknown() {
-				dynamicClientRegistrationAttrs := plan.DynamicClientRegistration.Attributes()
-				dynamicClientRegistrationAttrs["lockout_max_malicious_actions_type"] = types.StringNull()
-				var diags diag.Diagnostics
-				plan.DynamicClientRegistration, diags = types.ObjectValue(plan.DynamicClientRegistration.AttributeTypes(ctx), dynamicClientRegistrationAttrs)
-				resp.Diagnostics.Append(diags...)
-				resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
-			}
-		}
-	} else {
-		if internaltypes.IsDefined(plan.DynamicClientRegistration) {
-			dynamicClientRegistrationAttrs := plan.DynamicClientRegistration.Attributes()
-			lockoutMaxMaliciousActionsType := dynamicClientRegistrationAttrs["lockout_max_malicious_actions_type"]
-			if lockoutMaxMaliciousActionsType.IsUnknown() {
-				dynamicClientRegistrationAttrs["lockout_max_malicious_actions_type"] = types.StringValue("SERVER_DEFAULT")
-				var diags diag.Diagnostics
-				plan.DynamicClientRegistration, diags = types.ObjectValue(plan.DynamicClientRegistration.AttributeTypes(ctx), dynamicClientRegistrationAttrs)
-				resp.Diagnostics.Append(diags...)
-				resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
-			}
-		}
-	}
-	r.setVersionDependentDefaults(ctx, plan, pfVersionAtLeast1210, resp)
 }
 
 func (model *oauthClientSettingsResourceModel) buildClientStruct(existingExtendedProperties []client.ExtendedProperty) (*client.ClientSettings, diag.Diagnostics) {

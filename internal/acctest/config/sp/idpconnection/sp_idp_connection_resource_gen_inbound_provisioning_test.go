@@ -110,13 +110,7 @@ func TestAccSpIdpConnection_InboundProvisioningPingFederate12_3(t *testing.T) {
 }
 
 func spIdpConnection_InboundProvisioningDependencyHCL() string {
-	ldapDataStoreVersionDependentHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		ldapDataStoreVersionDependentHcl = `
-    use_start_tls           = false
-    `
-	}
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_data_store" "example" {
   data_store_id = "addatastore"
   ldap_data_store = {
@@ -149,11 +143,11 @@ resource "pingfederate_data_store" "example" {
     use_ssl                 = true
     user_dn                 = "cn=localadmin,cn=users,dc=ldaps2,dc=com"
     verify_host             = false
-    %s
+    use_start_tls           = false
   }
   mask_attribute_values = false
 }
-  `, ldapDataStoreVersionDependentHcl)
+  `
 }
 
 // Minimal HCL with only required values set

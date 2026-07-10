@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccRedirectValidation_MinimalMaximal(t *testing.T) {
@@ -77,30 +76,7 @@ data "pingfederate_redirect_validation" "example" {
 
 // Maximal HCL with all values set where possible
 func redirectValidation_CompleteHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedHcl += `
-    uri_allow_list = [
-      {
-        target_resource_sso      = true
-        target_resource_slo      = false
-        in_error_resource        = true
-        idp_discovery            = false
-        allow_query_and_fragment = true
-        valid_uri                = "https://example.com"
-      },
-      {
-        target_resource_sso      = true
-        target_resource_slo      = false
-        in_error_resource        = true
-        idp_discovery            = false
-        allow_query_and_fragment = true
-        valid_uri                = "https://anotherone.example.com"
-      },
-    ]
-		`
-	}
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_redirect_validation" "example" {
   redirect_validation_local_settings = {
     enable_in_error_resource_validation                 = true
@@ -129,32 +105,7 @@ resource "pingfederate_redirect_validation" "example" {
         valid_path               = "/second/path"
       }
     ]
-	%s
-  }
-  redirect_validation_partner_settings = {
-    enable_wreply_validation_slo = true
-  }
-}
-data "pingfederate_redirect_validation" "example" {
-  depends_on = [pingfederate_redirect_validation.example]
-}
-`, versionedHcl)
-}
-
-// Maximal HCL with all values set where possible, with collection attributes reordered
-func redirectValidation_CompleteHCLReordered() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedHcl += `
     uri_allow_list = [
-      {
-        target_resource_sso      = true
-        target_resource_slo      = false
-        in_error_resource        = true
-        idp_discovery            = false
-        allow_query_and_fragment = true
-        valid_uri                = "https://anotherone.example.com"
-      },
       {
         target_resource_sso      = true
         target_resource_slo      = false
@@ -163,10 +114,29 @@ func redirectValidation_CompleteHCLReordered() string {
         allow_query_and_fragment = true
         valid_uri                = "https://example.com"
       },
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = true
+        valid_uri                = "https://anotherone.example.com"
+      },
     ]
-		`
-	}
-	return fmt.Sprintf(`
+  }
+  redirect_validation_partner_settings = {
+    enable_wreply_validation_slo = true
+  }
+}
+data "pingfederate_redirect_validation" "example" {
+  depends_on = [pingfederate_redirect_validation.example]
+}
+`
+}
+
+// Maximal HCL with all values set where possible, with collection attributes reordered
+func redirectValidation_CompleteHCLReordered() string {
+	return `
 resource "pingfederate_redirect_validation" "example" {
   redirect_validation_local_settings = {
     enable_in_error_resource_validation                 = true
@@ -195,7 +165,24 @@ resource "pingfederate_redirect_validation" "example" {
         valid_path               = "/path"
       },
     ]
-	%s
+    uri_allow_list = [
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = true
+        valid_uri                = "https://anotherone.example.com"
+      },
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = true
+        valid_uri                = "https://example.com"
+      },
+    ]
   }
   redirect_validation_partner_settings = {
     enable_wreply_validation_slo = true
@@ -204,29 +191,14 @@ resource "pingfederate_redirect_validation" "example" {
 data "pingfederate_redirect_validation" "example" {
   depends_on = [pingfederate_redirect_validation.example]
 }
-`, versionedHcl)
+`
 }
 
 // HCL with white_list entries that mix true and false boolean values.
 // Used to guard against the regression where Set element defaults caused booleans to
 // flip between plans (CDI-1076).
 func redirectValidation_MixedBoolsHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedHcl += `
-    uri_allow_list = [
-      {
-        target_resource_sso      = true
-        target_resource_slo      = false
-        in_error_resource        = true
-        idp_discovery            = false
-        allow_query_and_fragment = false
-        valid_uri                = "https://mixed.example.com"
-      },
-    ]
-		`
-	}
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_redirect_validation" "example" {
   redirect_validation_local_settings = {
     enable_in_error_resource_validation                 = true
@@ -254,7 +226,16 @@ resource "pingfederate_redirect_validation" "example" {
         valid_domain             = "another.example.com"
       },
     ]
-	%s
+    uri_allow_list = [
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = false
+        valid_uri                = "https://mixed.example.com"
+      },
+    ]
   }
   redirect_validation_partner_settings = {
     enable_wreply_validation_slo = true
@@ -263,7 +244,7 @@ resource "pingfederate_redirect_validation" "example" {
 data "pingfederate_redirect_validation" "example" {
   depends_on = [pingfederate_redirect_validation.example]
 }
-`, versionedHcl)
+`
 }
 
 // Validate any computed values when applying minimal HCL
@@ -282,27 +263,22 @@ func redirectValidation_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate list ordering after reordering: entry 0 = second.example.com, entry 1 = example.com
 // This confirms the list preserves insertion order rather than normalizing like a set would.
 func redirectValidation_CheckComputedValuesReordered() resource.TestCheckFunc {
-	checks := []resource.TestCheckFunc{
+	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.#", "2"),
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.0.valid_domain", "second.example.com"),
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.0.valid_path", "/second/path"),
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.valid_domain", "example.com"),
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.valid_path", "/path"),
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		checks = append(checks,
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.#", "2"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.valid_uri", "https://anotherone.example.com"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.1.valid_uri", "https://example.com"),
-		)
-	}
-	return resource.ComposeTestCheckFunc(checks...)
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.#", "2"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.valid_uri", "https://anotherone.example.com"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.1.valid_uri", "https://example.com"),
+	)
 }
 
 // Validate CDI-1076 regression: mixed true/false booleans are stored correctly at each index
 // and do not get defaulted to false by the framework between applies.
 func redirectValidation_CheckComputedValuesMixedBools() resource.TestCheckFunc {
-	checks := []resource.TestCheckFunc{
+	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.#", "2"),
 		// Entry 0: mixed.example.com — sso=true, slo=false, in_error=false, idp=true, query=false, https=true
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.0.valid_domain", "mixed.example.com"),
@@ -322,17 +298,11 @@ func redirectValidation_CheckComputedValuesMixedBools() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.require_https", "false"),
 		// valid_path defaults to "" when omitted
 		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.white_list.1.valid_path", ""),
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		checks = append(checks,
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.#", "1"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.valid_uri", "https://mixed.example.com"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.target_resource_sso", "true"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.target_resource_slo", "false"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.in_error_resource", "true"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.idp_discovery", "false"),
-			resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.allow_query_and_fragment", "false"),
-		)
-	}
-	return resource.ComposeTestCheckFunc(checks...)
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.#", "1"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.valid_uri", "https://mixed.example.com"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.target_resource_sso", "true"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.target_resource_slo", "false"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.in_error_resource", "true"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.idp_discovery", "false"),
+		resource.TestCheckResourceAttr("pingfederate_redirect_validation.example", "redirect_validation_local_settings.uri_allow_list.0.allow_query_and_fragment", "false"))
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const oauthClientId = "myOauthClient"
@@ -113,38 +112,6 @@ data "pingfederate_oauth_client" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthClient_CompleteHCL() string {
-	var versionedHcl string
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedHcl += `
-		// HCL necessary to use refresh token rolling interval time unit
-	refresh_token_rolling_interval_type = "OVERRIDE_SERVER_DEFAULT"
-	refresh_token_rolling_interval = 10
-		// PF 12.1 attributes
-	refresh_token_rolling_interval_time_unit = "MINUTES"
-	enable_cookieless_authentication_api = true
-	require_offline_access_scope_to_issue_refresh_tokens = "YES"
-	offline_access_require_consent_prompt = "YES"
-		`
-	}
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionedHcl += `
-	lockout_max_malicious_actions = 500
-	lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
-		`
-	}
-	var versionedOidcPolicyHcl string
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedOidcPolicyHcl += `
-	post_logout_redirect_uris = ["https://example.com", "https://pingidentity.com"]
-		`
-	}
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionedOidcPolicyHcl += `
-	user_info_response_content_encryption_algorithm = "AES_256_GCM"
-	user_info_response_encryption_algorithm = "RSA_OAEP_256"
-	user_info_response_signing_algorithm = "RS256"
-		`
-	}
 	return fmt.Sprintf(`
 resource "pingfederate_extended_properties" "example" {
   items = [
@@ -217,7 +184,10 @@ resource "pingfederate_oauth_client" "example" {
     sector_identifier_uri                       = "https://example.com"
     logout_mode                                 = "OIDC_BACK_CHANNEL"
     back_channel_logout_uri                     = "https://example.com"
-	%s
+	post_logout_redirect_uris = ["https://example.com", "https://pingidentity.com"]
+	user_info_response_content_encryption_algorithm = "AES_256_GCM"
+	user_info_response_encryption_algorithm = "RSA_OAEP_256"
+	user_info_response_signing_algorithm = "RS256"
   }
   persistent_grant_expiration_time                 = 5
   persistent_grant_expiration_time_unit            = "DAYS"
@@ -245,37 +215,19 @@ resource "pingfederate_oauth_client" "example" {
   token_introspection_signing_algorithm            = "RS256"
   validate_using_all_eligible_atms                 = true
   require_dpop                                     = true
-  %s
+	refresh_token_rolling_interval_type = "OVERRIDE_SERVER_DEFAULT"
+	refresh_token_rolling_interval = 10
+	refresh_token_rolling_interval_time_unit = "MINUTES"
+	enable_cookieless_authentication_api = true
+	require_offline_access_scope_to_issue_refresh_tokens = "YES"
+	offline_access_require_consent_prompt = "YES"
+	lockout_max_malicious_actions = 500
+	lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
 }
 data "pingfederate_oauth_client" "example" {
   client_id = pingfederate_oauth_client.example.client_id
 }
-`, oauthClientId, versionedOidcPolicyHcl, versionedHcl)
-}
-
-func oauthClient_CheckVersionedComputedValues() resource.TestCheckFunc {
-	var versionedChecks []resource.TestCheckFunc
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.post_logout_redirect_uris"))
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "refresh_token_rolling_interval_time_unit", "HOURS"),
-			resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "enable_cookieless_authentication_api", "false"),
-			resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"),
-			resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "offline_access_require_consent_prompt", "SERVER_DEFAULT"),
-		)
-	}
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "lockout_max_malicious_actions"),
-			resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "lockout_max_malicious_actions_type", "SERVER_DEFAULT"),
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.user_info_response_content_encryption_algorithm"),
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.user_info_response_encryption_algorithm"),
-			resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.user_info_response_signing_algorithm"))
-	}
-	return resource.ComposeTestCheckFunc(versionedChecks...)
+`, oauthClientId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -356,7 +308,16 @@ func oauthClient_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_dpop", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "oidc_policy.logout_mode", "NONE"),
 		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.back_channel_logout_uri"),
-		oauthClient_CheckVersionedComputedValues(),
+		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.post_logout_redirect_uris"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "refresh_token_rolling_interval_time_unit", "HOURS"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "enable_cookieless_authentication_api", "false"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "offline_access_require_consent_prompt", "SERVER_DEFAULT"),
+		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "lockout_max_malicious_actions"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client.example", "lockout_max_malicious_actions_type", "SERVER_DEFAULT"),
+		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.user_info_response_content_encryption_algorithm"),
+		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.user_info_response_encryption_algorithm"),
+		resource.TestCheckNoResourceAttr("pingfederate_oauth_client.example", "oidc_policy.user_info_response_signing_algorithm"),
 	)
 }
 

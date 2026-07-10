@@ -56,17 +56,8 @@ var (
 	}
 )
 
-func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefaults(ctx context.Context, isVersionAtLeast1201 bool, plan *keypairsOauthOpenidConnectAdditionalKeySetResourceModel, resp *resource.ModifyPlanResponse) {
+func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefaults(ctx context.Context, plan *keypairsOauthOpenidConnectAdditionalKeySetResourceModel, resp *resource.ModifyPlanResponse) {
 	signingKeysAttrs := plan.SigningKeys.Attributes()
-	if isVersionAtLeast1201 {
-		// RSA key id sets default to empty sets
-		if signingKeysAttrs["rsa_algorithm_active_key_ids"].IsUnknown() {
-			signingKeysAttrs["rsa_algorithm_active_key_ids"] = emptyRsaKeySetDefault
-		}
-		if signingKeysAttrs["rsa_algorithm_previous_key_ids"].IsUnknown() {
-			signingKeysAttrs["rsa_algorithm_previous_key_ids"] = emptyRsaKeySetDefault
-		}
-	}
 	// If an active cert ref is set, then corresponding publish_x5c_parameter attribute defaults to false
 	if signingKeysAttrs["p256_publish_x5c_parameter"].IsUnknown() && !signingKeysAttrs["p256_active_cert_ref"].IsUnknown() {
 		if internaltypes.IsDefined(signingKeysAttrs["p256_active_cert_ref"]) {

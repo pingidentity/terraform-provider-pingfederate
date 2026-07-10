@@ -31,7 +31,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -249,14 +248,16 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 				Default:     stringdefault.StaticString(""),
 			},
 			"require_offline_access_scope_to_issue_refresh_tokens": schema.BoolAttribute{
-				Description: "Determines whether offline_access scope is required to issue refresh tokens or not. The default value is `false`. Supported in PF version `12.1` or later.",
+				Description: "Determines whether offline_access scope is required to issue refresh tokens or not. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"offline_access_require_consent_prompt": schema.BoolAttribute{
-				Description: "Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `false`. The default value is `false`. Supported in PF version `12.1` or later.",
+				Description: "Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `false`. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"persistent_grant_lifetime": schema.Int64Attribute{
 				Description: "The persistent grant lifetime. The default value is `-1`, which indicates an indefinite amount of time.",
@@ -309,7 +310,7 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 				Required:    true,
 			},
 			"refresh_rolling_interval_time_unit": schema.StringAttribute{
-				Description: "The refresh token rolling interval time unit. Supported values are `SECONDS`, `MINUTES`, and `HOURS`. The default value is `HOURS`. Supported in PF version `12.1` or later.",
+				Description: "The refresh token rolling interval time unit. Supported values are `SECONDS`, `MINUTES`, and `HOURS`. The default value is `HOURS`.",
 				Computed:    true,
 				Optional:    true,
 				Validators: []validator.String{
@@ -319,6 +320,7 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 						"HOURS",
 					),
 				},
+				Default: stringdefault.StaticString("HOURS"),
 			},
 			"persistent_grant_reuse_grant_types": schema.SetAttribute{
 				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only `IMPLICIT` or `AUTHORIZATION_CODE` or `RESOURCE_OWNER_CREDENTIALS` are valid grant types.",
@@ -467,9 +469,10 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 				Default:     booldefault.StaticBool(false),
 			},
 			"enable_cookieless_user_authorization_authentication_api": schema.BoolAttribute{
-				Description: "Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode. The default is `false`. Supported in PF version `12.1` or later.",
+				Description: "Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode. The default is `false`.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"user_authorization_consent_page_setting": schema.StringAttribute{
 				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system. Supported values are `INTERNAL` and `ADAPTER`. The default value is `INTERNAL`.",
@@ -553,22 +556,22 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 				Default:     booldefault.StaticBool(false),
 			},
 			"bypass_authorization_for_approved_consents": schema.BoolAttribute{
-				// Default is set in ModifyPlan below. Once only PF 12.0 and newer is supported, we can set the default in the schema here
-				Description: "Bypass authorization for previously approved consents. The default value is `false`. Supported in PF version `12.0` or later.",
+				Description: "Bypass authorization for previously approved consents. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"consent_lifetime_days": schema.Int64Attribute{
-				// Default is set in ModifyPlan below. Once only PF 12.0 and newer is supported, we can set the default in the schema here
-				Description: "The consent lifetime in days. The default value is `-1`, which indicates an indefinite amount of time. Supported in PF version `12.0` or later.",
+				Description: "The consent lifetime in days. The default value is `-1`, which indicates an indefinite amount of time.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(-1),
 			},
 			"return_id_token_on_open_id_with_device_authz_grant": schema.BoolAttribute{
-				// Default is set in ModifyPlan below. Once only PF 12.2 and newer is supported, we can set the default in the schema here
-				Description: "Indicates if an ID token should be returned during the device authorization grant flow when the 'openid' scope is approved. The default is `false`. Supported in PF version `12.2` or later.",
+				Description: "Indicates if an ID token should be returned during the device authorization grant flow when the 'openid' scope is approved. The default is `false`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 		},
 	}
@@ -648,110 +651,10 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 }
 
 func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to versions 12.0, and 12.1 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast120 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast121 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast122 := compare >= 0
 	var plan *oauthServerSettingsModel
 	req.Plan.Get(ctx, &plan)
 	if plan == nil {
 		return
-	}
-	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if !pfVersionAtLeast120 {
-		if internaltypes.IsDefined(plan.BypassAuthorizationForApprovedConsents) {
-			version.AddUnsupportedAttributeError("bypass_authorization_for_approved_consents",
-				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-		} else if plan.BypassAuthorizationForApprovedConsents.IsUnknown() {
-			plan.BypassAuthorizationForApprovedConsents = types.BoolNull()
-		}
-
-		if internaltypes.IsDefined(plan.ConsentLifetimeDays) {
-			version.AddUnsupportedAttributeError("consent_lifetime_days",
-				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-		} else if plan.ConsentLifetimeDays.IsUnknown() {
-			plan.ConsentLifetimeDays = types.Int64Null()
-		}
-	} else {
-		if plan.BypassAuthorizationForApprovedConsents.IsUnknown() {
-			plan.BypassAuthorizationForApprovedConsents = types.BoolValue(false)
-		}
-		if plan.ConsentLifetimeDays.IsUnknown() {
-			plan.ConsentLifetimeDays = types.Int64Value(-1)
-		}
-	}
-
-	// Similar logic for PF 12.1
-	if !pfVersionAtLeast121 {
-		if internaltypes.IsDefined(plan.RequireOfflineAccessScopeToIssueRefreshTokens) {
-			version.AddUnsupportedAttributeError("require_offline_access_scope_to_issue_refresh_tokens",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else if plan.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() {
-			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.BoolNull()
-		}
-
-		if internaltypes.IsDefined(plan.OfflineAccessRequireConsentPrompt) {
-			version.AddUnsupportedAttributeError("offline_access_require_consent_prompt",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else if plan.OfflineAccessRequireConsentPrompt.IsUnknown() {
-			plan.OfflineAccessRequireConsentPrompt = types.BoolNull()
-		}
-
-		if internaltypes.IsDefined(plan.RefreshRollingIntervalTimeUnit) {
-			version.AddUnsupportedAttributeError("refresh_rolling_interval_time_unit",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else if plan.RefreshRollingIntervalTimeUnit.IsUnknown() {
-			plan.RefreshRollingIntervalTimeUnit = types.StringNull()
-		}
-
-		if internaltypes.IsDefined(plan.EnableCookielessUserAuthorizationAuthenticationApi) {
-			version.AddUnsupportedAttributeError("enable_cookieless_user_authorization_authentication_api",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else if plan.EnableCookielessUserAuthorizationAuthenticationApi.IsUnknown() {
-			plan.EnableCookielessUserAuthorizationAuthenticationApi = types.BoolNull()
-		}
-	} else {
-		if plan.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() {
-			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.BoolValue(false)
-		}
-		if plan.OfflineAccessRequireConsentPrompt.IsUnknown() {
-			plan.OfflineAccessRequireConsentPrompt = types.BoolValue(false)
-		}
-		if plan.RefreshRollingIntervalTimeUnit.IsUnknown() {
-			plan.RefreshRollingIntervalTimeUnit = types.StringValue("HOURS")
-		}
-		if plan.EnableCookielessUserAuthorizationAuthenticationApi.IsUnknown() {
-			plan.EnableCookielessUserAuthorizationAuthenticationApi = types.BoolValue(false)
-		}
-	}
-
-	// Similar logic for PF 12.2
-	if !pfVersionAtLeast122 {
-		if internaltypes.IsDefined(plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant) {
-			version.AddUnsupportedAttributeError("return_id_token_on_open_id_with_device_authz_grant",
-				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-		} else if plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant.IsUnknown() {
-			plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant = types.BoolNull()
-		}
-	} else {
-		if plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant.IsUnknown() {
-			plan.ReturnIdTokenOnOpenIdWithDeviceAuthzGrant = types.BoolValue(false)
-		}
 	}
 
 	if !resp.Diagnostics.HasError() {

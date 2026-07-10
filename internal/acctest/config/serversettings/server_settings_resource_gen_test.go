@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccServerSettings_MinimalMaximal(t *testing.T) {
@@ -66,34 +65,7 @@ data "pingfederate_server_settings" "example" {
 
 // Maximal HCL with all values set where possible
 func serverSettings_CompleteHCL() string {
-	notificationsVersionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		notificationsVersionedHcl += `
-	  expired_certificate_administrative_console_warning_days = 10
-	  expiring_certificate_administrative_console_warning_days = 11
-	  thread_pool_exhaustion_notification_settings = {
-		thread_dump_enabled = false
-		notification_publisher_ref = {
-          id = pingfederate_notification_publisher.example.id
-		}
-		email_address = "alertalert@example.com"
-		notification_mode = "NOTIFICATION_PUBLISHER"
-	  }
-		`
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		notificationsVersionedHcl = `
-	  bulkhead_alert_notification_settings = {
-	    email_address = "example@example.com"
-		thread_dump_enabled = false
-		notification_publisher_ref = {
-          id = pingfederate_notification_publisher.example.id
-		}
-		notification_mode = "NOTIFICATION_PUBLISHER"
-	  }
-		`
-	}
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_notification_publisher" "example" {
   configuration = {
     fields = [
@@ -182,7 +154,24 @@ resource "pingfederate_server_settings" "example" {
       }
     }
     notify_admin_user_password_changes = true
-	%s
+	  expired_certificate_administrative_console_warning_days = 10
+	  expiring_certificate_administrative_console_warning_days = 11
+	  thread_pool_exhaustion_notification_settings = {
+		thread_dump_enabled = false
+		notification_publisher_ref = {
+          id = pingfederate_notification_publisher.example.id
+		}
+		email_address = "alertalert@example.com"
+		notification_mode = "NOTIFICATION_PUBLISHER"
+	  }
+	  bulkhead_alert_notification_settings = {
+	    email_address = "example@example.com"
+		thread_dump_enabled = false
+		notification_publisher_ref = {
+          id = pingfederate_notification_publisher.example.id
+		}
+		notification_mode = "NOTIFICATION_PUBLISHER"
+	  }
   }
   # Ensures this resource will be updated before deleting the notification publisher
   lifecycle {
@@ -192,18 +181,11 @@ resource "pingfederate_server_settings" "example" {
 data "pingfederate_server_settings" "example" {
   depends_on = [pingfederate_server_settings.example]
 }
-`, notificationsVersionedHcl)
+`
 }
 
 // Validate any computed values when applying minimal HCL
 func serverSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	versionedChecks := []resource.TestCheckFunc{}
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckResourceAttr("pingfederate_server_settings.example", "notifications.expired_certificate_administrative_console_warning_days", "14"),
-			resource.TestCheckResourceAttr("pingfederate_server_settings.example", "notifications.expiring_certificate_administrative_console_warning_days", "14"),
-		)
-	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckNoResourceAttr("pingfederate_server_settings.example", "contact_info.company"),
 		resource.TestCheckNoResourceAttr("pingfederate_server_settings.example", "contact_info.email"),
@@ -239,18 +221,13 @@ func serverSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.enable_ws_trust", "true"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable", "true"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable_xasp", "true"),
-		resource.ComposeTestCheckFunc(versionedChecks...),
+		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "notifications.expired_certificate_administrative_console_warning_days", "14"),
+		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "notifications.expiring_certificate_administrative_console_warning_days", "14"),
 	)
 }
 
 // Validate any computed values when applying complete HCL
 func serverSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
-	versionedChecks := []resource.TestCheckFunc{}
-	if !acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckNoResourceAttr("pingfederate_server_settings.example", "notifications.thread_pool_exhaustion_notification_settings"),
-		)
-	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "federation_info.saml_1x_source_id", ""),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.enable_idp_discovery", "true"),
@@ -272,6 +249,6 @@ func serverSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.enable_ws_trust", "true"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable", "true"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable_xasp", "true"),
-		resource.ComposeTestCheckFunc(versionedChecks...),
+		resource.TestCheckNoResourceAttr("pingfederate_server_settings.example", "notifications.thread_pool_exhaustion_notification_settings"),
 	)
 }

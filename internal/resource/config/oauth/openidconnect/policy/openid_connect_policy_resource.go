@@ -27,7 +27,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -208,9 +207,10 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 				},
 			},
 			"return_id_token_on_token_exchange_grant": schema.BoolAttribute{
-				Description: "Determines whether an ID Token should be returned when token exchange is requested or not. Defaults to `false`. Supported in PF version `12.2` or later.",
+				Description: "Determines whether an ID Token should be returned when token exchange is requested or not. Defaults to `false`.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 		},
 	}
@@ -220,15 +220,8 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 }
 
 func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.2 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast122 := compare >= 0
 	// Compare to version 12.3.0 of PF
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
@@ -240,18 +233,6 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 	planModified := false
-	if !pfVersionAtLeast122 {
-		if internaltypes.IsDefined(plan.ReturnIdTokenOnTokenExchangeGrant) {
-			version.AddUnsupportedAttributeError("return_id_token_on_token_exchange_grant",
-				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-		} else {
-			plan.ReturnIdTokenOnTokenExchangeGrant = types.BoolNull()
-			planModified = true
-		}
-	} else if plan.ReturnIdTokenOnTokenExchangeGrant.IsUnknown() {
-		plan.ReturnIdTokenOnTokenExchangeGrant = types.BoolValue(false)
-		planModified = true
-	}
 
 	if !pfVersionAtLeast1230 {
 		if internaltypes.IsDefined(plan.AllowIdTokenIntrospection) {

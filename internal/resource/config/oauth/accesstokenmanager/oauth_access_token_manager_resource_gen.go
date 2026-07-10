@@ -31,7 +31,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -100,6 +99,14 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 	resp.Diagnostics.Append(diags...)
 	// token_endpoint_attribute_contract.attributes.mapped_scopes default
 	tokenEndpointAttributeContractAttributesMappedScopesDefault, diags := types.SetValue(types.StringType, nil)
+	resp.Diagnostics.Append(diags...)
+	// token_endpoint_attribute_contract default
+	tokenEndpointAttributeContractAttrTypes := map[string]attr.Type{
+		"attributes": types.SetType{ElemType: tokenEndpointAttributeContractAttributesElementType},
+	}
+	tokenEndpointAttributeContractDefault, diags := types.ObjectValue(tokenEndpointAttributeContractAttrTypes, map[string]attr.Value{
+		"attributes": tokenEndpointAttributeContractAttributesDefault,
+	})
 	resp.Diagnostics.Append(diags...)
 
 	resp.Schema = schema.Schema{
@@ -334,7 +341,8 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 				},
 				Optional:    true,
 				Computed:    true,
-				Description: "A set of attributes exposed by an Access Token Manager in a token endpoint response. Supported in PingFederate `12.2.0` and later.",
+				Default:     objectdefault.StaticValue(tokenEndpointAttributeContractDefault),
+				Description: "A set of attributes exposed by an Access Token Manager in a token endpoint response.",
 			},
 		},
 	}
@@ -342,51 +350,13 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 }
 
 func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.2.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
-		return
-	}
-	pfVersionAtLeast1220 := compare >= 0
 	var plan *oauthAccessTokenManagerResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {
 		return
 	}
-	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	tokenEndpointAttributeContractAttributesAttrTypes := map[string]attr.Type{
-		"mapped_scopes": types.SetType{ElemType: types.StringType},
-		"multi_valued":  types.BoolType,
-		"name":          types.StringType,
-	}
-	tokenEndpointAttributeContractAttributesElementType := types.ObjectType{AttrTypes: tokenEndpointAttributeContractAttributesAttrTypes}
-	tokenEndpointAttributeContractAttrTypes := map[string]attr.Type{
-		"attributes": types.SetType{ElemType: tokenEndpointAttributeContractAttributesElementType},
-	}
+
 	var respDiags diag.Diagnostics
-	planModified := false
-	if !pfVersionAtLeast1220 {
-		if internaltypes.IsDefined(plan.TokenEndpointAttributeContract) {
-			version.AddUnsupportedAttributeError("token_endpoint_attribute_contract",
-				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-		} else if plan.TokenEndpointAttributeContract.IsUnknown() {
-			plan.TokenEndpointAttributeContract = types.ObjectNull(tokenEndpointAttributeContractAttrTypes)
-			planModified = true
-		}
-	} else if plan.TokenEndpointAttributeContract.IsUnknown() {
-		// Set default if the version is new enough
-		tokenEndpointAttributeContractAttributesDefault, respDiags := types.SetValue(tokenEndpointAttributeContractAttributesElementType, nil)
-		resp.Diagnostics.Append(respDiags...)
-		plan.TokenEndpointAttributeContract, respDiags = types.ObjectValue(tokenEndpointAttributeContractAttrTypes, map[string]attr.Value{
-			"attributes": tokenEndpointAttributeContractAttributesDefault,
-		})
-		resp.Diagnostics.Append(respDiags...)
-		planModified = true
-	}
-	if planModified {
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
-	}
 	var state *oauthAccessTokenManagerResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if state == nil {

@@ -27,55 +27,6 @@ var (
 	emptyRefListDefault, _ = types.ListValue(refListElemType, nil)
 )
 
-// Some validation has to be done in ModifyPlan because it depends on the PF version
-func (r *oauthClientSettingsResource) validatePf121Config(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *oauthClientSettingsResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if plan == nil {
-		return
-	}
-
-	if internaltypes.IsDefined(plan.DynamicClientRegistration) {
-		attrs := plan.DynamicClientRegistration.Attributes()
-		// If require_offline_access_scope_to_issue_refresh_tokens is not set to "YES", then offline_access_require_consent_prompt has to have the default value of "SERVER_DEFAULT"
-		if !attrs["require_offline_access_scope_to_issue_refresh_tokens"].IsUnknown() && attrs["require_offline_access_scope_to_issue_refresh_tokens"].(types.String).ValueString() != "YES" &&
-			!attrs["offline_access_require_consent_prompt"].IsUnknown() && attrs["offline_access_require_consent_prompt"].(types.String).ValueString() != "SERVER_DEFAULT" {
-			resp.Diagnostics.AddError("'dynamic_client_registration.offline_access_require_consent_prompt' must be set to 'SERVER_DEFAULT' when 'dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens' is not set to 'YES'", "")
-		}
-
-		// Validate overriding server default for refresh_token_rolling_interval_type.
-		resp.Diagnostics.Append(validateOverride("refresh_token_rolling_interval_type", attrs["refresh_token_rolling_interval_type"].(types.String), map[string]attr.Value{
-			"refresh_token_rolling_interval_time_unit": attrs["refresh_token_rolling_interval_time_unit"],
-		})...)
-	}
-}
-
-func (r *oauthClientSettingsResource) setVersionDependentDefaults(ctx context.Context, plan *oauthClientSettingsResourceModel, versionAtLeast1210 bool, resp *resource.ModifyPlanResponse) {
-	if plan == nil || !internaltypes.IsDefined(plan.DynamicClientRegistration) {
-		return
-	}
-
-	attrs := plan.DynamicClientRegistration.Attributes()
-	if attrs["require_offline_access_scope_to_issue_refresh_tokens"].IsUnknown() {
-		if versionAtLeast1210 {
-			attrs["require_offline_access_scope_to_issue_refresh_tokens"] = types.StringValue("SERVER_DEFAULT")
-		} else {
-			attrs["require_offline_access_scope_to_issue_refresh_tokens"] = types.StringNull()
-		}
-	}
-	if attrs["offline_access_require_consent_prompt"].IsUnknown() {
-		if versionAtLeast1210 {
-			attrs["offline_access_require_consent_prompt"] = types.StringValue("SERVER_DEFAULT")
-		} else {
-			attrs["offline_access_require_consent_prompt"] = types.StringNull()
-		}
-	}
-	var diags diag.Diagnostics
-	plan.DynamicClientRegistration, diags = types.ObjectValue(plan.DynamicClientRegistration.AttributeTypes(ctx), attrs)
-	resp.Diagnostics.Append(diags...)
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
-}
-
 func (r *oauthClientSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config *oauthClientSettingsResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -141,6 +92,17 @@ func (r *oauthClientSettingsResource) ValidateConfig(ctx context.Context, req re
 				})...)
 			}
 		}
+
+		// If require_offline_access_scope_to_issue_refresh_tokens is not set to "YES", then offline_access_require_consent_prompt has to have the default value of "SERVER_DEFAULT"
+		if !attrs["require_offline_access_scope_to_issue_refresh_tokens"].IsUnknown() && attrs["require_offline_access_scope_to_issue_refresh_tokens"].(types.String).ValueString() != "YES" &&
+			!attrs["offline_access_require_consent_prompt"].IsUnknown() && attrs["offline_access_require_consent_prompt"].(types.String).ValueString() != "SERVER_DEFAULT" {
+			resp.Diagnostics.AddError("'dynamic_client_registration.offline_access_require_consent_prompt' must be set to 'SERVER_DEFAULT' when 'dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens' is not set to 'YES'", "")
+		}
+
+		// Validate overriding server default for refresh_token_rolling_interval_type.
+		resp.Diagnostics.Append(validateOverride("refresh_token_rolling_interval_type", attrs["refresh_token_rolling_interval_type"].(types.String), map[string]attr.Value{
+			"refresh_token_rolling_interval_time_unit": attrs["refresh_token_rolling_interval_time_unit"],
+		})...)
 	}
 }
 

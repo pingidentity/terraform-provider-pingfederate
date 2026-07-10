@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const ldapStoreId = "ldapDataStoreId"
@@ -112,12 +111,6 @@ data "pingfederate_data_store" "example" {
 
 // Maximal HCL with all values set where possible
 func ldapDataStore_CompleteHCL() string {
-	var versionedHcl string
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedHcl += `
-			use_start_tls = false
-			`
-	}
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "example" {
   data_store_id         = "%s"
@@ -172,20 +165,13 @@ resource "pingfederate_data_store" "example" {
     use_ssl                 = true
     verify_host             = false
     retry_failed_operations = true
-	%s
+			use_start_tls = false
   }
 }
 data "pingfederate_data_store" "example" {
   data_store_id = pingfederate_data_store.example.id
 }
-`, ldapStoreId, versionedHcl)
-}
-
-func checkLdapPf121ComputedAttrs() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		return resource.TestCheckResourceAttr("pingfederate_data_store.example", "ldap_data_store.use_start_tls", "false")
-	}
-	return resource.TestCheckNoResourceAttr("pingfederate_data_store.example", "ldap_data_store.use_start_tls")
+`, ldapStoreId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -218,7 +204,7 @@ func ldapDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", ldapStoreId),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "mask_attribute_values", "false"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ldap_data_store.type", "LDAP"),
-		checkLdapPf121ComputedAttrs(),
+		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ldap_data_store.use_start_tls", "false"),
 	)
 }
 
@@ -240,7 +226,7 @@ func ldapDataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
 		),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", ldapStoreId),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ldap_data_store.type", "LDAP"),
-		checkLdapPf121ComputedAttrs(),
+		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ldap_data_store.use_start_tls", "false"),
 	)
 }
 

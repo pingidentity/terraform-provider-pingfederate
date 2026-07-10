@@ -5,7 +5,6 @@ package oauthaccesstokenmanager_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -13,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccOauthAccessTokenManager_MinimalMaximalJsonWeb(t *testing.T) {
@@ -138,35 +136,6 @@ data "pingfederate_oauth_access_token_manager" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthAccessTokenManager_CompleteJsonWebHCL() string {
-	var versionedFields string
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedFields += `
-  {
-	name  = "Publish Keys to the PingFederate JWKS Endpoint"
-	value = "false"
-  },
-`
-	}
-	additionalVersionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		additionalVersionedHcl += `
-token_endpoint_attribute_contract = {
-attributes = [
-  {
-	mapped_scopes = ["email"]
-	multi_valued  = false
-	name          = "normal"
-  },
-  {
-	mapped_scopes = []
-	multi_valued  = true
-	name          = "another"
-  },
-]
-}
-`
-	}
-
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "example" {
   manager_id = "%s"
@@ -363,7 +332,10 @@ resource "pingfederate_oauth_access_token_manager" "example" {
         name  = "Include Issued At Claim",
         value = "false"
       },
-	  %s
+  {
+	name  = "Publish Keys to the PingFederate JWKS Endpoint"
+	value = "false"
+  },
     ]
   }
   name = "myATMUpdated"
@@ -379,45 +351,29 @@ resource "pingfederate_oauth_access_token_manager" "example" {
     include_session_id              = true
     update_authn_session_activity   = true
   }
-  %s
+token_endpoint_attribute_contract = {
+attributes = [
+  {
+	mapped_scopes = ["email"]
+	multi_valued  = false
+	name          = "normal"
+  },
+  {
+	mapped_scopes = []
+	multi_valued  = true
+	name          = "another"
+  },
+]
+}
 }
 data "pingfederate_oauth_access_token_manager" "example" {
   manager_id = pingfederate_oauth_access_token_manager.example.id
 }
-`, atmId, versionedFields, additionalVersionedHcl)
+`, atmId)
 }
 
 // Maximal HCL with all values set where possible, with collections reordered
 func oauthAccessTokenManager_CompleteJsonWebHCLReordered() string {
-	var versionedFields string
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedFields += `
-  {
-	name  = "Publish Keys to the PingFederate JWKS Endpoint"
-	value = "false"
-  },
-`
-	}
-	additionalVersionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		additionalVersionedHcl += `
-token_endpoint_attribute_contract = {
-attributes = [
-  {
-	mapped_scopes = []
-	multi_valued  = true
-	name          = "another"
-  },
-  {
-	mapped_scopes = ["email"]
-	multi_valued  = false
-	name          = "normal"
-  },
-]
-}
-`
-	}
-
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "example" {
   manager_id = "%s"
@@ -614,7 +570,10 @@ resource "pingfederate_oauth_access_token_manager" "example" {
         name  = "Include X.509 Thumbprint Header Parameter",
         value = "false"
       },
-	  %s
+  {
+	name  = "Publish Keys to the PingFederate JWKS Endpoint"
+	value = "false"
+  },
     ]
   }
   name = "myATMUpdated"
@@ -630,22 +589,31 @@ resource "pingfederate_oauth_access_token_manager" "example" {
     include_session_id              = true
     update_authn_session_activity   = true
   }
-  %s
+token_endpoint_attribute_contract = {
+attributes = [
+  {
+	mapped_scopes = []
+	multi_valued  = true
+	name          = "another"
+  },
+  {
+	mapped_scopes = ["email"]
+	multi_valued  = false
+	name          = "normal"
+  },
+]
+}
 }
 data "pingfederate_oauth_access_token_manager" "example" {
   manager_id = pingfederate_oauth_access_token_manager.example.id
 }
-`, atmId, versionedFields, additionalVersionedHcl)
+`, atmId)
 }
 
 func oauthAccessTokenManager_CheckVersionedFields(minimal bool) resource.TestCheckFunc {
 	checks := []resource.TestCheckFunc{}
-	numFields := 32
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		numFields += 1
-	}
-	checks = append(checks, resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "configuration.fields_all.#", strconv.Itoa(numFields)))
-	if minimal && acctest.VersionAtLeast(version.PingFederate1220) {
+	checks = append(checks, resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "configuration.fields_all.#", "33"))
+	if minimal {
 		checks = append(checks, resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "token_endpoint_attribute_contract.attributes.#", "0"))
 	}
 	return resource.ComposeTestCheckFunc(checks...)

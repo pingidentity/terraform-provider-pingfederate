@@ -23,16 +23,7 @@ var (
 	emptyRsaKeyListDefault, _ = types.SetValue(types.ObjectType{AttrTypes: rsaKeyIdAttrTypes}, nil)
 )
 
-func (r *keypairsOauthOpenidConnectResource) setConditionalDefaults(ctx context.Context, isVersionAtLeast1201, isVersionAtLeast1230 bool, plan *keypairsOauthOpenidConnectResourceModel, resp *resource.ModifyPlanResponse) {
-	if isVersionAtLeast1201 {
-		// RSA key id lists default to empty sets
-		if plan.RsaAlgorithmActiveKeyIds.IsUnknown() {
-			plan.RsaAlgorithmActiveKeyIds = emptyRsaKeyListDefault
-		}
-		if plan.RsaAlgorithmPreviousKeyIds.IsUnknown() {
-			plan.RsaAlgorithmPreviousKeyIds = emptyRsaKeyListDefault
-		}
-	}
+func (r *keypairsOauthOpenidConnectResource) setConditionalDefaults(ctx context.Context, isVersionAtLeast1230 bool, plan *keypairsOauthOpenidConnectResourceModel, resp *resource.ModifyPlanResponse) {
 	if plan.DynamicKeyCertificateInformation.IsUnknown() {
 		dynamicKeyCertificateInformationAttrTypes := map[string]attr.Type{
 			"city":              types.StringType,

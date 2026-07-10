@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -22,9 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -233,6 +232,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 						},
 						Optional:    true,
 						Computed:    true,
+						Default:     setdefault.StaticValue(emptyRsaKeySetDefault),
 						Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`).",
 					},
 					"rsa_algorithm_previous_key_ids": schema.SetNestedAttribute{
@@ -250,6 +250,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 						},
 						Optional:    true,
 						Computed:    true,
+						Default:     setdefault.StaticValue(emptyRsaKeySetDefault),
 						Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`).",
 					},
 					"rsa_previous_cert_ref": schema.SingleNestedAttribute{
@@ -282,80 +283,18 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 }
 
 func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.0.1 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1201 := compare >= 0
 	var plan *keypairsOauthOpenidConnectAdditionalKeySetResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {
 		return
 	}
-	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if !pfVersionAtLeast1201 {
-		if internaltypes.IsDefined(plan.SigningKeys) {
-			p256ActiveKeyId := plan.SigningKeys.Attributes()["p256_active_key_id"]
-			if internaltypes.IsDefined(p256ActiveKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.p256_active_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			p256PreviousKeyId := plan.SigningKeys.Attributes()["p256_previous_key_id"]
-			if internaltypes.IsDefined(p256PreviousKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.p256_previous_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			p384ActiveKeyId := plan.SigningKeys.Attributes()["p384_active_key_id"]
-			if internaltypes.IsDefined(p384ActiveKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.p384_active_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			p384PreviousKeyId := plan.SigningKeys.Attributes()["p384_previous_key_id"]
-			if internaltypes.IsDefined(p384PreviousKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.p384_previous_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			p521ActiveKeyId := plan.SigningKeys.Attributes()["p521_active_key_id"]
-			if internaltypes.IsDefined(p521ActiveKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.p521_active_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			p521PreviousKeyId := plan.SigningKeys.Attributes()["p521_previous_key_id"]
-			if internaltypes.IsDefined(p521PreviousKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.p521_previous_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			rsaActiveKeyId := plan.SigningKeys.Attributes()["rsa_active_key_id"]
-			if internaltypes.IsDefined(rsaActiveKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.rsa_active_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			rsaAlgorithmActiveKeyIds := plan.SigningKeys.Attributes()["rsa_algorithm_active_key_ids"]
-			if internaltypes.IsDefined(rsaAlgorithmActiveKeyIds) {
-				version.AddUnsupportedAttributeError("signing_keys.rsa_algorithm_active_key_ids",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			rsaAlgorithmPreviousKeyIds := plan.SigningKeys.Attributes()["rsa_algorithm_previous_key_ids"]
-			if internaltypes.IsDefined(rsaAlgorithmPreviousKeyIds) {
-				version.AddUnsupportedAttributeError("signing_keys.rsa_algorithm_previous_key_ids",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-			rsaPreviousKeyId := plan.SigningKeys.Attributes()["rsa_previous_key_id"]
-			if internaltypes.IsDefined(rsaPreviousKeyId) {
-				version.AddUnsupportedAttributeError("signing_keys.rsa_previous_key_id",
-					r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
-			}
-		}
-	}
 	// Set default values that can't be set in schema
-	r.setConditionalDefaults(ctx, pfVersionAtLeast1201, plan, resp)
+	r.setConditionalDefaults(ctx, plan, resp)
 	// Validation that may be affected by default values
 	resp.Diagnostics.Append(plan.validateActivePreviousCertRefs()...)
 }
 
-func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClientStruct(versionAtLeast1201 bool) *client.AdditionalKeySet {
+func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClientStruct() *client.AdditionalKeySet {
 	result := &client.AdditionalKeySet{}
 	// description
 	result.Description = model.Description.ValueStringPointer()
@@ -428,25 +367,23 @@ func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClien
 	}
 	signingKeysValue.RsaActiveKeyId = signingKeysAttrs["rsa_active_key_id"].(types.String).ValueStringPointer()
 
-	// Key ids are added in version 12.0.1
-	if versionAtLeast1201 {
-		signingKeysValue.RsaAlgorithmActiveKeyIds = []client.RsaAlgKeyId{}
-		for _, rsaAlgorithmActiveKeyIdsElement := range signingKeysAttrs["rsa_algorithm_active_key_ids"].(types.Set).Elements() {
-			rsaAlgorithmActiveKeyIdsValue := client.RsaAlgKeyId{}
-			rsaAlgorithmActiveKeyIdsAttrs := rsaAlgorithmActiveKeyIdsElement.(types.Object).Attributes()
-			rsaAlgorithmActiveKeyIdsValue.KeyId = rsaAlgorithmActiveKeyIdsAttrs["key_id"].(types.String).ValueString()
-			rsaAlgorithmActiveKeyIdsValue.RsaAlgType = rsaAlgorithmActiveKeyIdsAttrs["rsa_alg_type"].(types.String).ValueString()
-			signingKeysValue.RsaAlgorithmActiveKeyIds = append(signingKeysValue.RsaAlgorithmActiveKeyIds, rsaAlgorithmActiveKeyIdsValue)
-		}
-		signingKeysValue.RsaAlgorithmPreviousKeyIds = []client.RsaAlgKeyId{}
-		for _, rsaAlgorithmPreviousKeyIdsElement := range signingKeysAttrs["rsa_algorithm_previous_key_ids"].(types.Set).Elements() {
-			rsaAlgorithmPreviousKeyIdsValue := client.RsaAlgKeyId{}
-			rsaAlgorithmPreviousKeyIdsAttrs := rsaAlgorithmPreviousKeyIdsElement.(types.Object).Attributes()
-			rsaAlgorithmPreviousKeyIdsValue.KeyId = rsaAlgorithmPreviousKeyIdsAttrs["key_id"].(types.String).ValueString()
-			rsaAlgorithmPreviousKeyIdsValue.RsaAlgType = rsaAlgorithmPreviousKeyIdsAttrs["rsa_alg_type"].(types.String).ValueString()
-			signingKeysValue.RsaAlgorithmPreviousKeyIds = append(signingKeysValue.RsaAlgorithmPreviousKeyIds, rsaAlgorithmPreviousKeyIdsValue)
-		}
+	signingKeysValue.RsaAlgorithmActiveKeyIds = []client.RsaAlgKeyId{}
+	for _, rsaAlgorithmActiveKeyIdsElement := range signingKeysAttrs["rsa_algorithm_active_key_ids"].(types.Set).Elements() {
+		rsaAlgorithmActiveKeyIdsValue := client.RsaAlgKeyId{}
+		rsaAlgorithmActiveKeyIdsAttrs := rsaAlgorithmActiveKeyIdsElement.(types.Object).Attributes()
+		rsaAlgorithmActiveKeyIdsValue.KeyId = rsaAlgorithmActiveKeyIdsAttrs["key_id"].(types.String).ValueString()
+		rsaAlgorithmActiveKeyIdsValue.RsaAlgType = rsaAlgorithmActiveKeyIdsAttrs["rsa_alg_type"].(types.String).ValueString()
+		signingKeysValue.RsaAlgorithmActiveKeyIds = append(signingKeysValue.RsaAlgorithmActiveKeyIds, rsaAlgorithmActiveKeyIdsValue)
 	}
+	signingKeysValue.RsaAlgorithmPreviousKeyIds = []client.RsaAlgKeyId{}
+	for _, rsaAlgorithmPreviousKeyIdsElement := range signingKeysAttrs["rsa_algorithm_previous_key_ids"].(types.Set).Elements() {
+		rsaAlgorithmPreviousKeyIdsValue := client.RsaAlgKeyId{}
+		rsaAlgorithmPreviousKeyIdsAttrs := rsaAlgorithmPreviousKeyIdsElement.(types.Object).Attributes()
+		rsaAlgorithmPreviousKeyIdsValue.KeyId = rsaAlgorithmPreviousKeyIdsAttrs["key_id"].(types.String).ValueString()
+		rsaAlgorithmPreviousKeyIdsValue.RsaAlgType = rsaAlgorithmPreviousKeyIdsAttrs["rsa_alg_type"].(types.String).ValueString()
+		signingKeysValue.RsaAlgorithmPreviousKeyIds = append(signingKeysValue.RsaAlgorithmPreviousKeyIds, rsaAlgorithmPreviousKeyIdsValue)
+	}
+
 	if !signingKeysAttrs["rsa_previous_cert_ref"].IsNull() {
 		signingKeysRsaPreviousCertRefValue := &client.ResourceLink{}
 		signingKeysRsaPreviousCertRefAttrs := signingKeysAttrs["rsa_previous_cert_ref"].(types.Object).Attributes()
@@ -460,7 +397,7 @@ func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClien
 	return result
 }
 
-func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClientResponse(response *client.AdditionalKeySet, versionAtLeast1201 bool) diag.Diagnostics {
+func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClientResponse(response *client.AdditionalKeySet) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// id
 	state.Id = types.StringPointerValue(response.Id)
@@ -610,37 +547,31 @@ func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClient
 		respDiags.Append(diags...)
 	}
 	var signingKeysRsaAlgorithmActiveKeyIdsValue types.Set
-	if versionAtLeast1201 {
-		var signingKeysRsaAlgorithmActiveKeyIdsValues []attr.Value
-		for _, signingKeysRsaAlgorithmActiveKeyIdsResponseValue := range response.SigningKeys.RsaAlgorithmActiveKeyIds {
-			signingKeysRsaAlgorithmActiveKeyIdsValue, diags := types.ObjectValue(signingKeysRsaAlgorithmActiveKeyIdsAttrTypes, map[string]attr.Value{
-				"key_id":       types.StringValue(signingKeysRsaAlgorithmActiveKeyIdsResponseValue.KeyId),
-				"rsa_alg_type": types.StringValue(signingKeysRsaAlgorithmActiveKeyIdsResponseValue.RsaAlgType),
-			})
-			respDiags.Append(diags...)
-			signingKeysRsaAlgorithmActiveKeyIdsValues = append(signingKeysRsaAlgorithmActiveKeyIdsValues, signingKeysRsaAlgorithmActiveKeyIdsValue)
-		}
-		signingKeysRsaAlgorithmActiveKeyIdsValue, diags = types.SetValue(signingKeysRsaAlgorithmActiveKeyIdsElementType, signingKeysRsaAlgorithmActiveKeyIdsValues)
+	var signingKeysRsaAlgorithmActiveKeyIdsValues []attr.Value
+	for _, signingKeysRsaAlgorithmActiveKeyIdsResponseValue := range response.SigningKeys.RsaAlgorithmActiveKeyIds {
+		signingKeysRsaAlgorithmActiveKeyIdsValue, diags := types.ObjectValue(signingKeysRsaAlgorithmActiveKeyIdsAttrTypes, map[string]attr.Value{
+			"key_id":       types.StringValue(signingKeysRsaAlgorithmActiveKeyIdsResponseValue.KeyId),
+			"rsa_alg_type": types.StringValue(signingKeysRsaAlgorithmActiveKeyIdsResponseValue.RsaAlgType),
+		})
 		respDiags.Append(diags...)
-	} else {
-		signingKeysRsaAlgorithmActiveKeyIdsValue = types.SetNull(signingKeysRsaAlgorithmActiveKeyIdsElementType)
+		signingKeysRsaAlgorithmActiveKeyIdsValues = append(signingKeysRsaAlgorithmActiveKeyIdsValues, signingKeysRsaAlgorithmActiveKeyIdsValue)
 	}
+	signingKeysRsaAlgorithmActiveKeyIdsValue, diags = types.SetValue(signingKeysRsaAlgorithmActiveKeyIdsElementType, signingKeysRsaAlgorithmActiveKeyIdsValues)
+	respDiags.Append(diags...)
+
 	var signingKeysRsaAlgorithmPreviousKeyIdsValue types.Set
-	if versionAtLeast1201 {
-		var signingKeysRsaAlgorithmPreviousKeyIdsValues []attr.Value
-		for _, signingKeysRsaAlgorithmPreviousKeyIdsResponseValue := range response.SigningKeys.RsaAlgorithmPreviousKeyIds {
-			signingKeysRsaAlgorithmPreviousKeyIdsValue, diags := types.ObjectValue(signingKeysRsaAlgorithmPreviousKeyIdsAttrTypes, map[string]attr.Value{
-				"key_id":       types.StringValue(signingKeysRsaAlgorithmPreviousKeyIdsResponseValue.KeyId),
-				"rsa_alg_type": types.StringValue(signingKeysRsaAlgorithmPreviousKeyIdsResponseValue.RsaAlgType),
-			})
-			respDiags.Append(diags...)
-			signingKeysRsaAlgorithmPreviousKeyIdsValues = append(signingKeysRsaAlgorithmPreviousKeyIdsValues, signingKeysRsaAlgorithmPreviousKeyIdsValue)
-		}
-		signingKeysRsaAlgorithmPreviousKeyIdsValue, diags = types.SetValue(signingKeysRsaAlgorithmPreviousKeyIdsElementType, signingKeysRsaAlgorithmPreviousKeyIdsValues)
+	var signingKeysRsaAlgorithmPreviousKeyIdsValues []attr.Value
+	for _, signingKeysRsaAlgorithmPreviousKeyIdsResponseValue := range response.SigningKeys.RsaAlgorithmPreviousKeyIds {
+		signingKeysRsaAlgorithmPreviousKeyIdsValue, diags := types.ObjectValue(signingKeysRsaAlgorithmPreviousKeyIdsAttrTypes, map[string]attr.Value{
+			"key_id":       types.StringValue(signingKeysRsaAlgorithmPreviousKeyIdsResponseValue.KeyId),
+			"rsa_alg_type": types.StringValue(signingKeysRsaAlgorithmPreviousKeyIdsResponseValue.RsaAlgType),
+		})
 		respDiags.Append(diags...)
-	} else {
-		signingKeysRsaAlgorithmPreviousKeyIdsValue = types.SetNull(signingKeysRsaAlgorithmPreviousKeyIdsElementType)
+		signingKeysRsaAlgorithmPreviousKeyIdsValues = append(signingKeysRsaAlgorithmPreviousKeyIdsValues, signingKeysRsaAlgorithmPreviousKeyIdsValue)
 	}
+	signingKeysRsaAlgorithmPreviousKeyIdsValue, diags = types.SetValue(signingKeysRsaAlgorithmPreviousKeyIdsElementType, signingKeysRsaAlgorithmPreviousKeyIdsValues)
+	respDiags.Append(diags...)
+
 	var signingKeysRsaPreviousCertRefValue types.Object
 	if response.SigningKeys.RsaPreviousCertRef == nil {
 		signingKeysRsaPreviousCertRefValue = types.ObjectNull(signingKeysRsaPreviousCertRefAttrTypes)
@@ -691,13 +622,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Create(ctx context.
 	}
 
 	// Create API call logic
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1201 := compare >= 0
-	clientData := data.buildClientStruct(pfVersionAtLeast1201)
+	clientData := data.buildClientStruct()
 	apiCreateRequest := r.apiClient.KeyPairsOauthOpenIdConnectAPI.CreateKeySet(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.CreateKeySetExecute(apiCreateRequest)
@@ -707,7 +632,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Create(ctx context.
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData, pfVersionAtLeast1201)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -736,13 +661,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Read(ctx context.Co
 	}
 
 	// Read response into the model
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1201 := compare >= 0
-	resp.Diagnostics.Append(data.readClientResponse(responseData, pfVersionAtLeast1201)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -759,13 +678,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Update(ctx context.
 	}
 
 	// Update API call logic
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1201 := compare >= 0
-	clientData := data.buildClientStruct(pfVersionAtLeast1201)
+	clientData := data.buildClientStruct()
 	apiUpdateRequest := r.apiClient.KeyPairsOauthOpenIdConnectAPI.UpdateKeySet(config.AuthContext(ctx, r.providerConfig), data.SetId.ValueString())
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.UpdateKeySetExecute(apiUpdateRequest)
@@ -775,7 +688,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Update(ctx context.
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData, pfVersionAtLeast1201)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

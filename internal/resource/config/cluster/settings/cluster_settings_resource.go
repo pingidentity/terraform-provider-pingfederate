@@ -12,24 +12,13 @@ import (
 )
 
 func (r *clusterSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.0.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
-		return
-	}
-	pfVersionAtLeast1200 := compare >= 0
 	// Compare to version 13.0.0 of PF
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1300)
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1300)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
 	pfVersionAtLeast1300 := compare >= 0
-	// This endpoint was added in PingFederate 12.0
-	if !pfVersionAtLeast1200 {
-		version.AddUnsupportedResourceError("pingfederate_cluster_settings", r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-	}
 	var plan *clusterSettingsResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {

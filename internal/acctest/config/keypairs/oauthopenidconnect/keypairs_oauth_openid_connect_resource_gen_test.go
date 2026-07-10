@@ -52,42 +52,6 @@ func TestAccKeypairsOauthOpenidConnect_MinimalMaximal(t *testing.T) {
 
 func keypairsOauthOpenidConnect_VersionRestrictedHCL() string {
 	var versionedHcl string
-	if acctest.VersionAtLeast(version.PingFederate1201) {
-		versionedHcl += `
-  p256_active_key_id = "ec256active"
-  p256_decryption_active_key_id = "ec256decryptactive"
-  p256_decryption_previous_key_id = "ec256decryptprevious"
-  p256_previous_key_id = "ec256previous"
-  p384_active_key_id = "ec384active"
-  p384_decryption_active_key_id = "ec384decryptactive"
-  p384_decryption_previous_key_id = "ec384decryptprevious"
-  p384_previous_key_id = "ec384previous"
-  p521_active_key_id = "ec521active"
-  p521_decryption_active_key_id = "ec521decryptactive"
-  p521_decryption_previous_key_id = "ec521decryptprevious"
-  p521_previous_key_id = "ec521previous"
-  rsa_active_key_id = "rsaactive"
-  rsa_decryption_active_key_id = "rsadecryptactive"
-  rsa_decryption_previous_key_id = "rsadecryptprevious"
-  rsa_previous_key_id = "rsaprevious"
-  rsa_algorithm_active_key_ids = [
-    {
-      key_id       = "rsalistactive"
-      rsa_alg_type = "RS256"
-    }
-  ]
-  rsa_algorithm_previous_key_ids = [
-    {
-      key_id       = "rsalistpreviousone"
-      rsa_alg_type = "RS384"
-    },
-    {
-      key_id       = "rsalistprevioustwo"
-      rsa_alg_type = "RS512"
-    }
-  ]
-`
-	}
 	if acctest.VersionAtLeast(version.PingFederate1230) {
 		versionedHcl += `
   dynamic_key_certificate_information = {
@@ -169,7 +133,38 @@ resource "pingfederate_keypairs_oauth_openid_connect" "example" {
   }
   rsa_publish_x5c_parameter = true
   static_jwks_enabled       = true
-  %s
+  p256_active_key_id = "ec256active"
+  p256_decryption_active_key_id = "ec256decryptactive"
+  p256_decryption_previous_key_id = "ec256decryptprevious"
+  p256_previous_key_id = "ec256previous"
+  p384_active_key_id = "ec384active"
+  p384_decryption_active_key_id = "ec384decryptactive"
+  p384_decryption_previous_key_id = "ec384decryptprevious"
+  p384_previous_key_id = "ec384previous"
+  p521_active_key_id = "ec521active"
+  p521_decryption_active_key_id = "ec521decryptactive"
+  p521_decryption_previous_key_id = "ec521decryptprevious"
+  p521_previous_key_id = "ec521previous"
+  rsa_active_key_id = "rsaactive"
+  rsa_decryption_active_key_id = "rsadecryptactive"
+  rsa_decryption_previous_key_id = "rsadecryptprevious"
+  rsa_previous_key_id = "rsaprevious"
+  rsa_algorithm_active_key_ids = [
+    {
+      key_id       = "rsalistactive"
+      rsa_alg_type = "RS256"
+    }
+  ]
+  rsa_algorithm_previous_key_ids = [
+    {
+      key_id       = "rsalistpreviousone"
+      rsa_alg_type = "RS384"
+    },
+    {
+      key_id       = "rsalistprevioustwo"
+      rsa_alg_type = "RS512"
+    }
+  ]
 }
 `, keypairsOauthOpenidConnect_VersionRestrictedHCL())
 }
@@ -177,17 +172,10 @@ resource "pingfederate_keypairs_oauth_openid_connect" "example" {
 // Validate any computed values when applying minimal HCL
 func keypairsOauthOpenidConnect_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	var versionedChecks []resource.TestCheckFunc
-	if acctest.VersionAtLeast(version.PingFederate1201) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids.#", "0"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids.#", "0"),
-		)
-	} else {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids"),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids"),
-		)
-	}
+	versionedChecks = append(versionedChecks,
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids.#", "0"),
+	)
 	if acctest.VersionAtLeast(version.PingFederate1230) {
 		versionedChecks = append(versionedChecks,
 			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "publish_dynamic_key_x5cs", "false"),
@@ -208,20 +196,10 @@ func keypairsOauthOpenidConnect_CheckComputedValuesMinimal() resource.TestCheckF
 
 // Validate any computed values when applying complete HCL
 func keypairsOauthOpenidConnect_CheckComputedValuesComplete() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1201) {
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p256_publish_x5c_parameter", "false"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p384_publish_x5c_parameter", "false"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p521_decryption_publish_x5c_parameter", "false"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_decryption_publish_x5c_parameter", "false"),
-		)
-	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p256_publish_x5c_parameter", "false"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p384_publish_x5c_parameter", "false"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p521_decryption_publish_x5c_parameter", "false"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_decryption_publish_x5c_parameter", "false"),
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids"),
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids"),
 	)
 }

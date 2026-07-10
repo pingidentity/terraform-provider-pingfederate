@@ -24,10 +24,6 @@ func TestAccClusterSettings_MinimalMaximal(t *testing.T) {
 		// This server must not be in clustered mode, so skip this test
 		t.Skip("This server is not in clustered mode, skipping TestAccClusterSettings_MinimalMaximal")
 	}
-	// Check if the server is at least PF 12.0 for this resource
-	if !acctest.VersionAtLeast(version.PingFederate1200) {
-		t.Skip("This server is not at least PingFederate 12.0 so pingfederate_cluster_settings is not supported, skipping TestAccClusterSettings_MinimalMaximal")
-	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){

@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const pingOneLdapGatewayStoreId = "pingOneLdapGatewayDataStoreId"
@@ -139,12 +138,6 @@ data "pingfederate_data_store" "example" {
 
 // Maximal HCL with all values set where possible
 func pingOneLdapGatewayDataStore_CompleteHCL(connRef, envId, gatewayId string) string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedHcl += `
-		  use_start_tls = true
-		  `
-	}
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "example" {
   data_store_id         = "%s"
@@ -159,20 +152,13 @@ resource "pingfederate_data_store" "example" {
     ping_one_environment_id  = "%s"
     ping_one_ldap_gateway_id = "%s"
     use_ssl                  = true
-	%s
+		  use_start_tls = true
   }
 }
 data "pingfederate_data_store" "example" {
   data_store_id = pingfederate_data_store.example.id
 }
-`, pingOneLdapGatewayStoreId, connRef, envId, gatewayId, versionedHcl)
-}
-
-func checkGatewayPf121ComputedAttrs() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		return resource.TestCheckResourceAttr("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.use_start_tls", "false")
-	}
-	return resource.TestCheckNoResourceAttr("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.use_start_tls")
+`, pingOneLdapGatewayStoreId, connRef, envId, gatewayId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -184,7 +170,7 @@ func pingOneLdapGatewayDataStore_CheckComputedValuesMinimal(connRef, envId, gate
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", pingOneLdapGatewayStoreId),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "mask_attribute_values", "false"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.type", "PING_ONE_LDAP_GATEWAY"),
-		checkGatewayPf121ComputedAttrs(),
+		resource.TestCheckResourceAttr("pingfederate_data_store.example", "ping_one_ldap_gateway_data_store.use_start_tls", "false"),
 	)
 }
 

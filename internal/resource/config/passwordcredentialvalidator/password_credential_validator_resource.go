@@ -270,22 +270,6 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 
 		if !anyUnknowns {
 			switch pluginDescriptorRefId {
-			case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
-				_, hasClientId := fieldNameMap["Client Id"]
-				if !hasClientId {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("configuration").AtMapKey("fields"),
-						providererror.InvalidAttributeConfiguration,
-						"The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
-				}
-				_, hasClientSecret := fieldNameMap["Client Secret"]
-				if !hasClientSecret {
-					resp.Diagnostics.AddAttributeError(
-						path.Root("configuration").AtMapKey("fields"),
-						providererror.InvalidAttributeConfiguration,
-						"The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
-				}
-
 			case "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV":
 				_, hasPingOneForCustomersDs := fieldNameMap["PingOne For Customers Datastore"]
 				if !hasPingOneForCustomersDs {
