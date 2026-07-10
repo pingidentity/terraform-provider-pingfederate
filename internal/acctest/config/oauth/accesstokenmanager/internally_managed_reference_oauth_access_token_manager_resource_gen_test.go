@@ -185,20 +185,20 @@ resource "pingfederate_oauth_access_token_manager" "example" {
     include_session_id              = true
     update_authn_session_activity   = true
   }
-token_endpoint_attribute_contract = {
-attributes = [
-  {
-	mapped_scopes = ["email"]
-	multi_valued  = false
-	name          = "normal"
-  },
-  {
-	mapped_scopes = []
-	multi_valued  = true
-	name          = "another"
-  },
-]
-}
+  token_endpoint_attribute_contract = {
+    attributes = [
+      {
+        mapped_scopes = ["email"]
+        multi_valued  = false
+        name          = "normal"
+      },
+      {
+        mapped_scopes = []
+        multi_valued  = true
+        name          = "another"
+      },
+    ]
+  }
 }
 data "pingfederate_oauth_access_token_manager" "example" {
   manager_id = pingfederate_oauth_access_token_manager.example.id

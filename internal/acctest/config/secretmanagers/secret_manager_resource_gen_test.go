@@ -128,7 +128,7 @@ resource "pingfederate_secret_manager" "example" {
         name  = "Connection Timeout (sec)"
         value = "45"
       },
-	  {
+      {
         name  = "Username Retrieval Property Name"
         value = "user"
       }

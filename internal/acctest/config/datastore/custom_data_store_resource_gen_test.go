@@ -329,7 +329,7 @@ resource "pingfederate_data_store" "example" {
           value = "32"
         },
         {
-          name = "Exclude default Content-Type from GET Request"
+          name  = "Exclude default Content-Type from GET Request"
           value = "false"
         },
       ]

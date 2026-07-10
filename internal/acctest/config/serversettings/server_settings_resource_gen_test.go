@@ -153,25 +153,25 @@ resource "pingfederate_server_settings" "example" {
         id = pingfederate_notification_publisher.example.id
       }
     }
-    notify_admin_user_password_changes = true
-	  expired_certificate_administrative_console_warning_days = 10
-	  expiring_certificate_administrative_console_warning_days = 11
-	  thread_pool_exhaustion_notification_settings = {
-		thread_dump_enabled = false
-		notification_publisher_ref = {
-          id = pingfederate_notification_publisher.example.id
-		}
-		email_address = "alertalert@example.com"
-		notification_mode = "NOTIFICATION_PUBLISHER"
-	  }
-	  bulkhead_alert_notification_settings = {
-	    email_address = "example@example.com"
-		thread_dump_enabled = false
-		notification_publisher_ref = {
-          id = pingfederate_notification_publisher.example.id
-		}
-		notification_mode = "NOTIFICATION_PUBLISHER"
-	  }
+    notify_admin_user_password_changes                       = true
+    expired_certificate_administrative_console_warning_days  = 10
+    expiring_certificate_administrative_console_warning_days = 11
+    thread_pool_exhaustion_notification_settings = {
+      thread_dump_enabled = false
+      notification_publisher_ref = {
+        id = pingfederate_notification_publisher.example.id
+      }
+      email_address     = "alertalert@example.com"
+      notification_mode = "NOTIFICATION_PUBLISHER"
+    }
+    bulkhead_alert_notification_settings = {
+      email_address       = "example@example.com"
+      thread_dump_enabled = false
+      notification_publisher_ref = {
+        id = pingfederate_notification_publisher.example.id
+      }
+      notification_mode = "NOTIFICATION_PUBLISHER"
+    }
   }
   # Ensures this resource will be updated before deleting the notification publisher
   lifecycle {

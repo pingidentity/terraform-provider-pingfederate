@@ -69,11 +69,11 @@ func keypairsOauthOpenidConnect_VersionRestrictedHCL() string {
 
 // Minimal HCL with only required values set
 func keypairsOauthOpenidConnect_MinimalHCL() string {
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_keypairs_oauth_openid_connect" "example" {
   static_jwks_enabled = false
 }
-`)
+`
 }
 
 // Maximal HCL with all values set where possible
@@ -131,24 +131,24 @@ resource "pingfederate_keypairs_oauth_openid_connect" "example" {
   rsa_previous_cert_ref = {
     id = "rsaprevious"
   }
-  rsa_publish_x5c_parameter = true
-  static_jwks_enabled       = true
-  p256_active_key_id = "ec256active"
-  p256_decryption_active_key_id = "ec256decryptactive"
+  rsa_publish_x5c_parameter       = true
+  static_jwks_enabled             = true
+  p256_active_key_id              = "ec256active"
+  p256_decryption_active_key_id   = "ec256decryptactive"
   p256_decryption_previous_key_id = "ec256decryptprevious"
-  p256_previous_key_id = "ec256previous"
-  p384_active_key_id = "ec384active"
-  p384_decryption_active_key_id = "ec384decryptactive"
+  p256_previous_key_id            = "ec256previous"
+  p384_active_key_id              = "ec384active"
+  p384_decryption_active_key_id   = "ec384decryptactive"
   p384_decryption_previous_key_id = "ec384decryptprevious"
-  p384_previous_key_id = "ec384previous"
-  p521_active_key_id = "ec521active"
-  p521_decryption_active_key_id = "ec521decryptactive"
+  p384_previous_key_id            = "ec384previous"
+  p521_active_key_id              = "ec521active"
+  p521_decryption_active_key_id   = "ec521decryptactive"
   p521_decryption_previous_key_id = "ec521decryptprevious"
-  p521_previous_key_id = "ec521previous"
-  rsa_active_key_id = "rsaactive"
-  rsa_decryption_active_key_id = "rsadecryptactive"
-  rsa_decryption_previous_key_id = "rsadecryptprevious"
-  rsa_previous_key_id = "rsaprevious"
+  p521_previous_key_id            = "ec521previous"
+  rsa_active_key_id               = "rsaactive"
+  rsa_decryption_active_key_id    = "rsadecryptactive"
+  rsa_decryption_previous_key_id  = "rsadecryptprevious"
+  rsa_previous_key_id             = "rsaprevious"
   rsa_algorithm_active_key_ids = [
     {
       key_id       = "rsalistactive"
@@ -165,6 +165,7 @@ resource "pingfederate_keypairs_oauth_openid_connect" "example" {
       rsa_alg_type = "RS512"
     }
   ]
+    %s
 }
 `, keypairsOauthOpenidConnect_VersionRestrictedHCL())
 }

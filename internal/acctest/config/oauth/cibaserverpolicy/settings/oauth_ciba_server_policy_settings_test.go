@@ -105,12 +105,3 @@ resource "pingfederate_oauth_ciba_server_policy_settings" "%[1]s" {
   }
 }`, resourceName)
 }
-
-func testAccOauthCibaServerPolicySettingsExistingDefaultPolicy(resourceName, existingPolicyName string) string {
-	return fmt.Sprintf(`
-resource "pingfederate_oauth_ciba_server_policy_settings" "%[1]s" {
-  default_request_policy_ref = {
-    id = "%[2]s"
-  }
-}`, resourceName, existingPolicyName)
-}

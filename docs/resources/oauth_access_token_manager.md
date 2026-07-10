@@ -286,7 +286,7 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 - `selection_settings` (Attributes) Settings which determine how this token manager can be selected for use by an OAuth request. (see [below for nested schema](#nestedatt--selection_settings))
 - `session_validation_settings` (Attributes) Settings which determine how the user session is associated with the access token. (see [below for nested schema](#nestedatt--session_validation_settings))
-- `token_endpoint_attribute_contract` (Attributes) A set of attributes exposed by an Access Token Manager in a token endpoint response. Supported in PingFederate `12.2.0` and later. (see [below for nested schema](#nestedatt--token_endpoint_attribute_contract))
+- `token_endpoint_attribute_contract` (Attributes) A set of attributes exposed by an Access Token Manager in a token endpoint response. (see [below for nested schema](#nestedatt--token_endpoint_attribute_contract))
 
 ### Read-Only
 

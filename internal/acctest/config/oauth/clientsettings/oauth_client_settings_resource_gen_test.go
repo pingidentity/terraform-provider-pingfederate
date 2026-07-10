@@ -265,12 +265,12 @@ resource "pingfederate_oauth_client_settings" "example" {
     token_exchange_processor_policy_ref = {
       id = "tokenexchangeprocessorpolicy"
     }
-    user_authorization_url_override = "https://example.com"
-	offline_access_require_consent_prompt = "YES"
-	refresh_token_rolling_interval_time_unit = "MINUTES"
-	require_offline_access_scope_to_issue_refresh_tokens = "YES"
-  lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
-  lockout_max_malicious_actions = 5
+    user_authorization_url_override                      = "https://example.com"
+    offline_access_require_consent_prompt                = "YES"
+    refresh_token_rolling_interval_time_unit             = "MINUTES"
+    require_offline_access_scope_to_issue_refresh_tokens = "YES"
+    lockout_max_malicious_actions_type                   = "OVERRIDE_SERVER_DEFAULT"
+    lockout_max_malicious_actions                        = 5
   }
 }
 `, oauthClientSettings_DependencyHcl(),

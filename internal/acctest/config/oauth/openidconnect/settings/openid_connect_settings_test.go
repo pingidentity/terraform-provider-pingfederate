@@ -146,12 +146,3 @@ resource "pingfederate_openid_connect_settings" "%[1]s" {
 }`, resourceName,
 	)
 }
-
-func testAccOpenIdConnectSettingsExistingDefaultPolicy(resourceName, existingDefaultPolicyId string) string {
-	return fmt.Sprintf(`
-resource "pingfederate_openid_connect_settings" "%[1]s" {
-  default_policy_ref = {
-    id = "%[2]s"
-  }
-}`, resourceName, existingDefaultPolicyId)
-}

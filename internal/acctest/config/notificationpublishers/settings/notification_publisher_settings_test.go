@@ -108,12 +108,3 @@ resource "pingfederate_notification_publisher_settings" "%[1]s" {
   }
 }`, resourceName)
 }
-
-func testAccNotificationPublisherSettingsExistingDefault(resourceName, defaultPublisherId string) string {
-	return fmt.Sprintf(`
-resource "pingfederate_notification_publisher_settings" "%[1]s" {
-  default_notification_publisher_ref = {
-    id = "%[2]s"
-  }
-}`, resourceName, defaultPublisherId)
-}

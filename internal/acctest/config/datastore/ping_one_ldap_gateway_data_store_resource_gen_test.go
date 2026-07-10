@@ -152,7 +152,7 @@ resource "pingfederate_data_store" "example" {
     ping_one_environment_id  = "%s"
     ping_one_ldap_gateway_id = "%s"
     use_ssl                  = true
-		  use_start_tls = true
+    use_start_tls            = true
   }
 }
 data "pingfederate_data_store" "example" {

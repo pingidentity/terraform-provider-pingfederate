@@ -166,7 +166,7 @@ RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 1
 - `description` (String) A description of what the client application does. This description appears when the user is prompted for authorization.
 - `device_flow_setting_type` (String) Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`. Supported values are `SERVER_DEFAULT` and `OVERRIDE_SERVER_DEFAULT`.
 - `device_polling_interval_override` (Number) The amount of time client should wait between polling requests, in seconds. This overrides the 'device_polling_interval' value present in Authorization Server Settings.
-- `enable_cookieless_authentication_api` (Boolean) Set to `true` to allow the authentication API redirectless flow to function without requiring any cookies. Defaults to `false`. Supported in PF version `12.1` or later.
+- `enable_cookieless_authentication_api` (Boolean) Set to `true` to allow the authentication API redirectless flow to function without requiring any cookies. Defaults to `false`.
 - `enabled` (Boolean) Specifies whether the client is enabled. The default value is `true`.
 - `exclusive_scopes` (Set of String) The exclusive scopes available for this client.
 - `extended_parameters` (Attributes Map) OAuth Client Metadata can be extended to use custom Client Metadata Parameters. The names of these custom parameters should be defined in /extendedProperties. (see [below for nested schema](#nestedatt--extended_parameters))
@@ -207,10 +207,10 @@ RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 1
 `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
 RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 11.
-- `lockout_max_malicious_actions` (Number) The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.
-- `lockout_max_malicious_actions_type` (String) Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.
+- `lockout_max_malicious_actions` (Number) The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store.
+- `lockout_max_malicious_actions_type` (String) Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`.
 - `logo_url` (String) The location of the logo used on user-facing OAuth grant authorization and revocation pages.
-- `offline_access_require_consent_prompt` (String) Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.
+- `offline_access_require_consent_prompt` (String) Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`.
 - `oidc_policy` (Attributes) Open ID Connect Policy settings. This is included in the message only when OIDC is enabled. (see [below for nested schema](#nestedatt--oidc_policy))
 - `pending_authorization_timeout_override` (Number) The `device_code` and `user_code` timeout, in seconds. This overrides the `pending_authorization_timeout` value present in Authorization Server Settings.
 - `persistent_grant_expiration_time` (Number) The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0`.
@@ -226,7 +226,7 @@ RSASSA-PSS is only supported with Thales Luna, Entrust nShield Connect or Java 1
 - `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds.
 - `refresh_token_rolling_grace_period_type` (String) When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is `SERVER_DEFAULT`. Supported values are `SERVER_DEFAULT` and `OVERRIDE_SERVER_DEFAULT`.
 - `refresh_token_rolling_interval` (Number) The minimum interval to roll refresh tokens. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.
-- `refresh_token_rolling_interval_time_unit` (String) The refresh token rolling interval time unit. Defaults to `HOURS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`. Supported in PF version `12.1` or later.
+- `refresh_token_rolling_interval_time_unit` (String) The refresh token rolling interval time unit. Defaults to `HOURS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`.
 - `refresh_token_rolling_interval_type` (String) Use `OVERRIDE_SERVER_DEFAULT` to override the Refresh Token Rolling Interval value on the Authorization Server Settings. `SERVER_DEFAULT` will default to the Refresh Token Rolling Interval value on the Authorization Server Setting. Defaults to `SERVER_DEFAULT`. Supported values are `OVERRIDE_SERVER_DEFAULT` and `SERVER_DEFAULT`.
 - `request_object_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present
 `RS256` - RSA using SHA-256
@@ -243,7 +243,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 - `request_policy_ref` (Attributes) The CIBA request policy. (see [below for nested schema](#nestedatt--request_policy_ref))
 - `require_dpop` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Defaults to `false`.
 - `require_jwt_secured_authorization_response_mode` (Boolean) Determines whether JWT secured authorization response mode is required when initiating an authorization request. The default is `false`.
-- `require_offline_access_scope_to_issue_refresh_tokens` (String) Determines whether offline_access scope is required to issue refresh tokens by this client or not. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.
+- `require_offline_access_scope_to_issue_refresh_tokens` (String) Determines whether offline_access scope is required to issue refresh tokens by this client or not. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`.
 - `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for this client. Defaults to `false`.
 - `require_pushed_authorization_requests` (Boolean) Determines whether pushed authorization requests are required when initiating an authorization request. The default is `false`.
 - `require_signed_requests` (Boolean) Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is `false`.

@@ -134,14 +134,14 @@ resource "pingfederate_server_settings_logging" "example" {
       id      = "restdatastore"
       enabled = true
     },
-	{
-		id = "protocolrequestresponse"
-		enabled = false
-	},
-	{
-		id = "dsresponsetime"
-		enabled = false
-	},
+    {
+      id      = "protocolrequestresponse"
+      enabled = false
+    },
+    {
+      id      = "dsresponsetime"
+      enabled = false
+    },
 		%s
   ]
 }

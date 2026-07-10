@@ -333,16 +333,16 @@ resource "pingfederate_oauth_server_settings" "example" {
   user_authorization_consent_page_setting = "INTERNAL"
   user_authorization_url                  = "https://example.com"
 
-  dpop_proof_require_nonce             = true
-  dpop_proof_lifetime_seconds          = 60
-  dpop_proof_enforce_replay_prevention = false
-bypass_authorization_for_approved_consents = true
-consent_lifetime_days = 5
-require_offline_access_scope_to_issue_refresh_tokens = true
-offline_access_require_consent_prompt = true
-refresh_rolling_interval_time_unit = "MINUTES"
-enable_cookieless_user_authorization_authentication_api = true
-return_id_token_on_open_id_with_device_authz_grant = true
+  dpop_proof_require_nonce                                = true
+  dpop_proof_lifetime_seconds                             = 60
+  dpop_proof_enforce_replay_prevention                    = false
+  bypass_authorization_for_approved_consents              = true
+  consent_lifetime_days                                   = 5
+  require_offline_access_scope_to_issue_refresh_tokens    = true
+  offline_access_require_consent_prompt                   = true
+  refresh_rolling_interval_time_unit                      = "MINUTES"
+  enable_cookieless_user_authorization_authentication_api = true
+  return_id_token_on_open_id_with_device_authz_grant      = true
 
   # Ensures this resource will be updated before deleting the dependencies
   lifecycle {

@@ -163,30 +163,30 @@ resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "exampl
       id = "rsaprevious"
     }
     rsa_publish_x5c_parameter = true
-  rsa_algorithm_active_key_ids = [
-    {
-      key_id       = "rsalistactive"
-      rsa_alg_type = "RS256"
-    }
-  ]
-  rsa_algorithm_previous_key_ids = [
-    {
-      key_id       = "rsalistpreviousone"
-      rsa_alg_type = "RS384"
-    },
-    {
-      key_id       = "rsalistprevioustwo"
-      rsa_alg_type = "RS512"
-    }
-  ]
-  p256_active_key_id = "ec256active"
-  p256_previous_key_id = "ec256previous"
-  p384_active_key_id = "ec384active"
-  p384_previous_key_id = "ec384previous"
-  p521_active_key_id = "ec521active"
-  p521_previous_key_id = "ec521previous"
-  rsa_active_key_id = "rsaactive"
-  rsa_previous_key_id = "rsaprevious"
+    rsa_algorithm_active_key_ids = [
+      {
+        key_id       = "rsalistactive"
+        rsa_alg_type = "RS256"
+      }
+    ]
+    rsa_algorithm_previous_key_ids = [
+      {
+        key_id       = "rsalistpreviousone"
+        rsa_alg_type = "RS384"
+      },
+      {
+        key_id       = "rsalistprevioustwo"
+        rsa_alg_type = "RS512"
+      }
+    ]
+    p256_active_key_id   = "ec256active"
+    p256_previous_key_id = "ec256previous"
+    p384_active_key_id   = "ec384active"
+    p384_previous_key_id = "ec384previous"
+    p521_active_key_id   = "ec521active"
+    p521_previous_key_id = "ec521previous"
+    rsa_active_key_id    = "rsaactive"
+    rsa_previous_key_id  = "rsaprevious"
   }
 }
 %s
