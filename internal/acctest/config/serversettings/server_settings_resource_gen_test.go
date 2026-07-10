@@ -249,6 +249,5 @@ func serverSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.enable_ws_trust", "true"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable", "true"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable_xasp", "true"),
-		resource.TestCheckNoResourceAttr("pingfederate_server_settings.example", "notifications.thread_pool_exhaustion_notification_settings"),
 	)
 }

@@ -69,7 +69,7 @@ var (
 		"enable_target_resource_validation_for_idp_discovery": types.BoolValue(false),
 		"enable_in_error_resource_validation":                 types.BoolValue(false),
 		"white_list":                                          whiteListDefault,
-		"uri_allow_list":                                      types.ListNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes}),
+		"uri_allow_list":                                      types.ListValueMust(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil),
 	})
 
 	redirectValidationPartnerSettingsDefault, _ = types.ObjectValue(redirectValidationPartnerSettingsAttrTypes, map[string]attr.Value{
