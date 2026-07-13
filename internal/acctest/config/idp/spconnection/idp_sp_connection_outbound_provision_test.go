@@ -69,8 +69,12 @@ func TestAccIdpSpConnection_OutboundProvisionMinimalMaximal(t *testing.T) {
 				ImportStateId:     spConnOutboundProvisionId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// There is currently an issue where values of target_settings are not imported
-				ImportStateVerifyIgnore: []string{"outbound_provision.target_settings"},
+				// There is currently an issue where values of target_settings are not imported.
+				// As of PF 13.1 some new attribute_mappings fields are added by the API.
+				ImportStateVerifyIgnore: []string{
+					"outbound_provision.target_settings",
+					"outbound_provision.channels.0.attribute_mapping",
+				},
 			},
 		},
 	})

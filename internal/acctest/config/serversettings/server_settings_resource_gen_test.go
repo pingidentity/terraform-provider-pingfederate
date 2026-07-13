@@ -105,7 +105,17 @@ resource "pingfederate_notification_publisher" "example" {
         name  = "Verify Hostname"
         value = "true"
       },
+	  {
+	    name = "Username"
+		value = "example" 
+	  }
     ]
+	sensitive_fields = [
+	  {
+		name = "Password"
+		value = "mypassword"
+	  }
+	]
   }
   name = "serverSettingsPub"
   plugin_descriptor_ref = {

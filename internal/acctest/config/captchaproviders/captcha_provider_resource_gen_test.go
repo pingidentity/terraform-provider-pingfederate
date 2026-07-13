@@ -158,6 +158,14 @@ func captchaProvider_CompleteHCL() string {
       },
 `
 	}
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		additionalVersionedFields += `
+      {
+        name : "Use Targeted Policies"
+        value : "false"
+      },
+`
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_captcha_provider" "example" {
   provider_id = "%s"
@@ -245,6 +253,9 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	}
 	if acctest.VersionAtLeast(version.PingFederate1300) {
 		fieldsAllCount = "16"
+	}
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		fieldsAllCount = "17"
 	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),

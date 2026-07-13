@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const notificationPublisherPublisherId = "notificationPublisherPublisherId"
@@ -83,6 +84,10 @@ func TestAccNotificationPublisher_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "publisher_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
+				ImportStateVerifyIgnore: []string{
+					"configuration.fields",
+					"configuration.sensitive_fields",
+				},
 			},
 		},
 	})
@@ -102,8 +107,18 @@ resource "pingfederate_notification_publisher" "example" {
       {
         name  = "Email Server"
         value = "smtp.example.com"
-      }
+      },
+	  {
+	    name = "Username"
+		value = "example" 
+	  }
     ]
+	sensitive_fields = [
+	  {
+		name = "Password"
+		value = "mypassword"
+	  }
+	]
   }
   name = "MyNotificationPublisher"
   plugin_descriptor_ref = {
@@ -153,14 +168,6 @@ resource "pingfederate_notification_publisher" "example" {
         value = "false"
       },
       {
-        name  = "Username"
-        value = ""
-      },
-      {
-        name  = "Password"
-        value = ""
-      },
-      {
         name  = "Test Address"
         value = ""
       },
@@ -171,7 +178,17 @@ resource "pingfederate_notification_publisher" "example" {
       {
         name  = "Enable SMTP Debugging Messages"
         value = "false"
-      }
+      },
+	  {
+	    name = "Username"
+		value = "example" 
+	  }
+    ]
+	sensitive_fields = [
+	  {
+		name = "Password"
+		value = "mypassword"
+	  }
     ]
     tables = []
   }
@@ -183,11 +200,18 @@ resource "pingfederate_notification_publisher" "example" {
 `, notificationPublisherPublisherId)
 }
 
+func notificationPublisher_FieldCount() string {
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		return "27"
+	}
+	return "13"
+}
+
 // Validate any computed values when applying minimal HCL
 func notificationPublisher_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "id", notificationPublisherPublisherId),
-		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.#", "13"),
+		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.#", notificationPublisher_FieldCount()),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_notification_publisher.example", "configuration.fields_all.*",
 			map[string]string{
 				"name":  "SMTP Port",
@@ -203,7 +227,7 @@ func notificationPublisher_CheckComputedValuesMinimal() resource.TestCheckFunc {
 func notificationPublisher_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "id", notificationPublisherPublisherId),
-		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.#", "13"),
+		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.#", notificationPublisher_FieldCount()),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.tables.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.tables_all.#", "0"),
 	)

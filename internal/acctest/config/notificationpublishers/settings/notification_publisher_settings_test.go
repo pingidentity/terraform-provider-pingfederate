@@ -93,7 +93,17 @@ resource "pingfederate_notification_publisher" "%[1]sPub" {
         name  = "Verify Hostname"
         value = "true"
       },
+	  {
+	    name = "Username"
+		value = "example" 
+	  }
     ]
+	sensitive_fields = [
+	  {
+		name = "Password"
+		value = "mypassword"
+	  }
+	]
   }
   name = "%[1]sPub"
   plugin_descriptor_ref = {
