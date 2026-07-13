@@ -3813,7 +3813,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		}
 	}
 
-	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+, and include_not_before_claim if version is 12.3+
+	// Set default for include_not_before_claim if version is 12.3+
 	planModified := false
 	var diags diag.Diagnostics
 	if internaltypes.IsDefined(plan.IdpBrowserSso) {

@@ -202,11 +202,10 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Default:     int64default.StaticInt64(14),
 					},
 					"thread_pool_exhaustion_notification_settings": schema.SingleNestedAttribute{
-						Description: "Notification settings for thread pool exhaustion events. Supported in PF `12.0` or later.",
+						Description: "Notification settings for thread pool exhaustion events.",
 						Optional:    true,
 						Computed:    true,
 						Default:     objectdefault.StaticValue(types.ObjectNull(threadPoolExhaustionNotificationSettingsAttrType)),
-						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
 								Description: "Email addresses where notifications are sent. Separate multiple email addresses with commas.",

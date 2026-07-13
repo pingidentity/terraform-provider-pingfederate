@@ -153,18 +153,17 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						},
 					},
 					"expired_certificate_administrative_console_warning_days": schema.Int64Attribute{
-						Description: "Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is 14 days. Supported in PF 12.0 or later.",
+						Description: "Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is 14 days.",
 						Optional:    true,
 						Computed:    false,
-						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
 					},
 					"expiring_certificate_administrative_console_warning_days": schema.Int64Attribute{
-						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is 14 days. Supported in PF 12.0 or later.",
+						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is 14 days.",
 						Optional:    false,
 						Computed:    true,
 					},
 					"thread_pool_exhaustion_notification_settings": schema.SingleNestedAttribute{
-						Description: "Notification settings for thread pool exhaustion events. Supported in PF 12.0 or later.",
+						Description: "Notification settings for thread pool exhaustion events.",
 						Optional:    false,
 						Computed:    true,
 						Attributes: map[string]schema.Attribute{

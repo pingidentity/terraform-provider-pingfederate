@@ -108,17 +108,17 @@ resource "pingfederate_notification_publisher" "example" {
         name  = "Email Server"
         value = "smtp.example.com"
       },
-	  {
-	    name = "Username"
-		value = "example" 
-	  }
+      {
+        name  = "Username"
+        value = "example"
+      }
     ]
-	sensitive_fields = [
-	  {
-		name = "Password"
-		value = "mypassword"
-	  }
-	]
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = "mypassword"
+      }
+    ]
   }
   name = "MyNotificationPublisher"
   plugin_descriptor_ref = {
@@ -179,16 +179,16 @@ resource "pingfederate_notification_publisher" "example" {
         name  = "Enable SMTP Debugging Messages"
         value = "false"
       },
-	  {
-	    name = "Username"
-		value = "example" 
-	  }
+      {
+        name  = "Username"
+        value = "example"
+      }
     ]
-	sensitive_fields = [
-	  {
-		name = "Password"
-		value = "mypassword"
-	  }
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = "mypassword"
+      }
     ]
     tables = []
   }

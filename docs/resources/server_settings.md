@@ -116,7 +116,7 @@ Optional:
 - `license_events` (Attributes) Settings for license event notifications. (see [below for nested schema](#nestedatt--notifications--license_events))
 - `metadata_notification_settings` (Attributes) Settings for metadata update event notifications. (see [below for nested schema](#nestedatt--notifications--metadata_notification_settings))
 - `notify_admin_user_password_changes` (Boolean) Determines whether admin users are notified through email when their account is changed. Default value is `false`.
-- `thread_pool_exhaustion_notification_settings` (Attributes) Notification settings for thread pool exhaustion events. Supported in PF `12.0` or later. (see [below for nested schema](#nestedatt--notifications--thread_pool_exhaustion_notification_settings))
+- `thread_pool_exhaustion_notification_settings` (Attributes) Notification settings for thread pool exhaustion events. (see [below for nested schema](#nestedatt--notifications--thread_pool_exhaustion_notification_settings))
 
 <a id="nestedatt--notifications--account_changes_notification_publisher_ref"></a>
 ### Nested Schema for `notifications.account_changes_notification_publisher_ref`

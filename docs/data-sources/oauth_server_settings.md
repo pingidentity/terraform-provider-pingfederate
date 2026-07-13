@@ -33,10 +33,10 @@ data "pingfederate_oauth_server_settings" "myOauthAuthServerSettings" {
 - `authorization_code_entropy` (Number) The authorization code entropy, in bytes.
 - `authorization_code_timeout` (Number) The authorization code timeout, in seconds.
 - `bypass_activation_code_confirmation` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.
-- `bypass_authorization_for_approved_consents` (Boolean) Bypass authorization for previously approved consents. Supported in PF version 12.0 or later.
+- `bypass_authorization_for_approved_consents` (Boolean) Bypass authorization for previously approved consents.
 - `bypass_authorization_for_approved_grants` (Boolean) Bypass authorization for previously approved persistent grants.
 - `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.
-- `consent_lifetime_days` (Number) The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.
+- `consent_lifetime_days` (Number) The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time.
 - `default_scope_description` (String) The default scope description.
 - `device_polling_interval` (Number) The amount of time client should wait between polling requests, in seconds.
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed.
