@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const keypairsOauthOpenidConnectAdditionalKeySetSetId = "keypairs_oauth_openid_connect_ad"
@@ -87,38 +86,6 @@ func TestAccKeypairsOauthOpenidConnectAdditionalKeySet_MinimalMaximal(t *testing
 			},
 		},
 	})
-}
-
-func keypairsOauthOpenidConnectAdditionalKeySet_VersionRestrictedHCL() string {
-	if acctest.VersionAtLeast(version.PingFederate1201) {
-		return `
-  rsa_algorithm_active_key_ids = [
-    {
-      key_id       = "rsalistactive"
-      rsa_alg_type = "RS256"
-    }
-  ]
-  rsa_algorithm_previous_key_ids = [
-    {
-      key_id       = "rsalistpreviousone"
-      rsa_alg_type = "RS384"
-    },
-    {
-      key_id       = "rsalistprevioustwo"
-      rsa_alg_type = "RS512"
-    }
-  ]
-  p256_active_key_id = "ec256active"
-  p256_previous_key_id = "ec256previous"
-  p384_active_key_id = "ec384active"
-  p384_previous_key_id = "ec384previous"
-  p521_active_key_id = "ec521active"
-  p521_previous_key_id = "ec521previous"
-  rsa_active_key_id = "rsaactive"
-  rsa_previous_key_id = "rsaprevious"
-`
-	}
-	return ""
 }
 
 func keypairsOauthOpenidConnectAdditionalKeySet_DependencyHCL() string {
@@ -196,53 +163,55 @@ resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "exampl
       id = "rsaprevious"
     }
     rsa_publish_x5c_parameter = true
-  %s
+    rsa_algorithm_active_key_ids = [
+      {
+        key_id       = "rsalistactive"
+        rsa_alg_type = "RS256"
+      }
+    ]
+    rsa_algorithm_previous_key_ids = [
+      {
+        key_id       = "rsalistpreviousone"
+        rsa_alg_type = "RS384"
+      },
+      {
+        key_id       = "rsalistprevioustwo"
+        rsa_alg_type = "RS512"
+      }
+    ]
+    p256_active_key_id   = "ec256active"
+    p256_previous_key_id = "ec256previous"
+    p384_active_key_id   = "ec384active"
+    p384_previous_key_id = "ec384previous"
+    p521_active_key_id   = "ec521active"
+    p521_previous_key_id = "ec521previous"
+    rsa_active_key_id    = "rsaactive"
+    rsa_previous_key_id  = "rsaprevious"
   }
 }
 %s
 `, keypairsOauthOpenidConnectAdditionalKeySetSetId,
-		keypairsOauthOpenidConnectAdditionalKeySet_VersionRestrictedHCL(),
 		keypairsOauthOpenidConnectAdditionalKeySet_DependencyHCL())
 }
 
 // Validate any computed values when applying minimal HCL
 func keypairsOauthOpenidConnectAdditionalKeySet_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1201) {
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "id", keypairsOauthOpenidConnectAdditionalKeySetSetId),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_active_key_ids.#", "0"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_previous_key_ids.#", "0"),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p256_publish_x5c_parameter"),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p384_publish_x5c_parameter"),
-		)
-	} else {
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "id", keypairsOauthOpenidConnectAdditionalKeySetSetId),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_active_key_ids"),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_previous_key_ids"),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p256_publish_x5c_parameter"),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p384_publish_x5c_parameter"),
-		)
-	}
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "id", keypairsOauthOpenidConnectAdditionalKeySetSetId),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_active_key_ids.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_previous_key_ids.#", "0"),
+		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p256_publish_x5c_parameter"),
+		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p384_publish_x5c_parameter"),
+	)
 }
 
 // Validate any computed values when applying complete HCL
 func keypairsOauthOpenidConnectAdditionalKeySet_CheckComputedValuesComplete() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1201) {
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "id", keypairsOauthOpenidConnectAdditionalKeySetSetId),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p256_publish_x5c_parameter", "false"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p384_publish_x5c_parameter", "false"),
-		)
-	} else {
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "id", keypairsOauthOpenidConnectAdditionalKeySetSetId),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_active_key_ids"),
-			resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.rsa_algorithm_previous_key_ids"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p256_publish_x5c_parameter", "false"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p384_publish_x5c_parameter", "false"),
-		)
-	}
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "id", keypairsOauthOpenidConnectAdditionalKeySetSetId),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p256_publish_x5c_parameter", "false"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect_additional_key_set.example", "signing_keys.p384_publish_x5c_parameter", "false"),
+	)
 }
 
 // Delete the resource

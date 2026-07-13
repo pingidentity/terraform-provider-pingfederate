@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const kerberosRealmRealmId = "kerberosRealmRealmId"
@@ -43,13 +42,6 @@ func TestAccKerberosRealm_RemovalDrift(t *testing.T) {
 }
 
 func TestAccKerberosRealm_MinimalMaximal(t *testing.T) {
-	var updatedRealmConfig string
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		// LOCAL_VALIDATION was added in PF 12.2
-		updatedRealmConfig = kerberosRealm_CompleteLocalValidationHCL()
-	} else {
-		updatedRealmConfig = kerberosRealm_CompleteHCL()
-	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -79,12 +71,12 @@ func TestAccKerberosRealm_MinimalMaximal(t *testing.T) {
 			},
 			{
 				// Back to complete model
-				Config: updatedRealmConfig,
+				Config: kerberosRealm_CompleteLocalValidationHCL(),
 				Check:  kerberosRealm_CheckComputedValuesComplete(),
 			},
 			{
 				// Test importing the resource
-				Config:            updatedRealmConfig,
+				Config:            kerberosRealm_CompleteLocalValidationHCL(),
 				ResourceName:      "pingfederate_kerberos_realm.example",
 				ImportStateId:     kerberosRealmRealmId,
 				ImportState:       true,

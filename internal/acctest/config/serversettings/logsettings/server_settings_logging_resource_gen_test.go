@@ -95,22 +95,6 @@ data "pingfederate_server_settings_logging" "example" {
 // Maximal HCL with all values set where possible
 func serverSettingsLogging_CompleteHCL() string {
 	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedHcl += `
-	{
-		id = "protocolrequestresponse"
-		enabled = false
-	},
-		`
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedHcl += `
-	{
-		id = "dsresponsetime"
-		enabled = false
-	},
-		`
-	}
 	if acctest.VersionAtLeast(version.PingFederate1300) {
 		versionedHcl += `
 	{
@@ -150,6 +134,14 @@ resource "pingfederate_server_settings_logging" "example" {
       id      = "restdatastore"
       enabled = true
     },
+    {
+      id      = "protocolrequestresponse"
+      enabled = false
+    },
+    {
+      id      = "dsresponsetime"
+      enabled = false
+    },
 		%s
   ]
 }
@@ -160,13 +152,7 @@ data "pingfederate_server_settings_logging" "example" {
 }
 
 func serverSettingsLogging_logCategoriesCount() string {
-	baseCount := 7
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		baseCount++
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		baseCount++
-	}
+	baseCount := 9
 	if acctest.VersionAtLeast(version.PingFederate1300) {
 		baseCount++
 	}
@@ -214,31 +200,6 @@ func serverSettingsLogging_CheckComputedValuesMinimal() resource.TestCheckFunc {
 
 // Validate any computed values when applying complete HCL
 func serverSettingsLogging_CheckComputedValuesComplete() resource.TestCheckFunc {
-	versionedChecks := []resource.TestCheckFunc{}
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_server_settings_logging.example", "log_categories.*",
-				map[string]string{
-					"description": "Log protocol request and response messages.",
-					"enabled":     "false",
-					"id":          "protocolrequestresponse",
-					"name":        "Protocol Requests and Responses",
-				},
-			),
-		)
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedChecks = append(versionedChecks,
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_server_settings_logging.example", "log_categories.*",
-				map[string]string{
-					"description": "Log response times for data store requests.",
-					"enabled":     "false",
-					"id":          "dsresponsetime",
-					"name":        "Data Store Response Times",
-				},
-			),
-		)
-	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_server_settings_logging.example", "log_categories.*",
 			map[string]string{
@@ -294,6 +255,22 @@ func serverSettingsLogging_CheckComputedValuesComplete() resource.TestCheckFunc 
 				"enabled":     "true",
 				"id":          "restdatastore",
 				"name":        "REST Data Store Requests and Responses",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_server_settings_logging.example", "log_categories.*",
+			map[string]string{
+				"description": "Log protocol request and response messages.",
+				"enabled":     "false",
+				"id":          "protocolrequestresponse",
+				"name":        "Protocol Requests and Responses",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_server_settings_logging.example", "log_categories.*",
+			map[string]string{
+				"description": "Log response times for data store requests.",
+				"enabled":     "false",
+				"id":          "dsresponsetime",
+				"name":        "Data Store Response Times",
 			},
 		),
 		resource.TestCheckResourceAttr("pingfederate_server_settings_logging.example", "log_categories_all.#", serverSettingsLogging_logCategoriesCount()),

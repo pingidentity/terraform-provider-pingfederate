@@ -207,16 +207,6 @@ resource "pingfederate_sp_idp_connection" "example" {
 // Maximal HCL with all values set where possible
 func spIdpConnection_OidcCompleteHCL() string {
 	versionedOidcProviderSettingsHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedOidcProviderSettingsHcl += `
-      logout_endpoint                              = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/signoff"
-    `
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionedOidcProviderSettingsHcl += `
-      jwt_secured_authorization_response_mode_type = "DISABLED"
-    `
-	}
 	if acctest.VersionAtLeast(version.PingFederate1230) {
 		versionedOidcProviderSettingsHcl += `
       audience = "myaud"
@@ -534,6 +524,8 @@ resource "pingfederate_sp_idp_connection" "example" {
       track_user_sessions_for_logout = true
       user_info_endpoint             = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/userinfo"
 
+      logout_endpoint                              = "https://auth.pingone.eu/85a52cf7-357f-40c1-b909-de24d976031d/as/signoff"
+      jwt_secured_authorization_response_mode_type = "DISABLED"
       %s
     }
     protocol            = "OIDC"
@@ -691,19 +683,11 @@ func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "logging_mode", "STANDARD"),
 		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "oidc_client_credentials.client_secret"),
 		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "oidc_client_credentials.encrypted_secret"),
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
+		resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
+		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type", "DISABLED"),
 	}
 
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		testCheckFuncs = append(testCheckFuncs,
-			resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
-			resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
-		)
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		testCheckFuncs = append(testCheckFuncs,
-			resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type", "DISABLED"),
-		)
-	}
 	if acctest.VersionAtLeast(version.PingFederate1230) {
 		testCheckFuncs = append(testCheckFuncs,
 			resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.include_not_before_claim", "false"),
@@ -715,32 +699,21 @@ func spIdpConnection_CheckComputedValuesOidcMinimal() resource.TestCheckFunc {
 
 // Validate any computed values when applying complete HCL
 func spIdpConnection_CheckComputedValuesOidcComplete() resource.TestCheckFunc {
-	postLogoutRedirectUriCheck := resource.TestCheckNoResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri")
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		postLogoutRedirectUriCheck = resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri")
-	}
-	testCheckFuncs := []resource.TestCheckFunc{
+	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "id", idpConnOidcId),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.name", "sub"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_browser_sso.jit_provisioning.user_attributes.attribute_contract.#", "15"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.back_channel_logout_uri"),
-		postLogoutRedirectUriCheck,
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.redirect_uri"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.sso_application_endpoint"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.#", "1"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.0.name", "TOKEN_SUBJECT"),
 		resource.TestCheckResourceAttr("pingfederate_sp_idp_connection.example", "idp_oauth_grant_attribute_mapping.idp_oauth_attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "oidc_client_credentials.encrypted_secret"),
-	}
-
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		testCheckFuncs = append(testCheckFuncs,
-			resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
-		)
-	}
-
-	return resource.ComposeTestCheckFunc(testCheckFuncs...)
+		resource.TestCheckResourceAttrSet("pingfederate_sp_idp_connection.example", "idp_browser_sso.oidc_provider_settings.front_channel_logout_uri"),
+	)
 }
 
 // Test that any objects created by the test are destroyed

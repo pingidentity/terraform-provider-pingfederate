@@ -26,7 +26,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -104,50 +103,6 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 	if plan == nil {
 		return
-	}
-
-	// Validating attributes that depend on a specific version of PF
-	// Compare to version 12.1 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast121 := compare >= 0
-
-	if !pfVersionAtLeast121 {
-		if internaltypes.IsDefined(plan.LdapDataStore) {
-			useStartTls := plan.LdapDataStore.Attributes()["use_start_tls"]
-			if internaltypes.IsDefined(useStartTls) {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("ldap_data_store").AtMapKey("use_start_tls"),
-					providererror.InvalidProductVersionAttribute,
-					"Attribute 'use_start_tls' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 12.1 or later required")
-			}
-		}
-		if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {
-			useStartTls := plan.PingOneLdapGatewayDataStore.Attributes()["use_start_tls"]
-			if internaltypes.IsDefined(useStartTls) {
-				resp.Diagnostics.AddAttributeError(
-					path.Root("ping_one_ldap_gateway_data_store").AtMapKey("use_start_tls"),
-					providererror.InvalidProductVersionAttribute,
-					"Attribute 'use_start_tls' not supported for LDAP gateway data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 12.1 or later required")
-			}
-		}
-	}
-
-	// Check for parent_ref, which had support removed in version 12.0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast120 := compare >= 0
-	if pfVersionAtLeast120 && internaltypes.IsDefined(plan.CustomDataStore) && internaltypes.IsDefined(plan.CustomDataStore.Attributes()["parent_ref"]) {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("custom_data_store").AtMapKey("parent_ref"),
-			providererror.InvalidProductVersionAttribute,
-			"Attribute 'parent_ref' not supported for custom data stores by PingFederate version "+string(r.providerConfig.ProductVersion)+". PF 11.3 or earlier required")
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -267,15 +222,6 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			}
 		}
 
-		// use_start_tls attribute added in PF version 12.1
-		if ldapDataStore["use_start_tls"].IsUnknown() {
-			if pfVersionAtLeast121 {
-				ldapDataStore["use_start_tls"] = types.BoolValue(false)
-			} else {
-				ldapDataStore["use_start_tls"] = types.BoolNull()
-			}
-		}
-
 		// If password value has changed, mark encrypted_password value as unknown
 		if state != nil {
 			stateLdapDataStore := state.LdapDataStore.Attributes()
@@ -340,15 +286,6 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			pingOneEnvironmentId := pingOneLdapGatewayDataStore["ping_one_environment_id"].(types.String).ValueString()
 			pingOneLdapGatewayId := pingOneLdapGatewayDataStore["ping_one_ldap_gateway_id"].(types.String).ValueString()
 			pingOneLdapGatewayDataStore["name"] = types.StringValue(pingOneConnectionRefId + ":" + pingOneEnvironmentId + ":" + pingOneLdapGatewayId)
-		}
-
-		// use_start_tls attribute added in PF version 12.1
-		if pingOneLdapGatewayDataStore["use_start_tls"].IsUnknown() {
-			if pfVersionAtLeast121 {
-				pingOneLdapGatewayDataStore["use_start_tls"] = types.BoolValue(false)
-			} else {
-				pingOneLdapGatewayDataStore["use_start_tls"] = types.BoolNull()
-			}
 		}
 
 		plan.PingOneLdapGatewayDataStore, respDiags = types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStore)

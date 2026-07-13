@@ -20,3 +20,4 @@ The following table lists the minimum and maximum versions of PingFederate serve
 | `1.3`            | `11.3`                       | `12.2`                       |
 | `1.6`            | `11.3`                       | `12.3`                       |
 | `1.7`            | `11.3`                       | `13.0`                       |
+| `1.9`            | `12.2`                       | `13.1`                       |

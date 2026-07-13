@@ -23,9 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -156,6 +154,7 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 			"user_device_type": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
+				Default:     stringdefault.StaticString("PRIVATE"),
 				Description: "Determines the type of user device that the authentication session can be created on. Options are `PRIVATE`, `SHARED`, `ANY`. If empty, the value will default to `PRIVATE`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
@@ -168,36 +167,6 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 		},
 	}
 	id.ToSchema(&resp.Schema)
-}
-
-func (r *sessionAuthenticationPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.0.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1200 := compare >= 0
-	var plan *sessionAuthenticationPolicyResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if plan == nil {
-		return
-	}
-	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if !pfVersionAtLeast1200 {
-		if internaltypes.IsDefined(plan.UserDeviceType) {
-			version.AddUnsupportedAttributeError("user_device_type",
-				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-		}
-	}
-	if plan.UserDeviceType.IsUnknown() {
-		if pfVersionAtLeast1200 {
-			plan.UserDeviceType = types.StringValue("PRIVATE")
-		} else {
-			plan.UserDeviceType = types.StringNull()
-		}
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
-	}
 }
 
 func (model *sessionAuthenticationPolicyResourceModel) buildClientStruct() *client.AuthenticationSessionPolicy {

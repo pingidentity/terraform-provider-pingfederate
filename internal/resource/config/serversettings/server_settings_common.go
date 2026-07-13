@@ -124,8 +124,8 @@ var (
 		"notify_admin_user_password_changes":                       types.BoolValue(false),
 		"account_changes_notification_publisher_ref":               types.ObjectNull(resourcelink.AttrType()),
 		"metadata_notification_settings":                           types.ObjectNull(notificationSettingsAttrType),
-		"expired_certificate_administrative_console_warning_days":  types.Int64Unknown(),
-		"expiring_certificate_administrative_console_warning_days": types.Int64Unknown(),
+		"expired_certificate_administrative_console_warning_days":  types.Int64Value(14),
+		"expiring_certificate_administrative_console_warning_days": types.Int64Value(14),
 		"thread_pool_exhaustion_notification_settings":             types.ObjectNull(threadPoolExhaustionNotificationSettingsAttrType),
 		"bulkhead_alert_notification_settings":                     types.ObjectNull(bulkheadAlertNotificationSettingsAttrType),
 	})

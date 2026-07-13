@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const atmId = "oauthATMId"
@@ -116,25 +115,6 @@ data "pingfederate_oauth_access_token_manager" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthAccessTokenManager_CompleteInternallyManagedHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionedHcl += `
-token_endpoint_attribute_contract = {
-attributes = [
-  {
-	mapped_scopes = ["email"]
-	multi_valued  = false
-	name          = "normal"
-  },
-  {
-	mapped_scopes = []
-	multi_valued  = true
-	name          = "another"
-  },
-]
-}
-`
-	}
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "example" {
   manager_id = "%s"
@@ -205,20 +185,29 @@ resource "pingfederate_oauth_access_token_manager" "example" {
     include_session_id              = true
     update_authn_session_activity   = true
   }
-  %s
+  token_endpoint_attribute_contract = {
+    attributes = [
+      {
+        mapped_scopes = ["email"]
+        multi_valued  = false
+        name          = "normal"
+      },
+      {
+        mapped_scopes = []
+        multi_valued  = true
+        name          = "another"
+      },
+    ]
+  }
 }
 data "pingfederate_oauth_access_token_manager" "example" {
   manager_id = pingfederate_oauth_access_token_manager.example.id
 }
-`, atmId, versionedHcl)
+`, atmId)
 }
 
 // Validate any computed values when applying minimal HCL
 func oauthAccessTokenManager_CheckComputedValuesMinimalInternallyManaged() resource.TestCheckFunc {
-	versionedCheck := resource.ComposeTestCheckFunc()
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionedCheck = resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "token_endpoint_attribute_contract.attributes.#", "0")
-	}
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "access_control_settings.allowed_clients.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "access_control_settings.restrict_clients", "false"),
@@ -234,7 +223,7 @@ func oauthAccessTokenManager_CheckComputedValuesMinimalInternallyManaged() resou
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "session_validation_settings.check_valid_authn_session", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "session_validation_settings.include_session_id", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "session_validation_settings.update_authn_session_activity", "false"),
-		versionedCheck,
+		resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "token_endpoint_attribute_contract.attributes.#", "0"),
 	)
 }
 

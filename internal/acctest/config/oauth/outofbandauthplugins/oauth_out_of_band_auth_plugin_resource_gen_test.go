@@ -191,8 +191,16 @@ func oauthOutOfBandAuthPlugin_CompleteHCL() string {
 	  {
         name  = "Custom Proxy Connection Type"
         value = "HTTP"
-	  }
+	  },
 	  `
+	}
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		versionedFields += `
+		{
+		  name = "JWKS Cache Duration"
+		  value = "0"
+		},
+		`
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
@@ -275,6 +283,9 @@ func oauthOutOfBandAuthPlugin_FieldsCount() string {
 	fieldsCount := "12"
 	if acctest.VersionAtLeast(version.PingFederate1300) {
 		fieldsCount = "13"
+	}
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		fieldsCount = "14"
 	}
 	return fieldsCount
 }

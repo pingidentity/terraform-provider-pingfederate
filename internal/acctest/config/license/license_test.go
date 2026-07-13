@@ -21,10 +21,8 @@ func TestAccLicense(t *testing.T) {
 	var licenseVar string
 	if acctest.VersionAtLeast(version.PingFederate1300) {
 		licenseVar = "PF_TF_ACC_TEST_LICENSE_13"
-	} else if acctest.VersionAtLeast(version.PingFederate1200) {
-		licenseVar = "PF_TF_ACC_TEST_LICENSE_12"
 	} else {
-		licenseVar = "PF_TF_ACC_TEST_LICENSE_11"
+		licenseVar = "PF_TF_ACC_TEST_LICENSE_12"
 	}
 	licenseFileData := os.Getenv(licenseVar)
 

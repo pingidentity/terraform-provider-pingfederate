@@ -14,7 +14,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccOauthClientSettings_MinimalMaximal(t *testing.T) {
@@ -119,11 +118,6 @@ resource "pingfederate_openid_connect_policy" "oidcPolicy" {
 }
 
 func oauthClientSettings_CibaPolicyHcl() string {
-	// Prior to PF 12.1, the last ciba policy can't be deleted from the server, so
-	// creating it in terraform will cause an error in the post-test destroy
-	if !acctest.VersionAtLeast(version.PingFederate1210) {
-		return ""
-	}
 	return `
 resource "pingfederate_oauth_ciba_server_policy_request_policy" "example" {
   allow_unsigned_login_hint_token = false
@@ -196,28 +190,6 @@ resource "pingfederate_oauth_client_settings" "example" {
 
 // Maximal HCL with all values set where possible
 func oauthClientSettings_CompleteHCL() string {
-	versionSpecificHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		versionSpecificHcl = `
-	offline_access_require_consent_prompt = "YES"
-	refresh_token_rolling_interval_time_unit = "MINUTES"
-	require_offline_access_scope_to_issue_refresh_tokens = "YES"
-		`
-	}
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionSpecificHcl += `
-  lockout_max_malicious_actions_type = "OVERRIDE_SERVER_DEFAULT"
-  lockout_max_malicious_actions = 5
-    `
-	}
-
-	// Prior to PF 12.1, the last ciba policy can't be deleted from the server, so
-	// creating it in terraform will cause an error in the post-test destroy
-	requestPolicyId := "pingfederate_oauth_ciba_server_policy_request_policy.example.id"
-	if !acctest.VersionAtLeast(version.PingFederate1210) {
-		requestPolicyId = "\"acctestCibaPolicy\""
-	}
-
 	return fmt.Sprintf(`
 	%s
 
@@ -279,7 +251,7 @@ resource "pingfederate_oauth_client_settings" "example" {
     refresh_token_rolling_interval          = 10
     refresh_token_rolling_interval_type     = "OVERRIDE_SERVER_DEFAULT"
     request_policy_ref = {
-      id = %s
+      id = pingfederate_oauth_ciba_server_policy_request_policy.example.id
     }
     require_jwt_secured_authorization_response_mode = true
     require_proof_key_for_code_exchange             = true
@@ -293,20 +265,23 @@ resource "pingfederate_oauth_client_settings" "example" {
     token_exchange_processor_policy_ref = {
       id = "tokenexchangeprocessorpolicy"
     }
-    user_authorization_url_override = "https://example.com"
-	%s
+    user_authorization_url_override                      = "https://example.com"
+    offline_access_require_consent_prompt                = "YES"
+    refresh_token_rolling_interval_time_unit             = "MINUTES"
+    require_offline_access_scope_to_issue_refresh_tokens = "YES"
+    lockout_max_malicious_actions_type                   = "OVERRIDE_SERVER_DEFAULT"
+    lockout_max_malicious_actions                        = 5
   }
 }
 `, oauthClientSettings_DependencyHcl(),
 		accesstokenmanager.AccessTokenManagerTestHCL("oauthClientSettingsAtm"),
 		oauthClientSettings_CibaPolicyHcl(),
-		requestPolicyId,
-		versionSpecificHcl)
+	)
 }
 
 // Validate any computed values when applying HCL that expects computed values
 func oauthClientSettings_CheckComputedValues() resource.TestCheckFunc {
-	testCheckFuncs := []resource.TestCheckFunc{
+	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.allow_client_delete", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.allowed_authorization_detail_types.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.allowed_exclusive_scopes.#", "0"),
@@ -332,16 +307,8 @@ func oauthClientSettings_CheckComputedValues() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.retain_client_secret", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.rotate_client_secret", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.rotate_registration_access_token", "false"),
-	}
-
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.offline_access_require_consent_prompt", "SERVER_DEFAULT"))
-		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"))
-	}
-
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.lockout_max_malicious_actions_type", "SERVER_DEFAULT"))
-	}
-
-	return resource.ComposeTestCheckFunc(testCheckFuncs...)
+		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.offline_access_require_consent_prompt", "SERVER_DEFAULT"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"),
+		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.lockout_max_malicious_actions_type", "SERVER_DEFAULT"),
+	)
 }

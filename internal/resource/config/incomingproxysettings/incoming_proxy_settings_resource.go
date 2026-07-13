@@ -10,12 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -100,7 +100,8 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 			"client_cert_header_encoding_format": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Specify the encoding format of the client certificate header. The default value is `APACHE_MOD_SSL`. Supported values are `APACHE_MOD_SSL`, `NGINX`. Supported in PF version `12.2` and later.",
+				Default:     stringdefault.StaticString("APACHE_MOD_SSL"),
+				Description: "Specify the encoding format of the client certificate header. The default value is `APACHE_MOD_SSL`. Supported values are `APACHE_MOD_SSL`, `NGINX`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"APACHE_MOD_SSL",
@@ -111,7 +112,8 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 			"enable_client_cert_header_auth": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Enable client certificate header authentication. Supported in PF version `12.2` and later. Default value is `false`.",
+				Default:     booldefault.StaticBool(false),
+				Description: "Enable client certificate header authentication. Default value is `false`.",
 			},
 			"proxy_terminates_https_conns": schema.BoolAttribute{
 				Description: "Allows you to globally specify that connections to the reverse proxy are made over HTTPS even when HTTP is used between the reverse proxy and PingFederate. Default value is `false`.",
@@ -158,38 +160,10 @@ func (r *incomingProxySettingsResource) Configure(_ context.Context, req resourc
 }
 
 func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.2.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
-		return
-	}
-	pfVersionAtLeast1220 := compare >= 0
 	var plan *incomingProxySettingsResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {
 		return
-	}
-
-	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if !pfVersionAtLeast1220 {
-		if internaltypes.IsDefined(plan.ClientCertHeaderEncodingFormat) {
-			version.AddUnsupportedAttributeError("client_cert_header_encoding_format",
-				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-		} else {
-			plan.ClientCertHeaderEncodingFormat = types.StringNull()
-		}
-		if internaltypes.IsDefined(plan.EnableClientCertHeaderAuth) {
-			version.AddUnsupportedAttributeError("enable_client_cert_header_auth",
-				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-		}
-	} else {
-		if plan.ClientCertHeaderEncodingFormat.IsUnknown() {
-			plan.ClientCertHeaderEncodingFormat = types.StringValue("APACHE_MOD_SSL")
-		}
-		if plan.EnableClientCertHeaderAuth.IsUnknown() {
-			plan.EnableClientCertHeaderAuth = types.BoolValue(false)
-		}
 	}
 
 	// PingFederate sets index to "LAST" if the header name is set and the index is not

@@ -192,9 +192,10 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 			},
 			"refresh_token_rolling_interval_time_unit": schema.StringAttribute{
-				Description: "The refresh token rolling interval time unit. Defaults to `HOURS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`. Supported in PF version `12.1` or later.",
+				Description: "The refresh token rolling interval time unit. Defaults to `HOURS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`.",
 				Computed:    true,
 				Optional:    true,
+				Default:     stringdefault.StaticString("HOURS"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("MINUTES", "HOURS", "DAYS"),
 				},
@@ -285,9 +286,10 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     booldefault.StaticBool(false),
 			},
 			"enable_cookieless_authentication_api": schema.BoolAttribute{
-				Description: "Set to `true` to allow the authentication API redirectless flow to function without requiring any cookies. Defaults to `false`. Supported in PF version `12.1` or later.",
+				Description: "Set to `true` to allow the authentication API redirectless flow to function without requiring any cookies. Defaults to `false`.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"bypass_approval_page": schema.BoolAttribute{
 				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection. Defaults to `true` if `allow_authentication_api_init` is `true`, otherwise `false`.",
@@ -489,7 +491,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"post_logout_redirect_uris": schema.SetAttribute{
-						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version `12.0` or later.",
+						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible.",
 						Optional:    true,
 						ElementType: types.StringType,
 					},
@@ -958,9 +960,10 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:             booldefault.StaticBool(false),
 			},
 			"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
-				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.",
+				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`.",
 				Optional:    true,
 				Computed:    true,
+				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"SERVER_DEFAULT",
@@ -970,9 +973,10 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"offline_access_require_consent_prompt": schema.StringAttribute{
-				Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.",
+				Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`.",
 				Optional:    true,
 				Computed:    true,
+				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"SERVER_DEFAULT",
@@ -983,12 +987,13 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"lockout_max_malicious_actions": schema.Int64Attribute{
 				Optional:    true,
-				Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store. Supported in PF version `12.2` or later.",
+				Description: "The number of malicious actions allowed before an OAuth client is locked out. Currently, the only operation that is tracked as a malicious action is an attempt to revoke an invalid access token or refresh token. This value will override the global `MaxMaliciousActions` value on the `AccountLockingService` in the config-store.",
 			},
 			"lockout_max_malicious_actions_type": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`. Supported in PF version `12.2` or later.",
+				Description: "Allows an administrator to override the Max Malicious Actions configuration set globally in `AccountLockingService`. Defaults to `SERVER_DEFAULT`. Supported values are `DO_NOT_LOCKOUT`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`.",
+				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"DO_NOT_LOCKOUT",
@@ -1249,25 +1254,6 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast120 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast121 := compare >= 0
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1220)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast122 := compare >= 0
 	var plan *oauthClientModel
 	var state *oauthClientModel
 	var diags diag.Diagnostics
@@ -1278,101 +1264,6 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	planModified := false
-	if internaltypes.IsDefined(plan.OidcPolicy) {
-		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
-		// If oidc_policy.post_logout_redirect_uris is set prior to PF version 12.0, throw an error.
-		planPostLogoutRedirectUris := planOidcPolicyAttrs["post_logout_redirect_uris"].(types.Set)
-		if !pfVersionAtLeast120 && internaltypes.IsDefined(planPostLogoutRedirectUris) {
-			version.AddUnsupportedAttributeError("oidc_policy.post_logout_redirect_uris",
-				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-		}
-		// Check for OIDC policy attrs added in PF 12.2
-		if !pfVersionAtLeast122 {
-			userInfoResponseContentEncryptionAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_content_encryption_algorithm"]
-			if internaltypes.IsDefined(userInfoResponseContentEncryptionAlgorithm) {
-				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_content_encryption_algorithm",
-					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-			}
-			userInfoResponseEncryptionAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_encryption_algorithm"]
-			if internaltypes.IsDefined(userInfoResponseEncryptionAlgorithm) {
-				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_encryption_algorithm",
-					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-			}
-			userInfoResponseSigningAlgorithm := plan.OidcPolicy.Attributes()["user_info_response_signing_algorithm"]
-			if internaltypes.IsDefined(userInfoResponseSigningAlgorithm) {
-				version.AddUnsupportedAttributeError("oidc_policy.user_info_response_signing_algorithm",
-					r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-			}
-		}
-	}
-
-	// Version checking and default settings for attrs added in PF 12.1
-	if !pfVersionAtLeast121 {
-		planModified = true
-		if internaltypes.IsDefined(plan.EnableCookielessAuthenticationApi) {
-			version.AddUnsupportedAttributeError("enable_cookieless_authentication_api",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else {
-			plan.EnableCookielessAuthenticationApi = types.BoolNull()
-		}
-
-		if internaltypes.IsDefined(plan.RefreshTokenRollingIntervalTimeUnit) {
-			version.AddUnsupportedAttributeError("refresh_token_rolling_interval_time_unit",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else {
-			plan.RefreshTokenRollingIntervalTimeUnit = types.StringNull()
-		}
-
-		if internaltypes.IsDefined(plan.RequireOfflineAccessScopeToIssueRefreshTokens) {
-			version.AddUnsupportedAttributeError("require_offline_access_scope_to_issue_refresh_tokens",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else {
-			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.StringNull()
-		}
-
-		if internaltypes.IsDefined(plan.OfflineAccessRequireConsentPrompt) {
-			version.AddUnsupportedAttributeError("offline_access_require_consent_prompt",
-				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-		} else {
-			plan.OfflineAccessRequireConsentPrompt = types.StringNull()
-		}
-	} else {
-		if plan.EnableCookielessAuthenticationApi.IsUnknown() {
-			plan.EnableCookielessAuthenticationApi = types.BoolValue(false)
-			planModified = true
-		}
-		if plan.RefreshTokenRollingIntervalTimeUnit.IsUnknown() {
-			plan.RefreshTokenRollingIntervalTimeUnit = types.StringValue("HOURS")
-			planModified = true
-		}
-		if plan.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() {
-			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.StringValue("SERVER_DEFAULT")
-			planModified = true
-		}
-		if plan.OfflineAccessRequireConsentPrompt.IsUnknown() {
-			plan.OfflineAccessRequireConsentPrompt = types.StringValue("SERVER_DEFAULT")
-			planModified = true
-		}
-	}
-
-	// Version checking and default settings for attrs added in PF 12.2
-	if !pfVersionAtLeast122 {
-		if internaltypes.IsDefined(plan.LockoutMaxMaliciousActions) {
-			version.AddUnsupportedAttributeError("lockout_max_malicious_actions",
-				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-		}
-		if internaltypes.IsDefined(plan.LockoutMaxMaliciousActionsType) {
-			version.AddUnsupportedAttributeError("lockout_max_malicious_actions_type",
-				r.providerConfig.ProductVersion, version.PingFederate1220, &resp.Diagnostics)
-		} else {
-			plan.LockoutMaxMaliciousActionsType = types.StringNull()
-		}
-	} else {
-		if plan.LockoutMaxMaliciousActionsType.IsUnknown() {
-			plan.LockoutMaxMaliciousActionsType = types.StringValue("SERVER_DEFAULT")
-			planModified = true
-		}
-	}
 
 	if plan.RestrictScopes.IsUnknown() {
 		plan.RestrictScopes = types.BoolValue(plan.AllowAuthenticationApiInit.ValueBool())

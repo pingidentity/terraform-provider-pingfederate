@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccClusterStatus(t *testing.T) {
@@ -48,7 +47,7 @@ data "pingfederate_cluster_status" "example" {
 // Validate any computed values when applying HCL
 func clusterStatus_CheckComputedValues(inCluster bool) resource.TestCheckFunc {
 	if inCluster {
-		checks := []resource.TestCheckFunc{
+		return resource.ComposeTestCheckFunc(
 			resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "mixed_mode", "false"),
 			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "replication_required"),
 			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "last_config_update_time"),
@@ -61,21 +60,14 @@ func clusterStatus_CheckComputedValues(inCluster bool) resource.TestCheckFunc {
 			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.version"),
 			resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.admin_console_info"),
 			resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.node_tags"),
-		}
-		if acctest.VersionAtLeast(version.PingFederate1210) {
-			checks = append(checks, resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "current_node_index"))
-		}
-		return resource.ComposeTestCheckFunc(checks...)
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "current_node_index"),
+		)
 	}
-	checks := []resource.TestCheckFunc{
+	return resource.ComposeTestCheckFunc(
 		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "mixed_mode"),
 		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "replication_required"),
 		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "last_config_update_time"),
 		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "last_replication_time"),
 		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes"),
-	}
-	if acctest.VersionAtLeast(version.PingFederate1210) {
-		checks = append(checks, resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "current_node_index"))
-	}
-	return resource.ComposeTestCheckFunc(checks...)
+	)
 }

@@ -1981,7 +1981,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							"jwt_secured_authorization_response_mode_type": schema.StringAttribute{
 								Optional:    true,
 								Computed:    true,
-								Description: "The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL. Supported in PingFederate `12.1` and later.",
+								Default:     stringdefault.StaticString("DISABLED"),
+								Description: "The OpenId Connect JWT Secured Authorization Response Mode (JARM). The supported values are: <br>  `DISABLED`: Authorization responses will not be encoded using JARM. This is the default value. <br>  `QUERY_JWT`: query.jwt <br> `FORM_POST_JWT`: form_post.jwt <br><br> Note: `QUERY_JWT` must not be used in conjunction with loginType POST or  POST_AT unless the response JWT is encrypted to prevent token leakage in the URL.",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
 									stringvalidator.OneOf("DISABLED", "QUERY_JWT", "FORM_POST_JWT"),
@@ -3712,22 +3713,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 }
 
 func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.0.0 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1200 := compare >= 0
-	// Compare to version 12.1.0 of PF
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast1210 := compare >= 0
 	// Compare to version 12.3.0 of PF
-	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1230)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
@@ -3749,40 +3736,6 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if !pfVersionAtLeast1200 {
-		if internaltypes.IsDefined(plan.IdpBrowserSso) {
-			oidcProviderSettings := plan.IdpBrowserSso.Attributes()["oidc_provider_settings"]
-			if internaltypes.IsDefined(oidcProviderSettings) {
-				frontChannelLogoutUri := oidcProviderSettings.(types.Object).Attributes()["front_channel_logout_uri"]
-				if internaltypes.IsDefined(frontChannelLogoutUri) {
-					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.front_channel_logout_uri",
-						r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-				}
-				logoutEndpoint := oidcProviderSettings.(types.Object).Attributes()["logout_endpoint"]
-				if internaltypes.IsDefined(logoutEndpoint) {
-					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.logout_endpoint",
-						r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-				}
-				postLogoutRedirectUri := oidcProviderSettings.(types.Object).Attributes()["post_logout_redirect_uri"]
-				if internaltypes.IsDefined(postLogoutRedirectUri) {
-					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri",
-						r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
-				}
-			}
-		}
-	}
-	if !pfVersionAtLeast1210 {
-		if internaltypes.IsDefined(plan.IdpBrowserSso) {
-			oidcProviderSettings := plan.IdpBrowserSso.Attributes()["oidc_provider_settings"]
-			if internaltypes.IsDefined(oidcProviderSettings) {
-				jwtSecuredAuthorizationResponseModeType := oidcProviderSettings.(types.Object).Attributes()["jwt_secured_authorization_response_mode_type"]
-				if internaltypes.IsDefined(jwtSecuredAuthorizationResponseModeType) {
-					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.jwt_secured_authorization_response_mode_type",
-						r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-				}
-			}
-		}
-	}
 	if !pfVersionAtLeast1230 {
 		if internaltypes.IsDefined(plan.InboundProvisioning) {
 			inboundProvisioningAttrs := plan.InboundProvisioning.Attributes()
@@ -3860,7 +3813,7 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		}
 	}
 
-	// Set default for jwt_secured_authorization_response_mode_type if version is 12.1+, and include_not_before_claim if version is 12.3+
+	// Set default for include_not_before_claim if version is 12.3+
 	planModified := false
 	var diags diag.Diagnostics
 	if internaltypes.IsDefined(plan.IdpBrowserSso) {
@@ -3868,20 +3821,6 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		oidcProviderSettings := browserSsoAttributes["oidc_provider_settings"].(types.Object)
 		if internaltypes.IsDefined(oidcProviderSettings) {
 			oidcProviderSettingsAttributes := oidcProviderSettings.Attributes()
-			jwtSecuredAuthorizationResponseModeType := oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"]
-			if jwtSecuredAuthorizationResponseModeType.IsUnknown() {
-				if pfVersionAtLeast1210 {
-					oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringValue("DISABLED")
-				} else {
-					oidcProviderSettingsAttributes["jwt_secured_authorization_response_mode_type"] = types.StringNull()
-				}
-				oidcProviderSettings, diags = types.ObjectValue(oidcProviderSettings.AttributeTypes(ctx), oidcProviderSettingsAttributes)
-				resp.Diagnostics.Append(diags...)
-				browserSsoAttributes["oidc_provider_settings"] = oidcProviderSettings
-				plan.IdpBrowserSso, diags = types.ObjectValue(plan.IdpBrowserSso.AttributeTypes(ctx), browserSsoAttributes)
-				resp.Diagnostics.Append(diags...)
-				planModified = true
-			}
 			// Set default for include_not_before_claim
 			if oidcProviderSettingsAttributes["include_not_before_claim"].IsUnknown() {
 				if pfVersionAtLeast1230 {

@@ -58,14 +58,6 @@ func TestAccCaptchaProvider_RemovalDrift(t *testing.T) {
 }
 
 func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
-	verifyIgnoreFields := []string{}
-	if !acctest.VersionAtLeast(version.PingFederate1200) {
-		// Sensitive values aren't returned by PF, and encrypted_value changes on GET,
-		// so they can't be verified.
-		// After 12.0.0, this test covers a different type of captcha provider that does not
-		// require sensitive fields in the complete HCL.
-		verifyIgnoreFields = append(verifyIgnoreFields, "configuration.sensitive_fields.0")
-	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -106,7 +98,6 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "provider_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore:              verifyIgnoreFields,
 			},
 		},
 	})
@@ -142,11 +133,9 @@ resource "pingfederate_captcha_provider" "example" {
 
 // Maximal HCL with all values set where possible
 func captchaProvider_CompleteHCL() string {
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		// The PingOneProtectProvider was added in PF version 12.0+
-		additionalVersionedFields := ""
-		if acctest.VersionAtLeast(version.PingFederate1230) {
-			additionalVersionedFields += `
+	additionalVersionedFields := ""
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		additionalVersionedFields += `
       {
         name : "Collect PingID Device Trust Attributes"
         value : "false"
@@ -160,16 +149,24 @@ func captchaProvider_CompleteHCL() string {
         value : ""
       },
 `
-		}
-		if acctest.VersionAtLeast(version.PingFederate1300) {
-			additionalVersionedFields += `
+	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		additionalVersionedFields += `
       {
         name : "Browser-based Location"
         value : "Don’t get location"
       },
 `
-		}
-		return fmt.Sprintf(`
+	}
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		additionalVersionedFields += `
+      {
+        name : "Use Targeted Policies"
+        value : "false"
+      },
+`
+	}
+	return fmt.Sprintf(`
 resource "pingfederate_captcha_provider" "example" {
   provider_id = "%s"
   name        = "%s"
@@ -232,41 +229,6 @@ resource "pingfederate_captcha_provider" "example" {
   }
 }
 `, captchaProviderProviderId, captchaProviderProviderId, testEnvConnId, additionalVersionedFields)
-	} else {
-		// For earlier versions use captcha v3
-		return fmt.Sprintf(`
-resource "pingfederate_captcha_provider" "example" {
-  provider_id = "%s"
-  name        = "%s"
-  configuration = {
-    tables = [],
-    fields = [
-      {
-        name : "Site Key"
-        value : "1234"
-      },
-      {
-        name : "Pass Score Threshold"
-        value : "0.8"
-      },
-      {
-        name : "JavaScript File Name"
-        value : "recaptcha-v3.js"
-      }
-    ]
-    sensitive_fields = [
-      {
-        name : "Secret Key"
-        value : "1234"
-      },
-    ]
-  }
-  plugin_descriptor_ref = {
-    id = "com.pingidentity.captcha.recaptchaV3.ReCaptchaV3Plugin"
-  }
-}
-`, captchaProviderProviderId, captchaProviderProviderId)
-	}
 }
 
 // Validate any computed values when applying minimal HCL
@@ -285,71 +247,41 @@ func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 
 // Validate any computed values when applying complete HCL
 func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		// The PingOneProtectProvider was added in PF version 12.0+
-		fieldsAllCount := "12"
-		if acctest.VersionAtLeast(version.PingFederate1230) {
-			fieldsAllCount = "15"
-		}
-		if acctest.VersionAtLeast(version.PingFederate1300) {
-			fieldsAllCount = "16"
-		}
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
-			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
-			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", fieldsAllCount),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"value": "true",
-				},
-			),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"value": "SHA-256",
-				},
-			),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"value": "MEDIUM",
-				},
-			),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"value": "50",
-				},
-			),
-		)
-	} else {
-		// For earlier versions use captcha v3
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
-			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
-			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "4"),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"name":  "Site Key",
-					"value": "1234",
-				},
-			),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"name": "Secret Key",
-				},
-			),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"name":  "Pass Score Threshold",
-					"value": "0.8",
-				},
-			),
-			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-				map[string]string{
-					"name":  "JavaScript File Name",
-					"value": "recaptcha-v3.js",
-				},
-			),
-		)
+	fieldsAllCount := "12"
+	if acctest.VersionAtLeast(version.PingFederate1230) {
+		fieldsAllCount = "15"
 	}
+	if acctest.VersionAtLeast(version.PingFederate1300) {
+		fieldsAllCount = "16"
+	}
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		fieldsAllCount = "17"
+	}
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "id", captchaProviderProviderId),
+		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
+		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", fieldsAllCount),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "true",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "SHA-256",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "MEDIUM",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "50",
+			},
+		),
+	)
 }
 
 // Delete the resource

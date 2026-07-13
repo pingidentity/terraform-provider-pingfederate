@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -208,13 +207,8 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		state.RefreshTokenRollingIntervalTimeUnit = types.StringNull()
 	} else {
 		state.RefreshTokenRollingInterval = types.Int64PointerValue(r.RefreshTokenRollingInterval)
-		// This attribute is returned as empty string when set to its default, and it only exists on PF 12.1+
-		compare, err := version.Compare(productVersion, version.PingFederate1210)
-		if err != nil {
-			diags.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		}
-		pfVersionAtLeast121 := compare >= 0
-		if r.GetRefreshTokenRollingIntervalTimeUnit() == "" && pfVersionAtLeast121 {
+		// This attribute is returned as empty string when set to its default
+		if r.GetRefreshTokenRollingIntervalTimeUnit() == "" {
 			state.RefreshTokenRollingIntervalTimeUnit = types.StringValue("HOURS")
 		} else {
 			state.RefreshTokenRollingIntervalTimeUnit = types.StringPointerValue(r.RefreshTokenRollingIntervalTimeUnit)
@@ -228,7 +222,6 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		state.PersistentGrantExpirationTime = types.Int64Null()
 		state.PersistentGrantExpirationTimeUnit = types.StringNull()
 	} else {
-		// Conditional Check for PingFederate version 11.3
 		if state.PersistentGrantExpirationType.ValueString() == "SERVER_DEFAULT" && r.PersistentGrantExpirationTime == nil {
 			state.PersistentGrantExpirationTime = types.Int64Value(0)
 		} else {

@@ -255,9 +255,6 @@ data "pingfederate_idp_adapter" "example" {
 }
 
 func idpAdapter_expectedFieldCount() string {
-	if !acctest.VersionAtLeast(version.PingFederate1200) {
-		return "64"
-	}
 	if !acctest.VersionAtLeast(version.PingFederate1300) {
 		return "65"
 	}

@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const secretManagerManagerId = "secretManagerManagerId"
@@ -112,16 +111,6 @@ resource "pingfederate_secret_manager" "example" {
 
 // Maximal HCL with all values set where possible
 func secretManager_CompleteHCL() string {
-	versionedField := ""
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedField = `
-	  {
-        name  = "Username Retrieval Property Name"
-        value = "user"
-      }
-		`
-	}
-
 	return fmt.Sprintf(`
 resource "pingfederate_secret_manager" "example" {
   manager_id = "%s"
@@ -139,7 +128,10 @@ resource "pingfederate_secret_manager" "example" {
         name  = "Connection Timeout (sec)"
         value = "45"
       },
-      %s
+      {
+        name  = "Username Retrieval Property Name"
+        value = "user"
+      }
     ]
   }
   name = "UpdatedManager"
@@ -147,15 +139,7 @@ resource "pingfederate_secret_manager" "example" {
     id = "com.pingidentity.pf.secretmanagers.cyberark.CyberArkCredentialProvider"
   }
 }
-`, secretManagerManagerId, versionedField)
-}
-
-func secretManager_expectedFieldCount() string {
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		return "4"
-	} else {
-		return "3"
-	}
+`, secretManagerManagerId)
 }
 
 // Validate any computed values when applying minimal HCL
@@ -164,7 +148,7 @@ func secretManager_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "id", secretManagerManagerId),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.2.name", "Connection Timeout (sec)"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.2.value", "30"),
-		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.#", secretManager_expectedFieldCount()),
+		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.#", "4"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.tables.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.tables_all.#", "0"),
 	)
@@ -174,7 +158,7 @@ func secretManager_CheckComputedValuesMinimal() resource.TestCheckFunc {
 func secretManager_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "id", secretManagerManagerId),
-		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.#", secretManager_expectedFieldCount()),
+		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.fields_all.#", "4"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.tables.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_secret_manager.example", "configuration.tables_all.#", "0"),
 	)

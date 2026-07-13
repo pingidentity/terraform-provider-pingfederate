@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -18,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
@@ -71,7 +69,7 @@ var (
 		"enable_target_resource_validation_for_idp_discovery": types.BoolValue(false),
 		"enable_in_error_resource_validation":                 types.BoolValue(false),
 		"white_list":                                          whiteListDefault,
-		"uri_allow_list":                                      types.ListNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes}),
+		"uri_allow_list":                                      types.ListValueMust(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil),
 	})
 
 	redirectValidationPartnerSettingsDefault, _ = types.ObjectValue(redirectValidationPartnerSettingsAttrTypes, map[string]attr.Value{
@@ -188,6 +186,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 						Description: "List of URIs that are designated as valid target resources.",
 						Optional:    true,
 						Computed:    true,
+						Default:     listdefault.StaticValue(types.ListValueMust(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil)),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
@@ -249,52 +248,6 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 		},
 	}
 	resp.Schema = schema
-}
-
-func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 12.1 of PF
-	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
-	if err != nil {
-		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
-		return
-	}
-	pfVersionAtLeast121 := compare >= 0
-	var plan *redirectValidationModel
-	req.Plan.Get(ctx, &plan)
-	if plan == nil {
-		return
-	}
-	// If redirect_validation_local_settings.uri_allow_list is set prior to PF version 12.1, throw an error
-	var diags diag.Diagnostics
-	var localSettingsAttrs map[string]attr.Value
-	localSettingsModified := false
-	if !pfVersionAtLeast121 {
-		if internaltypes.IsDefined(plan.RedirectValidationLocalSettings) {
-			localSettingsAttrs = plan.RedirectValidationLocalSettings.Attributes()
-			uriAllowList := localSettingsAttrs["uri_allow_list"]
-			if internaltypes.IsDefined(uriAllowList) {
-				version.AddUnsupportedAttributeError("redirect_validation_local_settings.uri_allow_list",
-					r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
-			} else if uriAllowList.IsUnknown() {
-				localSettingsAttrs["uri_allow_list"] = types.ListNull(types.ObjectType{AttrTypes: uriAllowListAttrTypes})
-				localSettingsModified = true
-			}
-		}
-	} else if internaltypes.IsDefined(plan.RedirectValidationLocalSettings) {
-		localSettingsAttrs = plan.RedirectValidationLocalSettings.Attributes()
-		if localSettingsAttrs["uri_allow_list"].IsUnknown() {
-			// Default to empty list
-			localSettingsAttrs["uri_allow_list"], diags = types.ListValue(types.ObjectType{AttrTypes: uriAllowListAttrTypes}, nil)
-			resp.Diagnostics.Append(diags...)
-			localSettingsModified = true
-		}
-	}
-
-	if localSettingsModified {
-		plan.RedirectValidationLocalSettings, diags = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, localSettingsAttrs)
-		resp.Diagnostics.Append(diags...)
-		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
-	}
 }
 
 func addOptionalRedirectValidationFields(addRequest *client.RedirectValidationSettings, model redirectValidationModel) {
@@ -378,11 +331,7 @@ func (m *redirectValidationModel) buildDefaultClientStruct(productVersion versio
 			EnableWreplyValidationSLO: utils.Pointer(false),
 		},
 	}
-	compare, err := version.Compare(productVersion, version.PingFederate1210)
-	pfVersionAtLeast121 := compare >= 0
-	if err == nil && pfVersionAtLeast121 {
-		result.RedirectValidationLocalSettings.UriAllowList = []client.RedirectValidationSettingsUriAllowlistEntry{}
-	}
+	result.RedirectValidationLocalSettings.UriAllowList = []client.RedirectValidationSettingsUriAllowlistEntry{}
 	return result
 }
 

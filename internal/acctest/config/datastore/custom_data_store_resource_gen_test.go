@@ -5,7 +5,6 @@ package datastore_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -84,10 +83,10 @@ func TestAccCustomDataStore_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "data_store_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// configuration.fields has some sensitive values which can't be imported
+				// configuration.fields has some sensitive values which can't be imported,
+				// and PF 13.1 added many new configuration fields
 				ImportStateVerifyIgnore: []string{
-					"custom_data_store.configuration.sensitive_fields.0",
-					"custom_data_store.configuration.sensitive_fields.1",
+					"custom_data_store.configuration",
 				},
 			},
 		},
@@ -153,15 +152,6 @@ data "pingfederate_data_store" "example" {
 
 // Maximal HCL with all values set where possible
 func customDataStore_CompleteHCL() string {
-	var versionedFields string
-	if acctest.VersionAtLeast(version.PingFederate1214) {
-		versionedFields += `
-		{
-		  name = "Exclude default Content-Type from GET Request"
-		  value = "false"
-		},
-		`
-	}
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "example" {
   data_store_id = "%[1]s"
@@ -339,7 +329,10 @@ resource "pingfederate_data_store" "example" {
           name  = "Maximum Connections"
           value = "32"
         },
-        %[2]s
+        {
+          name  = "Exclude default Content-Type from GET Request"
+          value = "false"
+        },
       ]
       sensitive_fields = [
         {
@@ -363,17 +356,20 @@ resource "pingfederate_data_store" "example" {
 data "pingfederate_data_store" "example" {
   data_store_id = pingfederate_data_store.example.id
 }
-`, customStoreId, versionedFields)
+`, customStoreId)
+}
+
+func customDataStore_fieldCount() string {
+	if acctest.VersionAtLeast(version.PingFederate1310) {
+		return "30"
+	}
+	return "22"
 }
 
 // Validate any computed values when applying minimal HCL
 func customDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	fieldsCount := 21
-	if acctest.VersionAtLeast(version.PingFederate1214) {
-		fieldsCount += 1
-	}
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.configuration.fields_all.#", strconv.Itoa(fieldsCount)),
+		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.configuration.fields_all.#", customDataStore_fieldCount()),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.configuration.tables_all.#", "3"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.configuration.tables.1.rows.0.default_row", "false"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", customStoreId),
@@ -384,12 +380,8 @@ func customDataStore_CheckComputedValuesMinimal() resource.TestCheckFunc {
 
 // Validate any computed values when applying complete HCL
 func customDataStore_CheckComputedValuesComplete() resource.TestCheckFunc {
-	fieldsCount := 21
-	if acctest.VersionAtLeast(version.PingFederate1214) {
-		fieldsCount += 1
-	}
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.configuration.fields_all.#", strconv.Itoa(fieldsCount)),
+		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.configuration.fields_all.#", customDataStore_fieldCount()),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.configuration.tables_all.#", "3"),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "id", customStoreId),
 		resource.TestCheckResourceAttr("pingfederate_data_store.example", "custom_data_store.type", "CUSTOM"),

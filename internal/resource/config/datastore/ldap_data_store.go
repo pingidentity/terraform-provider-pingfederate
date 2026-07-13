@@ -115,6 +115,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "Connects to the LDAP data store using secure StartTLS encryption. The default value is `false`.",
 			Computed:    true,
 			Optional:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 		"verify_host": schema.BoolAttribute{
 			Description: "Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Defaults to `true`.",

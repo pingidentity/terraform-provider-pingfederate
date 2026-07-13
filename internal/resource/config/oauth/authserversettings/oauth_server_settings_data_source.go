@@ -464,13 +464,13 @@ func (r *oauthServerSettingsDataSource) Schema(ctx context.Context, req datasour
 				Computed:    true,
 			},
 			"bypass_authorization_for_approved_consents": schema.BoolAttribute{
-				Description: "Bypass authorization for previously approved consents. Supported in PF version 12.0 or later.",
+				Description: "Bypass authorization for previously approved consents.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"consent_lifetime_days": schema.Int64Attribute{
-				Description: "The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.",
+				Description: "The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,

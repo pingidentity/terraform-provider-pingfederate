@@ -71,10 +71,11 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"parent_ref": schema.SingleNestedAttribute{
-			Computed:    true,
-			Optional:    true,
-			Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate `12.0`.",
-			Default:     objectdefault.StaticValue(types.ObjectNull(resourcelink.AttrType())),
+			Computed:           true,
+			Optional:           true,
+			Description:        "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate `12.0`.",
+			DeprecationMessage: "This field is deprecated and not supported for PingFederate versions 12.0 and later",
+			Default:            objectdefault.StaticValue(types.ObjectNull(resourcelink.AttrType())),
 			Attributes: map[string]schema.Attribute{
 				"id": schema.StringAttribute{
 					Required:    true,
@@ -118,10 +119,11 @@ func toDataSourceSchemaCustomDataStore() datasourceschema.SingleNestedAttribute 
 			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 		},
 		"parent_ref": datasourceschema.SingleNestedAttribute{
-			Computed:    true,
-			Optional:    false,
-			Description: "The reference to this plugin's parent instance. Supported prior to PingFederate `12.0`.",
-			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
+			Computed:           true,
+			Optional:           false,
+			Description:        "The reference to this plugin's parent instance. Supported prior to PingFederate `12.0`.",
+			DeprecationMessage: "This field is deprecated and not supported for PingFederate versions 12.0 and later",
+			Attributes:         datasourceresourcelink.ToDataSourceSchema(),
 		},
 		"configuration": datasourcepluginconfiguration.ToDataSourceSchema(),
 	}

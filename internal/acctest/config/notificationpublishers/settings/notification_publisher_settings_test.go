@@ -11,70 +11,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccNotificationPublisherSettings(t *testing.T) {
 	resourceName := acctest.ResourceIdGen()
-
-	var steps []resource.TestStep
-	if acctest.VersionAtLeast(version.PingFederate1200) {
-		steps = testAccNotificationPublisherSettingsPf120(resourceName)
-	} else {
-		steps = testAccNotificationPublisherSettingsPrePf120(resourceName)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		Steps: steps,
+		Steps: []resource.TestStep{
+			{
+				// No policies configured and no default
+				Config: testAccNotificationPublisherSettingsEmpty(resourceName),
+			},
+			{
+				// Set a default policy
+				Config: testAccNotificationPublisherSettingsBuildDefault(resourceName),
+			},
+			{
+				// Test importing the resource
+				Config:                               testAccNotificationPublisherSettingsBuildDefault(resourceName),
+				ResourceName:                         "pingfederate_notification_publisher_settings." + resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "default_notification_publisher_ref.id",
+			},
+			{
+				// Reset back to no policies
+				Config: testAccNotificationPublisherSettingsEmpty(resourceName),
+			},
+		},
 	})
-}
-
-// Prior to PF 12.0 it isn't possible to delete the final notification publisher from the server config,
-// because it is always in use.
-func testAccNotificationPublisherSettingsPrePf120(resourceName string) []resource.TestStep {
-	return []resource.TestStep{
-		{
-			// Set to the existing default
-			Config: testAccNotificationPublisherSettingsExistingDefault(resourceName, "acctestNotificationPublisher"),
-		},
-		{
-			// Test importing the resource
-			Config:                               testAccNotificationPublisherSettingsExistingDefault(resourceName, "acctestNotificationPublisher"),
-			ResourceName:                         "pingfederate_notification_publisher_settings." + resourceName,
-			ImportState:                          true,
-			ImportStateVerify:                    true,
-			ImportStateVerifyIdentifierAttribute: "default_notification_publisher_ref.id",
-		},
-	}
-}
-
-func testAccNotificationPublisherSettingsPf120(resourceName string) []resource.TestStep {
-	return []resource.TestStep{
-		{
-			// No policies configured and no default
-			Config: testAccNotificationPublisherSettingsEmpty(resourceName),
-		},
-		{
-			// Set a default policy
-			Config: testAccNotificationPublisherSettingsBuildDefault(resourceName),
-		},
-		{
-			// Test importing the resource
-			Config:                               testAccNotificationPublisherSettingsBuildDefault(resourceName),
-			ResourceName:                         "pingfederate_notification_publisher_settings." + resourceName,
-			ImportState:                          true,
-			ImportStateVerify:                    true,
-			ImportStateVerifyIdentifierAttribute: "default_notification_publisher_ref.id",
-		},
-		{
-			// Reset back to no policies
-			Config: testAccNotificationPublisherSettingsEmpty(resourceName),
-		},
-	}
 }
 
 func testAccNotificationPublisherSettingsEmpty(resourceName string) string {
@@ -124,6 +93,16 @@ resource "pingfederate_notification_publisher" "%[1]sPub" {
         name  = "Verify Hostname"
         value = "true"
       },
+      {
+        name  = "Username"
+        value = "example"
+      }
+    ]
+    sensitive_fields = [
+      {
+        name  = "Password"
+        value = "mypassword"
+      }
     ]
   }
   name = "%[1]sPub"
@@ -138,13 +117,4 @@ resource "pingfederate_notification_publisher_settings" "%[1]s" {
     id = pingfederate_notification_publisher.%[1]sPub.id
   }
 }`, resourceName)
-}
-
-func testAccNotificationPublisherSettingsExistingDefault(resourceName, defaultPublisherId string) string {
-	return fmt.Sprintf(`
-resource "pingfederate_notification_publisher_settings" "%[1]s" {
-  default_notification_publisher_ref = {
-    id = "%[2]s"
-  }
-}`, resourceName, defaultPublisherId)
 }

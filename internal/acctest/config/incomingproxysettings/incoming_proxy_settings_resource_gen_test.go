@@ -4,7 +4,6 @@
 package incomingproxysettings_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -12,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccIncomingProxySettings_MinimalMaximal(t *testing.T) {
@@ -50,43 +48,27 @@ func TestAccIncomingProxySettings_MinimalMaximal(t *testing.T) {
 
 // Minimal HCL with only required values set
 func incomingProxySettings_MinimalHCL() string {
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_incoming_proxy_settings" "example" {
 }
-`)
+`
 }
 
 // Maximal HCL with all values set where possible
 func incomingProxySettings_CompleteHCL() string {
-	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		versionedHcl += `
-	client_cert_header_encoding_format = "NGINX"
-	enable_client_cert_header_auth = true
-		`
-	}
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_incoming_proxy_settings" "example" {
-  client_cert_chain_ssl_header_name = "MyHeader"
-  client_cert_ssl_header_name       = "MyHeader"
-  forwarded_host_header_index       = "FIRST"
-  forwarded_host_header_name        = "MyHeader"
-  forwarded_ip_address_header_index = "LAST"
-  forwarded_ip_address_header_name  = "MyHeader"
-  proxy_terminates_https_conns      = true
-  %s
+  client_cert_chain_ssl_header_name  = "MyHeader"
+  client_cert_ssl_header_name        = "MyHeader"
+  forwarded_host_header_index        = "FIRST"
+  forwarded_host_header_name         = "MyHeader"
+  forwarded_ip_address_header_index  = "LAST"
+  forwarded_ip_address_header_name   = "MyHeader"
+  proxy_terminates_https_conns       = true
+  client_cert_header_encoding_format = "NGINX"
+  enable_client_cert_header_auth     = true
 }
-`, versionedHcl)
-}
-
-func incomingProxySettings_VersionedComputedCheck() resource.TestCheckFunc {
-	if acctest.VersionAtLeast(version.PingFederate1220) {
-		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_incoming_proxy_settings.example", "client_cert_header_encoding_format", "APACHE_MOD_SSL"),
-			resource.TestCheckResourceAttr("pingfederate_incoming_proxy_settings.example", "enable_client_cert_header_auth", "false"),
-		)
-	}
-	return resource.ComposeTestCheckFunc()
+`
 }
 
 // Validate any computed values when applying minimal HCL
@@ -99,6 +81,7 @@ func incomingProxySettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckNoResourceAttr("pingfederate_incoming_proxy_settings.example", "forwarded_ip_address_header_index"),
 		resource.TestCheckNoResourceAttr("pingfederate_incoming_proxy_settings.example", "forwarded_ip_address_header_name"),
 		resource.TestCheckResourceAttr("pingfederate_incoming_proxy_settings.example", "proxy_terminates_https_conns", "false"),
-		incomingProxySettings_VersionedComputedCheck(),
+		resource.TestCheckResourceAttr("pingfederate_incoming_proxy_settings.example", "client_cert_header_encoding_format", "APACHE_MOD_SSL"),
+		resource.TestCheckResourceAttr("pingfederate_incoming_proxy_settings.example", "enable_client_cert_header_auth", "false"),
 	)
 }

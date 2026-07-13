@@ -404,7 +404,7 @@ Required:
 
 Optional:
 
-- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate `12.0`. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
+- `parent_ref` (Attributes, Deprecated) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate `12.0`. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
 
 Read-Only:
 
@@ -665,7 +665,7 @@ Optional:
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
 - `name` (String) The data store name with a unique value across all data sources. Defaults to `ping_one_connection_ref.id` plus `ping_one_environment_id` plus `ping_one_ldap_gateway_id`, each separated by `:`.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.
-- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`. Supported in PingFederate `12.1` and later.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.
 
 Read-Only:
 
