@@ -3,7 +3,7 @@ name: Scheduled Acceptance Tests
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "0 7 * * 1"
 
 jobs:
   acceptance:
