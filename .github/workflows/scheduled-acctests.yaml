@@ -3,7 +3,7 @@ name: Scheduled Acceptance Tests
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "0 7 * * 1"
 
 jobs:
   acceptance:
@@ -55,7 +55,6 @@ jobs:
           PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1: ${{ secrets.PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1 }}
           PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2: ${{ secrets.PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2 }}
           PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
-          PF_TF_ACC_TEST_LICENSE_11: ${{ secrets.PF_TF_ACC_TEST_LICENSE_11 }}
           PF_TF_ACC_TEST_LICENSE_12: ${{ secrets.PF_TF_ACC_TEST_LICENSE_12 }}
           PF_TF_ACC_TEST_LICENSE_13: ${{ secrets.PF_TF_ACC_TEST_LICENSE_13 }}
           PF_TF_P1_POPULATION_ID: ${{ secrets.PF_TF_P1_POPULATION_ID }}
