@@ -36,7 +36,9 @@ const (
 	PingFederate1301 SupportedVersion = "13.0.1"
 	PingFederate1302 SupportedVersion = "13.0.2"
 	PingFederate1303 SupportedVersion = "13.0.3"
+	PingFederate1304 SupportedVersion = "13.0.4"
 	PingFederate1310 SupportedVersion = "13.1.0"
+	PingFederate1311 SupportedVersion = "13.1.1"
 )
 
 func IsValid(versionString string) bool {
@@ -74,7 +76,9 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1301,
 		PingFederate1302,
 		PingFederate1303,
+		PingFederate1304,
 		PingFederate1310,
+		PingFederate1311,
 	}
 }
 
