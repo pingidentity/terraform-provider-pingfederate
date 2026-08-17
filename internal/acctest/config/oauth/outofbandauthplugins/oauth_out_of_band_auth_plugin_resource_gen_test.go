@@ -186,21 +186,17 @@ resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
 // Maximal HCL with all values set where possible
 func oauthOutOfBandAuthPlugin_CompleteHCL() string {
 	var versionedFields string
-	if acctest.VersionAtLeast(version.PingFederate1300) {
+	if acctest.VersionAtLeast(version.PingFederate1236) {
 		versionedFields += `
 	  {
         name  = "Custom Proxy Connection Type"
         value = "HTTP"
 	  },
-	  `
-	}
-	if acctest.VersionAtLeast(version.PingFederate1310) {
-		versionedFields += `
 		{
 		  name = "JWKS Cache Duration"
 		  value = "0"
 		},
-		`
+	  `
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
@@ -281,10 +277,7 @@ resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
 
 func oauthOutOfBandAuthPlugin_FieldsCount() string {
 	fieldsCount := "12"
-	if acctest.VersionAtLeast(version.PingFederate1300) {
-		fieldsCount = "13"
-	}
-	if acctest.VersionAtLeast(version.PingFederate1310) {
+	if acctest.VersionAtLeast(version.PingFederate1236) {
 		fieldsCount = "14"
 	}
 	return fieldsCount

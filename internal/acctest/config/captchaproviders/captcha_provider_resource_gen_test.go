@@ -58,8 +58,19 @@ func TestAccCaptchaProvider_RemovalDrift(t *testing.T) {
 }
 
 func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
+	connId := os.Getenv("PF_TF_P1_CONNECTION_ID")
+	envId := os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
+	testEnvConnId = connId + "|" + envId
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		PreCheck: func() {
+			acctest.ConfigurationPreCheck(t)
+			if connId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the Captcha Provider acceptance test")
+			}
+			if envId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the Captcha Provider acceptance test")
+			}
+		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
@@ -150,7 +161,7 @@ func captchaProvider_CompleteHCL() string {
       },
 `
 	}
-	if acctest.VersionAtLeast(version.PingFederate1300) {
+	if acctest.VersionAtLeast(version.PingFederate1236) {
 		additionalVersionedFields += `
       {
         name : "Browser-based Location"
@@ -251,7 +262,7 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1230) {
 		fieldsAllCount = "15"
 	}
-	if acctest.VersionAtLeast(version.PingFederate1300) {
+	if acctest.VersionAtLeast(version.PingFederate1236) {
 		fieldsAllCount = "16"
 	}
 	if acctest.VersionAtLeast(version.PingFederate1310) {
