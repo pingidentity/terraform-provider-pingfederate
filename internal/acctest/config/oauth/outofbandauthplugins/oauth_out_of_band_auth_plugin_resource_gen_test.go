@@ -283,6 +283,9 @@ func oauthOutOfBandAuthPlugin_FieldsCount() string {
 	fieldsCount := "12"
 	if acctest.VersionAtLeast(version.PingFederate1300) {
 		fieldsCount = "13"
+	} else if acctest.VersionAtLeast(version.PingFederate1236) {
+		// Some fields were ported back to 12.3
+		fieldsCount = "14"
 	}
 	if acctest.VersionAtLeast(version.PingFederate1310) {
 		fieldsCount = "14"

@@ -251,7 +251,7 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1230) {
 		fieldsAllCount = "15"
 	}
-	if acctest.VersionAtLeast(version.PingFederate1300) {
+	if acctest.VersionAtLeast(version.PingFederate1236) {
 		fieldsAllCount = "16"
 	}
 	if acctest.VersionAtLeast(version.PingFederate1310) {

@@ -95,7 +95,7 @@ data "pingfederate_server_settings_logging" "example" {
 // Maximal HCL with all values set where possible
 func serverSettingsLogging_CompleteHCL() string {
 	versionedHcl := ""
-	if acctest.VersionAtLeast(version.PingFederate1300) {
+	if acctest.VersionAtLeast(version.PingFederate1226) {
 		versionedHcl += `
 	{
 		id = "provisioning"
@@ -153,7 +153,7 @@ data "pingfederate_server_settings_logging" "example" {
 
 func serverSettingsLogging_logCategoriesCount() string {
 	baseCount := 9
-	if acctest.VersionAtLeast(version.PingFederate1300) {
+	if acctest.VersionAtLeast(version.PingFederate1226) {
 		baseCount++
 	}
 	return strconv.Itoa(baseCount)
