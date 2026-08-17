@@ -277,13 +277,7 @@ resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
 
 func oauthOutOfBandAuthPlugin_FieldsCount() string {
 	fieldsCount := "12"
-	if acctest.VersionAtLeast(version.PingFederate1300) {
-		fieldsCount = "13"
-	} else if acctest.VersionAtLeast(version.PingFederate1236) {
-		// Some fields were ported back to 12.3
-		fieldsCount = "14"
-	}
-	if acctest.VersionAtLeast(version.PingFederate1310) {
+	if acctest.VersionAtLeast(version.PingFederate1236) {
 		fieldsCount = "14"
 	}
 	return fieldsCount
