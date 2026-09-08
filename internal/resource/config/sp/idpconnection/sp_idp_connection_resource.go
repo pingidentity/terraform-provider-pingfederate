@@ -5038,7 +5038,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				"If `idp_connection_transaction_logging_override` is configured to anything other than `DONT_OVERRIDE` in the `server_settings_general` resource,"+
 				" `logging_mode` should be configured to the same value in this resource.")
 	}
-	state.MetadataReloadSettings, diags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
+	state.MetadataReloadSettings, diags = metadataReloadSettingsState(ctx, r.MetadataReloadSettings)
 	respDiags.Append(diags...)
 	state.Name = types.StringValue(r.Name)
 	if r.VirtualEntityIds == nil {
@@ -6172,7 +6172,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 
 	// WsTrust
 	if r.WsTrust != nil {
-		var tokenGeneratorMappings []basetypes.ObjectValue
+		var tokenGeneratorMappings []attr.Value
 		for _, tokenGeneratorMapping := range r.WsTrust.TokenGeneratorMappings {
 			tokenGeneratorMappingSpTokenGeneratorRef := tokenGeneratorMapping.SpTokenGeneratorRef
 			spTokenGeneratorRef, objDiags := resourcelink.ToState(ctx, &tokenGeneratorMappingSpTokenGeneratorRef)
@@ -6228,8 +6228,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		respDiags.Append(objDiags...)
 
 		var tokenGeneratorMappingsSet types.Set
-		if tokenGeneratorMappings != nil {
-			tokenGeneratorMappingsSet, objDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}, tokenGeneratorMappings)
+		if len(tokenGeneratorMappings) > 0 {
+			tokenGeneratorMappingsSet, objDiags = types.SetValue(types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}, []attr.Value(tokenGeneratorMappings))
 			respDiags.Append(objDiags...)
 		} else {
 			tokenGeneratorMappingsSet = types.SetNull(types.ObjectType{AttrTypes: tokenGeneratorAttrTypes})
@@ -6248,6 +6248,26 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	}
 
 	return respDiags
+}
+
+// metadataReloadSettingsState explicitly constructs the metadata_reload_settings object to
+// avoid the location field on the client ResourceLink, which is not in the Terraform schema
+func metadataReloadSettingsState(ctx context.Context, s *client.ConnectionMetadataUrl) (types.Object, diag.Diagnostics) {
+	if s == nil {
+		return types.ObjectNull(metadataReloadSettingsAttrTypes), diag.Diagnostics{}
+	}
+	metadataUrlRefVal, diags := types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+		"id": types.StringValue(s.MetadataUrlRef.Id),
+	})
+	if diags.HasError() {
+		return types.ObjectNull(metadataReloadSettingsAttrTypes), diags
+	}
+	objVal, objDiags := types.ObjectValue(metadataReloadSettingsAttrTypes, map[string]attr.Value{
+		"metadata_url_ref":            metadataUrlRefVal,
+		"enable_auto_metadata_update": types.BoolPointerValue(s.EnableAutoMetadataUpdate),
+	})
+	diags.Append(objDiags...)
+	return objVal, diags
 }
 
 func (r *spIdpConnectionResource) warnFor500Err(httpResp *http.Response, diags *diag.Diagnostics) {

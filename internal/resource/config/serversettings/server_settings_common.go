@@ -179,8 +179,7 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	var diags, respDiags diag.Diagnostics
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
 	diags.Append(respDiags...)
-	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
-	diags.Append(respDiags...)
+	state.Notifications = notificationsSettingsAttrValue(r.Notifications)
 	//////////////////////////////////////////////
 	// ROLES AND PROTOCOLS
 	//////////////////////////////////////////////
@@ -219,7 +218,10 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	// save SP role to state
 	spRoleVal, respDiags := types.ObjectValue(spRoleAttrType, spRoleAttrValue)
 	diags.Append(respDiags...)
-	oauthRoleVal, respDiags := types.ObjectValueFrom(ctx, oauthRoleAttrType, r.RolesAndProtocols.OauthRole)
+	oauthRoleVal, respDiags := types.ObjectValue(oauthRoleAttrType, map[string]attr.Value{
+		"enable_oauth":           types.BoolPointerValue(r.RolesAndProtocols.OauthRole.EnableOauth),
+		"enable_open_id_connect": types.BoolPointerValue(r.RolesAndProtocols.OauthRole.EnableOpenIdConnect),
+	})
 	diags.Append(respDiags...)
 	rolesAndProtocolsAttrTypeValues := map[string]attr.Value{
 		"oauth_role":           oauthRoleVal,
@@ -243,4 +245,72 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	state.FederationInfo, respDiags = types.ObjectValue(federationInfoAttrType, federationInfoAttrValue)
 	diags.Append(respDiags...)
 	return diags
+}
+
+// notificationsSettingsAttrValue explicitly constructs the notifications object, skipping fields
+// not in the Terraform schema (e.g. license_event_settings)
+func notificationsSettingsAttrValue(n *client.NotificationSettings) types.Object {
+	if n == nil {
+		return types.ObjectNull(notificationsAttrType)
+	}
+	return types.ObjectValueMust(notificationsAttrType, map[string]attr.Value{
+		"license_events":                                           notificationSettingsAttrValue(n.LicenseEvents.EmailAddress, n.LicenseEvents.NotificationPublisherRef),
+		"certificate_expirations":                                  certificateExpirationsAttrValue(n.CertificateExpirations),
+		"notify_admin_user_password_changes":                       types.BoolPointerValue(n.NotifyAdminUserPasswordChanges),
+		"account_changes_notification_publisher_ref":               resourcelink.ToStateMust(n.AccountChangesNotificationPublisherRef),
+		"metadata_notification_settings":                           notificationSettingsAttrValue(n.MetadataNotificationSettings.EmailAddress, n.MetadataNotificationSettings.NotificationPublisherRef),
+		"expired_certificate_administrative_console_warning_days":  types.Int64PointerValue(n.ExpiredCertificateAdministrativeConsoleWarningDays),
+		"expiring_certificate_administrative_console_warning_days": types.Int64PointerValue(n.ExpiringCertificateAdministrativeConsoleWarningDays),
+		"thread_pool_exhaustion_notification_settings":             threadPoolExhaustionNotificationSettingsAttrValue(n.ThreadPoolExhaustionNotificationSettings),
+		"bulkhead_alert_notification_settings":                     bulkheadAlertNotificationSettingsAttrValue(n.BulkheadAlertNotificationSettings),
+	})
+}
+
+// notificationSettingsAttrValue explicitly constructs the notification settings object from
+// structs that share the email_address/notification_publisher_ref fields
+func notificationSettingsAttrValue(emailAddress string, publisherRef *client.ResourceLink) types.Object {
+	return types.ObjectValueMust(notificationSettingsAttrType, map[string]attr.Value{
+		"email_address":              types.StringValue(emailAddress),
+		"notification_publisher_ref": resourcelink.ToStateMust(publisherRef),
+	})
+}
+
+// certificateExpirationsAttrValue explicitly constructs the certificate expirations object
+func certificateExpirationsAttrValue(n *client.CertificateExpirationNotificationSettings) types.Object {
+	if n == nil {
+		return types.ObjectNull(certificateExpirationsAttrType)
+	}
+	return types.ObjectValueMust(certificateExpirationsAttrType, map[string]attr.Value{
+		"email_address":              types.StringValue(n.EmailAddress),
+		"initial_warning_period":     types.Int64PointerValue(n.InitialWarningPeriod),
+		"final_warning_period":       types.Int64Value(n.FinalWarningPeriod),
+		"notification_publisher_ref": resourcelink.ToStateMust(n.NotificationPublisherRef),
+		"notification_mode":          types.StringPointerValue(n.NotificationMode),
+	})
+}
+
+// threadPoolExhaustionNotificationSettingsAttrValue explicitly constructs the thread pool exhaustion settings object
+func threadPoolExhaustionNotificationSettingsAttrValue(n *client.ThreadPoolExhaustionNotificationSettings) types.Object {
+	if n == nil {
+		return types.ObjectNull(threadPoolExhaustionNotificationSettingsAttrType)
+	}
+	return types.ObjectValueMust(threadPoolExhaustionNotificationSettingsAttrType, map[string]attr.Value{
+		"email_address":              types.StringValue(n.EmailAddress),
+		"thread_dump_enabled":        types.BoolPointerValue(n.ThreadDumpEnabled),
+		"notification_publisher_ref": resourcelink.ToStateMust(n.NotificationPublisherRef),
+		"notification_mode":          types.StringPointerValue(n.NotificationMode),
+	})
+}
+
+// bulkheadAlertNotificationSettingsAttrValue explicitly constructs the bulkhead alert settings object
+func bulkheadAlertNotificationSettingsAttrValue(n *client.BulkheadAlertNotificationSettings) types.Object {
+	if n == nil {
+		return types.ObjectNull(bulkheadAlertNotificationSettingsAttrType)
+	}
+	return types.ObjectValueMust(bulkheadAlertNotificationSettingsAttrType, map[string]attr.Value{
+		"email_address":              types.StringValue(n.EmailAddress),
+		"notification_publisher_ref": resourcelink.ToStateMust(n.NotificationPublisherRef),
+		"notification_mode":          types.StringPointerValue(n.NotificationMode),
+		"thread_dump_enabled":        types.BoolPointerValue(n.ThreadDumpEnabled),
+	})
 }

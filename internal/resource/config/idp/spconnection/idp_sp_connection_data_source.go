@@ -1471,8 +1471,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	if r.Credentials.DecryptionKeyPairRef == nil {
 		decryptionKeyPairRef = types.ObjectNull(resourcelink.AttrType())
 	} else {
-		decryptionKeyPairRef, respDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), r.Credentials.DecryptionKeyPairRef)
-		diags.Append(respDiags...)
+		decryptionKeyPairRef = resourcelink.ToStateMust(r.Credentials.DecryptionKeyPairRef)
 	}
 	var inboundBackChannelAuth types.Object
 	if r.Credentials.InboundBackChannelAuth == nil {
@@ -1492,8 +1491,7 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	if r.Credentials.SecondaryDecryptionKeyPairRef == nil {
 		secondaryDecryptionKeyPairRef = types.ObjectNull(resourcelink.AttrType())
 	} else {
-		secondaryDecryptionKeyPairRef, respDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), r.Credentials.SecondaryDecryptionKeyPairRef)
-		diags.Append(respDiags...)
+		secondaryDecryptionKeyPairRef = resourcelink.ToStateMust(r.Credentials.SecondaryDecryptionKeyPairRef)
 	}
 	var signingSettings types.Object
 	if r.Credentials.SigningSettings == nil {

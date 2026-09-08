@@ -282,10 +282,40 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.LockoutMaxMaliciousActions = types.Int64PointerValue(r.LockoutMaxMaliciousActions)
 	state.LockoutMaxMaliciousActionsType = types.StringPointerValue(r.LockoutMaxMaliciousActionsType)
 
-	// state.OidcPolicy
-	oidcPolicyToState, respDiags := types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)
-	diags.Append(respDiags...)
-	state.OidcPolicy = oidcPolicyToState
+	// state.OidcPolicy - explicitly constructed to avoid the location field on the client
+	// ResourceLink (policy_group), which is not in the Terraform schema
+	if r.OidcPolicy == nil {
+		state.OidcPolicy = types.ObjectNull(oidcPolicyAttrType)
+	} else {
+		var policyGroupVal attr.Value
+		if r.OidcPolicy.PolicyGroup == nil {
+			policyGroupVal = types.ObjectNull(resourcelink.AttrType())
+		} else {
+			policyGroupVal = types.ObjectValueMust(resourcelink.AttrType(), map[string]attr.Value{
+				"id": types.StringValue(r.OidcPolicy.PolicyGroup.Id),
+			})
+		}
+		oidcPolicyToState, respDiags := types.ObjectValue(oidcPolicyAttrType, map[string]attr.Value{
+			"id_token_signing_algorithm":                      types.StringPointerValue(r.OidcPolicy.IdTokenSigningAlgorithm),
+			"id_token_encryption_algorithm":                   types.StringPointerValue(r.OidcPolicy.IdTokenEncryptionAlgorithm),
+			"id_token_content_encryption_algorithm":           types.StringPointerValue(r.OidcPolicy.IdTokenContentEncryptionAlgorithm),
+			"policy_group":                                    policyGroupVal,
+			"grant_access_session_revocation_api":             types.BoolPointerValue(r.OidcPolicy.GrantAccessSessionRevocationApi),
+			"grant_access_session_session_management_api":     types.BoolPointerValue(r.OidcPolicy.GrantAccessSessionSessionManagementApi),
+			"ping_access_logout_capable":                      types.BoolPointerValue(r.OidcPolicy.PingAccessLogoutCapable),
+			"logout_uris":                                     internaltypes.GetStringSet(r.OidcPolicy.LogoutUris),
+			"pairwise_identifier_user_type":                   types.BoolPointerValue(r.OidcPolicy.PairwiseIdentifierUserType),
+			"sector_identifier_uri":                           types.StringPointerValue(r.OidcPolicy.SectorIdentifierUri),
+			"logout_mode":                                     types.StringPointerValue(r.OidcPolicy.LogoutMode),
+			"back_channel_logout_uri":                         types.StringPointerValue(r.OidcPolicy.BackChannelLogoutUri),
+			"post_logout_redirect_uris":                       internaltypes.GetStringSet(r.OidcPolicy.PostLogoutRedirectUris),
+			"user_info_response_content_encryption_algorithm": types.StringPointerValue(r.OidcPolicy.UserInfoResponseContentEncryptionAlgorithm),
+			"user_info_response_encryption_algorithm":         types.StringPointerValue(r.OidcPolicy.UserInfoResponseEncryptionAlgorithm),
+			"user_info_response_signing_algorithm":            types.StringPointerValue(r.OidcPolicy.UserInfoResponseSigningAlgorithm),
+		})
+		diags.Append(respDiags...)
+		state.OidcPolicy = oidcPolicyToState
+	}
 
 	// state.JwksSettings
 	jwksSettingsToState, respDiags := types.ObjectValueFrom(ctx, jwksSettingsAttrType, r.JwksSettings)

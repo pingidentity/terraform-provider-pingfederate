@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -92,6 +93,17 @@ func ToStateNoValueDefault(ctx context.Context, response *client.PolicyActionAgg
 	return toStateInternal(ctx, response, false)
 }
 
+// authenticationSourceState explicitly constructs the authentication_source object to avoid
+// the location field on the client ResourceLink, which is not in the Terraform schema
+func authenticationSourceState(s client.AuthenticationSource) basetypes.ObjectValue {
+	return types.ObjectValueMust(authenticationSourceAttrTypes, map[string]attr.Value{
+		"type": types.StringValue(s.Type),
+		"source_ref": types.ObjectValueMust(resourcelink.AttrType(), map[string]attr.Value{
+			"id": types.StringValue(s.SourceRef.Id),
+		}),
+	})
+}
+
 func toStateInternal(ctx context.Context, response *client.PolicyActionAggregation, includeValueDefault bool) (types.Object, diag.Diagnostics) {
 	var diags, respDiags diag.Diagnostics
 	if response == nil {
@@ -141,8 +153,7 @@ func toStateInternal(ctx context.Context, response *client.PolicyActionAggregati
 		}
 		actionAttrs["attribute_rules"], respDiags = types.ObjectValueFrom(ctx, attributeRulesAttrTypes, response.AuthnSourcePolicyAction.AttributeRules)
 		diags.Append(respDiags...)
-		actionAttrs["authentication_source"], respDiags = types.ObjectValueFrom(ctx, authenticationSourceAttrTypes, response.AuthnSourcePolicyAction.AuthenticationSource)
-		diags.Append(respDiags...)
+		actionAttrs["authentication_source"] = authenticationSourceState(response.AuthnSourcePolicyAction.AuthenticationSource)
 		actionAttrs["input_user_id_mapping"], respDiags = types.ObjectValueFrom(ctx, inputUserIdMappingAttrTypes, response.AuthnSourcePolicyAction.InputUserIdMapping)
 		diags.Append(respDiags...)
 		actionAttrs["user_id_authenticated"] = types.BoolPointerValue(response.AuthnSourcePolicyAction.UserIdAuthenticated)

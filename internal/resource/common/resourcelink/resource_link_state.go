@@ -26,6 +26,17 @@ func ToState(ctx context.Context, r *client.ResourceLink) (types.Object, diag.Di
 	})
 }
 
+// ToStateMust explicitly constructs the resource link object, panicking on unexpected diags.
+// For use where the client struct is known to be valid.
+func ToStateMust(r *client.ResourceLink) types.Object {
+	if r == nil {
+		return types.ObjectNull(resourceLinkAttrTypes)
+	}
+	return types.ObjectValueMust(resourceLinkAttrTypes, map[string]attr.Value{
+		"id": types.StringValue(r.Id),
+	})
+}
+
 func AttrType() map[string]attr.Type {
 	return resourceLinkAttrTypes
 }

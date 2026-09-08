@@ -10,9 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1300/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
+	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -93,7 +94,7 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
-			"configuration": pluginconfiguration.ToDataSourceSchema(),
+			"configuration": datasourcepluginconfiguration.ToDataSourceSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be added to an access token.",
 				Required:    false,
@@ -257,6 +258,7 @@ func (r *oauthAccessTokenManagerDataSource) Configure(_ context.Context, req dat
 // Read a OauthAccessTokenManagerResponse object into the model struct
 func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerDataSourceModel, configurationFromPlan types.Object) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
+	var configurationAttrValue basetypes.ObjectValue
 
 	state.Id = types.StringValue(r.Id)
 	state.ManagerId = types.StringValue(r.Id)
@@ -265,14 +267,24 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	diags.Append(respDiags...)
 	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
-	state.Configuration, respDiags = types.ObjectValueFrom(ctx, pluginconfiguration.AttrType(), r.Configuration)
+	// state.Configuration
+	configurationAttrValue, respDiags = datasourcepluginconfiguration.ToDataSourceState(ctx, &r.Configuration)
 	diags.Append(respDiags...)
+	state.Configuration = configurationAttrValue
 
 	// state.AttributeContract
 	if r.AttributeContract == nil {
 		state.AttributeContract = types.ObjectNull(attributeContractAttrTypes)
 	} else {
-		state.AttributeContract, respDiags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, r.AttributeContract)
+		coreAttributesValue, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: coreAttributeTypes}, r.AttributeContract.CoreAttributes)
+		diags.Append(respDiags...)
+		extendedAttributesValue, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: extendedAttributeTypes}, r.AttributeContract.ExtendedAttributes)
+		diags.Append(respDiags...)
+		state.AttributeContract, respDiags = types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
+			"core_attributes":           coreAttributesValue,
+			"extended_attributes":       extendedAttributesValue,
+			"default_subject_attribute": types.StringPointerValue(r.AttributeContract.DefaultSubjectAttribute),
+		})
 		diags.Append(respDiags...)
 	}
 
@@ -280,7 +292,11 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	if r.SelectionSettings == nil {
 		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
 	} else {
-		state.SelectionSettings, respDiags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+		resourceUrisValue, respDiags := types.SetValueFrom(ctx, types.StringType, r.SelectionSettings.ResourceUris)
+		diags.Append(respDiags...)
+		state.SelectionSettings, respDiags = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
+			"resource_uris": resourceUrisValue,
+		})
 		diags.Append(respDiags...)
 	}
 
@@ -288,7 +304,23 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	if r.AccessControlSettings == nil {
 		state.AccessControlSettings = types.ObjectNull(accessControlSettingsAttrType)
 	} else {
-		state.AccessControlSettings, respDiags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+		restrictClientsValue := types.BoolPointerValue(r.AccessControlSettings.RestrictClients)
+		var allowedClientsValues []attr.Value
+		var objDiags diag.Diagnostics
+		for _, allowedClient := range r.AccessControlSettings.AllowedClients {
+			var clientObj types.Object
+			clientObj, objDiags = types.ObjectValue(resourcelink.AttrType(), map[string]attr.Value{
+				"id": types.StringValue(allowedClient.Id),
+			})
+			diags.Append(objDiags...)
+			allowedClientsValues = append(allowedClientsValues, clientObj)
+		}
+		allowedClientsValue, objDiags := types.SetValue(types.ObjectType{AttrTypes: resourcelink.AttrType()}, allowedClientsValues)
+		diags.Append(objDiags...)
+		state.AccessControlSettings, respDiags = types.ObjectValue(accessControlSettingsAttrType, map[string]attr.Value{
+			"restrict_clients": restrictClientsValue,
+			"allowed_clients":  allowedClientsValue,
+		})
 		diags.Append(respDiags...)
 	}
 
@@ -296,7 +328,12 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	if r.SessionValidationSettings == nil {
 		state.SessionValidationSettings = types.ObjectNull(sessionValidationSettingsAttrType)
 	} else {
-		state.SessionValidationSettings, respDiags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+		state.SessionValidationSettings, respDiags = types.ObjectValue(sessionValidationSettingsAttrType, map[string]attr.Value{
+			"check_session_revocation_status": types.BoolPointerValue(r.SessionValidationSettings.CheckSessionRevocationStatus),
+			"check_valid_authn_session":       types.BoolPointerValue(r.SessionValidationSettings.CheckValidAuthnSession),
+			"include_session_id":              types.BoolPointerValue(r.SessionValidationSettings.IncludeSessionId),
+			"update_authn_session_activity":   types.BoolPointerValue(r.SessionValidationSettings.UpdateAuthnSessionActivity),
+		})
 		diags.Append(respDiags...)
 	}
 

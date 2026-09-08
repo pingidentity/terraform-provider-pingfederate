@@ -1276,7 +1276,7 @@ func readLocalIdentityProfileResponse(ctx context.Context, r *client.LocalIdenti
 
 	// auth source update policy
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
-	state.AuthSourceUpdatePolicy, respDiags = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
+	state.AuthSourceUpdatePolicy, respDiags = authSourceUpdatePolicyState(authSourceUpdatePolicy)
 	diags.Append(respDiags...)
 
 	// auth sources
@@ -1295,24 +1295,24 @@ func readLocalIdentityProfileResponse(ctx context.Context, r *client.LocalIdenti
 	state.AuthSources, respDiags = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
 	diags.Append(respDiags...)
 
-	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, r.RegistrationConfig)
+	state.RegistrationConfig, respDiags = registrationConfigState(r.RegistrationConfig)
 	diags.Append(respDiags...)
 
 	state.RegistrationEnabled = types.BoolValue(r.GetRegistrationEnabled())
 
-	state.ProfileConfig, respDiags = types.ObjectValueFrom(ctx, profileConfigAttrTypes, r.ProfileConfig)
+	state.ProfileConfig, respDiags = profileConfigState(r.ProfileConfig)
 	diags.Append(respDiags...)
 
 	// field config
-	state.FieldConfig, respDiags = types.ObjectValueFrom(ctx, fieldConfigAttrTypes, r.FieldConfig)
+	state.FieldConfig, respDiags = fieldConfigState(r.FieldConfig)
 	diags.Append(respDiags...)
 
 	// email verification config
-	state.EmailVerificationConfig, respDiags = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, r.EmailVerificationConfig)
+	state.EmailVerificationConfig, respDiags = emailVerificationConfigState(r.EmailVerificationConfig)
 	diags.Append(respDiags...)
 
 	//  data store config
-	state.DataStoreConfig, respDiags = types.ObjectValueFrom(ctx, dsConfigAttrTypes, r.DataStoreConfig)
+	state.DataStoreConfig, respDiags = dsConfigState(r.DataStoreConfig)
 	diags.Append(respDiags...)
 
 	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
