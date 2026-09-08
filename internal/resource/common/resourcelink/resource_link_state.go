@@ -21,7 +21,9 @@ func ToState(ctx context.Context, r *client.ResourceLink) (types.Object, diag.Di
 	if r == nil {
 		return types.ObjectNull(resourceLinkAttrTypes), diag.Diagnostics{}
 	}
-	return types.ObjectValueFrom(ctx, resourceLinkAttrTypes, r)
+	return types.ObjectValue(resourceLinkAttrTypes, map[string]attr.Value{
+		"id": types.StringValue(r.Id),
+	})
 }
 
 func AttrType() map[string]attr.Type {
