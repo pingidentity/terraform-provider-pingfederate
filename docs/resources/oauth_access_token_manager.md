@@ -285,13 +285,13 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
 - `access_control_settings` (Attributes) Settings which determine which clients may access this token manager. (see [below for nested schema](#nestedatt--access_control_settings))
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 - `selection_settings` (Attributes) Settings which determine how this token manager can be selected for use by an OAuth request. (see [below for nested schema](#nestedatt--selection_settings))
+- `sequence_number` (Number) Number added to an access token to identify which Access Token Manager issued the token.
 - `session_validation_settings` (Attributes) Settings which determine how the user session is associated with the access token. (see [below for nested schema](#nestedatt--session_validation_settings))
 - `token_endpoint_attribute_contract` (Attributes) A set of attributes exposed by an Access Token Manager in a token endpoint response. (see [below for nested schema](#nestedatt--token_endpoint_attribute_contract))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `sequence_number` (Number) Number added to an access token to identify which Access Token Manager issued the token.
 
 <a id="nestedatt--attribute_contract"></a>
 ### Nested Schema for `attribute_contract`

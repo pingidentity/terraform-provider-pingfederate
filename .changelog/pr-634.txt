@@ -1,0 +1,3 @@
+```release-note:bug
+`resource/pingfederate_oauth_access_token_manager`: Fixed an issue where `sequence_number` could not be configured. The attribute is now Optional in addition to Computed, allowing the sequence number (embedded in the `pi.atm` claim of issued access tokens) to be pinned to a specific value. If not configured, a server-assigned value is used, and the previously-assigned value is retained if the attribute is later removed from configuration.
+```

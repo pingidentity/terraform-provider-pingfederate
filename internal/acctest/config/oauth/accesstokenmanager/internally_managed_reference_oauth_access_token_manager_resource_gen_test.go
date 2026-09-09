@@ -87,6 +87,57 @@ func TestAccOauthAccessTokenManager_MinimalMaximalInternallyManaged(t *testing.T
 	})
 }
 
+func TestAccOauthAccessTokenManager_SequenceNumber(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: oauthAccessTokenManager_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create with an explicitly configured sequence number
+				Config: oauthAccessTokenManager_MinimalInternallyManagedHCLWithSequenceNumber(123456, "seqATM"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "sequence_number", "123456"),
+				),
+			},
+			{
+				// Update the sequence number to a different explicit value
+				Config: oauthAccessTokenManager_MinimalInternallyManagedHCLWithSequenceNumber(654321, "seqATM"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "sequence_number", "654321"),
+				),
+			},
+			{
+				// Remove sequence_number from the configuration and change the name (the name
+				// change ensures the update path runs); the previously assigned value must persist
+				Config: oauthAccessTokenManager_MinimalInternallyManagedHCL(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "sequence_number", "654321"),
+				),
+			},
+			{
+				// Apply the complete configuration (also no sequence_number); the previously
+				// assigned value must still persist
+				Config: oauthAccessTokenManager_CompleteInternallyManagedHCL(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_oauth_access_token_manager.example", "sequence_number", "654321"),
+				),
+			},
+			{
+				// Import to verify the sequence number persisted on the service
+				Config:                               oauthAccessTokenManager_CompleteInternallyManagedHCL(),
+				ResourceName:                         "pingfederate_oauth_access_token_manager.example",
+				ImportStateId:                        atmId,
+				ImportStateVerifyIdentifierAttribute: "manager_id",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+			},
+		},
+	})
+}
+
 // Minimal HCL with only required values set
 func oauthAccessTokenManager_MinimalInternallyManagedHCL() string {
 	return fmt.Sprintf(`
@@ -111,6 +162,33 @@ data "pingfederate_oauth_access_token_manager" "example" {
   manager_id = pingfederate_oauth_access_token_manager.example.id
 }
 `, atmId)
+}
+
+// Minimal HCL with an explicitly configured sequence number
+func oauthAccessTokenManager_MinimalInternallyManagedHCLWithSequenceNumber(sequenceNumber int, name string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = "%s"
+  configuration = {
+  }
+  name = "%s"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+  }
+  attribute_contract = {
+    coreAttributes = []
+    extended_attributes = [
+      {
+        name = "extended_contract"
+      }
+    ]
+  }
+  sequence_number = %d
+}
+data "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = pingfederate_oauth_access_token_manager.example.id
+}
+`, atmId, name, sequenceNumber)
 }
 
 // Maximal HCL with all values set where possible
