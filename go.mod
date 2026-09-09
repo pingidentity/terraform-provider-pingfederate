@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.31.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
-	github.com/pingidentity/pingfederate-go-client/v1300 v1300.1.1-0.20260909155201-c314165393ee
+	github.com/pingidentity/pingfederate-go-client/v1300 v1300.1.1-0.20260909165017-ae4007af66f0
 )
 
 require (
