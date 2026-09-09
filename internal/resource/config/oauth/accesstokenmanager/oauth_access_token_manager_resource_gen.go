@@ -270,6 +270,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 				Description: "Settings which determine how this token manager can be selected for use by an OAuth request.",
 			},
 			"sequence_number": schema.Int64Attribute{
+				Optional:    true,
 				Computed:    true,
 				Description: "Number added to an access token to identify which Access Token Manager issued the token.",
 				PlanModifiers: []planmodifier.Int64{
