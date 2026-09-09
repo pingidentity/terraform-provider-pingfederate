@@ -154,14 +154,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 			state.AttributeContract, diags = types.ObjectValue(attributeContractAttrTypes, attributeContractValues)
 			respDiags.Append(diags...)
 		} else {
-			// Explicitly construct the attribute contract object to avoid the inherited field
-			// on the client IdpAdapterAttributeContract, which is not in the Terraform schema
-			attributeContractDataSourceValues := map[string]attr.Value{}
-			attributeContractDataSourceValues["extended_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
-			respDiags.Append(diags...)
-			attributeContractDataSourceValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
-			attributeContractDataSourceValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
-			state.AttributeContract, diags = types.ObjectValue(attributeContractDataSourceAttrTypes, attributeContractDataSourceValues)
+			state.AttributeContract, diags = types.ObjectValueFrom(ctx, attributeContractDataSourceAttrTypes, r.AttributeContract)
 			respDiags.Append(diags...)
 		}
 	}

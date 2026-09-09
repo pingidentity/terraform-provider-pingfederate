@@ -97,14 +97,6 @@ func ToStateNoValueDefault(con context.Context, attributeSourcesFromClient []cli
 	return toStateInternal(con, attributeSourcesFromClient, true, false)
 }
 
-// dataStoreRefState explicitly constructs the data_store_ref object to avoid the location
-// field on the client ResourceLink, which is not in the Terraform schema
-func dataStoreRefState(con context.Context, r client.ResourceLink) basetypes.ObjectValue {
-	return types.ObjectValueMust(resourcelink.AttrType(), map[string]attr.Value{
-		"id": types.StringValue(r.Id),
-	})
-}
-
 func normalizeFieldEntryNilValuesToEmpty(fields []client.FieldEntry) []client.FieldEntry {
 	if len(fields) == 0 {
 		return fields
@@ -142,7 +134,8 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 			diags.Append(valueFromDiags...)
 
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")
-			customAttrSourceValues["data_store_ref"] = dataStoreRefState(con, attrSource.CustomAttributeSource.DataStoreRef)
+			customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.CustomAttributeSource.DataStoreRef)
+			diags.Append(valueFromDiags...)
 			if includeIdAttr {
 				customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 			}
@@ -162,7 +155,8 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 			diags.Append(valueFromDiags...)
 			jdbcAttrSourceValues["filter"] = types.StringValue(attrSource.JdbcAttributeSource.Filter)
 			jdbcAttrSourceValues["type"] = types.StringValue("JDBC")
-			jdbcAttrSourceValues["data_store_ref"] = dataStoreRefState(con, attrSource.JdbcAttributeSource.DataStoreRef)
+			jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
+			diags.Append(valueFromDiags...)
 			if includeIdAttr {
 				jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 			}
@@ -189,7 +183,8 @@ func toStateInternal(con context.Context, attributeSourcesFromClient []client.At
 			}
 			ldapAttrSourceValues["member_of_nested_group"] = types.BoolPointerValue(attrSource.LdapAttributeSource.MemberOfNestedGroup)
 			ldapAttrSourceValues["type"] = types.StringValue(attrSource.LdapAttributeSource.Type)
-			ldapAttrSourceValues["data_store_ref"] = dataStoreRefState(con, attrSource.LdapAttributeSource.DataStoreRef)
+			ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.LdapAttributeSource.DataStoreRef)
+			diags.Append(valueFromDiags...)
 			if includeIdAttr {
 				ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 			}
