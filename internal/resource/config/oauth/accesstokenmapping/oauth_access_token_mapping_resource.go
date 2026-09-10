@@ -25,6 +25,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -110,6 +111,9 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 							Default:     stringdefault.StaticString(""),
 						},
 					},
+				},
+				Validators: []validator.Map{
+					configvalidators.ValidAttributeContractFulfillment(),
 				},
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
