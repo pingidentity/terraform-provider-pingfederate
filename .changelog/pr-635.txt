@@ -1,0 +1,3 @@
+```release-note:bug
+Added validation to prevent inconsistent result errors due to empty `expression_criteria` and trailing newlines for `EXPRESSION` values in `attribute_contract_fulfillment`
+```

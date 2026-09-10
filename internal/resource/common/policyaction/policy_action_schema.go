@@ -13,6 +13,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 )
 
 // Common schema across all policy actions
@@ -216,6 +217,9 @@ func fragmentPolicyActionSchema(includeValueDefault bool) schema.SingleNestedAtt
 							Description: "The value for this attribute.",
 						},
 					},
+				},
+				Validators: []validator.Map{
+					configvalidators.ValidAttributeContractFulfillment(),
 				},
 			},
 			"attribute_sources": attributeSourcesAttr(includeValueDefault),
