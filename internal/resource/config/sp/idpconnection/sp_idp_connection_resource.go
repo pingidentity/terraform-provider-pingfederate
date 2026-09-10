@@ -3008,6 +3008,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Required:            true,
 										Description:         "A list of user repository mappings from attribute names to their fulfillment values.",
 										MarkdownDescription: "A list of user repository mappings from attribute names to their fulfillment values.",
+										Validators: []validator.Map{
+											configvalidators.ValidAttributeContractFulfillment(),
+										},
 									},
 									"attributes": schema.SetNestedAttribute{
 										NestedObject: schema.NestedAttributeObject{
@@ -3105,6 +3108,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Required:            true,
 										Description:         "A list of user repository mappings from attribute names to their fulfillment values.",
 										MarkdownDescription: "A list of user repository mappings from attribute names to their fulfillment values.",
+										Validators: []validator.Map{
+											configvalidators.ValidAttributeContractFulfillment(),
+										},
 									},
 								},
 								Required:            true,
@@ -3341,6 +3347,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Required:            true,
 										Description:         "A list of user repository mappings from attribute names to their fulfillment values.",
 										MarkdownDescription: "A list of user repository mappings from attribute names to their fulfillment values.",
+										Validators: []validator.Map{
+											configvalidators.ValidAttributeContractFulfillment(),
+										},
 									},
 									"attributes": schema.SetNestedAttribute{
 										NestedObject: schema.NestedAttributeObject{
@@ -3438,6 +3447,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Required:            true,
 										Description:         "A list of user repository mappings from attribute names to their fulfillment values.",
 										MarkdownDescription: "A list of user repository mappings from attribute names to their fulfillment values.",
+										Validators: []validator.Map{
+											configvalidators.ValidAttributeContractFulfillment(),
+										},
 									},
 								},
 								Required:            true,
