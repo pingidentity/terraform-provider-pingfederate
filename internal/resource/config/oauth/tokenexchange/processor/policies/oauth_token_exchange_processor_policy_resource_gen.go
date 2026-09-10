@@ -385,7 +385,7 @@ func (r *oauthTokenExchangeProcessorPolicyResource) Create(ctx context.Context, 
 	resp.Diagnostics.Append(diags...)
 	apiCreateRequest := r.apiClient.OauthTokenExchangeProcessorAPI.CreateOauthTokenExchangeProcessorPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
-	responseData, httpResp, err := r.apiClient.OauthTokenExchangeProcessorAPI.CreateOauthTokenExchangeProcessorPolicyExecute(apiCreateRequest)
+	responseData, httpResp, err := r.exponentialBackOffRetryCreate(ctx, apiCreateRequest, data.PolicyId.ValueString())
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the oauthTokenExchangeProcessorPolicy", err, httpResp)
 		return
