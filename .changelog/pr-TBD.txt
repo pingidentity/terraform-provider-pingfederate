@@ -1,3 +1,0 @@
-```release-note:bug
-Added new validation to prevent two "Provider produced inconsistent result after apply" errors: (1) `issuance_criteria.expression_criteria` now must contain at least one element if specified, as the API treats an empty `expression_criteria` as equivalent to `null`. (2) `attribute_contract_fulfillment` `value` must no longer end in a trailing newline when `source.type` is `EXPRESSION` — the PingFederate admin API trims trailing newlines from OGNL expressions, which causes inconsistent result errors for values written using Terraform heredoc (`<<-EOT`) syntax.
-```
