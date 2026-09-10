@@ -5,6 +5,7 @@ package configvalidators
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,7 +17,8 @@ var _ validator.Map = &attributeContractFulfillmentValidator{}
 type attributeContractFulfillmentValidator struct{}
 
 func (v attributeContractFulfillmentValidator) Description(ctx context.Context) string {
-	return "Validates that the any `value` defined in the attribute contract fulfillment is set appropriately according to the source type."
+	return "Validates that the any `value` defined in the attribute contract fulfillment is set appropriately according to the source type, " +
+		"and that EXPRESSION-type values do not end in a trailing newline."
 }
 
 func (v attributeContractFulfillmentValidator) MarkdownDescription(ctx context.Context) string {
@@ -72,6 +74,20 @@ func (v attributeContractFulfillmentValidator) ValidateMap(ctx context.Context, 
 				providererror.InvalidAttributeConfiguration,
 				"When attribute_contract_fulfillment source type is set to anything other than 'NO_MAPPING', the value must be defined. "+
 					fmt.Sprintf("attribute_contract_fulfillment key '%s' has no value defined while using a source type of '%s'", key, sourceTypeAsString.ValueString()),
+			)
+		}
+
+		// If source type is 'EXPRESSION', the value must not end in a trailing newline. PingFederate trims
+		// trailing newlines when parsing OGNL expressions, so a value ending in "\n" (or "\r\n") in Terraform
+		// config would not match the value returned by the PingFederate admin API after apply.
+		if sourceTypeAsString.ValueString() == "EXPRESSION" && strings.HasSuffix(valueAsString.ValueString(), "\n") {
+			resp.Diagnostics.AddAttributeError(
+				req.Path,
+				providererror.InvalidAttributeConfiguration,
+				"When attribute_contract_fulfillment source type is set to 'EXPRESSION', the value must not end in a trailing newline. "+
+					fmt.Sprintf("attribute_contract_fulfillment key '%s' has a value ending in a trailing newline while using a source type of 'EXPRESSION'. ", key)+
+					"This commonly happens when the expression is written using Terraform heredoc syntax (e.g. `<<-EOT ... EOT`), which appends a trailing newline to the string. "+
+					"Remove the trailing newline from the value, for example by using a regular quoted string instead of a heredoc, or by wrapping the heredoc value in the `chomp()` function.",
 			)
 		}
 	}

@@ -3,6 +3,7 @@
 package issuancecriteria
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -67,6 +68,10 @@ func ToSchema() schema.SingleNestedAttribute {
 			"expression_criteria": schema.SetNestedAttribute{
 				Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria.",
 				Optional:    true,
+				// The PingFederate API treats an empty expression_criteria set as equivalent to null
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"expression": schema.StringAttribute{
