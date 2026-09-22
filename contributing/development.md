@@ -93,6 +93,8 @@ make testupgradecomplete
 
 The targets write an isolated Terraform CLI config (`.tfplugincache/tfrc`) so a developer's `~/.terraformrc` `dev_overrides` cannot silently substitute the local dev binary for the pinned registry rungs. `make testupgradeacc` runs with `-p 1` (participating resources include singletons that must not run concurrently with each other, or with `make testacc`, against the same container). `make testacc` never live-runs these tests: without the `upgradeladder` build tag they skip before touching the server.
 
+In CI, the ladder runs only in the nightly [Scheduled Acceptance Tests workflow](../.github/workflows/scheduled-acctests.yaml) (and on manual dispatch) — never on pull requests, where it is too slow and registry-dependent. The scheduled job runs the full 12.2 lane plus the newest lane.
+
 ### Environment knobs
 
 - `PINGFEDERATE_UPGRADE_LADDER`: `full` (default), `last2` (final registry rung + local), or explicit comma-separated rungs, e.g. `1.9.0,local`.
