@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -61,4 +62,11 @@ resource "pingfederate_keypairs_ssl_server_settings" "example" {
   }
 }
 `)
+}
+
+func TestUpgradeLadder_KeypairsSslServerSettings(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_keypairs_ssl_server_settings",
+		HCL:          keypairsSslServerSettings_MinimalHCL,
+	})
 }

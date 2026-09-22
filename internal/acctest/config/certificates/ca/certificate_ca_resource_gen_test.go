@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -162,4 +163,17 @@ func certificateCa_CheckDestroy(s *terraform.State) error {
 		return fmt.Errorf("certificate_ca still exists after tests. Expected it to be destroyed")
 	}
 	return nil
+}
+
+func TestUpgradeLadder_CertificateCa(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_certificate_ca",
+		HCL:          func() string { return certificateCa_MinimalHCL(initialFileData) },
+		ClusterModeProbe: func() error {
+			if initialFileData == "" {
+				return fmt.Errorf("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 is not set")
+			}
+			return nil
+		},
+	})
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -83,4 +84,11 @@ func serverSettingsGeneral_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_server_settings_general.example", "request_header_for_correlation_id", ""),
 		resource.TestCheckResourceAttr("pingfederate_server_settings_general.example", "sp_connection_transaction_logging_override", "DONT_OVERRIDE"),
 	)
+}
+
+func TestUpgradeLadder_ServerSettingsGeneral(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_server_settings_general",
+		HCL:          serverSettingsGeneral_MinimalHCL,
+	})
 }

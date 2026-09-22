@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent
+.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent testupgradeacc testupgradeoneacc testupgradecomplete
 
 default: install
 
@@ -93,6 +93,39 @@ testaccclustered:
 	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/cluster/... -timeout 5m -v
 
 testacccomplete: spincontainer testacc
+
+# Provider version-ladder tests: for each resource whose gen test file calls
+# RunUpgradeLadder (inlined in internal/acctest/config/.../*_gen_test.go), apply
+# its config with the oldest provider version that supports the current
+# PINGFEDERATE_PROVIDER_PRODUCT_VERSION lane, then hop the provider one minor
+# version at a time to the local build, asserting an empty plan after every
+# hop. Compiled only under the 'upgradeladder' build tag (without it the tests
+# skip instantly). Requires registry access (rungs download from the Terraform
+# Registry); TF_PLUGIN_CACHE_DIR dedupes those downloads across rungs and
+# resources.
+#
+# TF_CLI_CONFIG_FILE points at a minimal isolated CLI config so a developer's
+# ~/.terraformrc dev_overrides cannot silently replace every rung's pinned
+# registry version with the local dev binary.
+# Ladder rungs are collision-prone singletons, so the tests run serially.
+# Set ACC_TEST_NAME=<resource type substring> to run one resource's test.
+# Set PINGFEDERATE_UPGRADE_LADDER=full|last2|<csv rungs> to override the ladder.
+define upgrade_ladder_tfrc
+	mkdir -p $(CURDIR)/.tfplugincache && \
+	printf 'provider_installation {\n  direct {}\n}\n' > $(CURDIR)/.tfplugincache/tfrc
+endef
+
+testupgradeacc:
+	$(call upgrade_ladder_tfrc)
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 TF_PLUGIN_CACHE_DIR=$(CURDIR)/.tfplugincache TF_CLI_CONFIG_FILE=$(CURDIR)/.tfplugincache/tfrc \
+		go test -tags upgradeladder ./internal/acctest/config/... -run 'TestUpgradeLadder_.*' -timeout 60m -v -p 1 -count=1
+
+testupgradeoneacc:
+	$(call upgrade_ladder_tfrc)
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 TF_PLUGIN_CACHE_DIR=$(CURDIR)/.tfplugincache TF_CLI_CONFIG_FILE=$(CURDIR)/.tfplugincache/tfrc \
+		go test -tags upgradeladder ./internal/acctest/config/... -run 'TestUpgradeLadder_.*$(ACC_TEST_NAME).*' -timeout 60m -v -p 1 -count=1
+
+testupgradecomplete: spincontainer testupgradeacc
 
 clearstates:
 	find . -name "*tfstate*" -delete

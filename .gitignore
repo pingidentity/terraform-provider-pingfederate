@@ -44,3 +44,6 @@ vendor
 terraform-provider-pingfederate
 provider_code_spec.json
 generator-config.yml
+
+# Terraform plugin cache for the provider version-ladder tests
+.tfplugincache/

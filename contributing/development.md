@@ -61,6 +61,69 @@ Acceptance tests for the provider use a local PingFederate instance running in D
   
 **Tip**: If you plan on running tests multiple times and do not mind reusing the same server, then it is recommended to use the first three options above to perform each step individually.
 
+## Provider version-ladder tests
+
+"Provider produced inconsistent result after apply" errors (see CDI-532 and CDI-533) surface when the **provider version changes** against a live PingFederate server that injects defaults for unset optional properties. The version-ladder tests in `internal/acctest/upgradeladder` catch that bug class: for each participating resource, the same configuration is applied with the oldest provider version that supports the current PingFederate server lane, then the provider is stepped one minor version at a time up to the local build, asserting an empty plan after every hop.
+
+Each PingFederate server version defines a **lane** (`PINGFEDERATE_PROVIDER_PRODUCT_VERSION` major.minor), and the ladder starts at the first provider release that supports the lane:
+
+| PingFederate lane | Ladder rungs (provider versions) |
+|---|---|
+| 12.2 | 1.3.0 → 1.4.5 → 1.5.0 → 1.6.2 → 1.7.1 → 1.8.1 → 1.9.0 → 1.10.0 → local |
+| 12.3 | 1.6.2 → 1.7.1 → 1.8.1 → 1.9.0 → 1.10.0 → local |
+| 13.0 | 1.7.1 → 1.8.1 → 1.9.0 → 1.10.0 → local |
+| 13.1 | 1.9.0 → 1.10.0 → local |
+
+Rungs come from the public Terraform Registry (`pingidentity/pingfederate`, pinned with exact versions); the final rung is the locally built provider. Registry rungs require network access — downloads are cached in `.tfplugincache/` (gitignored).
+
+### Running the ladder tests
+
+```sh
+# Start a container for the desired lane (12.2 exercises the full ladder)
+PINGFEDERATE_PROVIDER_PRODUCT_VERSION=12.2 make spincontainer
+# Run every participating resource through its ladder
+PINGFEDERATE_PROVIDER_PRODUCT_VERSION=12.2 make testupgradeacc
+# Run one resource's ladder test
+make testupgradeoneacc ACC_TEST_NAME=oauth_server_settings
+# Shortest smoke: final registry rung + local only
+PINGFEDERATE_UPGRADE_LADDER=last2 make testupgradeacc
+# From scratch (container + ladder)
+make testupgradecomplete
+```
+
+The targets write an isolated Terraform CLI config (`.tfplugincache/tfrc`) so a developer's `~/.terraformrc` `dev_overrides` cannot silently substitute the local dev binary for the pinned registry rungs. `make testupgradeacc` runs with `-p 1` (participating resources include singletons that must not run concurrently with each other, or with `make testacc`, against the same container). `make testacc` never live-runs these tests: without the `upgradeladder` build tag they skip before touching the server.
+
+### Environment knobs
+
+- `PINGFEDERATE_UPGRADE_LADDER`: `full` (default), `last2` (final registry rung + local), or explicit comma-separated rungs, e.g. `1.9.0,local`.
+- `PINGFEDERATE_UPGRADE_RESOURCES`: comma-separated substrings selecting participating resource types, e.g. `oauth_server_settings,incoming_proxy_settings`. Non-matching resources skip.
+- `ACC_TEST_NAME`: test-name filter for `make testupgradeoneacc`.
+
+### Adding a resource to the ladder
+
+Add a `TestUpgradeLadder_<ResourceName>` test to the resource's existing `*_gen_test.go` file, declaring one `upgradeladder.Spec` and calling `upgradeladder.RunUpgradeLadder`. There is no central registry and no extra test file: the test lives next to the resource's regular tests and reuses the package's generated `*_MinimalHCL()` (or an inline func), so the ladder always exercises the same HCL shape the package's regular tests use — no frozen HCL copy to keep in sync.
+
+```go
+func TestUpgradeLadder_SessionSettings(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_session_settings",
+		HCL:          sessionSettings_MinimalHCL,
+	})
+}
+```
+
+Import the harness in the gen test file (as `upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"`). The gen test files carry no build tag: ladder tests compile in every build but call `RunUpgradeLadder`, which skips instantly unless the build sets the `upgradeladder` tag (i.e. `make testupgradeacc`) — so plain `go test`/`make testacc` runs see only a zero-cost skip, never a live run.
+
+Rules:
+
+- The Spec's HCL must apply cleanly with the *oldest* rung of every lane it runs on, so do not reference attributes added after that release. Resources shipped after v1.3.0 set `AvailableSince` to their first release (older rungs are dropped — e.g. `pingfederate_incoming_proxy_settings` is `"1.4.5"`).
+- Top-level `data "pingfederate_<resourceType>" "example"` blocks (present in some generated HCL) are stripped automatically by the harness; other data sources are left in and fail the run loudly.
+- The HCL must use the resource label `example` (enforced by `ValidateSpec`).
+- `ClusterModeProbe` optionally gates the ladder on a live-server condition and skips when it fails — e.g. cluster settings on a standalone server, or a required CI-secret environment variable like `PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1` for the certificate resources.
+- `Allowlist` is reserved for a future phase that tolerates attribute-level plan deltas (e.g. server-injected defaults); entries require a JIRA reference in `Reason`.
+
+The table in `ladder.go` is maintained alongside releases: append a row when a new provider minor ships, and drop rows when the provider drops an EOL PingFederate lane. Everything else about PingFederate versions derives from `internal/version/version.go` — the supported-lane list (`version.SupportedMajorMinorVersions()`), lane validation (`version.Parse` in `ParseLane`, the same contract as the provider's own configure-time check), and the table's lane references (`MaxPFMinor` references `version.PingFederate*` constants). Supporting a new PingFederate version is a one-line change in `internal/version/version.go` plus the new `ladderTable` rows — `TestLadderTableCoversSupportedLanes` fails until the rows are added, and any stale row for a dropped lane fails compilation. Do not hand-write PingFederate version strings in ladder code or tests; reference the constants (or the helpers `version.Parse`/`version.MajorMinor`/`version.SupportedMajorMinorVersions`). Spec invariants are checked by `go test ./internal/acctest/upgradeladder/` without a server.
+
 ## Run an example
 ### Start the PingFederate server
 Start a PingFederate server running locally with the provided **docker-compose.yaml** file. Change to the `docker-compose` directory and run `docker compose up`. (Alternatively, use the `make starttestcontainer` command from the previous section.) The server will take a couple of minutes to become ready. When you see the following output in the terminal, the server is ready to process requests:

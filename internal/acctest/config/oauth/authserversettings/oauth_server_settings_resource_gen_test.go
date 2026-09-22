@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -421,4 +422,11 @@ func oauthServerSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_oauth_server_settings.example", "persistent_grant_contract.core_attributes.#", "2"),
 		resource.TestCheckNoResourceAttr("pingfederate_oauth_server_settings.example", "user_authorization_consent_adapter"),
 	)
+}
+
+func TestUpgradeLadder_OauthServerSettings(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_oauth_server_settings",
+		HCL:          oauthServerSettings_MinimalHCL,
+	})
 }

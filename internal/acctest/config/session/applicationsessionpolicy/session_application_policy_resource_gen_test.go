@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -77,4 +78,11 @@ func sessionApplicationPolicy_CheckComputedValuesMinimal() resource.TestCheckFun
 		resource.TestCheckResourceAttr("pingfederate_session_application_policy.example", "idle_timeout_mins", "60"),
 		resource.TestCheckResourceAttr("pingfederate_session_application_policy.example", "max_timeout_mins", "480"),
 	)
+}
+
+func TestUpgradeLadder_SessionApplicationPolicy(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_session_application_policy",
+		HCL:          sessionApplicationPolicy_MinimalHCL,
+	})
 }

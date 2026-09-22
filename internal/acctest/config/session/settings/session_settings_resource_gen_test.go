@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -88,4 +89,11 @@ func sessionSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_session_settings.example", "session_revocation_lifetime", "40"),
 		resource.TestCheckResourceAttr("pingfederate_session_settings.example", "track_adapter_sessions_for_logout", "false"),
 	)
+}
+
+func TestUpgradeLadder_SessionSettings(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_session_settings",
+		HCL:          sessionSettings_MinimalHCL,
+	})
 }

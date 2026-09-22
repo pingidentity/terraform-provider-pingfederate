@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -93,4 +94,16 @@ func clusterSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		)
 	}
 	return resource.ComposeTestCheckFunc(testChecks...)
+}
+
+func TestUpgradeLadder_ClusterSettings(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_cluster_settings",
+		HCL:          clusterSettings_MinimalHCL,
+		ClusterModeProbe: func() error {
+			testClient := acctest.TestClient()
+			_, _, err := testClient.ClusterAPI.GetClusterSettings(acctest.TestBasicAuthContext()).Execute()
+			return err
+		},
+	})
 }

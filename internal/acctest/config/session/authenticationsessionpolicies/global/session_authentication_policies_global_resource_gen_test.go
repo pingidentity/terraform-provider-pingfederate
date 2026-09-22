@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -96,4 +97,11 @@ func sessionAuthenticationPoliciesGlobal_CheckComputedValuesMinimal() resource.T
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policies_global.example", "max_timeout_mins", "480"),
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policies_global.example", "persistent_sessions", "false"),
 	)
+}
+
+func TestUpgradeLadder_SessionAuthenticationPoliciesGlobal(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_session_authentication_policies_global",
+		HCL:          sessionAuthenticationPoliciesGlobal_MinimalHCL,
+	})
 }

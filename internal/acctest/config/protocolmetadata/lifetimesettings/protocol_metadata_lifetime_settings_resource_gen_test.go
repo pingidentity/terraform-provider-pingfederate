@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -77,4 +78,11 @@ func protocolMetadataLifetimeSettings_CheckComputedValuesMinimal() resource.Test
 		resource.TestCheckResourceAttr("pingfederate_protocol_metadata_lifetime_settings.example", "cache_duration", "1440"),
 		resource.TestCheckResourceAttr("pingfederate_protocol_metadata_lifetime_settings.example", "reload_delay", "1440"),
 	)
+}
+
+func TestUpgradeLadder_ProtocolMetadataLifetimeSettings(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_protocol_metadata_lifetime_settings",
+		HCL:          protocolMetadataLifetimeSettings_MinimalHCL,
+	})
 }

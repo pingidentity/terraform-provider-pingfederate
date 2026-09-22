@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -132,4 +133,11 @@ func idpStsRequestParametersContract_CheckDestroy(s *terraform.State) error {
 		return fmt.Errorf("idp_sts_request_parameters_contract still exists after tests. Expected it to be destroyed")
 	}
 	return nil
+}
+
+func TestUpgradeLadder_IdpStsRequestParametersContract(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_idp_sts_request_parameters_contract",
+		HCL:          idpStsRequestParametersContract_MinimalHCL,
+	})
 }

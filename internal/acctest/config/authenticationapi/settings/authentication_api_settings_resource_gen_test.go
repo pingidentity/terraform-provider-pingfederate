@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -99,4 +100,11 @@ func authenticationApiSettings_CheckComputedValuesMinimal() resource.TestCheckFu
 		resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.example", "include_request_context", "false"),
 		resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.example", "restrict_access_to_redirectless_mode", "false"),
 	)
+}
+
+func TestUpgradeLadder_AuthenticationApiSettings(t *testing.T) {
+	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_authentication_api_settings",
+		HCL:          authenticationApiSettings_MinimalHCL,
+	})
 }

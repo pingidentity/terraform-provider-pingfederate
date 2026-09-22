@@ -93,6 +93,43 @@ func getSortedVersionsMessage() string {
 	return message
 }
 
+// SupportedVersions returns every supported PingFederate patch version in
+// ascending order. Consumers derive version lists from here — such as the
+// provider version-ladder tests — so supporting or EOL-ing a PingFederate
+// version in this file automatically extends those consumers.
+func SupportedVersions() []SupportedVersion {
+	return getSortedVersions()
+}
+
+// SupportedMajorMinorVersions returns the distinct PingFederate major.minor
+// versions covered by the supported version list, in ascending order, as
+// major.minor strings (e.g. "12.2"). Consumers that bucket behavior by
+// major.minor — such as the provider version-ladder tests — derive their lane
+// list from here, so supporting a new PingFederate version in this file
+// automatically extends those consumers.
+func SupportedMajorMinorVersions() []SupportedVersion {
+	seen := map[SupportedVersion]bool{}
+	var majorMinors []SupportedVersion
+	for _, supportedVersion := range getSortedVersions() {
+		majorMinorVersion := MajorMinor(supportedVersion)
+		if !seen[majorMinorVersion] {
+			seen[majorMinorVersion] = true
+			majorMinors = append(majorMinors, majorMinorVersion)
+		}
+	}
+	return majorMinors
+}
+
+// MajorMinor truncates a version to its major.minor prefix,
+// e.g. "13.1.1" -> "13.1". Values without a minor segment are returned as-is.
+func MajorMinor(versionValue SupportedVersion) SupportedVersion {
+	parts := strings.SplitN(string(versionValue), ".", 3)
+	if len(parts) < 2 {
+		return versionValue
+	}
+	return SupportedVersion(parts[0] + "." + parts[1])
+}
+
 // Compare two PingFederate versions. Returns a negative number if the first argument is less than the second,
 // zero if they are equal, and a positive number if the first argument is greater than the second
 func Compare(version1, version2 SupportedVersion) (int, error) {
