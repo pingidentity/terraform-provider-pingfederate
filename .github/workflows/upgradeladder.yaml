@@ -9,9 +9,8 @@ on:
     branches:
       - "main"
   schedule:
-    # Nightly at 07:00 UTC (the scheduled acceptance tests run weekly at the
-    # same hour, on Mondays).
-    - cron: "0 7 * * *"
+    # Mondays at 07:00 UTC, matching the scheduled acceptance tests.
+    - cron: "0 7 * * 1"
 
 permissions:
   contents: read
