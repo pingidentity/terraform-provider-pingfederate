@@ -13,10 +13,11 @@ import (
 const EnvResourceFilter = "PINGFEDERATE_UPGRADE_RESOURCES"
 
 // Spec declares one resource's participation in the provider version ladder.
-// Each resource package under internal/acctest/config declares its own Spec
-// in an upgrade_ladder_test.go file (build tag `upgradeladder`), reusing the
-// package's existing generated HCL funcs — there is no central registry and
-// no frozen HCL copy.
+// Each resource's *_gen_test.go under internal/acctest/config declares its
+// Spec in a TestUpgradeLadder_<ResourceName> function, reusing the package's
+// existing generated HCL funcs — there is no central registry and no frozen
+// HCL copy. Ladder tests run only when the build sets the 'upgradeladder'
+// tag (see Enabled); otherwise RunUpgradeLadder skips.
 type Spec struct {
 	// ResourceType is the Terraform resource type name,
 	// e.g. "pingfederate_oauth_server_settings".
