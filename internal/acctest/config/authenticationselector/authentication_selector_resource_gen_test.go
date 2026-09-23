@@ -187,4 +187,8 @@ func TestUpgradeLadder_AuthenticationSelector(t *testing.T) {
 		ResourceType: "pingfederate_authentication_selector",
 		HCL:          authenticationSelector_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_authentication_selector",
+		HCL:          authenticationSelector_MinimalHCL,
+	})
 }

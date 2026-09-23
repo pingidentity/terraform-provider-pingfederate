@@ -85,4 +85,8 @@ func TestUpgradeLadder_SessionApplicationPolicy(t *testing.T) {
 		ResourceType: "pingfederate_session_application_policy",
 		HCL:          sessionApplicationPolicy_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_session_application_policy",
+		HCL:          sessionApplicationPolicy_MinimalHCL,
+	})
 }

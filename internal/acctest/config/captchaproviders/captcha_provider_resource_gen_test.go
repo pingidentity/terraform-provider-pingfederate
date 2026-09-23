@@ -320,4 +320,8 @@ func TestUpgradeLadder_CaptchaProvider(t *testing.T) {
 		ResourceType: "pingfederate_captcha_provider",
 		HCL:          captchaProvider_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_captcha_provider",
+		HCL:          captchaProvider_MinimalHCL,
+	})
 }

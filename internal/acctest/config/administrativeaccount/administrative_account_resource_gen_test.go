@@ -169,4 +169,8 @@ func TestUpgradeLadder_AdministrativeAccount(t *testing.T) {
 		ResourceType: "pingfederate_administrative_account",
 		HCL:          administrativeAccount_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_administrative_account",
+		HCL:          administrativeAccount_MinimalHCL,
+	})
 }

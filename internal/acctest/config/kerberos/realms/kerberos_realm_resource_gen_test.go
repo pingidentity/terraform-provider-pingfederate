@@ -175,4 +175,8 @@ func TestUpgradeLadder_KerberosRealm(t *testing.T) {
 		ResourceType: "pingfederate_kerberos_realm",
 		HCL:          kerberosRealm_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_kerberos_realm",
+		HCL:          kerberosRealm_MinimalHCL,
+	})
 }

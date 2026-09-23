@@ -95,30 +95,50 @@ The targets write an isolated Terraform CLI config (`.tfplugincache/tfrc`) so a 
 
 In CI, the ladder runs only in the [Provider Version-Ladder Tests workflow](../.github/workflows/upgradeladder.yaml) — on pushes to `main` (post-merge), the weekly schedule (Mondays at 07:00 UTC, alongside the scheduled acceptance tests), and manual dispatch — never on pull requests, where it is too slow and registry-dependent. The CI matrix runs the full 12.2 lane plus the newest lane, which together include every registry rung.
 
+### Server-upgrade ladder
+
+The provider ladder above keeps the PingFederate server fixed while the provider climbs. The **server-upgrade ladder** covers the other axis: the Terraform state is applied against the first lane's server, then the *server* is stepped to each subsequent lane (12.2 → 12.3 → 13.0 → 13.1) with the state carried forward — the user journey behind "inconsistent result" reports where resources configured on an older server are re-applied after a server upgrade. The provider is the local build in every step; each step re-points it via the step's `provider "pingfederate"` block (`https_host` + `product_version`), so the same state is refreshed and applied against each successive server. Because server upgrades legitimately change server-injected defaults for unset optionals, plan drift at lane boundaries is expected; the assertion is that every step **applies cleanly** (no `Provider produced inconsistent result after apply`, no failed apply). Both ladders run from the same `TestUpgradeLadder_<ResourceName>` function — `RunServerUpgradeLadder` follows `RunUpgradeLadder` in each gen test file, sharing the same `Spec`.
+
+```sh
+# Spin one container per lane (default: every supported lane; LANES overrides)
+LANES=12.2.6,13.1.1 make spinupgradelanes
+# The target prints the exports it needs — set them, then run:
+export PINGFEDERATE_UPGRADE_SERVER_LANES=...
+export PINGFEDERATE_UPGRADE_LANE_HOSTS=...
+make testserverupgradeacc
+# One resource:
+make testserverupgradeoneacc ACC_TEST_NAME=oauth_server_settings
+```
+
 ### Environment knobs
 
+- `PINGFEDERATE_UPGRADE_SERVER_LANES`: comma-separated PingFederate lanes for the server-upgrade ladder (default: every supported lane, ascending).
+- `PINGFEDERATE_UPGRADE_LANE_HOSTS`: comma-separated `https_host` values for every lane *beyond the first* (the first lane uses `PINGFEDERATE_PROVIDER_HTTPS_HOST`).
 - `PINGFEDERATE_UPGRADE_LADDER`: `full` (default), `last2` (final registry rung + local), or explicit comma-separated rungs, e.g. `1.9.0,local`.
 - `PINGFEDERATE_UPGRADE_RESOURCES`: comma-separated substrings selecting participating resource types, e.g. `oauth_server_settings,incoming_proxy_settings`. Non-matching resources skip.
 - `ACC_TEST_NAME`: test-name filter for `make testupgradeoneacc`.
 
 ### Adding a resource to the ladder
 
-Add a `TestUpgradeLadder_<ResourceName>` test to the resource's existing `*_gen_test.go` file, declaring one `upgradeladder.Spec` and calling `upgradeladder.RunUpgradeLadder`. There is no central registry and no extra test file: the test lives next to the resource's regular tests and reuses the package's generated `*_MinimalHCL()` (or an inline func), so the ladder always exercises the same HCL shape the package's regular tests use — no frozen HCL copy to keep in sync.
+Add a `TestUpgradeLadder_<ResourceName>` test to the resource's existing `*_gen_test.go` file, declaring one `upgradeladder.Spec` and calling `upgradeladder.RunUpgradeLadder` (provider ladder) followed by `upgradeladder.RunServerUpgradeLadder` (server ladder) with the same Spec. There is no central registry and no extra test file: the test lives next to the resource's regular tests and reuses the package's generated `*_MinimalHCL()` (or an inline func), so the ladders always exercise the same HCL shape the package's regular tests use — no frozen HCL copy to keep in sync.
 
 ```go
 func TestUpgradeLadder_SessionSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_session_settings",
 		HCL:          sessionSettings_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }
 ```
 
-Import the harness in the gen test file (as `upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"`). The gen test files carry no build tag: ladder tests compile in every build but call `RunUpgradeLadder`, which skips instantly unless the build sets the `upgradeladder` tag (i.e. `make testupgradeacc`) — so plain `go test`/`make testacc` runs see only a zero-cost skip, never a live run.
+Import the harness in the gen test file (as `upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"`). The gen test files carry no build tag: ladder tests compile in every build but call `RunUpgradeLadder`/`RunServerUpgradeLadder`, which skip instantly unless the build sets the `upgradeladder` tag (i.e. `make testupgradeacc`) — so plain `go test`/`make testacc` runs see only a zero-cost skip, never a live run. The server-upgrade ladder additionally skips when fewer than 2 lanes are resolvable (e.g. only one container running).
 
 Rules:
 
 - The Spec's HCL must apply cleanly with the *oldest* rung of every lane it runs on, so do not reference attributes added after that release. Resources shipped after v1.3.0 set `AvailableSince` to their first release (older rungs are dropped — e.g. `pingfederate_incoming_proxy_settings` is `"1.4.5"`).
+- Because the server-upgrade ladder re-applies the same config against each lane's server, discrete resources are destroyed on the final lane when the test ends (plugin-testing cleanup); a ladder run aborted mid-way leaves the resource orphaned on whichever server last applied it — delete it via the admin API before re-running (`X-XSRF-Header` required).
 - Top-level `data "pingfederate_<resourceType>" "example"` blocks (present in some generated HCL) are stripped automatically by the harness; other data sources are left in and fail the run loudly.
 - The HCL must use the resource label `example` (enforced by `ValidateSpec`).
 - `ClusterModeProbe` optionally gates the ladder on a live-server condition and skips when it fails — e.g. cluster settings on a standalone server, or a required CI-secret environment variable like `PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1` for the certificate resources.

@@ -161,4 +161,8 @@ func TestUpgradeLadder_AuthenticationApiApplication(t *testing.T) {
 		ResourceType: "pingfederate_authentication_api_application",
 		HCL:          authenticationApiApplication_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_authentication_api_application",
+		HCL:          authenticationApiApplication_MinimalHCL,
+	})
 }

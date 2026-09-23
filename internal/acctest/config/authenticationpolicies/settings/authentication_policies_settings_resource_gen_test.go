@@ -94,4 +94,8 @@ func TestUpgradeLadder_AuthenticationPoliciesSettings(t *testing.T) {
 		ResourceType: "pingfederate_authentication_policies_settings",
 		HCL:          authenticationPoliciesSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_authentication_policies_settings",
+		HCL:          authenticationPoliciesSettings_MinimalHCL,
+	})
 }

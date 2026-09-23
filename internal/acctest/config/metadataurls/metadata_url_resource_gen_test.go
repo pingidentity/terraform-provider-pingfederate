@@ -174,4 +174,8 @@ func TestUpgradeLadder_MetadataUrl(t *testing.T) {
 		ResourceType: "pingfederate_metadata_url",
 		HCL:          metadataUrl_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_metadata_url",
+		HCL:          metadataUrl_MinimalHCL,
+	})
 }

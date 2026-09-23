@@ -93,4 +93,9 @@ func TestUpgradeLadder_IncomingProxySettings(t *testing.T) {
 		HCL:            incomingProxySettings_MinimalHCL,
 		AvailableSince: "1.4.5",
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType:   "pingfederate_incoming_proxy_settings",
+		HCL:            incomingProxySettings_MinimalHCL,
+		AvailableSince: "1.4.5",
+	})
 }

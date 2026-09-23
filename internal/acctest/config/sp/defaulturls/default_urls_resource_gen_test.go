@@ -85,4 +85,8 @@ func TestUpgradeLadder_DefaultUrls(t *testing.T) {
 		ResourceType: "pingfederate_default_urls",
 		HCL:          defaultUrls_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_default_urls",
+		HCL:          defaultUrls_MinimalHCL,
+	})
 }

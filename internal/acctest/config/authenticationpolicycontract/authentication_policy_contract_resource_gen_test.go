@@ -166,4 +166,8 @@ func TestUpgradeLadder_AuthenticationPolicyContract(t *testing.T) {
 		ResourceType: "pingfederate_authentication_policy_contract",
 		HCL:          authenticationPolicyContract_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_authentication_policy_contract",
+		HCL:          authenticationPolicyContract_MinimalHCL,
+	})
 }

@@ -140,4 +140,8 @@ func TestUpgradeLadder_IdpStsRequestParametersContract(t *testing.T) {
 		ResourceType: "pingfederate_idp_sts_request_parameters_contract",
 		HCL:          idpStsRequestParametersContract_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_idp_sts_request_parameters_contract",
+		HCL:          idpStsRequestParametersContract_MinimalHCL,
+	})
 }

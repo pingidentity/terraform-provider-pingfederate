@@ -69,4 +69,8 @@ func TestUpgradeLadder_KeypairsSslServerSettings(t *testing.T) {
 		ResourceType: "pingfederate_keypairs_ssl_server_settings",
 		HCL:          keypairsSslServerSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_keypairs_ssl_server_settings",
+		HCL:          keypairsSslServerSettings_MinimalHCL,
+	})
 }

@@ -319,4 +319,8 @@ func TestUpgradeLadder_OauthClientSettings(t *testing.T) {
 		ResourceType: "pingfederate_oauth_client_settings",
 		HCL:          oauthClientSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_oauth_client_settings",
+		HCL:          oauthClientSettings_MinimalHCL,
+	})
 }

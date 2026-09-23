@@ -104,4 +104,8 @@ func TestUpgradeLadder_SessionAuthenticationPoliciesGlobal(t *testing.T) {
 		ResourceType: "pingfederate_session_authentication_policies_global",
 		HCL:          sessionAuthenticationPoliciesGlobal_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_session_authentication_policies_global",
+		HCL:          sessionAuthenticationPoliciesGlobal_MinimalHCL,
+	})
 }

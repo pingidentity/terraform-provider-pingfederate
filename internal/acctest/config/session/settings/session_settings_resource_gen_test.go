@@ -96,4 +96,8 @@ func TestUpgradeLadder_SessionSettings(t *testing.T) {
 		ResourceType: "pingfederate_session_settings",
 		HCL:          sessionSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_session_settings",
+		HCL:          sessionSettings_MinimalHCL,
+	})
 }

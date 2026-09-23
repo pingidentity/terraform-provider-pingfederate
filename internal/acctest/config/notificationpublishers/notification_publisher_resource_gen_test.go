@@ -258,4 +258,8 @@ func TestUpgradeLadder_NotificationPublisher(t *testing.T) {
 		ResourceType: "pingfederate_notification_publisher",
 		HCL:          notificationPublisher_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_notification_publisher",
+		HCL:          notificationPublisher_MinimalHCL,
+	})
 }

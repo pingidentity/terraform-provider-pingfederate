@@ -114,4 +114,8 @@ func TestUpgradeLadder_CertificatesRevocationSettings(t *testing.T) {
 		ResourceType: "pingfederate_certificates_revocation_settings",
 		HCL:          certificatesRevocationSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_certificates_revocation_settings",
+		HCL:          certificatesRevocationSettings_MinimalHCL,
+	})
 }

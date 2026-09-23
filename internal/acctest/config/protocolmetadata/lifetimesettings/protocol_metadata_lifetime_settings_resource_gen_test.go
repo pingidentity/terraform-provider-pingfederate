@@ -85,4 +85,8 @@ func TestUpgradeLadder_ProtocolMetadataLifetimeSettings(t *testing.T) {
 		ResourceType: "pingfederate_protocol_metadata_lifetime_settings",
 		HCL:          protocolMetadataLifetimeSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_protocol_metadata_lifetime_settings",
+		HCL:          protocolMetadataLifetimeSettings_MinimalHCL,
+	})
 }

@@ -283,4 +283,8 @@ func TestUpgradeLadder_ServerSettingsLogging(t *testing.T) {
 		ResourceType: "pingfederate_server_settings_logging",
 		HCL:          serverSettingsLogging_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_server_settings_logging",
+		HCL:          serverSettingsLogging_MinimalHCL,
+	})
 }

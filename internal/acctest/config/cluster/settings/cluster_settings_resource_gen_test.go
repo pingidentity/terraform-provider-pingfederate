@@ -106,4 +106,13 @@ func TestUpgradeLadder_ClusterSettings(t *testing.T) {
 			return err
 		},
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_cluster_settings",
+		HCL:          clusterSettings_MinimalHCL,
+		ClusterModeProbe: func() error {
+			testClient := acctest.TestClient()
+			_, _, err := testClient.ClusterAPI.GetClusterSettings(acctest.TestBasicAuthContext()).Execute()
+			return err
+		},
+	})
 }

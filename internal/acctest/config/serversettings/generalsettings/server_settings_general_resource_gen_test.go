@@ -91,4 +91,8 @@ func TestUpgradeLadder_ServerSettingsGeneral(t *testing.T) {
 		ResourceType: "pingfederate_server_settings_general",
 		HCL:          serverSettingsGeneral_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_server_settings_general",
+		HCL:          serverSettingsGeneral_MinimalHCL,
+	})
 }

@@ -161,4 +161,8 @@ func TestUpgradeLadder_KeypairsSigningKeyRotationSettings(t *testing.T) {
 		ResourceType: "pingfederate_keypairs_signing_key_rotation_settings",
 		HCL:          keypairsSigningKeyRotationSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_keypairs_signing_key_rotation_settings",
+		HCL:          keypairsSigningKeyRotationSettings_MinimalHCL,
+	})
 }

@@ -158,4 +158,8 @@ func TestUpgradeLadder_OauthIssuer(t *testing.T) {
 		ResourceType: "pingfederate_oauth_issuer",
 		HCL:          oauthIssuer_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_oauth_issuer",
+		HCL:          oauthIssuer_MinimalHCL,
+	})
 }

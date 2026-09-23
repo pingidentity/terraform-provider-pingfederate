@@ -73,4 +73,8 @@ func TestUpgradeLadder_ProtocolMetadataSigningSettings(t *testing.T) {
 		ResourceType: "pingfederate_protocol_metadata_signing_settings",
 		HCL:          protocolMetadataSigningSettings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_protocol_metadata_signing_settings",
+		HCL:          protocolMetadataSigningSettings_MinimalHCL,
+	})
 }

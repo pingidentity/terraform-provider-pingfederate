@@ -208,4 +208,15 @@ func TestUpgradeLadder_CertificatesGroup(t *testing.T) {
 			return nil
 		},
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_certificates_group",
+		HCL:          certificatesGroup_InitialHCL,
+		ClusterModeProbe: func() error {
+			fileDataInitial = os.Getenv("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1")
+			if fileDataInitial == "" {
+				return fmt.Errorf("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 is not set")
+			}
+			return nil
+		},
+	})
 }

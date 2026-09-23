@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent testupgradeacc testupgradeoneacc testupgradecomplete
+.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent testupgradeacc testupgradeoneacc testupgradecomplete spinupgradelanes testserverupgradeacc testserverupgradeoneacc
 
 default: install
 
@@ -127,6 +127,66 @@ testupgradeoneacc:
 
 testupgradecomplete: spincontainer testupgradeacc
 
+# PingFederate server-upgrade ladder: one container per supported lane on
+# distinct ports; each ladder step re-points the provider (via its step
+# provider block) at the next lane's server while the Terraform state carries
+# forward, so the tests exercise resources applied on an older server and
+# re-planned/re-applied after a server upgrade. LANES is a comma-separated
+# major.minor list (default: every supported lane); port base for lane N is
+# 9999 + N*100 (lane 1 -> 9999, lane 2 -> 10099, ...). The first lane's host
+# feeds PINGFEDERATE_PROVIDER_HTTPS_HOST; later lanes feed
+# PINGFEDERATE_UPGRADE_LANE_HOSTS.
+# Set ACC_TEST_NAME to run one resource's test.
+# The bulk config is a cleaned copy (CI-secret ops dropped) that the target
+# builds once into /tmp/pf-env/bulk123/data.json.subst if absent.
+define spin_server_lane
+	docker rm -f pf-ladder-lane-$(1) 2>/dev/null; \
+	docker run --name pf-ladder-lane-$(1) -d \
+		-p $$(($(1)*100+31)):9031 -p $(2):9999 \
+		--env-file /tmp/pf-env/config-noexport \
+		-e "OPERATIONAL_MODE=STANDALONE" \
+		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
+		-v /tmp/pf-env/bulk123/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
+		pingidentity/pingfederate:$(4)-latest && \
+	duration=0; \
+	while (( duration < 240 )) && ! docker logs pf-ladder-lane-$(1) 2>&1 | grep -q "Removing Imported Bulk File\|CONTAINER FAILURE"; \
+	do duration=$$((duration+1)); sleep 1; done; \
+	docker logs pf-ladder-lane-$(1) 2>&1 | grep -q "Removing Imported Bulk File" || \
+		{ echo "Lane container $(4) did not become ready in time"; docker logs pf-ladder-lane-$(1) | tail -20; exit 1; }
+endef
+
+spinupgradelanes:
+	docker rm -f pingfederate_terraform_provider_container 2>/dev/null; \
+	mkdir -p /tmp/pf-env && grep -vE "^export " "${HOME}/.pingidentity/config" > /tmp/pf-env/config-noexport; \
+	if [ ! -s /tmp/pf-env/bulk123/data.json.subst ]; then \
+		python3 -c "import json; d=json.load(open('server-profiles/12.3/data.json.subst')); ops=[op for op in d['operations'] if op.get('resourceType') not in ('/pingOneConnections','/oauth/outOfBandAuthPlugins')]; json.dump({'metadata': d.get('metadata',{}), 'operations': ops}, open('/tmp/pf-env/bulk123/data.json.subst','w'))"; \
+	fi; \
+	lane_i=1; lanes=""; hosts=""; \
+	for ver in $(shell echo $(LANES) | tr ',' ' '); do \
+		port=$$((9999 + lane_i * 100)); \
+		verdir=$$(echo $$ver | cut -b 1-4); \
+		$(call spin_server_lane,$${lane_i},$${port},$${verdir},$${ver}); \
+		lanes="$$lanes,$${ver%.*}"; hosts="$$hosts,https://localhost:$${port}"; \
+		lane_i=$$((lane_i+1)); \
+	done; \
+	lanes=$${lanes#,}; hosts=$${hosts#,}; rest=$${hosts#*,}; \
+	echo "Export these for testserverupgradeacc:"; \
+	echo "  export PINGFEDERATE_UPGRADE_SERVER_LANES='$$lanes'"; \
+	echo "  export PINGFEDERATE_UPGRADE_LANE_HOSTS='$$rest'"; \
+	echo "  export PINGFEDERATE_PROVIDER_HTTPS_HOST='$${hosts%%,*}'"; \
+	echo "  export PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${lanes%%,*}"; \
+	echo "  export PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1=... PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2=...  # optional: enables the certificate resources"
+
+testserverupgradeacc:
+	$(call test_acc_basic_auth_env_vars) TF_ACC=1 \
+		PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" \
+		go test -tags upgradeladder ./internal/acctest/config/... -run 'TestUpgradeLadder_.*' -timeout 60m -v -p 1 -count=1
+
+testserverupgradeoneacc:
+	$(call test_acc_basic_auth_env_vars) TF_ACC=1 \
+		PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" \
+		go test -tags upgradeladder ./internal/acctest/config/... -run 'TestUpgradeLadder_.*$(ACC_TEST_NAME).*' -timeout 60m -v -p 1 -count=1
+
 clearstates:
 	find . -name "*tfstate*" -delete
 	
@@ -158,11 +218,12 @@ openapp:
 golangcilint:
 	go tool golangci-lint run --timeout 5m ./internal/...
 
-tfproviderlint: 
+tfproviderlint:
 	go tool tfproviderlintx \
 						-c 1 \
 						-AT001.ignored-filename-suffixes=_test.go \
 						-AT003=false \
+						-AT004=false \
 						-R018=false \
 						-XAT001=false \
 						-XR004=false \

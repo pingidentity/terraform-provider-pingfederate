@@ -189,4 +189,8 @@ func TestUpgradeLadder_SecretManager(t *testing.T) {
 		ResourceType: "pingfederate_secret_manager",
 		HCL:          secretManager_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_secret_manager",
+		HCL:          secretManager_MinimalHCL,
+	})
 }

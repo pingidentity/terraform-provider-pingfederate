@@ -86,4 +86,8 @@ func TestUpgradeLadder_SpTargetUrlMappings(t *testing.T) {
 		ResourceType: "pingfederate_sp_target_url_mappings",
 		HCL:          spTargetUrlMappings_MinimalHCL,
 	})
+	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
+		ResourceType: "pingfederate_sp_target_url_mappings",
+		HCL:          spTargetUrlMappings_MinimalHCL,
+	})
 }
