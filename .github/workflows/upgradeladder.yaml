@@ -2,7 +2,7 @@ name: Provider Version-Ladder Tests
 
 # The ladder applies each resource's config across every released provider
 # rung, so it takes hours and depends on Terraform Registry downloads. Run it
-# only on merges to main and nightly — never on pull requests.
+# only on merges to main and weekly (Mondays) — never on pull requests.
 on:
   workflow_dispatch:
   push:

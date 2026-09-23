@@ -10,6 +10,7 @@ package upgradeladder
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
@@ -80,6 +81,26 @@ func supportedLanes() []string {
 	return lanes
 }
 
+// supportsLane reports whether a rung's MaxPFMinor is at or above the given
+// major.minor lane. Both sides are major.minor values (MaxPFMinor is a lane
+// constant; version.Compare's index only holds full versions), so the
+// comparison is numeric major-then-minor, not a version-index lookup.
+func supportsLane(maxPFMinor version.SupportedVersion, lane string) bool {
+	maxParts := strings.SplitN(string(maxPFMinor), ".", 3)
+	laneParts := strings.SplitN(lane, ".", 2)
+	if len(maxParts) < 2 || len(laneParts) < 2 {
+		return false
+	}
+	maxMajor, err1 := strconv.Atoi(maxParts[0])
+	maxMinor, err2 := strconv.Atoi(maxParts[1])
+	laneMajor, err3 := strconv.Atoi(laneParts[0])
+	laneMinor, err4 := strconv.Atoi(laneParts[1])
+	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+		return false
+	}
+	return maxMajor > laneMajor || (maxMajor == laneMajor && maxMinor >= laneMinor)
+}
+
 // ParseLane maps a PINGFEDERATE_PROVIDER_PRODUCT_VERSION value ("12.2",
 // "12.2.8") to a supported lane key ("12.2", "12.3", "13.0", "13.1") via the
 // shared version.Parse, so the ladder validates product versions exactly like
@@ -125,10 +146,20 @@ func BuildLadder(lane string) ([]string, error) {
 			}
 			seenFloor = true
 		}
+		// Filter on MaxPFMinor even past the floor: if a future release drops
+		// a lane it still configures, its row stays in the table (compile-time
+		// MaxPFMinor references only break when internal/version drops the
+		// lane entirely) — the comparison drops it from the lane's ladder here.
+		if !supportsLane(entry.MaxPFMinor, lane) {
+			continue
+		}
 		rungs = append(rungs, entry.ProviderVersion)
 	}
 	if !seenFloor {
 		return nil, fmt.Errorf("no ladder table entry supports PingFederate lane '%s'", lane)
+	}
+	if len(rungs) == 0 {
+		return nil, fmt.Errorf("no ladder table entry with MaxPFMinor >= lane '%s' (the lane is EOL in the table); update ladderTable", lane)
 	}
 	rungs = append(rungs, LocalRung)
 	return rungs, nil

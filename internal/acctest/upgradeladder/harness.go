@@ -90,6 +90,16 @@ func prepareLadderRun(t *testing.T, spec Spec) (func(*testing.T), error) {
 	if !ResourceFilterMatches(spec.ResourceType, os.Getenv(EnvResourceFilter)) {
 		return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: excluded by %s filter", spec.ResourceType, EnvResourceFilter)}
 	}
+
+	// The probe runs before Spec validation: ValidateSpec evaluates
+	// spec.HCL(), and some probes assign the package variables those HCL
+	// functions read (e.g. the certificate resources' file data).
+	if spec.ClusterModeProbe != nil {
+		if err := spec.ClusterModeProbe(); err != nil {
+			return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: server probe says the resource cannot apply here: %v", spec.ResourceType, err)}
+		}
+	}
+
 	if err := ValidateSpec(spec); err != nil {
 		return nil, fmt.Errorf("invalid upgrade-ladder Spec: %w", err)
 	}
@@ -112,12 +122,6 @@ func prepareLadderRun(t *testing.T, spec Spec) (func(*testing.T), error) {
 	rungs = clampRungsForResource(rungs, spec.AvailableSince)
 	if len(rungs) < 2 {
 		return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: fewer than 2 rungs after clamping (rungs: %v)", spec.ResourceType, rungs)}
-	}
-
-	if spec.ClusterModeProbe != nil {
-		if err := spec.ClusterModeProbe(); err != nil {
-			return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: server probe says the resource cannot apply here: %v", spec.ResourceType, err)}
-		}
 	}
 
 	hcl := stripTopLevelDataSourceBlocks(t, spec.ResourceType, spec.HCL())

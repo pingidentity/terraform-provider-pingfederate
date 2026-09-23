@@ -304,6 +304,12 @@ resource "pingfederate_example_resource" "other" {
 	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, Allowlist: []AllowlistEntry{{AttributePath: "foo"}}}); err == nil {
 		t.Error("allowlist entry without Reason should be rejected")
 	}
+	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, AvailableSince: "1.4.5"}); err != nil {
+		t.Fatalf("known ladder rung as AvailableSince should pass: %v", err)
+	}
+	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, AvailableSince: "1.45"}); err == nil {
+		t.Error("typo'd AvailableSince should be rejected (it would silently disable clamping)")
+	}
 }
 
 func TestResourceFilterMatches(t *testing.T) {

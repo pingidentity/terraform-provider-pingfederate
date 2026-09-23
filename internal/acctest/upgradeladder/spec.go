@@ -72,6 +72,10 @@ func ValidateSpec(spec Spec) error {
 	if !strings.Contains(spec.HCL(), `"`+spec.ResourceType+`" "example"`) {
 		return fmt.Errorf("HCL for %s must use the resource label 'example'", spec.ResourceType)
 	}
+	if spec.AvailableSince != "" && !isKnownRung(spec.AvailableSince) {
+		return fmt.Errorf("Spec.AvailableSince %q for %s is not a ladder rung (valid: %s); an unknown value silently disables clamping and the oldest rungs then fail at runtime",
+			spec.AvailableSince, spec.ResourceType, ladderTableVersions())
+	}
 	for _, entry := range spec.Allowlist {
 		if strings.TrimSpace(entry.Reason) == "" {
 			return fmt.Errorf("allowlist entry for %s attribute %q is missing a Reason (cite the JIRA case)", spec.ResourceType, entry.AttributePath)

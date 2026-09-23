@@ -121,6 +121,16 @@ func RunServerUpgradeLadder(t *testing.T, spec Spec) {
 		return
 	}
 
+	// The probe runs before Spec validation: ValidateSpec evaluates
+	// spec.HCL(), and some probes assign the package variables those HCL
+	// functions read (e.g. the certificate resources' file data).
+	if spec.ClusterModeProbe != nil {
+		if err := spec.ClusterModeProbe(); err != nil {
+			t.Skipf("skipping server-upgrade ladder for %s: server probe says the resource cannot apply here: %v", spec.ResourceType, err)
+			return
+		}
+	}
+
 	if err := ValidateSpec(spec); err != nil {
 		t.Fatalf("invalid server-upgrade ladder Spec: %v", err)
 	}
@@ -130,19 +140,12 @@ func RunServerUpgradeLadder(t *testing.T, spec Spec) {
 		t.Fatalf("failed to determine PingFederate lanes: %v", err)
 	}
 	if len(lanes) < 2 {
-		t.Skipf("server-upgrade ladder for %s needs at least 2 lanes, got: %v", spec.ResourceType, lanes)
+		t.Skipf("skipping server-upgrade ladder for %s: needs at least 2 lanes, got: %v", spec.ResourceType, lanes)
 		return
 	}
 	hosts, err := laneHosts(lanes)
 	if err != nil {
 		t.Fatalf("failed to resolve lane hosts: %v", err)
-	}
-
-	if spec.ClusterModeProbe != nil {
-		if err := spec.ClusterModeProbe(); err != nil {
-			t.Skipf("skipping server-upgrade ladder for %s: server probe says the resource cannot apply here: %v", spec.ResourceType, err)
-			return
-		}
 	}
 
 	strippedHcl := stripTopLevelDataSourceBlocks(t, spec.ResourceType, spec.HCL())
