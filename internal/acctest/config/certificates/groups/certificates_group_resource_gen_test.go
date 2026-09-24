@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -193,4 +194,20 @@ func certificatesGroup_CheckDestroy(s *terraform.State) error {
 		return fmt.Errorf("certificates_group still exists after tests. Expected it to be destroyed")
 	}
 	return nil
+}
+
+func TestUpgradeLadder_CertificatesGroup(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_certificates_group",
+		HCL:          certificatesGroup_InitialHCL,
+		ClusterModeProbe: func() error {
+			fileDataInitial = os.Getenv("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1")
+			if fileDataInitial == "" {
+				return fmt.Errorf("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 is not set")
+			}
+			return nil
+		},
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

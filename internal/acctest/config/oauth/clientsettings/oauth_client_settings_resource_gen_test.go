@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/accesstokenmanager"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -311,4 +312,13 @@ func oauthClientSettings_CheckComputedValues() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_settings.example", "dynamic_client_registration.lockout_max_malicious_actions_type", "SERVER_DEFAULT"),
 	)
+}
+
+func TestUpgradeLadder_OauthClientSettings(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_oauth_client_settings",
+		HCL:          oauthClientSettings_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

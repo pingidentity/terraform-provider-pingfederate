@@ -1,0 +1,267 @@
+// Copyright © 2026 Ping Identity Corporation
+
+// Package upgradeladder implements cross-version provider upgrade tests: for
+// each registered resource, apply a known-good configuration with the oldest
+// provider version that supports the current PingFederate server lane, then
+// hop the provider one minor version at a time to the local build, asserting
+// apply success and an empty post-apply plan after every hop.
+package upgradeladder
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
+)
+
+// LocalRung marks the final, in-process rung (the local build of this provider
+// repository).
+const LocalRung = "local"
+
+// EnvLadderOverride is the environment variable that overrides the ladder
+// for a test run: "full" (default), "last2" (final registry rung + local),
+// or an explicit comma-separated list of rungs, e.g. "1.9.0,1.10.0,local".
+const EnvLadderOverride = "PINGFEDERATE_UPGRADE_LADDER"
+
+// ladderEntry is one row of the version ladder: a released provider version
+// and the highest PingFederate major.minor version that release can configure
+// (MaxPFMinor, tied to an internal/version constant so an EOL lane drop there
+// breaks compilation here until the stale row is removed).
+//
+// Rows cover every provider minor from v1.3.0 (the first release supporting a
+// PingFederate version the current provider still supports) through the
+// latest release; older rungs cannot configure any supported version and are
+// intentionally absent.
+type ladderEntry struct {
+	ProviderVersion string                   // registry version, latest patch of the minor, e.g. "1.4.5"
+	MaxPFMinor      version.SupportedVersion // highest PingFederate major.minor configurable, e.g. version.PingFederate1220
+}
+
+// When a PingFederate version gains support in internal/version/version.go,
+// verify the newly supported lane against published provider releases (git
+// show v<tag>:internal/version/version.go) and append its rows here;
+// TestLadderTableCoversSupportedLanes fails until you do.
+var ladderTable = []ladderEntry{
+	{"1.3.0", version.PingFederate1220}, {"1.4.5", version.PingFederate1220}, {"1.5.0", version.PingFederate1220},
+	{"1.6.2", version.PingFederate1230},
+	{"1.7.1", version.PingFederate1300}, {"1.8.1", version.PingFederate1300},
+	{"1.9.0", version.PingFederate1310}, {"1.10.0", version.PingFederate1310},
+}
+
+// laneFloorVersion returns the first rung that supports a PingFederate
+// major.minor lane (the earliest table entry whose MaxPFMinor matches).
+// Production ladders derive their floor inside BuildLadder; this independent
+// projection is the tests' oracle for the floor contract.
+func laneFloorVersion(lane string) (string, bool) {
+	for _, entry := range ladderTable {
+		if string(version.MajorMinor(entry.MaxPFMinor)) == lane {
+			return entry.ProviderVersion, true
+		}
+	}
+	return "", false
+}
+
+// supportedLanes derives the PingFederate major.minor lanes from the
+// internal/version supported list, so new versions there automatically extend
+// the ladder's lane handling.
+func supportedLanes() []string {
+	majorMinors := version.SupportedMajorMinorVersions()
+	lanes := make([]string, 0, len(majorMinors))
+	for _, majorMinorVersion := range majorMinors {
+		lanes = append(lanes, string(majorMinorVersion))
+	}
+	return lanes
+}
+
+// supportsLane reports whether a rung's MaxPFMinor is at or above the given
+// major.minor lane. Both sides are major.minor values (MaxPFMinor is a lane
+// constant; version.Compare's index only holds full versions), so the
+// comparison is numeric major-then-minor, not a version-index lookup.
+func supportsLane(maxPFMinor version.SupportedVersion, lane string) bool {
+	maxParts := strings.SplitN(string(maxPFMinor), ".", 3)
+	laneParts := strings.SplitN(lane, ".", 2)
+	if len(maxParts) < 2 || len(laneParts) < 2 {
+		return false
+	}
+	maxMajor, err1 := strconv.Atoi(maxParts[0])
+	maxMinor, err2 := strconv.Atoi(maxParts[1])
+	laneMajor, err3 := strconv.Atoi(laneParts[0])
+	laneMinor, err4 := strconv.Atoi(laneParts[1])
+	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+		return false
+	}
+	return maxMajor > laneMajor || (maxMajor == laneMajor && maxMinor >= laneMinor)
+}
+
+// ParseLane maps a PINGFEDERATE_PROVIDER_PRODUCT_VERSION value ("12.2",
+// "12.2.8") to a supported lane key ("12.2", "12.3", "13.0", "13.1") via the
+// shared version.Parse, so the ladder validates product versions exactly like
+// the provider itself (ConfigurationPreCheck) does, against the same
+// supported-version list in internal/version/version.go.
+func ParseLane(productVersion string) (string, error) {
+	parsedVersion, diags := version.Parse(productVersion)
+	if diags.HasError() {
+		var details []string
+		for _, errDiag := range diags.Errors() {
+			details = append(details, errDiag.Detail())
+		}
+		return "", fmt.Errorf("cannot determine PingFederate lane from product version '%s': %s",
+			productVersion, strings.Join(details, "; "))
+	}
+	return string(version.MajorMinor(parsedVersion)), nil
+}
+
+// BuildLadder returns the provider versions for a lane, oldest first, always
+// ending with LocalRung: every rung that supports the lane (its MaxPFMinor is
+// at or above the lane), starting at the lane floor. For example, the 12.2
+// lane yields
+// ["1.3.0","1.4.5","1.5.0","1.6.2","1.7.1","1.8.1","1.9.0","1.10.0",LocalRung].
+func BuildLadder(lane string) ([]string, error) {
+	lanes := supportedLanes()
+	supported := false
+	for _, supportedLane := range lanes {
+		if lane == supportedLane {
+			supported = true
+			break
+		}
+	}
+	if !supported {
+		return nil, fmt.Errorf("no ladder for PingFederate lane '%s'; supported lanes are: %s", lane, strings.Join(lanes, ", "))
+	}
+
+	rungs := make([]string, 0, len(ladderTable)+1)
+	seenFloor := false
+	for _, entry := range ladderTable {
+		if !seenFloor {
+			if string(version.MajorMinor(entry.MaxPFMinor)) != lane {
+				continue
+			}
+			seenFloor = true
+		}
+		// Filter on MaxPFMinor even past the floor: if a future release drops
+		// a lane it still configures, its row stays in the table (compile-time
+		// MaxPFMinor references only break when internal/version drops the
+		// lane entirely) — the comparison drops it from the lane's ladder here.
+		if !supportsLane(entry.MaxPFMinor, lane) {
+			continue
+		}
+		rungs = append(rungs, entry.ProviderVersion)
+	}
+	if !seenFloor {
+		return nil, fmt.Errorf("no ladder table entry supports PingFederate lane '%s'", lane)
+	}
+	if len(rungs) == 0 {
+		return nil, fmt.Errorf("no ladder table entry with MaxPFMinor >= lane '%s' (the lane is EOL in the table); update ladderTable", lane)
+	}
+	rungs = append(rungs, LocalRung)
+	return rungs, nil
+}
+
+// BuildLadderFromEnv resolves the ladder for a test run: the
+// PINGFEDERATE_UPGRADE_LADDER environment variable if set ("full", "last2",
+// or explicit rungs), else the full lane ladder.
+func BuildLadderFromEnv(lane string) ([]string, error) {
+	override := strings.TrimSpace(os.Getenv(EnvLadderOverride))
+	switch override {
+	case "", "full":
+		return BuildLadder(lane)
+	case "last2":
+		ladder, err := BuildLadder(lane)
+		if err != nil {
+			return nil, err
+		}
+		// Keep the final registry rung plus LocalRung.
+		return ladder[len(ladder)-2:], nil
+	default:
+		rungs := make([]string, 0, len(override))
+		for _, part := range strings.Split(override, ",") {
+			trimmed := strings.TrimSpace(part)
+			if trimmed == "" {
+				return nil, fmt.Errorf("empty rung in %s override '%s'", EnvLadderOverride, override)
+			}
+			if trimmed == LocalRung {
+				rungs = append(rungs, LocalRung)
+				continue
+			}
+			if !isKnownRung(trimmed) {
+				return nil, fmt.Errorf("rung '%s' in %s override is not a ladder version (table versions: %s)",
+					trimmed, EnvLadderOverride, ladderTableVersions())
+			}
+			rungs = append(rungs, trimmed)
+		}
+		if len(rungs) == 0 || rungs[len(rungs)-1] != LocalRung {
+			// Always end on the local build.
+			rungs = append(rungs, LocalRung)
+		}
+		// The ladder steps forward: registry rungs must strictly increase,
+		// and LocalRung (already placed last, above) is the only rung
+		// allowed to repeat that position.
+		for i, rung := range rungs[:len(rungs)-1] {
+			if rung == LocalRung {
+				return nil, fmt.Errorf("%s: '%s' must be last, found at position %d", EnvLadderOverride, LocalRung, i+1)
+			}
+		}
+		for i := 1; i < len(rungs)-1; i++ {
+			if compareRungs(rungs[i], rungs[i-1]) <= 0 {
+				return nil, fmt.Errorf("%s must be ascending, got '%s' at/after '%s'", EnvLadderOverride, rungs[i], rungs[i-1])
+			}
+		}
+		return rungs, nil
+	}
+}
+
+func isKnownRung(version string) bool {
+	for _, entry := range ladderTable {
+		if entry.ProviderVersion == version {
+			return true
+		}
+	}
+	return false
+}
+
+// compareRungs orders two dotted version strings numerically (semver-ish):
+// negative when a < b, zero when equal, positive when greater. Works across
+// segment counts ("12.2" vs "12.2.0") and ignores non-numeric segments, so it
+// handles both provider rungs and major.minor lanes.
+func compareRungs(a, b string) int {
+	parse := func(versionString string) []int {
+		parts := strings.Split(versionString, ".")
+		numbers := make([]int, len(parts))
+		for i, part := range parts {
+			n := 0
+			for _, digit := range part {
+				if digit < '0' || digit > '9' {
+					break
+				}
+				n = n*10 + int(digit-'0')
+			}
+			numbers[i] = n
+		}
+		return numbers
+	}
+	aParts, bParts := parse(a), parse(b)
+	for i := 0; i < len(aParts) || i < len(bParts); i++ {
+		var ai, bi int
+		if i < len(aParts) {
+			ai = aParts[i]
+		}
+		if i < len(bParts) {
+			bi = bParts[i]
+		}
+		if ai != bi {
+			return ai - bi
+		}
+	}
+	return 0
+}
+
+func ladderTableVersions() string {
+	versions := make([]string, 0, len(ladderTable)+1)
+	for _, entry := range ladderTable {
+		versions = append(versions, entry.ProviderVersion)
+	}
+	versions = append(versions, LocalRung)
+	return strings.Join(versions, ", ")
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -93,4 +94,13 @@ func kerberosRealmSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_kerberos_realm_settings.example", "force_tcp", "false"),
 		resource.TestCheckResourceAttr("pingfederate_kerberos_realm_settings.example", "key_set_retention_period_mins", "610"),
 	)
+}
+
+func TestUpgradeLadder_KerberosRealmSettings(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_kerberos_realm_settings",
+		HCL:          kerberosRealmSettings_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -275,4 +276,13 @@ func serverSettingsLogging_CheckComputedValuesComplete() resource.TestCheckFunc 
 		),
 		resource.TestCheckResourceAttr("pingfederate_server_settings_logging.example", "log_categories_all.#", serverSettingsLogging_logCategoriesCount()),
 	)
+}
+
+func TestUpgradeLadder_ServerSettingsLogging(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_server_settings_logging",
+		HCL:          serverSettingsLogging_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

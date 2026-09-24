@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -86,4 +87,13 @@ func authenticationPoliciesSettings_CheckComputedValuesMinimal() resource.TestCh
 		resource.TestCheckResourceAttr("pingfederate_authentication_policies_settings.example", "enable_idp_authn_selection", "false"),
 		resource.TestCheckResourceAttr("pingfederate_authentication_policies_settings.example", "enable_sp_authn_selection", "false"),
 	)
+}
+
+func TestUpgradeLadder_AuthenticationPoliciesSettings(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_authentication_policies_settings",
+		HCL:          authenticationPoliciesSettings_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

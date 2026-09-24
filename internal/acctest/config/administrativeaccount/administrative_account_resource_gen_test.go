@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -161,4 +162,13 @@ func administrativeAccount_CheckDestroy(s *terraform.State) error {
 		return fmt.Errorf("administrative_account still exists after tests. Expected it to be destroyed")
 	}
 	return nil
+}
+
+func TestUpgradeLadder_AdministrativeAccount(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_administrative_account",
+		HCL:          administrativeAccount_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

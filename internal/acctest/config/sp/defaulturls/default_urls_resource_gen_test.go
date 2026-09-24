@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -77,4 +78,13 @@ func defaultUrls_CheckComputedValuesMinimal() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_default_urls.example", "confirm_sp_slo", "false"),
 		resource.TestCheckResourceAttr("pingfederate_default_urls.example", "confirm_idp_slo", "false"),
 	)
+}
+
+func TestUpgradeLadder_DefaultUrls(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_default_urls",
+		HCL:          defaultUrls_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -260,4 +261,13 @@ func serverSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable", "true"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings.example", "roles_and_protocols.sp_role.saml_2_0_profile.enable_xasp", "true"),
 	)
+}
+
+func TestUpgradeLadder_ServerSettings(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_server_settings",
+		HCL:          serverSettings_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

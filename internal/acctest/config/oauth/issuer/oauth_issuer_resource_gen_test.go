@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -150,4 +151,13 @@ func oauthIssuer_CheckDestroy(s *terraform.State) error {
 		return fmt.Errorf("oauth_issuer still exists after tests. Expected it to be destroyed")
 	}
 	return nil
+}
+
+func TestUpgradeLadder_OauthIssuer(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_oauth_issuer",
+		HCL:          oauthIssuer_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -166,4 +167,13 @@ func metadataUrl_CheckDestroy(s *terraform.State) error {
 		return fmt.Errorf("metadata_url still exists after tests. Expected it to be destroyed")
 	}
 	return nil
+}
+
+func TestUpgradeLadder_MetadataUrl(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_metadata_url",
+		HCL:          metadataUrl_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

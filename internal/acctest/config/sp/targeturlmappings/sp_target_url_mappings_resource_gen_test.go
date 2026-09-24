@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -78,4 +79,13 @@ func spTargetUrlMappings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_sp_target_url_mappings.example", "items.#", "0"),
 	)
+}
+
+func TestUpgradeLadder_SpTargetUrlMappings(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_sp_target_url_mappings",
+		HCL:          spTargetUrlMappings_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

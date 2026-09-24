@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -106,4 +107,13 @@ func certificatesRevocationSettings_CheckComputedValuesComputed() resource.TestC
 		resource.TestCheckResourceAttr("pingfederate_certificates_revocation_settings.example", "crl_settings.treat_non_retrievable_crl_as_revoked", "false"),
 		resource.TestCheckResourceAttr("pingfederate_certificates_revocation_settings.example", "crl_settings.verify_crl_signature", "true"),
 	)
+}
+
+func TestUpgradeLadder_CertificatesRevocationSettings(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_certificates_revocation_settings",
+		HCL:          certificatesRevocationSettings_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

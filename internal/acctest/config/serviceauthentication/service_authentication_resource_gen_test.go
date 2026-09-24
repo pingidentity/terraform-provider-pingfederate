@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	upgradeladder "github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/upgradeladder"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -75,4 +76,13 @@ resource "pingfederate_service_authentication" "example" {
   }
 }
 `)
+}
+
+func TestUpgradeLadder_ServiceAuthentication(t *testing.T) {
+	spec := upgradeladder.Spec{
+		ResourceType: "pingfederate_service_authentication",
+		HCL:          serviceAuthentication_MinimalHCL,
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

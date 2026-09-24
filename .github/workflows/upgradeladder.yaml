@@ -1,0 +1,80 @@
+name: Provider Version-Ladder Tests
+
+# The ladder applies each resource's config across every released provider
+# rung, so it takes hours and depends on Terraform Registry downloads. Run it
+# only on merges to main and weekly (Mondays) — never on pull requests.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+  schedule:
+    # Mondays at 07:00 UTC, matching the scheduled acceptance tests.
+    - cron: "0 7 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  upgradeladder:
+    name: Provider Version-Ladder Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        pingfederate:
+          # The 12.2 lane runs the full ladder (every provider release from
+          # v1.3.0 to local); the newest lane covers the current release.
+          # Together they include every registry rung in the ladder table.
+          - "12.2.6"
+          - "13.1.1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.11.*"
+          terraform_wrapper: false
+      # The pinned registry rungs download on first use; caching the plugin
+      # cache spares every subsequent run (and the second matrix leg) those
+      # downloads.
+      - uses: actions/cache@v4
+        with:
+          path: .tfplugincache
+          key: tfplugincache-${{ matrix.pingfederate }}-${{ hashFiles('internal/acctest/upgradeladder/ladder.go') }}
+          restore-keys: |
+            tfplugincache-${{ matrix.pingfederate }}-
+            tfplugincache-
+      - name: Start PingFederate container and run the version ladder
+        run: |
+          mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config
+          grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1
+          make spincontainer
+          make testupgradeacc
+          make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
+          PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1: ${{ secrets.PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 }}
+          PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2: ${{ secrets.PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2 }}
+
+  onfailure:
+    if: ${{ failure() && github.event_name == 'schedule' }}
+    needs: [upgradeladder]
+    name: Send failure webhook
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl --silent --request POST "${{ secrets.FAILURE_WEBHOOK_URL }}" \
+          --header 'Accept: application/json' \
+          --header 'Content-Type: text/plain' \
+          --data-raw '{
+              "WorkflowName": "${{ github.workflow }}",
+              "WorkflowURL": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "RepoName" : "${{ github.repository }}",
+          }'
