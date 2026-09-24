@@ -93,6 +93,7 @@ import (
 	oauthresourceownercredentialsmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/resourceownercredentialsmappings"
 	oauthtokenexchangegeneratorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/generator/settings"
 	oauthtokenexchangeprocessorpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/policies"
+	oauthtokenexchangeprocessorpolicymappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/policymappings"
 	oauthtokenexchangeprocessorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/processor/settings"
 	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
@@ -813,6 +814,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthresourceownercredentialsmappings.OauthResourceOwnerCredentialsMappingResource,
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
 		oauthtokenexchangeprocessorpolicies.OauthTokenExchangeProcessorPolicyResource,
+		oauthtokenexchangeprocessorpolicymappings.OauthTokenExchangeProcessorPolicyMappingResource,
 		oauthtokenexchangeprocessorsettings.OauthTokenExchangeProcessorSettingsResource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
