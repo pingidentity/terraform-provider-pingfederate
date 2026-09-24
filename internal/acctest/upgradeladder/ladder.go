@@ -195,6 +195,19 @@ func BuildLadderFromEnv(lane string) ([]string, error) {
 			// Always end on the local build.
 			rungs = append(rungs, LocalRung)
 		}
+		// The ladder steps forward: registry rungs must strictly increase,
+		// and LocalRung (already placed last, above) is the only rung
+		// allowed to repeat that position.
+		for i, rung := range rungs[:len(rungs)-1] {
+			if rung == LocalRung {
+				return nil, fmt.Errorf("%s: '%s' must be last, found at position %d", EnvLadderOverride, LocalRung, i+1)
+			}
+		}
+		for i := 1; i < len(rungs)-1; i++ {
+			if compareRungs(rungs[i], rungs[i-1]) <= 0 {
+				return nil, fmt.Errorf("%s must be ascending, got '%s' at/after '%s'", EnvLadderOverride, rungs[i], rungs[i-1])
+			}
+		}
 		return rungs, nil
 	}
 }

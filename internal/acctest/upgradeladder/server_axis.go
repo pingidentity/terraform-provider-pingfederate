@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -101,16 +102,40 @@ func laneHosts(lanes []string) ([]string, error) {
 	return hosts, nil
 }
 
+// probeRemainingLanes runs probe once per host beyond the first, temporarily
+// pointing httpsHostEnvVar at each in turn (via t.Setenv, auto-restored at
+// test cleanup) — the first host is the caller's responsibility, since it's
+// whatever httpsHostEnvVar already points at. A probe result from one lane
+// says nothing about another (e.g. a live cluster-mode check hits each
+// lane's own server), so every lane needs its own check. Returns the index
+// and error of the first lane probe rejects, or (-1, nil) if every lane
+// beyond the first passes (or probe is nil).
+func probeRemainingLanes(t *testing.T, probe func() error, hosts []string) (int, error) {
+	t.Helper()
+	if probe == nil {
+		return -1, nil
+	}
+	for i := 1; i < len(hosts); i++ {
+		t.Setenv(httpsHostEnvVar, hosts[i])
+		if err := probe(); err != nil {
+			return i, err
+		}
+	}
+	return -1, nil
+}
+
 // laneProviderBlock renders the provider block a server-axis step uses to
 // reach one lane's server. The provider is the local build in every step;
-// only its target host and product version change.
+// only its target host and product version change between lanes.
 func laneProviderBlock(host string, lane string) string {
-	return fmt.Sprintf(`
+	//lintignore:AT004 // deliberately renders a provider block for the server-axis ladder
+	template := `
 provider "pingfederate" {
   https_host      = %q
   product_version = %q
 }
-`, host, lane)
+`
+	return fmt.Sprintf(template, host, lane)
 }
 
 // RunServerUpgradeLadder runs the PingFederate server-upgrade ladder for one
@@ -129,70 +154,79 @@ provider "pingfederate" {
 // rather than being tolerated.
 func RunServerUpgradeLadder(t *testing.T, spec Spec) {
 	t.Helper()
-
-	if !Enabled {
-		t.Skipf("skipping server-upgrade ladder for %s: build without the 'upgradeladder' tag (make testserverupgradeacc)", spec.ResourceType)
-		return
-	}
-	if os.Getenv(EnvServerLadderEnabled) == "" {
-		t.Skipf("skipping server-upgrade ladder for %s: %s not set (make testserverupgradeacc) — the shared test function runs both ladders, and only the server-ladder target spins lane containers", spec.ResourceType, EnvServerLadderEnabled)
-		return
-	}
-	if !ResourceFilterMatches(spec.ResourceType, os.Getenv(EnvResourceFilter)) {
-		t.Skipf("skipping server-upgrade ladder for %s: excluded by %s filter", spec.ResourceType, EnvResourceFilter)
-		return
-	}
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
-		return
-	}
-
-	// The probe runs before Spec validation: ValidateSpec evaluates
-	// spec.HCL(), and some probes assign the package variables those HCL
-	// functions read (e.g. the certificate resources' file data).
-	if spec.ClusterModeProbe != nil {
-		if err := spec.ClusterModeProbe(); err != nil {
-			t.Skipf("skipping server-upgrade ladder for %s: server probe says the resource cannot apply here: %v", spec.ResourceType, err)
+	// Wrapped in a subtest: see the matching comment on RunUpgradeLadder.
+	// This function is currently always the last statement in its caller, so
+	// nothing downstream depends on it today, but the isolation keeps both
+	// axes independent regardless of call order.
+	t.Run("server", func(t *testing.T) {
+		if !Enabled {
+			t.Skipf("skipping server-upgrade ladder for %s: build without the 'upgradeladder' tag (make testserverupgradeacc)", spec.ResourceType)
 			return
 		}
-	}
-
-	if err := ValidateSpec(spec); err != nil {
-		t.Fatalf("invalid server-upgrade ladder Spec: %v", err)
-	}
-
-	lanes, err := serverLanes()
-	if err != nil {
-		t.Fatalf("failed to determine PingFederate lanes: %v", err)
-	}
-	if len(lanes) < 2 {
-		t.Skipf("skipping server-upgrade ladder for %s: needs at least 2 lanes, got: %v", spec.ResourceType, lanes)
-		return
-	}
-	hosts, err := laneHosts(lanes)
-	if err != nil {
-		t.Fatalf("failed to resolve lane hosts: %v", err)
-	}
-
-	strippedHcl := stripTopLevelDataSourceBlocks(t, spec.ResourceType, spec.HCL())
-
-	t.Logf("Running %d-lane server-upgrade ladder for %s: %s", len(lanes), spec.ResourceType, strings.Join(lanes, " -> "))
-
-	steps := make([]resource.TestStep, 0, len(lanes))
-	for i, lane := range lanes {
-		step := resource.TestStep{
-			// The identical resource config at every lane; only the provider
-			// block changes, so any plan delta between lanes is
-			// server-upgrade-induced, not config change.
-			Config: laneProviderBlock(hosts[i], lane) + strippedHcl,
-			ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-				"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
-			},
+		if os.Getenv(EnvServerLadderEnabled) == "" {
+			t.Skipf("skipping server-upgrade ladder for %s: %s not set (make testserverupgradeacc) — the shared test function runs both ladders, and only the server-ladder target spins lane containers", spec.ResourceType, EnvServerLadderEnabled)
+			return
 		}
-		steps = append(steps, step)
-	}
+		if !ResourceFilterMatches(spec.ResourceType, os.Getenv(EnvResourceFilter)) {
+			t.Skipf("skipping server-upgrade ladder for %s: excluded by %s filter", spec.ResourceType, EnvResourceFilter)
+			return
+		}
+		if os.Getenv("TF_ACC") == "" {
+			t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+			return
+		}
 
-	resource.Test(t, resource.TestCase{
-		Steps: steps,
+		lanes, err := serverLanes()
+		if err != nil {
+			t.Fatalf("failed to determine PingFederate lanes: %v", err)
+		}
+		if len(lanes) < 2 {
+			t.Skipf("skipping server-upgrade ladder for %s: needs at least 2 lanes, got: %v", spec.ResourceType, lanes)
+			return
+		}
+		hosts, err := laneHosts(lanes)
+		if err != nil {
+			t.Fatalf("failed to resolve lane hosts: %v", err)
+		}
+
+		if err := preflightSpec(spec); err != nil {
+			if _, ok := err.(skipSignal); ok {
+				t.Skipf("skipping server-upgrade ladder for %s: %v", spec.ResourceType, err)
+				return
+			}
+			t.Fatalf("invalid server-upgrade ladder Spec: %v", err)
+		}
+
+		// preflightSpec's probe only checked the host PINGFEDERATE_PROVIDER_HTTPS_HOST
+		// already points at (lane 0). Check every later lane too: a probe
+		// result from one lane says nothing about another (e.g. a live
+		// cluster-mode check against each lane's own server).
+		if badLane, probeErr := probeRemainingLanes(t, spec.ClusterModeProbe, hosts); probeErr != nil {
+			t.Skipf("skipping server-upgrade ladder for %s: server probe says lane %s (%s) cannot apply here: %v", spec.ResourceType, lanes[badLane], hosts[badLane], probeErr)
+			return
+		}
+
+		strippedHcl := stripTopLevelDataSourceBlocks(t, spec.ResourceType, spec.HCL())
+
+		t.Logf("Running %d-lane server-upgrade ladder for %s: %s", len(lanes), spec.ResourceType, strings.Join(lanes, " -> "))
+
+		steps := make([]resource.TestStep, 0, len(lanes))
+		for i, lane := range lanes {
+			step := resource.TestStep{
+				// The identical resource config at every lane; only the provider
+				// block changes, so any plan delta between lanes is
+				// server-upgrade-induced, not config change.
+				Config: laneProviderBlock(hosts[i], lane) + strippedHcl,
+				ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+					"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+				},
+			}
+			steps = append(steps, step)
+		}
+
+		resource.Test(t, resource.TestCase{
+			PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+			Steps:    steps,
+		})
 	})
 }

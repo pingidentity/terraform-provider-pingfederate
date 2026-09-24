@@ -137,8 +137,9 @@ testupgradecomplete: spincontainer testupgradeacc
 # feeds PINGFEDERATE_PROVIDER_HTTPS_HOST; later lanes feed
 # PINGFEDERATE_UPGRADE_LANE_HOSTS.
 # Set ACC_TEST_NAME to run one resource's test.
-# The bulk config is a cleaned copy (CI-secret ops dropped) that the target
-# builds once into /tmp/pf-env/bulk123/data.json.subst if absent.
+# The bulk config is a cleaned copy (CI-secret ops dropped) of that lane's own
+# server-profiles/<verdir>/data.json.subst, built once per verdir into
+# /tmp/pf-env/bulk-<verdir>/data.json.subst if absent.
 define spin_server_lane
 	docker rm -f pf-ladder-lane-$(1) 2>/dev/null; \
 	docker run --name pf-ladder-lane-$(1) -d \
@@ -146,7 +147,7 @@ define spin_server_lane
 		--env-file /tmp/pf-env/config-noexport \
 		-e "OPERATIONAL_MODE=STANDALONE" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
-		-v /tmp/pf-env/bulk123/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
+		-v /tmp/pf-env/bulk-$(3)/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$(4)-latest && \
 	duration=0; \
 	while (( duration < 240 )) && ! docker logs pf-ladder-lane-$(1) 2>&1 | grep -q "Removing Imported Bulk File\|CONTAINER FAILURE"; \
@@ -157,14 +158,15 @@ endef
 
 spinupgradelanes:
 	docker rm -f pingfederate_terraform_provider_container 2>/dev/null; \
-	mkdir -p /tmp/pf-env/bulk123 && grep -vE "^export " "${HOME}/.pingidentity/config" > /tmp/pf-env/config-noexport; \
-	if [ ! -s /tmp/pf-env/bulk123/data.json.subst ]; then \
-		python3 -c "import json; d=json.load(open('server-profiles/12.3/data.json.subst')); ops=[op for op in d['operations'] if op.get('resourceType') not in ('/pingOneConnections','/oauth/outOfBandAuthPlugins')]; json.dump({'metadata': d.get('metadata',{}), 'operations': ops}, open('/tmp/pf-env/bulk123/data.json.subst','w'))"; \
-	fi; \
+	mkdir -p /tmp/pf-env && grep -vE "^export " "${HOME}/.pingidentity/config" > /tmp/pf-env/config-noexport; \
 	lane_i=1; lanes=""; hosts=""; \
 	for ver in $(shell echo $(LANES) | tr ',' ' '); do \
 		port=$$((9999 + lane_i * 100)); \
 		verdir=$$(echo $$ver | cut -b 1-4); \
+		mkdir -p /tmp/pf-env/bulk-$${verdir}; \
+		if [ ! -s /tmp/pf-env/bulk-$${verdir}/data.json.subst ]; then \
+			python3 -c "import json; d=json.load(open('server-profiles/$${verdir}/data.json.subst')); ops=[op for op in d['operations'] if op.get('resourceType') not in ('/pingOneConnections','/oauth/outOfBandAuthPlugins')]; json.dump({'metadata': d.get('metadata',{}), 'operations': ops}, open('/tmp/pf-env/bulk-$${verdir}/data.json.subst','w'))"; \
+		fi; \
 		$(call spin_server_lane,$${lane_i},$${port},$${verdir},$${ver}); \
 		lanes="$$lanes,$${ver%.*}"; hosts="$$hosts,https://localhost:$${port}"; \
 		lane_i=$$((lane_i+1)); \
@@ -232,7 +234,6 @@ tfproviderlint:
 						-c 1 \
 						-AT001.ignored-filename-suffixes=_test.go \
 						-AT003=false \
-						-AT004=false \
 						-R018=false \
 						-XAT001=false \
 						-XR004=false \

@@ -3,7 +3,6 @@
 package upgradeladder
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -21,7 +20,7 @@ func TestParseLane(t *testing.T) {
 	// A lane below the oldest supported one is unsupported; derive it from the
 	// supported list (one minor below the oldest supported lane) rather than a
 	// hand-written version.
-	belowOldestLane := earliestParts[0] + "." + mustIntString(t, mustInt(t, earliestParts[1])-1) + ".4"
+	belowOldestLane := earliestParts[0] + "." + mustDecrement(t, earliestParts[1]) + ".4"
 
 	tests := []struct {
 		name           string
@@ -62,28 +61,6 @@ func TestParseLane(t *testing.T) {
 			}
 		})
 	}
-}
-
-// mustInt parses a non-negative decimal string, failing the test otherwise.
-func mustInt(t *testing.T, digits string) int {
-	t.Helper()
-	value := 0
-	for _, digit := range digits {
-		if digit < '0' || digit > '9' {
-			t.Fatalf("expected digits, got %q", digits)
-		}
-		value = value*10 + int(digit-'0')
-	}
-	return value
-}
-
-// mustIntString renders an int back to decimal digits.
-func mustIntString(t *testing.T, value int) string {
-	t.Helper()
-	if value < 0 {
-		t.Fatalf("cannot render negative lane number %d", value)
-	}
-	return fmt.Sprintf("%d", value)
 }
 
 // latestSupportedVersion returns the newest patch version in the supported
@@ -206,6 +183,9 @@ func TestBuildLadderFromEnv(t *testing.T) {
 		{"unknown rung rejected", "1.2.0,local", newestLane, nil, true},
 		{"empty part rejected", "1.9.0,,local", newestLane, nil, true},
 		{"unknown lane", "", "11.3", nil, true},
+		{"misordered rejected", "1.9.0,1.3.0", newestLane, nil, true},
+		{"duplicate rejected", "1.9.0,1.9.0", newestLane, nil, true},
+		{"local not last rejected", "1.3.0,local,1.9.0", newestLane, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -228,14 +208,14 @@ func TestClampRungsForResource(t *testing.T) {
 	rungs := []string{"1.3.0", "1.6.2", "1.9.0", "local"}
 
 	if got := clampRungsForResource(rungs, ""); !reflect.DeepEqual(got, rungs) {
-		t.Fatalf("empty AvailableSince should not clamp, got %v", got)
+		t.Fatalf("empty LadderFloor should not clamp, got %v", got)
 	}
 	if got := clampRungsForResource(rungs, "1.6.2"); !reflect.DeepEqual(got, []string{"1.6.2", "1.9.0", "local"}) {
-		t.Fatalf("AvailableSince 1.6.2 should drop earlier rungs, got %v", got)
+		t.Fatalf("LadderFloor 1.6.2 should drop earlier rungs, got %v", got)
 	}
-	// Unknown birth version: keep the ladder (loud failure) rather than skip.
+	// Unknown floor: keep the ladder (loud failure) rather than skip.
 	if got := clampRungsForResource(rungs, "2.0.0"); !reflect.DeepEqual(got, rungs) {
-		t.Fatalf("unknown AvailableSince should keep rungs, got %v", got)
+		t.Fatalf("unknown LadderFloor should keep rungs, got %v", got)
 	}
 }
 
@@ -270,11 +250,11 @@ resource "pingfederate_example_resource" "other" {
 	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, Allowlist: []AllowlistEntry{{AttributePath: "foo"}}}); err == nil {
 		t.Error("allowlist entry without Reason should be rejected")
 	}
-	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, AvailableSince: "1.4.5"}); err != nil {
-		t.Fatalf("known ladder rung as AvailableSince should pass: %v", err)
+	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, LadderFloor: "1.4.5"}); err != nil {
+		t.Fatalf("known ladder rung as LadderFloor should pass: %v", err)
 	}
-	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, AvailableSince: "1.45"}); err == nil {
-		t.Error("typo'd AvailableSince should be rejected (it would silently disable clamping)")
+	if err := ValidateSpec(Spec{ResourceType: "pingfederate_example_resource", HCL: validHCL, LadderFloor: "1.45"}); err == nil {
+		t.Error("typo'd LadderFloor should be rejected (it would silently disable clamping)")
 	}
 }
 

@@ -4,6 +4,7 @@ package upgradeladder
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -47,7 +48,7 @@ func TestServerLanesOverride(t *testing.T) {
 	supported := version.SupportedMajorMinorVersions()
 	oldest := string(supported[0])
 	oldestParts := strings.Split(oldest, ".")
-	belowOldest := fmt.Sprintf("%s.%s", mustDecrement(oldestParts[0]), oldestParts[1])
+	belowOldest := fmt.Sprintf("%s.%s", mustDecrement(t, oldestParts[0]), oldestParts[1])
 	newest := string(supported[len(supported)-1])
 	oldestPatch := string(version.SupportedVersions()[0])
 
@@ -85,24 +86,69 @@ func TestServerLanesOverride(t *testing.T) {
 	}
 }
 
-// mustDecrement decrements a decimal major string, so the "unsupported"
-// fixture stays relative to the supported list as it evolves.
-func mustDecrement(major string) string {
+// mustDecrement decrements a decimal version component (major or minor) by
+// one, so "unsupported version" fixtures across the package's tests stay
+// relative to the supported list as it evolves, rather than a hand-written
+// number.
+func mustDecrement(t *testing.T, digits string) string {
+	t.Helper()
 	n := 0
-	for _, digit := range major {
+	for _, digit := range digits {
 		if digit < '0' || digit > '9' {
-			panic(fmt.Sprintf("expected digits, got %q", major))
+			t.Fatalf("expected digits, got %q", digits)
 		}
 		n = n*10 + int(digit-'0')
 	}
+	if n == 0 {
+		t.Fatalf("cannot decrement %q below zero", digits)
+	}
 	return fmt.Sprintf("%d", n-1)
+}
+
+func TestProbeRemainingLanes(t *testing.T) {
+	hosts := []string{"https://localhost:10099", "https://localhost:10199", "https://localhost:10299"}
+
+	t.Run("nil probe never runs", func(t *testing.T) {
+		if badLane, err := probeRemainingLanes(t, nil, hosts); badLane != -1 || err != nil {
+			t.Fatalf("probeRemainingLanes(nil) = (%d, %v), want (-1, nil)", badLane, err)
+		}
+	})
+
+	t.Run("checks every host beyond the first, in order, restoring env after", func(t *testing.T) {
+		t.Setenv(httpsHostEnvVar, "unset-by-default")
+		var seen []string
+		probe := func() error {
+			seen = append(seen, os.Getenv(httpsHostEnvVar))
+			return nil
+		}
+		if badLane, err := probeRemainingLanes(t, probe, hosts); badLane != -1 || err != nil {
+			t.Fatalf("probeRemainingLanes() = (%d, %v), want (-1, nil)", badLane, err)
+		}
+		if !reflect.DeepEqual(seen, hosts[1:]) {
+			t.Fatalf("probe saw hosts %v, want %v (the first host is the caller's responsibility)", seen, hosts[1:])
+		}
+	})
+
+	t.Run("stops at the first rejecting lane", func(t *testing.T) {
+		wantErr := fmt.Errorf("lane 2 is unreachable")
+		probe := func() error {
+			if os.Getenv(httpsHostEnvVar) == hosts[2] {
+				return wantErr
+			}
+			return nil
+		}
+		badLane, err := probeRemainingLanes(t, probe, hosts)
+		if badLane != 2 || err != wantErr {
+			t.Fatalf("probeRemainingLanes() = (%d, %v), want (2, %v)", badLane, err, wantErr)
+		}
+	})
 }
 
 func TestLaneHosts(t *testing.T) {
 	t.Run("single lane uses base host", func(t *testing.T) {
 		t.Setenv(httpsHostEnvVar, "https://localhost:9999")
 		t.Setenv(EnvServerLaneHosts, "")
-		got, err := laneHosts(derivedLanes(1))
+		got, err := laneHosts(derivedLanes(t, 1))
 		if err != nil {
 			t.Fatalf("laneHosts() unexpected error: %v", err)
 		}
@@ -114,7 +160,7 @@ func TestLaneHosts(t *testing.T) {
 	t.Run("one host per extra lane required", func(t *testing.T) {
 		t.Setenv(httpsHostEnvVar, "https://localhost:9999")
 		t.Setenv(EnvServerLaneHosts, "https://localhost:10099,https://localhost:10199")
-		got, err := laneHosts(derivedLanes(3))
+		got, err := laneHosts(derivedLanes(t, 3))
 		if err != nil {
 			t.Fatalf("laneHosts() unexpected error: %v", err)
 		}
@@ -126,7 +172,7 @@ func TestLaneHosts(t *testing.T) {
 	t.Run("missing hosts rejected", func(t *testing.T) {
 		t.Setenv(httpsHostEnvVar, "https://localhost:9999")
 		t.Setenv(EnvServerLaneHosts, "")
-		if _, err := laneHosts(derivedLanes(2)); err == nil || !strings.Contains(err.Error(), "one host per lane") {
+		if _, err := laneHosts(derivedLanes(t, 2)); err == nil || !strings.Contains(err.Error(), "one host per lane") {
 			t.Fatalf("laneHosts() error = %v, want host-count mismatch", err)
 		}
 	})
@@ -137,7 +183,7 @@ func TestLaneHosts(t *testing.T) {
 		// count exercises it; derivedLanes(2) with a 2-entry host list keeps
 		// the fixture minimal.
 		t.Setenv(EnvServerLaneHosts, "https://localhost:10099,")
-		if _, err := laneHosts(derivedLanes(3)); err == nil {
+		if _, err := laneHosts(derivedLanes(t, 3)); err == nil {
 			t.Fatal("laneHosts() should reject empty host parts")
 		}
 	})
@@ -145,7 +191,7 @@ func TestLaneHosts(t *testing.T) {
 	t.Run("missing base host rejected", func(t *testing.T) {
 		t.Setenv(httpsHostEnvVar, "")
 		t.Setenv(EnvServerLaneHosts, "")
-		if _, err := laneHosts(derivedLanes(2)); err == nil || !strings.Contains(err.Error(), "must be set") {
+		if _, err := laneHosts(derivedLanes(t, 2)); err == nil || !strings.Contains(err.Error(), "must be set") {
 			t.Fatalf("laneHosts() error = %v, want base-host requirement", err)
 		}
 	})
@@ -153,10 +199,11 @@ func TestLaneHosts(t *testing.T) {
 
 // derivedLanes returns the first n supported lanes, so tests carry no
 // hard-coded PingFederate versions and follow the supported list automatically.
-func derivedLanes(n int) []string {
+func derivedLanes(t *testing.T, n int) []string {
+	t.Helper()
 	supported := supportedLaneStrings()
 	if len(supported) < n {
-		panic(fmt.Sprintf("test needs %d supported lanes, internal/version has %d", n, len(supported)))
+		t.Fatalf("test needs %d supported lanes, internal/version has %d", n, len(supported))
 	}
 	return supported[:n]
 }
@@ -164,6 +211,8 @@ func derivedLanes(n int) []string {
 func TestLaneProviderBlock(t *testing.T) {
 	host, lane := "https://localhost:10099", string(version.SupportedMajorMinorVersions()[0])
 	block := laneProviderBlock(host, lane)
+
+	//lintignore:AT004 // asserting the deliberately-rendered provider block is present
 	if !strings.Contains(block, `provider "pingfederate"`) {
 		t.Fatalf("laneProviderBlock() missing provider block:\n%s", block)
 	}

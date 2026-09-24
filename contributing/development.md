@@ -138,7 +138,7 @@ Import the harness in the gen test file (as `upgradeladder "github.com/pingident
 
 Rules:
 
-- The Spec's HCL must apply cleanly with the *oldest* rung of every lane it runs on, so do not reference attributes added after that release. Resources shipped after v1.3.0 set `AvailableSince` to their first release (older rungs are dropped — e.g. `pingfederate_incoming_proxy_settings` is `"1.4.5"`).
+- The Spec's HCL must apply cleanly with the *oldest* rung of every lane it runs on, so do not reference attributes added after that release. Set `LadderFloor` to drop rungs older than a given release when the resource can't run on them — usually its actual first-shipped version, but a later floor is also valid to skip past a documented, already-fixed defect (cite the fix in a comment at the call site; do not use it to dodge an undocumented failure). E.g. `pingfederate_incoming_proxy_settings` sets `"1.4.5"` not because that's when it first shipped (v0.7.0), but because v1.3.0-1.4.4 have a since-fixed plan-default bug (PR #494).
 - Because the server-upgrade ladder re-applies the same config against each lane's server, discrete resources are destroyed on the final lane when the test ends (plugin-testing cleanup); a ladder run aborted mid-way leaves the resource orphaned on whichever server last applied it — delete it via the admin API before re-running (`X-XSRF-Header` required).
 - Top-level `data "pingfederate_<resourceType>" "example"` blocks (present in some generated HCL) are stripped automatically by the harness; other data sources are left in and fail the run loudly.
 - The HCL must use the resource label `example` (enforced by `ValidateSpec`).

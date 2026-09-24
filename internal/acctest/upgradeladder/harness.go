@@ -54,27 +54,33 @@ func stripTopLevelDataSourceBlocks(t *testing.T, resourceType string, hclSource 
 // a hop that produces plan drift — the "Provider produced inconsistent result
 // after apply" class — fails the step.
 //
-// Rungs older than the Spec's AvailableSince version are dropped, so
-// resources added after v1.3.0 start their ladder at their own first release.
+// Rungs older than the Spec's LadderFloor are dropped, so resources that
+// can't run on the lane's oldest rungs start their ladder further up.
 // Resources are filtered by PINGFEDERATE_UPGRADE_RESOURCES (comma-separated
 // substrings; empty selects all).
 func RunUpgradeLadder(t *testing.T, spec Spec) {
 	t.Helper()
-
-	if !Enabled {
-		t.Skipf("skipping upgrade ladder for %s: build without the 'upgradeladder' tag (make testupgradeacc)", spec.ResourceType)
-		return
-	}
-
-	run, err := prepareLadderRun(t, spec)
-	if err != nil {
-		if _, ok := err.(skipSignal); ok {
-			t.Skipf("%v", err)
+	// Wrapped in a subtest: t.Skip/t.Fatal call runtime.Goexit, which would
+	// otherwise unwind this whole goroutine and skip the caller's next
+	// statement — every gen_test.go calls RunUpgradeLadder then
+	// RunServerUpgradeLadder sequentially, and the two axes must run
+	// independently of each other's outcome.
+	t.Run("provider", func(t *testing.T) {
+		if !Enabled {
+			t.Skipf("skipping upgrade ladder for %s: build without the 'upgradeladder' tag (make testupgradeacc)", spec.ResourceType)
 			return
 		}
-		t.Fatalf("%v", err)
-	}
-	run(t)
+
+		run, err := prepareLadderRun(t, spec)
+		if err != nil {
+			if _, ok := err.(skipSignal); ok {
+				t.Skipf("%v", err)
+				return
+			}
+			t.Fatalf("%v", err)
+		}
+		run(t)
+	})
 }
 
 // skipSignal marks conditions that skip (not fail) a ladder run: filter
@@ -83,34 +89,45 @@ type skipSignal struct{ cause error }
 
 func (s skipSignal) Error() string { return s.cause.Error() }
 
+// preflightSpec runs the checks both ladder axes share, in the required
+// order: the probe before ValidateSpec, since some probes assign package
+// variables the HCL functions ValidateSpec evaluates depend on (e.g. the
+// certificate resources' file data). Returns a skipSignal for a probe
+// rejection, or ValidateSpec's error otherwise.
+func preflightSpec(spec Spec) error {
+	if spec.ClusterModeProbe != nil {
+		if err := spec.ClusterModeProbe(); err != nil {
+			return skipSignal{fmt.Errorf("server probe says the resource cannot apply here: %v", err)}
+		}
+	}
+	return ValidateSpec(spec)
+}
+
 // prepareLadderRun resolves everything needed before any Terraform call:
-// filter, Spec validation, lane, rung list, probes, and HCL preparation.
+// filter, TF_ACC, probe/validation, lane, rung list, and HCL preparation.
 // Errors distinguish skip (skipSignal) from hard failure.
 func prepareLadderRun(t *testing.T, spec Spec) (func(*testing.T), error) {
 	if !ResourceFilterMatches(spec.ResourceType, os.Getenv(EnvResourceFilter)) {
 		return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: excluded by %s filter", spec.ResourceType, EnvResourceFilter)}
 	}
-
-	// The probe runs before Spec validation: ValidateSpec evaluates
-	// spec.HCL(), and some probes assign the package variables those HCL
-	// functions read (e.g. the certificate resources' file data).
-	if spec.ClusterModeProbe != nil {
-		if err := spec.ClusterModeProbe(); err != nil {
-			return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: server probe says the resource cannot apply here: %v", spec.ResourceType, err)}
-		}
+	// Checked before the probe (a live HTTP call for some resources) so a
+	// plain `go test -tags upgradeladder` run without TF_ACC skips instead
+	// of making network calls it has no need to make.
+	if os.Getenv("TF_ACC") == "" {
+		return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: Acceptance tests skipped unless env 'TF_ACC' set", spec.ResourceType)}
 	}
 
-	if err := ValidateSpec(spec); err != nil {
+	if err := preflightSpec(spec); err != nil {
+		if _, ok := err.(skipSignal); ok {
+			return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: %v", spec.ResourceType, err)}
+		}
 		return nil, fmt.Errorf("invalid upgrade-ladder Spec: %w", err)
 	}
 
 	lane, err := ParseLane(os.Getenv("PINGFEDERATE_PROVIDER_PRODUCT_VERSION"))
 	if err != nil {
-		// Without TF_ACC there is nothing to run; with TF_ACC set, a bad or
-		// missing product version is a setup error, not a skip.
-		if os.Getenv("TF_ACC") == "" {
-			return nil, skipSignal{fmt.Errorf("skipping upgrade ladder: %w", err)}
-		}
+		// TF_ACC is confirmed set above, so a bad or missing product version
+		// here is a setup error, not a skip.
 		return nil, fmt.Errorf("failed to determine PingFederate lane for the upgrade ladder: %w", err)
 	}
 
@@ -119,7 +136,7 @@ func prepareLadderRun(t *testing.T, spec Spec) (func(*testing.T), error) {
 		return nil, fmt.Errorf("failed to build upgrade ladder: %w", err)
 	}
 
-	rungs = clampRungsForResource(rungs, spec.AvailableSince)
+	rungs = clampRungsForResource(rungs, spec.LadderFloor)
 	if len(rungs) < 2 {
 		return nil, skipSignal{fmt.Errorf("skipping upgrade ladder for %s: fewer than 2 rungs after clamping (rungs: %v)", spec.ResourceType, rungs)}
 	}
@@ -158,24 +175,23 @@ func prepareLadderRun(t *testing.T, spec Spec) (func(*testing.T), error) {
 	}, nil
 }
 
-// clampRungsForResource drops rungs older than the version the resource first
-// shipped in. An empty since value means "present since the first supported
-// rung" (v1.3.0), the default.
-func clampRungsForResource(rungs []string, availableSince string) []string {
-	if availableSince == "" {
+// clampRungsForResource drops rungs older than the Spec's LadderFloor. An
+// empty floor means every supported rung, the default.
+func clampRungsForResource(rungs []string, ladderFloor string) []string {
+	if ladderFloor == "" {
 		return rungs
 	}
-	sinceIdx := -1
+	floorIdx := -1
 	for i, rung := range rungs {
-		if rung == availableSince {
-			sinceIdx = i
+		if rung == ladderFloor {
+			floorIdx = i
 			break
 		}
 	}
-	if sinceIdx == -1 {
-		// Unknown or newer-than-ladder birth version: keep the ladder intact
-		// so the failure is loud rather than silently skipping rungs.
+	if floorIdx == -1 {
+		// Unknown or newer-than-ladder floor: keep the ladder intact so the
+		// failure is loud rather than silently skipping rungs.
 		return rungs
 	}
-	return rungs[sinceIdx:]
+	return rungs[floorIdx:]
 }

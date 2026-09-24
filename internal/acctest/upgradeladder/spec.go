@@ -28,7 +28,7 @@ type Spec struct {
 	// requires prerequisite resources); the harness strips top-level
 	// data-source blocks automatically. The configuration must apply cleanly
 	// with the oldest rung of every lane the resource supports (see
-	// AvailableSince).
+	// LadderFloor).
 	HCL func() string
 
 	// Allowlist is reserved for a future phase that tolerates attribute-level
@@ -36,10 +36,14 @@ type Spec struct {
 	// reference in Reason. Rungs currently assert strictly empty plans.
 	Allowlist []AllowlistEntry
 
-	// AvailableSince is the provider version the resource first shipped in,
-	// e.g. "1.6.0". Rungs older than this are dropped from the resource's
-	// ladder. Empty means the resource exists in every supported rung.
-	AvailableSince string
+	// LadderFloor is the oldest ladder rung to start this resource's climb
+	// at, e.g. "1.6.0"; older rungs are dropped. Empty means every supported
+	// rung. This is usually the resource's actual first-shipped release, but
+	// it isn't required to be: a later floor is also valid to skip past
+	// rungs where the resource is known to fail for a reason already fixed
+	// and documented — cite that fix in a comment at the call site (do not
+	// use this field to silently dodge an undocumented failure).
+	LadderFloor string
 
 	// ClusterModeProbe optionally probes the live server and returns a
 	// non-nil error when the resource cannot apply on it (e.g. cluster
@@ -77,9 +81,9 @@ func ValidateSpec(spec Spec) error {
 	if !strings.Contains(spec.HCL(), `"`+spec.ResourceType+`" "example"`) {
 		return fmt.Errorf("HCL for %s must use the resource label 'example'", spec.ResourceType)
 	}
-	if spec.AvailableSince != "" && !isKnownRung(spec.AvailableSince) {
-		return fmt.Errorf("Spec.AvailableSince %q for %s is not a ladder rung (valid: %s); an unknown value silently disables clamping and the oldest rungs then fail at runtime",
-			spec.AvailableSince, spec.ResourceType, ladderTableVersions())
+	if spec.LadderFloor != "" && !isKnownRung(spec.LadderFloor) {
+		return fmt.Errorf("Spec.LadderFloor %q for %s is not a ladder rung (valid: %s); an unknown value silently disables clamping and the oldest rungs then fail at runtime",
+			spec.LadderFloor, spec.ResourceType, ladderTableVersions())
 	}
 	for _, entry := range spec.Allowlist {
 		if strings.TrimSpace(entry.Reason) == "" {

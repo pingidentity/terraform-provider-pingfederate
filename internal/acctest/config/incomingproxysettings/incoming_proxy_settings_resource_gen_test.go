@@ -89,9 +89,13 @@ func incomingProxySettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 
 func TestUpgradeLadder_IncomingProxySettings(t *testing.T) {
 	spec := upgradeladder.Spec{
-		ResourceType:   "pingfederate_incoming_proxy_settings",
-		HCL:            incomingProxySettings_MinimalHCL,
-		AvailableSince: "1.4.5",
+		ResourceType: "pingfederate_incoming_proxy_settings",
+		HCL:          incomingProxySettings_MinimalHCL,
+		// Not this resource's first-shipped version (that's v0.7.0) - the
+		// floor of a since-fixed, documented defect: v1.3.0-1.4.4 didn't
+		// plan-default enable_client_cert_header_auth, so applying against a
+		// server that injects it failed (fixed in PR #494, released 1.4.5).
+		LadderFloor: "1.4.5",
 	}
 	upgradeladder.RunUpgradeLadder(t, spec)
 	upgradeladder.RunServerUpgradeLadder(t, spec)
