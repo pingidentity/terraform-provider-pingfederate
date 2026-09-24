@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> Only one processor policy mapping should be configured per token exchange processor policy (the `pingfederate_oauth_token_exchange_processor_policy` resource). Otherwise, configuration conflicts will occur.
+
+## Example Usage
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+~> "oauthTokenExchangeProcessorPolicyMappingId" should be the id of the Token Exchange Processor Policy Mapping to be imported
+
+{{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}
