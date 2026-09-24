@@ -239,40 +239,6 @@ func TestClampRungsForResource(t *testing.T) {
 	}
 }
 
-// compareRungs orders two provider rung versions numerically (semver-ish):
-// negative when a < b, zero when equal, positive when greater.
-func compareRungs(a, b string) int {
-	parse := func(versionString string) []int {
-		parts := strings.Split(versionString, ".")
-		numbers := make([]int, len(parts))
-		for i, part := range parts {
-			n := 0
-			for _, digit := range part {
-				if digit < '0' || digit > '9' {
-					break
-				}
-				n = n*10 + int(digit-'0')
-			}
-			numbers[i] = n
-		}
-		return numbers
-	}
-	aParts, bParts := parse(a), parse(b)
-	for i := 0; i < len(aParts) || i < len(bParts); i++ {
-		var ai, bi int
-		if i < len(aParts) {
-			ai = aParts[i]
-		}
-		if i < len(bParts) {
-			bi = bParts[i]
-		}
-		if ai != bi {
-			return ai - bi
-		}
-	}
-	return 0
-}
-
 func TestValidateSpec(t *testing.T) {
 	validHCL := func() string {
 		return `

@@ -157,12 +157,10 @@ func authenticationApiApplication_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_AuthenticationApiApplication(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_authentication_api_application",
 		HCL:          authenticationApiApplication_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_authentication_api_application",
-		HCL:          authenticationApiApplication_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

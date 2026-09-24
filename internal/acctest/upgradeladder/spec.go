@@ -43,9 +43,14 @@ type Spec struct {
 
 	// ClusterModeProbe optionally probes the live server and returns a
 	// non-nil error when the resource cannot apply on it (e.g. cluster
-	// settings on a standalone server return 403 not_in_clustered_mode).
-	// A non-nil probe error skips the ladder for the resource. Nil means no
-	// probe.
+	// settings on a standalone server return 403 not_in_clustered_mode, or a
+	// required env var is missing). A non-nil probe error skips the ladder
+	// for the resource. Nil means no probe.
+	//
+	// The probe runs before ValidateSpec evaluates HCL, so it may also
+	// perform setup the HCL functions depend on — e.g. assigning the package
+	// variable from the env it just checked. Probes that skip via a missing
+	// env var must be idempotent: both ladders call the same probe.
 	ClusterModeProbe func() error
 }
 

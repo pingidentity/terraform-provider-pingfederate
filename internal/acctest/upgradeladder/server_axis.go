@@ -25,13 +25,20 @@ const EnvServerLanesOverride = "PINGFEDERATE_UPGRADE_SERVER_LANES"
 // every lane beyond the first; the first lane uses PINGFEDERATE_PROVIDER_HTTPS_HOST.
 const EnvServerLaneHosts = "PINGFEDERATE_UPGRADE_LANE_HOSTS"
 
+// EnvServerLadderEnabled opts in to the server-upgrade ladder: the provider
+// ladder's make target and CI run the same test functions, and without this
+// gate they would need lane containers they don't have. Set to any non-empty
+// value (make testserverupgradeacc does).
+const EnvServerLadderEnabled = "PINGFEDERATE_UPGRADE_SERVER_LADDER"
+
 // httpsHostEnvVar is the first lane's server host variable.
 const httpsHostEnvVar = "PINGFEDERATE_PROVIDER_HTTPS_HOST"
 
 // serverLanes resolves the lane list: PINGFEDERATE_UPGRADE_SERVER_LANES if
 // set, else every supported lane in ascending order (from internal/version).
 // Each value is validated through version.Parse exactly like the provider's
-// own configure-time check.
+// own configure-time check, and the list must ascend — the ladder steps
+// forward.
 func serverLanes() ([]string, error) {
 	override := strings.TrimSpace(os.Getenv(EnvServerLanesOverride))
 	if override == "" {
@@ -54,6 +61,11 @@ func serverLanes() ([]string, error) {
 				trimmed, EnvServerLanesOverride, strings.Join(supportedLanes(), ", "))
 		}
 		lanes = append(lanes, string(version.MajorMinor(parsed)))
+	}
+	for i := 1; i < len(lanes); i++ {
+		if compareRungs(lanes[i], lanes[i-1]) <= 0 {
+			return nil, fmt.Errorf("%s must be ascending, got '%s' at/after '%s'", EnvServerLanesOverride, lanes[i], lanes[i-1])
+		}
 	}
 	return lanes, nil
 }
@@ -109,15 +121,29 @@ provider "pingfederate" {
 // ladder exercises the server-upgrade axis, where version-gated provider
 // behavior and server-injected defaults change under existing state.
 //
-// Server upgrades legitimately change server-injected defaults for unset
-// optionals, so plan drift is expected at lane boundaries; the assertion is
-// that every step applies cleanly (no "Provider produced inconsistent result
-// after apply", no failed apply).
+// Every step asserts a strictly empty post-apply plan (plugin-testing's
+// built-in guard; ExpectNonEmptyPlan cannot express drift tolerance — it is a
+// hard XOR). That strictness is the point: a non-empty plan right after an
+// apply on a new server is precisely the "Provider produced inconsistent
+// result after apply" signature this harness hunts, so drift fails loudly
+// rather than being tolerated.
 func RunServerUpgradeLadder(t *testing.T, spec Spec) {
 	t.Helper()
 
 	if !Enabled {
-		t.Skipf("skipping server-upgrade ladder for %s: build without the 'upgradeladder' tag (make testupgradeacc)", spec.ResourceType)
+		t.Skipf("skipping server-upgrade ladder for %s: build without the 'upgradeladder' tag (make testserverupgradeacc)", spec.ResourceType)
+		return
+	}
+	if os.Getenv(EnvServerLadderEnabled) == "" {
+		t.Skipf("skipping server-upgrade ladder for %s: %s not set (make testserverupgradeacc) — the shared test function runs both ladders, and only the server-ladder target spins lane containers", spec.ResourceType, EnvServerLadderEnabled)
+		return
+	}
+	if !ResourceFilterMatches(spec.ResourceType, os.Getenv(EnvResourceFilter)) {
+		t.Skipf("skipping server-upgrade ladder for %s: excluded by %s filter", spec.ResourceType, EnvResourceFilter)
+		return
+	}
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
 		return
 	}
 
@@ -167,13 +193,6 @@ func RunServerUpgradeLadder(t *testing.T, spec Spec) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			// The server-axis ladder supplies the host per step via provider
-			// blocks, so only the TF_ACC gate applies here.
-			if os.Getenv("TF_ACC") == "" {
-				t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
-			}
-		},
 		Steps: steps,
 	})
 }

@@ -97,7 +97,7 @@ In CI, the ladder runs only in the [Provider Version-Ladder Tests workflow](../.
 
 ### Server-upgrade ladder
 
-The provider ladder above keeps the PingFederate server fixed while the provider climbs. The **server-upgrade ladder** covers the other axis: the Terraform state is applied against the first lane's server, then the *server* is stepped to each subsequent lane (12.2 → 12.3 → 13.0 → 13.1) with the state carried forward — the user journey behind "inconsistent result" reports where resources configured on an older server are re-applied after a server upgrade. The provider is the local build in every step; each step re-points it via the step's `provider "pingfederate"` block (`https_host` + `product_version`), so the same state is refreshed and applied against each successive server. Because server upgrades legitimately change server-injected defaults for unset optionals, plan drift at lane boundaries is expected; the assertion is that every step **applies cleanly** (no `Provider produced inconsistent result after apply`, no failed apply). Both ladders run from the same `TestUpgradeLadder_<ResourceName>` function — `RunServerUpgradeLadder` follows `RunUpgradeLadder` in each gen test file, sharing the same `Spec`.
+The provider ladder above keeps the PingFederate server fixed while the provider climbs. The **server-upgrade ladder** covers the other axis: the Terraform state is applied against the first lane's server, then the *server* is stepped to each subsequent lane (12.2 → 12.3 → 13.0 → 13.1) with the state carried forward — the user journey behind "inconsistent result" reports where resources configured on an older server are re-applied after a server upgrade. The provider is the local build in every step; each step re-points it via the step's `provider "pingfederate"` block (`https_host` + `product_version`), so the same state is refreshed and applied against each successive server. Every step asserts a **strictly empty post-apply plan**: a non-empty plan right after an apply on the new server is exactly the `Provider produced inconsistent result after apply` signature this harness hunts, so drift fails loudly rather than being tolerated. Both ladders run from the same `TestUpgradeLadder_<ResourceName>` function — `RunServerUpgradeLadder` follows `RunUpgradeLadder` in each gen test file, sharing the same `Spec`. The server ladder additionally opts in via `PINGFEDERATE_UPGRADE_SERVER_LADDER`, so the provider-ladder target and CI (which have no lane containers) skip it instead of failing.
 
 ```sh
 # Spin one container per lane (default: every supported lane; LANES overrides)
@@ -112,7 +112,8 @@ make testserverupgradeoneacc ACC_TEST_NAME=oauth_server_settings
 
 ### Environment knobs
 
-- `PINGFEDERATE_UPGRADE_SERVER_LANES`: comma-separated PingFederate lanes for the server-upgrade ladder (default: every supported lane, ascending).
+- `PINGFEDERATE_UPGRADE_SERVER_LADDER`: set (any value) to opt in to the server-upgrade ladder; unset skips it (the provider-ladder target and CI have no lane containers).
+- `PINGFEDERATE_UPGRADE_SERVER_LANES`: comma-separated PingFederate lanes for the server-upgrade ladder (default: every supported lane, ascending; a misordered or duplicated list is rejected).
 - `PINGFEDERATE_UPGRADE_LANE_HOSTS`: comma-separated `https_host` values for every lane *beyond the first* (the first lane uses `PINGFEDERATE_PROVIDER_HTTPS_HOST`).
 - `PINGFEDERATE_UPGRADE_LADDER`: `full` (default), `last2` (final registry rung + local), or explicit comma-separated rungs, e.g. `1.9.0,local`.
 - `PINGFEDERATE_UPGRADE_RESOURCES`: comma-separated substrings selecting participating resource types, e.g. `oauth_server_settings,incoming_proxy_settings`. Non-matching resources skip.

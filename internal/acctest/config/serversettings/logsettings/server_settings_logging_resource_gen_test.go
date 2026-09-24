@@ -279,12 +279,10 @@ func serverSettingsLogging_CheckComputedValuesComplete() resource.TestCheckFunc 
 }
 
 func TestUpgradeLadder_ServerSettingsLogging(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_server_settings_logging",
 		HCL:          serverSettingsLogging_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_server_settings_logging",
-		HCL:          serverSettingsLogging_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

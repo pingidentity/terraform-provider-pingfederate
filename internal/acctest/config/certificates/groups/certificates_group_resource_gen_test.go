@@ -197,7 +197,7 @@ func certificatesGroup_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_CertificatesGroup(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_certificates_group",
 		HCL:          certificatesGroup_InitialHCL,
 		ClusterModeProbe: func() error {
@@ -207,16 +207,7 @@ func TestUpgradeLadder_CertificatesGroup(t *testing.T) {
 			}
 			return nil
 		},
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_certificates_group",
-		HCL:          certificatesGroup_InitialHCL,
-		ClusterModeProbe: func() error {
-			fileDataInitial = os.Getenv("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1")
-			if fileDataInitial == "" {
-				return fmt.Errorf("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 is not set")
-			}
-			return nil
-		},
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

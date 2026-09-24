@@ -170,12 +170,10 @@ func metadataUrl_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_MetadataUrl(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_metadata_url",
 		HCL:          metadataUrl_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_metadata_url",
-		HCL:          metadataUrl_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

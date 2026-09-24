@@ -316,12 +316,10 @@ func captchaProvider_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_CaptchaProvider(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_captcha_provider",
 		HCL:          captchaProvider_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_captcha_provider",
-		HCL:          captchaProvider_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

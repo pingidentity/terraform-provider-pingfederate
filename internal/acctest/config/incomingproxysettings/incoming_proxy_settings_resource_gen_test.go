@@ -88,14 +88,11 @@ func incomingProxySettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 }
 
 func TestUpgradeLadder_IncomingProxySettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType:   "pingfederate_incoming_proxy_settings",
 		HCL:            incomingProxySettings_MinimalHCL,
 		AvailableSince: "1.4.5",
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType:   "pingfederate_incoming_proxy_settings",
-		HCL:            incomingProxySettings_MinimalHCL,
-		AvailableSince: "1.4.5",
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

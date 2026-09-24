@@ -425,12 +425,10 @@ func oauthServerSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
 }
 
 func TestUpgradeLadder_OauthServerSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_oauth_server_settings",
 		HCL:          oauthServerSettings_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_oauth_server_settings",
-		HCL:          oauthServerSettings_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

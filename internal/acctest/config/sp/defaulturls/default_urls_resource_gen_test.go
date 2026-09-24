@@ -81,12 +81,10 @@ func defaultUrls_CheckComputedValuesMinimal() resource.TestCheckFunc {
 }
 
 func TestUpgradeLadder_DefaultUrls(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_default_urls",
 		HCL:          defaultUrls_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_default_urls",
-		HCL:          defaultUrls_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

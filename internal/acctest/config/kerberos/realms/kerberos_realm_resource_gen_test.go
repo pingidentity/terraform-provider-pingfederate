@@ -171,12 +171,10 @@ func kerberosRealm_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_KerberosRealm(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_kerberos_realm",
 		HCL:          kerberosRealm_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_kerberos_realm",
-		HCL:          kerberosRealm_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

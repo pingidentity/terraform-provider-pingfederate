@@ -97,7 +97,7 @@ func clusterSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 }
 
 func TestUpgradeLadder_ClusterSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_cluster_settings",
 		HCL:          clusterSettings_MinimalHCL,
 		ClusterModeProbe: func() error {
@@ -105,14 +105,7 @@ func TestUpgradeLadder_ClusterSettings(t *testing.T) {
 			_, _, err := testClient.ClusterAPI.GetClusterSettings(acctest.TestBasicAuthContext()).Execute()
 			return err
 		},
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_cluster_settings",
-		HCL:          clusterSettings_MinimalHCL,
-		ClusterModeProbe: func() error {
-			testClient := acctest.TestClient()
-			_, _, err := testClient.ClusterAPI.GetClusterSettings(acctest.TestBasicAuthContext()).Execute()
-			return err
-		},
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

@@ -157,12 +157,10 @@ func keypairsSigningKeyRotationSettings_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_KeypairsSigningKeyRotationSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_keypairs_signing_key_rotation_settings",
 		HCL:          keypairsSigningKeyRotationSettings_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_keypairs_signing_key_rotation_settings",
-		HCL:          keypairsSigningKeyRotationSettings_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

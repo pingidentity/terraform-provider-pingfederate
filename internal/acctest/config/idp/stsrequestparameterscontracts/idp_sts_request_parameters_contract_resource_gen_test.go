@@ -136,12 +136,10 @@ func idpStsRequestParametersContract_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_IdpStsRequestParametersContract(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_idp_sts_request_parameters_contract",
 		HCL:          idpStsRequestParametersContract_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_idp_sts_request_parameters_contract",
-		HCL:          idpStsRequestParametersContract_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

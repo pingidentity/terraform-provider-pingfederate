@@ -62,6 +62,8 @@ func TestServerLanesOverride(t *testing.T) {
 		{"empty part rejected", oldest + ",," + newest, nil, "empty lane"},
 		{"unsupported version rejected", belowOldest + "," + newest, nil, "not a supported PingFederate version"},
 		{"garbage rejected", "abc", nil, "not a supported PingFederate version"},
+		{"misordered rejected", newest + "," + oldest, nil, "must be ascending"},
+		{"duplicate rejected", oldest + "," + oldest, nil, "must be ascending"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

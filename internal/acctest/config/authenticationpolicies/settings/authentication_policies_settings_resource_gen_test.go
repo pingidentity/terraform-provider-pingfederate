@@ -90,12 +90,10 @@ func authenticationPoliciesSettings_CheckComputedValuesMinimal() resource.TestCh
 }
 
 func TestUpgradeLadder_AuthenticationPoliciesSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_authentication_policies_settings",
 		HCL:          authenticationPoliciesSettings_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_authentication_policies_settings",
-		HCL:          authenticationPoliciesSettings_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

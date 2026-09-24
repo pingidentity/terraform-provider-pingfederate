@@ -81,12 +81,10 @@ func protocolMetadataLifetimeSettings_CheckComputedValuesMinimal() resource.Test
 }
 
 func TestUpgradeLadder_ProtocolMetadataLifetimeSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_protocol_metadata_lifetime_settings",
 		HCL:          protocolMetadataLifetimeSettings_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_protocol_metadata_lifetime_settings",
-		HCL:          protocolMetadataLifetimeSettings_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

@@ -157,7 +157,7 @@ endef
 
 spinupgradelanes:
 	docker rm -f pingfederate_terraform_provider_container 2>/dev/null; \
-	mkdir -p /tmp/pf-env && grep -vE "^export " "${HOME}/.pingidentity/config" > /tmp/pf-env/config-noexport; \
+	mkdir -p /tmp/pf-env/bulk123 && grep -vE "^export " "${HOME}/.pingidentity/config" > /tmp/pf-env/config-noexport; \
 	if [ ! -s /tmp/pf-env/bulk123/data.json.subst ]; then \
 		python3 -c "import json; d=json.load(open('server-profiles/12.3/data.json.subst')); ops=[op for op in d['operations'] if op.get('resourceType') not in ('/pingOneConnections','/oauth/outOfBandAuthPlugins')]; json.dump({'metadata': d.get('metadata',{}), 'operations': ops}, open('/tmp/pf-env/bulk123/data.json.subst','w'))"; \
 	fi; \
@@ -177,14 +177,23 @@ spinupgradelanes:
 	echo "  export PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${lanes%%,*}"; \
 	echo "  export PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1=... PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2=...  # optional: enables the certificate resources"
 
+# The shared test functions run both ladders: this target sets the server-ladder
+# opt-in (EnvServerLadderEnabled) and the same registry isolation as the
+# provider-ladder targets, since RunUpgradeLadder runs first in every test.
 testserverupgradeacc:
+	$(call upgrade_ladder_tfrc)
 	$(call test_acc_basic_auth_env_vars) TF_ACC=1 \
+		PINGFEDERATE_UPGRADE_SERVER_LADDER=1 \
 		PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" \
+		TF_PLUGIN_CACHE_DIR=$(CURDIR)/.tfplugincache TF_CLI_CONFIG_FILE=$(CURDIR)/.tfplugincache/tfrc \
 		go test -tags upgradeladder ./internal/acctest/config/... -run 'TestUpgradeLadder_.*' -timeout 60m -v -p 1 -count=1
 
 testserverupgradeoneacc:
+	$(call upgrade_ladder_tfrc)
 	$(call test_acc_basic_auth_env_vars) TF_ACC=1 \
+		PINGFEDERATE_UPGRADE_SERVER_LADDER=1 \
 		PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" \
+		TF_PLUGIN_CACHE_DIR=$(CURDIR)/.tfplugincache TF_CLI_CONFIG_FILE=$(CURDIR)/.tfplugincache/tfrc \
 		go test -tags upgradeladder ./internal/acctest/config/... -run 'TestUpgradeLadder_.*$(ACC_TEST_NAME).*' -timeout 60m -v -p 1 -count=1
 
 clearstates:

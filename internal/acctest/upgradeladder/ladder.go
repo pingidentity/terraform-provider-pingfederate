@@ -60,6 +60,8 @@ var ladderTable = []ladderEntry{
 
 // laneFloorVersion returns the first rung that supports a PingFederate
 // major.minor lane (the earliest table entry whose MaxPFMinor matches).
+// Production ladders derive their floor inside BuildLadder; this independent
+// projection is the tests' oracle for the floor contract.
 func laneFloorVersion(lane string) (string, bool) {
 	for _, entry := range ladderTable {
 		if string(version.MajorMinor(entry.MaxPFMinor)) == lane {
@@ -85,8 +87,7 @@ func supportedLanes() []string {
 // major.minor lane. Both sides are major.minor values (MaxPFMinor is a lane
 // constant; version.Compare's index only holds full versions), so the
 // comparison is numeric major-then-minor, not a version-index lookup.
-func supportsLane(maxPFMinor version.SupportedVersion, lane string) bool {
-	maxParts := strings.SplitN(string(maxPFMinor), ".", 3)
+func supportsLane(maxPFMinor version.SupportedVersion, lane string) bool {	maxParts := strings.SplitN(string(maxPFMinor), ".", 3)
 	laneParts := strings.SplitN(lane, ".", 2)
 	if len(maxParts) < 2 || len(laneParts) < 2 {
 		return false
@@ -212,6 +213,42 @@ func isKnownRung(version string) bool {
 		}
 	}
 	return false
+}
+
+// compareRungs orders two dotted version strings numerically (semver-ish):
+// negative when a < b, zero when equal, positive when greater. Works across
+// segment counts ("12.2" vs "12.2.0") and ignores non-numeric segments, so it
+// handles both provider rungs and major.minor lanes.
+func compareRungs(a, b string) int {
+	parse := func(versionString string) []int {
+		parts := strings.Split(versionString, ".")
+		numbers := make([]int, len(parts))
+		for i, part := range parts {
+			n := 0
+			for _, digit := range part {
+				if digit < '0' || digit > '9' {
+					break
+				}
+				n = n*10 + int(digit-'0')
+			}
+			numbers[i] = n
+		}
+		return numbers
+	}
+	aParts, bParts := parse(a), parse(b)
+	for i := 0; i < len(aParts) || i < len(bParts); i++ {
+		var ai, bi int
+		if i < len(aParts) {
+			ai = aParts[i]
+		}
+		if i < len(bParts) {
+			bi = bParts[i]
+		}
+		if ai != bi {
+			return ai - bi
+		}
+	}
+	return 0
 }
 
 func ladderTableVersions() string {

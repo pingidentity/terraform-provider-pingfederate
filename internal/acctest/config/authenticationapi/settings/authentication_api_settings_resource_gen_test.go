@@ -103,12 +103,10 @@ func authenticationApiSettings_CheckComputedValuesMinimal() resource.TestCheckFu
 }
 
 func TestUpgradeLadder_AuthenticationApiSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_authentication_api_settings",
 		HCL:          authenticationApiSettings_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_authentication_api_settings",
-		HCL:          authenticationApiSettings_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

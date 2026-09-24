@@ -81,12 +81,10 @@ func sessionApplicationPolicy_CheckComputedValuesMinimal() resource.TestCheckFun
 }
 
 func TestUpgradeLadder_SessionApplicationPolicy(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_session_application_policy",
 		HCL:          sessionApplicationPolicy_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_session_application_policy",
-		HCL:          sessionApplicationPolicy_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

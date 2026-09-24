@@ -100,12 +100,10 @@ func sessionAuthenticationPoliciesGlobal_CheckComputedValuesMinimal() resource.T
 }
 
 func TestUpgradeLadder_SessionAuthenticationPoliciesGlobal(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_session_authentication_policies_global",
 		HCL:          sessionAuthenticationPoliciesGlobal_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_session_authentication_policies_global",
-		HCL:          sessionAuthenticationPoliciesGlobal_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

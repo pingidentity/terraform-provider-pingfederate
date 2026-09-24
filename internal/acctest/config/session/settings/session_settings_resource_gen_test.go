@@ -92,12 +92,10 @@ func sessionSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 }
 
 func TestUpgradeLadder_SessionSettings(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_session_settings",
 		HCL:          sessionSettings_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_session_settings",
-		HCL:          sessionSettings_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

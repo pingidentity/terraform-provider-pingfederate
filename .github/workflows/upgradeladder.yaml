@@ -39,6 +39,16 @@ jobs:
         with:
           terraform_version: "1.11.*"
           terraform_wrapper: false
+      # The pinned registry rungs download on first use; caching the plugin
+      # cache spares every subsequent run (and the second matrix leg) those
+      # downloads.
+      - uses: actions/cache@v4
+        with:
+          path: .tfplugincache
+          key: tfplugincache-${{ matrix.pingfederate }}-${{ hashFiles('internal/acctest/upgradeladder/ladder.go') }}
+          restore-keys: |
+            tfplugincache-${{ matrix.pingfederate }}-
+            tfplugincache-
       - name: Start PingFederate container and run the version ladder
         run: |
           mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config

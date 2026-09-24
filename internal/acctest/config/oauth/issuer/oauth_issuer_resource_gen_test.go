@@ -154,12 +154,10 @@ func oauthIssuer_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_OauthIssuer(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_oauth_issuer",
 		HCL:          oauthIssuer_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_oauth_issuer",
-		HCL:          oauthIssuer_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }

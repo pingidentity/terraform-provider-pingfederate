@@ -162,12 +162,10 @@ func authenticationPolicyContract_CheckDestroy(s *terraform.State) error {
 }
 
 func TestUpgradeLadder_AuthenticationPolicyContract(t *testing.T) {
-	upgradeladder.RunUpgradeLadder(t, upgradeladder.Spec{
+	spec := upgradeladder.Spec{
 		ResourceType: "pingfederate_authentication_policy_contract",
 		HCL:          authenticationPolicyContract_MinimalHCL,
-	})
-	upgradeladder.RunServerUpgradeLadder(t, upgradeladder.Spec{
-		ResourceType: "pingfederate_authentication_policy_contract",
-		HCL:          authenticationPolicyContract_MinimalHCL,
-	})
+	}
+	upgradeladder.RunUpgradeLadder(t, spec)
+	upgradeladder.RunServerUpgradeLadder(t, spec)
 }
