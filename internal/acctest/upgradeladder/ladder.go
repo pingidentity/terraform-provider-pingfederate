@@ -26,31 +26,23 @@ const LocalRung = "local"
 const EnvLadderOverride = "PINGFEDERATE_UPGRADE_LADDER"
 
 // ladderEntry is one row of the version ladder: a released provider version
-// and the highest PingFederate major.minor version that provider release can
-// configure (its MaxPFMinor, stated as an internal/version constant).
+// and the highest PingFederate major.minor version that release can configure
+// (MaxPFMinor, tied to an internal/version constant so an EOL lane drop there
+// breaks compilation here until the stale row is removed).
 //
 // Rows cover every provider minor from v1.3.0 (the first release supporting a
-// PingFederate version the current provider still supports) through the latest
-// release. Rungs older than v1.3.0 (v1.0.0-v1.2.0) cannot configure any
-// supported PingFederate version and are intentionally absent.
-//
-// Maintenance when a PingFederate version gains support in
-// internal/version/version.go: verify the newly supported lane against the
-// published provider releases (git show v<tag>:internal/version/version.go)
-// and append the new release rows here. When internal/version drops an EOL
-// lane, its rows fail their MaxPFMinor compile-time reference until removed,
-// keeping the table honest. Proven via
-// `git show v<tag>:internal/version/version.go` for every tag.
+// PingFederate version the current provider still supports) through the
+// latest release; older rungs cannot configure any supported version and are
+// intentionally absent.
 type ladderEntry struct {
 	ProviderVersion string                   // registry version, latest patch of the minor, e.g. "1.4.5"
 	MaxPFMinor      version.SupportedVersion // highest PingFederate major.minor configurable, e.g. version.PingFederate1220
 }
 
-// MaxPFMinor values are tied to internal/version constants so an EOL lane
-// drop in internal/version breaks compilation here until the stale rows are
-// removed. When a new lane is added to internal/version,
-// TestLadderTableCoversSupportedLanes fails until its release rows are
-// appended here — the manual step, made loud.
+// When a PingFederate version gains support in internal/version/version.go,
+// verify the newly supported lane against published provider releases (git
+// show v<tag>:internal/version/version.go) and append its rows here;
+// TestLadderTableCoversSupportedLanes fails until you do.
 var ladderTable = []ladderEntry{
 	{"1.3.0", version.PingFederate1220}, {"1.4.5", version.PingFederate1220}, {"1.5.0", version.PingFederate1220},
 	{"1.6.2", version.PingFederate1230},
@@ -87,7 +79,8 @@ func supportedLanes() []string {
 // major.minor lane. Both sides are major.minor values (MaxPFMinor is a lane
 // constant; version.Compare's index only holds full versions), so the
 // comparison is numeric major-then-minor, not a version-index lookup.
-func supportsLane(maxPFMinor version.SupportedVersion, lane string) bool {	maxParts := strings.SplitN(string(maxPFMinor), ".", 3)
+func supportsLane(maxPFMinor version.SupportedVersion, lane string) bool {
+	maxParts := strings.SplitN(string(maxPFMinor), ".", 3)
 	laneParts := strings.SplitN(lane, ".", 2)
 	if len(maxParts) < 2 || len(laneParts) < 2 {
 		return false
