@@ -1,0 +1,4 @@
+### NEW RESOURCES
+
+- Added `pingfederate_oauth_token_exchange_processor_policy_mapping` resource for managing Token Exchange Processor Policy mappings to persistent grants.
+
