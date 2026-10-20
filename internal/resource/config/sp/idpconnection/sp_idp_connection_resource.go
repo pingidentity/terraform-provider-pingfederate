@@ -212,32 +212,11 @@ var (
 	idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrTypes = map[string]attr.Type{
 		"id": types.StringType,
 	}
-	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaSourceAttrTypes = map[string]attr.Type{
-		"id":   types.StringType,
-		"type": types.StringType,
-	}
-	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaAttrTypes = map[string]attr.Type{
-		"attribute_name": types.StringType,
-		"condition":      types.StringType,
-		"error_result":   types.StringType,
-		"source":         types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaSourceAttrTypes},
-		"value":          types.StringType,
-	}
-	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaAttrTypes}
-	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaAttrTypes    = map[string]attr.Type{
-		"error_result": types.StringType,
-		"expression":   types.StringType,
-	}
-	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaAttrTypes}
-	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaAttrTypes                     = map[string]attr.Type{
-		"conditional_criteria": types.SetType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaElementType},
-		"expression_criteria":  types.SetType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaElementType},
-	}
 	idpBrowserSsoAuthenticationPolicyContractMappingsAttrTypes = map[string]attr.Type{
 		"attribute_contract_fulfillment":     types.MapType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentElementType},
 		"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrTypes},
-		"issuance_criteria":                  types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaAttrTypes},
+		"issuance_criteria":                  types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
 		"restrict_virtual_server_ids":        types.BoolType,
 		"restricted_virtual_server_ids":      types.SetType{ElemType: types.StringType},
 	}
@@ -334,31 +313,10 @@ var (
 	}
 	idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentElementType = types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentAttrTypes}
 
-	idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaSourceAttrTypes = map[string]attr.Type{
-		"id":   types.StringType,
-		"type": types.StringType,
-	}
-	idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaAttrTypes = map[string]attr.Type{
-		"attribute_name": types.StringType,
-		"condition":      types.StringType,
-		"error_result":   types.StringType,
-		"source":         types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaSourceAttrTypes},
-		"value":          types.StringType,
-	}
-	idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaAttrTypes}
-	idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaAttrTypes    = map[string]attr.Type{
-		"error_result": types.StringType,
-		"expression":   types.StringType,
-	}
-	idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaAttrTypes}
-	idpBrowserSsoSsoOauthMappingIssuanceCriteriaAttrTypes                     = map[string]attr.Type{
-		"conditional_criteria": types.SetType{ElemType: idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaElementType},
-		"expression_criteria":  types.SetType{ElemType: idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaElementType},
-	}
 	idpBrowserSsoSsoOauthMappingAttrTypes = map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentElementType},
 		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
-		"issuance_criteria":              types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaAttrTypes},
+		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrTypes()},
 	}
 	idpBrowserSsoSsoServiceEndpointsAttrTypes = map[string]attr.Type{
 		"binding": types.StringType,

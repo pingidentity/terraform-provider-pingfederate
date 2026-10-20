@@ -68,8 +68,8 @@ var (
 	}
 
 	issuanceCriteriaDefault = types.ObjectValueMust(issuancecriteria.AttrTypes(), map[string]attr.Value{
-		"conditional_criteria": types.SetValueMust(issuancecriteria.ConditionalCriteriaElemType(), nil),
-		"expression_criteria":  types.SetNull(issuancecriteria.ExpressionCriteriaElemType()),
+		"conditional_criteria": types.ListValueMust(issuancecriteria.ConditionalCriteriaElemType(), nil),
+		"expression_criteria":  types.ListNull(issuancecriteria.ExpressionCriteriaElemType()),
 	})
 	attributeSourcesDefault = types.ListValueMust(types.ObjectType{AttrTypes: attributesources.AttrTypes()}, nil)
 )

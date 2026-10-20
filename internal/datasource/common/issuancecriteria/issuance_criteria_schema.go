@@ -13,8 +13,8 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 		Optional:    false,
 		Computed:    true,
 		Attributes: map[string]schema.Attribute{
-			"conditional_criteria": schema.SetNestedAttribute{
-				Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
+			"conditional_criteria": schema.ListNestedAttribute{
+				Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed.",
 				Optional:    false,
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
@@ -43,8 +43,8 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 					},
 				},
 			},
-			"expression_criteria": schema.SetNestedAttribute{
-				Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria.",
+			"expression_criteria": schema.ListNestedAttribute{
+				Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. Criteria are evaluated in the order they are listed.",
 				Optional:    false,
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{

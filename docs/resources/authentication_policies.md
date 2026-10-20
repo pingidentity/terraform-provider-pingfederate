@@ -447,7 +447,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
@@ -757,7 +757,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--apc_mapping_policy_action--context--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--apc_mapping_policy_action--context--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--apc_mapping_policy_action--context--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--children--action--apc_mapping_policy_action--context--issuance_criteria--conditional_criteria"></a>
@@ -1452,7 +1452,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
@@ -1793,7 +1793,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
@@ -2109,7 +2109,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
@@ -2376,7 +2376,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
@@ -2680,7 +2680,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
@@ -2947,7 +2947,7 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--authn_selection_trees--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>

@@ -971,8 +971,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--idp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `idp_browser_sso.adapter_mappings.issuance_criteria.conditional_criteria`
@@ -1318,8 +1318,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_browser_sso--authentication_policy_contract_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--idp_browser_sso--authentication_policy_contract_mappings--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `idp_browser_sso.authentication_policy_contract_mappings.issuance_criteria.conditional_criteria`
@@ -1879,8 +1879,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--idp_browser_sso--sso_oauth_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `idp_browser_sso.sso_oauth_mapping.issuance_criteria.conditional_criteria`
@@ -2193,8 +2193,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--idp_oauth_grant_attribute_mapping--access_token_manager_mappings--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `idp_oauth_grant_attribute_mapping.access_token_manager_mappings.issuance_criteria.conditional_criteria`
@@ -2954,8 +2954,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. Criteria are evaluated in the order they are listed. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--ws_trust--token_generator_mappings--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `ws_trust.token_generator_mappings.issuance_criteria.conditional_criteria`
