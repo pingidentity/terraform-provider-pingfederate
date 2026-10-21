@@ -12,7 +12,7 @@ func ClientStruct(issuanceCriteria types.Object) *client.IssuanceCriteria {
 	issuanceCriteriaAttrs := issuanceCriteria.Attributes()
 	if !issuanceCriteriaAttrs["conditional_criteria"].IsNull() && !issuanceCriteriaAttrs["conditional_criteria"].IsUnknown() {
 		result.ConditionalCriteria = []client.ConditionalIssuanceCriteriaEntry{}
-		for _, conditionalCriteriaElement := range issuanceCriteriaAttrs["conditional_criteria"].(types.Set).Elements() {
+		for _, conditionalCriteriaElement := range issuanceCriteriaAttrs["conditional_criteria"].(types.List).Elements() {
 			conditionalCriteriaValue := client.ConditionalIssuanceCriteriaEntry{}
 			conditionalCriteriaAttrs := conditionalCriteriaElement.(types.Object).Attributes()
 			conditionalCriteriaValue.AttributeName = conditionalCriteriaAttrs["attribute_name"].(types.String).ValueString()
@@ -29,7 +29,7 @@ func ClientStruct(issuanceCriteria types.Object) *client.IssuanceCriteria {
 	}
 	if !issuanceCriteriaAttrs["expression_criteria"].IsNull() && !issuanceCriteriaAttrs["expression_criteria"].IsUnknown() {
 		result.ExpressionCriteria = []client.ExpressionIssuanceCriteriaEntry{}
-		for _, expressionCriteriaElement := range issuanceCriteriaAttrs["expression_criteria"].(types.Set).Elements() {
+		for _, expressionCriteriaElement := range issuanceCriteriaAttrs["expression_criteria"].(types.List).Elements() {
 			expressionCriteriaValue := client.ExpressionIssuanceCriteriaEntry{}
 			expressionCriteriaAttrs := expressionCriteriaElement.(types.Object).Attributes()
 			expressionCriteriaValue.ErrorResult = expressionCriteriaAttrs["error_result"].(types.String).ValueStringPointer()

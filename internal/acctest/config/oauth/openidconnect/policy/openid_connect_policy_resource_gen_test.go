@@ -103,6 +103,261 @@ func TestAccOpenidConnectPolicy_LdapAttributeSourceBinaryAttributeSettings(t *te
 	})
 }
 
+// Validates that conditional_criteria and expression_criteria honor the configured ordering:
+// the state indices must match the order of the HCL config, both on create and after an
+// in-place reorder update, and on import round-trip.
+func TestAccOpenidConnectPolicy_IssuanceCriteriaOrdering(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: openidConnectPolicy_CheckDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: openidConnectPolicy_IssuanceCriteriaOrderingHCL(false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.#", "2"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.attribute_name", "sub"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.condition", "MULTIVALUE_CONTAINS_DN"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.source.type", "MAPPED_ATTRIBUTES"),
+					resource.TestCheckNoResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.error_result"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.attribute_name", "ClientIp"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.condition", "EQUALS_CASE_INSENSITIVE"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.source.type", "CONTEXT"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.error_result", "asdf"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.#", "2"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.0.expression", "expr1"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.0.error_result", "fail1"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.1.expression", "expr2"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.1.error_result", "fail2"),
+				),
+			},
+			{
+				// Reorder the criteria in place; the state indices must follow the new config order
+				Config: openidConnectPolicy_IssuanceCriteriaOrderingHCL(true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.#", "2"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.attribute_name", "ClientIp"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.error_result", "asdf"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.attribute_name", "sub"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.condition", "MULTIVALUE_CONTAINS_DN"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.#", "2"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.0.expression", "expr2"),
+					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.1.expression", "expr1"),
+				),
+			},
+			{
+				// Import round-trips through the PingFederate API; the returned order must match the state
+				Config:                               openidConnectPolicy_IssuanceCriteriaOrderingHCL(false),
+				ResourceName:                         "pingfederate_openid_connect_policy.example",
+				ImportStateId:                        openidConnectPolicyPolicyId,
+				ImportStateVerifyIdentifierAttribute: "policy_id",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+			},
+		},
+	})
+}
+
+// issuance_criteria HCL modeled on the live config of the mytestpolicy OIDC policy
+// (2 conditional criteria, 2 expression criteria). reversed=false emits the criteria in
+// the order retrieved from the PingFederate admin API; reversed=true emits them reversed.
+func openidConnectPolicy_IssuanceCriteriaOrderingHCL(reversed bool) string {
+	conditionalCriteriaHcl := `
+      conditional_criteria = [
+        {
+          attribute_name = "sub"
+          condition      = "MULTIVALUE_CONTAINS_DN"
+          source = {
+            type = "MAPPED_ATTRIBUTES"
+          }
+          value = "cn=Example,dc=example,dc=com"
+        },
+        {
+          attribute_name = "ClientIp"
+          condition      = "EQUALS_CASE_INSENSITIVE"
+          error_result   = "asdf"
+          source = {
+            type = "CONTEXT"
+          }
+          value = "1.1.1.1"
+        },
+      ]
+`
+	expressionCriteriaHcl := `      expression_criteria = [
+        {
+          error_result = "fail1"
+          expression   = "expr1"
+        },
+        {
+          error_result = "fail2"
+          expression   = "expr2"
+        },
+      ]
+`
+	if reversed {
+		conditionalCriteriaHcl = `
+      conditional_criteria = [
+        {
+          attribute_name = "ClientIp"
+          condition      = "EQUALS_CASE_INSENSITIVE"
+          error_result   = "asdf"
+          source = {
+            type = "CONTEXT"
+          }
+          value = "1.1.1.1"
+        },
+        {
+          attribute_name = "sub"
+          condition      = "MULTIVALUE_CONTAINS_DN"
+          source = {
+            type = "MAPPED_ATTRIBUTES"
+          }
+          value = "cn=Example,dc=example,dc=com"
+        },
+      ]
+`
+		expressionCriteriaHcl = `      expression_criteria = [
+        {
+          error_result = "fail2"
+          expression   = "expr2"
+        },
+        {
+          error_result = "fail1"
+          expression   = "expr1"
+        },
+      ]
+`
+	}
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_server_settings" "example" {
+  authorization_code_entropy = 30
+  authorization_code_timeout = 60
+  refresh_rolling_interval   = 2
+  refresh_token_length       = 50
+  scopes = [
+    {
+      name        = "email"
+      description = "email scope"
+      dynamic     = false
+    }
+  ]
+}
+
+resource "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = "oidcJsonWebTokenExample"
+  name       = "oidcJsonWebTokenExample"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = [
+      {
+        name = "Symmetric Keys"
+        rows = [
+          {
+            fields = [
+              {
+                name  = "Key ID"
+                value = "keyidentifier"
+              },
+              {
+                name  = "Encoding"
+                value = "b64u"
+              }
+            ]
+            sensitive_fields = [
+              {
+                name  = "Key"
+                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+              },
+            ]
+          }
+        ]
+      },
+      {
+        name = "Certificates"
+        rows = []
+      }
+    ]
+    fields = [
+      {
+        name  = "JWE Algorithm"
+        value = "dir"
+      },
+      {
+        name  = "JWE Content Encryption Algorithm"
+        value = "A192CBC-HS384"
+      },
+      {
+        name  = "Active Symmetric Encryption Key ID"
+        value = "keyidentifier"
+      },
+    ]
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name = "contract"
+      },
+      {
+        multi_valued = false
+        name         = "another"
+      }
+    ]
+  }
+}
+
+resource "pingfederate_openid_connect_policy" "example" {
+  depends_on = [pingfederate_oauth_server_settings.example]
+  policy_id  = "%s"
+  access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.example.id
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        multi_valued = true
+        name         = "extended"
+      },
+      {
+        multi_valued = false
+        name         = "another"
+      }
+    ]
+  }
+  attribute_mapping = {
+    attribute_contract_fulfillment = {
+      "sub" = {
+        source = {
+          type = "TOKEN"
+        }
+        value = "contract"
+      }
+      "extended" = {
+        source = {
+          type = "NO_MAPPING"
+        }
+      }
+      "another" = {
+        source = {
+          type = "TEXT"
+        }
+        value = "example2"
+      }
+    }
+    issuance_criteria = {
+%s
+%s
+    }
+  }
+  id_token_lifetime = 7
+  name              = "myoidcpolicy"
+}
+`, openidConnectPolicyPolicyId, conditionalCriteriaHcl, expressionCriteriaHcl)
+}
+
 func TestAccOpenidConnectPolicy_CustomAttributeSourceRoundTrip(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{

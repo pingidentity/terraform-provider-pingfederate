@@ -15,7 +15,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-// Reproduces CDI-1474: an empty issuance_criteria.expression_criteria set caused a
+// Reproduces CDI-1474: an empty issuance_criteria.expression_criteria list caused a
 // "Provider produced inconsistent result after apply" error, since the PingFederate admin
 // API omits an empty expressionCriteria element rather than returning it as an empty list.
 func TestAccSpIdpConnection_ExpressionCriteriaEmptySetInvalid(t *testing.T) {
@@ -27,7 +27,7 @@ func TestAccSpIdpConnection_ExpressionCriteriaEmptySetInvalid(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      spIdpConnection_ExpressionCriteriaEmptySetInvalidHCL(),
-				ExpectError: regexp.MustCompile(`set must contain at least 1 elements`),
+				ExpectError: regexp.MustCompile(`list must contain at least 1 elements`),
 			},
 		},
 	})

@@ -37,10 +37,10 @@ func ExpressionCriteriaElemType() types.ObjectType {
 
 func AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"conditional_criteria": types.SetType{
+		"conditional_criteria": types.ListType{
 			ElemType: ConditionalCriteriaElemType(),
 		},
-		"expression_criteria": types.SetType{
+		"expression_criteria": types.ListType{
 			ElemType: ExpressionCriteriaElemType(),
 		},
 	}
@@ -52,9 +52,9 @@ func ToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCri
 	if issuanceCriteriaFromClient == nil {
 		issuanceCriteriaValue = types.ObjectNull(AttrTypes())
 	} else {
-		var conditionalCriteriaFinalValue types.Set
+		var conditionalCriteriaFinalValue types.List
 		if issuanceCriteriaFromClient.ConditionalCriteria == nil {
-			conditionalCriteriaFinalValue = types.SetNull(ConditionalCriteriaElemType())
+			conditionalCriteriaFinalValue = types.ListNull(ConditionalCriteriaElemType())
 		} else {
 			var conditionalCriteriaValues []attr.Value
 			for _, conditionalCriteriaResponseValue := range issuanceCriteriaFromClient.ConditionalCriteria {
@@ -78,12 +78,12 @@ func ToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCri
 				respDiags.Append(diags...)
 				conditionalCriteriaValues = append(conditionalCriteriaValues, conditionalCriteriaValue)
 			}
-			conditionalCriteriaFinalValue, diags = types.SetValue(ConditionalCriteriaElemType(), conditionalCriteriaValues)
+			conditionalCriteriaFinalValue, diags = types.ListValue(ConditionalCriteriaElemType(), conditionalCriteriaValues)
 			respDiags.Append(diags...)
 		}
-		var expressionCriteriaFinalValue types.Set
+		var expressionCriteriaFinalValue types.List
 		if issuanceCriteriaFromClient.ExpressionCriteria == nil {
-			expressionCriteriaFinalValue = types.SetNull(ExpressionCriteriaElemType())
+			expressionCriteriaFinalValue = types.ListNull(ExpressionCriteriaElemType())
 		} else {
 			var expressionCriteriaValues []attr.Value
 			for _, expressionCriteriaResponseValue := range issuanceCriteriaFromClient.ExpressionCriteria {
@@ -99,7 +99,7 @@ func ToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCri
 				respDiags.Append(diags...)
 				expressionCriteriaValues = append(expressionCriteriaValues, expressionCriteriaValue)
 			}
-			expressionCriteriaFinalValue, diags = types.SetValue(ExpressionCriteriaElemType(), expressionCriteriaValues)
+			expressionCriteriaFinalValue, diags = types.ListValue(ExpressionCriteriaElemType(), expressionCriteriaValues)
 			respDiags.Append(diags...)
 		}
 		issuanceCriteriaValue, diags = types.ObjectValue(AttrTypes(), map[string]attr.Value{
