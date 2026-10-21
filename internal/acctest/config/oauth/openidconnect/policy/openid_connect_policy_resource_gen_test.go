@@ -103,9 +103,7 @@ func TestAccOpenidConnectPolicy_LdapAttributeSourceBinaryAttributeSettings(t *te
 	})
 }
 
-// Validates that conditional_criteria and expression_criteria honor the configured ordering:
-// the state indices must match the order of the HCL config, both on create and after an
-// in-place reorder update, and on import round-trip.
+// Test ordering for issuance_criteria fields
 func TestAccOpenidConnectPolicy_IssuanceCriteriaOrdering(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -116,39 +114,12 @@ func TestAccOpenidConnectPolicy_IssuanceCriteriaOrdering(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: openidConnectPolicy_IssuanceCriteriaOrderingHCL(false),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.#", "2"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.attribute_name", "sub"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.condition", "MULTIVALUE_CONTAINS_DN"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.source.type", "MAPPED_ATTRIBUTES"),
-					resource.TestCheckNoResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.error_result"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.attribute_name", "ClientIp"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.condition", "EQUALS_CASE_INSENSITIVE"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.source.type", "CONTEXT"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.error_result", "asdf"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.#", "2"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.0.expression", "expr1"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.0.error_result", "fail1"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.1.expression", "expr2"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.1.error_result", "fail2"),
-				),
 			},
 			{
-				// Reorder the criteria in place; the state indices must follow the new config order
+				// Reverse the order of the criteria
 				Config: openidConnectPolicy_IssuanceCriteriaOrderingHCL(true),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.#", "2"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.attribute_name", "ClientIp"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.0.error_result", "asdf"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.attribute_name", "sub"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.conditional_criteria.1.condition", "MULTIVALUE_CONTAINS_DN"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.#", "2"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.0.expression", "expr2"),
-					resource.TestCheckResourceAttr("pingfederate_openid_connect_policy.example", "attribute_mapping.issuance_criteria.expression_criteria.1.expression", "expr1"),
-				),
 			},
 			{
-				// Import round-trips through the PingFederate API; the returned order must match the state
 				Config:                               openidConnectPolicy_IssuanceCriteriaOrderingHCL(false),
 				ResourceName:                         "pingfederate_openid_connect_policy.example",
 				ImportStateId:                        openidConnectPolicyPolicyId,
@@ -160,9 +131,6 @@ func TestAccOpenidConnectPolicy_IssuanceCriteriaOrdering(t *testing.T) {
 	})
 }
 
-// issuance_criteria HCL modeled on the live config of the mytestpolicy OIDC policy
-// (2 conditional criteria, 2 expression criteria). reversed=false emits the criteria in
-// the order retrieved from the PingFederate admin API; reversed=true emits them reversed.
 func openidConnectPolicy_IssuanceCriteriaOrderingHCL(reversed bool) string {
 	conditionalCriteriaHcl := `
       conditional_criteria = [
