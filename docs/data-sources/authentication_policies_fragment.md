@@ -304,8 +304,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -758,8 +758,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -1047,8 +1047,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -1314,8 +1314,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -1628,8 +1628,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -2082,8 +2082,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -2371,8 +2371,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -2638,8 +2638,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -2952,8 +2952,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -3406,8 +3406,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -3695,8 +3695,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -3962,8 +3962,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -4276,8 +4276,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -4730,8 +4730,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -5019,8 +5019,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -5286,8 +5286,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -5600,8 +5600,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -6054,8 +6054,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -6343,8 +6343,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -6610,8 +6610,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -6924,8 +6924,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -7378,8 +7378,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -7667,8 +7667,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -7934,8 +7934,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -8248,8 +8248,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -8702,8 +8702,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -8991,8 +8991,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -9258,8 +9258,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -9572,8 +9572,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -10026,8 +10026,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -10315,8 +10315,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -10582,8 +10582,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -10896,8 +10896,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -11350,8 +11350,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -11639,8 +11639,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -11906,8 +11906,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -12220,8 +12220,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -12674,8 +12674,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -12963,8 +12963,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -13230,8 +13230,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
@@ -13540,8 +13540,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--apc_mapping_policy_action--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.apc_mapping_policy_action.attribute_mapping.issuance_criteria.conditional_criteria`
@@ -13994,8 +13994,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--fragment_policy_action--fragment_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.fragment_policy_action.fragment_mapping.issuance_criteria.conditional_criteria`
@@ -14283,8 +14283,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
@@ -14550,8 +14550,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
