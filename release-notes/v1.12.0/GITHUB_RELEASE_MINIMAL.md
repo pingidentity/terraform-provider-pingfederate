@@ -1,0 +1,4 @@
+### ENHANCEMENTS
+
+- Updated `issuance_criteria` attribute used across various resources to be an ordered List rather than an unordered Set, to align with API behavior.
+

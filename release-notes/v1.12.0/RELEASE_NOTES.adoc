@@ -1,0 +1,10 @@
+= Release Notes for v1.12.0
+:toc:
+:toclevels: 3
+:sectnums:
+
+Release Date: 2026-11-12
+
+== ENHANCEMENTS
+* link:https://github.com/pingidentity/terraform-provider-pingfederate/commit/f9d60cf5[f9d60cf5] Updated `issuance_criteria` attribute used across various resources to be an ordered List rather than an unordered Set, to align with API behavior. link:https://github.com/pingidentity/terraform-provider-pingfederate/pull/647[#647]
+
